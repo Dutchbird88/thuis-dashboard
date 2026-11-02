@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '157';
+const CARD_VERSION = '158';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1332,6 +1332,22 @@ const VDEFAULTS = {
 const VSTYLE = `
 :host { --imp: #a855f7; --exp: #22d37f; --gas: #f0245a; --water: #38bdf8; }
 .vwrap { background: radial-gradient(900px 420px at 12% -8%, rgba(168,85,247,.08), transparent 65%), var(--bg); }
+/* telefoon: Vandaag als tegels en een compact Net nu */
+.mtoday { display: none; } .nwv { display: contents; } .nst { display: none; }
+@media (max-width: 600px) {
+  .vwrap .grid > .tile.s8:first-child { background: none; border: 0; box-shadow: none; padding: 0; }
+  .vwrap .grid > .tile.s8:first-child > .th { margin: 0 4px 10px; }
+  .vwrap .todaywrap { display: none; }
+  .mtoday { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mt { padding: 12px 14px; border-radius: 20px; background: linear-gradient(180deg, var(--tile2), var(--tile)); border: 1px solid rgba(110,150,240,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6); cursor: pointer; min-width: 0; }
+  .mt .mk { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); } .mt .mk .gl3 { width: 18px; height: 18px; }
+  .mt .mk .eu { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #1a2a12; background: linear-gradient(180deg, #c6f5d6, #4fd07f 55%, #22a35a); }
+  .mt .mv { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-top: 6px; line-height: 1.1; white-space: nowrap; } .mt .mv small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .mt .ms { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.35; } .mt .ms b { color: var(--text); font-weight: 600; }
+  .nwv { display: block; } .nst { display: block; font-size: 13.5px; color: #cfd5e0; margin-top: 4px; }
+  #netState { display: none; } .vwrap .bigv { font-size: 44px; } .vwrap .bidir { margin: 16px 0 6px; }
+  .vwrap .tile { padding: 16px 18px; border-radius: 20px; } .vwrap .grid { gap: 14px; }
+}
 @media (max-width: 600px) { .vwrap { background: radial-gradient(520px 360px at 12% 300px, rgba(168,85,247,.08), transparent 70%), var(--bg) !important; } }
 .gl3 { width: 34px; height: 34px; flex: none; overflow: visible; }
 .gl3.sm { width: 30px; height: 30px; } .gl3.xs { width: 20px; height: 20px; } .gl3.lg { width: 50px; height: 50px; }
@@ -1475,11 +1491,17 @@ class VerbruikCard extends HTMLElement {
               </div>
               <div class="total"><span>Totaal vandaag, incl. vaste kosten</span><b class="num" id="tTot">—</b></div>
             </div>
+            <div class="mtoday">
+              <div class="mt" data-e="${c.import}"><div class="mk">${gl('gBolt', 'xs')}Stroom</div><div class="mv num" id="mtNet">—</div><div class="ms" id="mtNetS"></div></div>
+              <div class="mt" data-e="${c.gas}"><div class="mk">${gl('gFlame', 'xs')}Gas</div><div class="mv num" id="mtGas">—</div><div class="ms" id="mtGasS"></div></div>
+              <div class="mt" data-e="${c.water}"><div class="mk">${gl('gDrop', 'xs')}Water</div><div class="mv num" id="mtWat">—</div><div class="ms" id="mtWatS"></div></div>
+              <div class="mt"><div class="mk"><i class="eu">€</i>Kosten vandaag</div><div class="mv num" id="mtTot">—</div><div class="ms" id="mtTotS"></div></div>
+            </div>
           </div>
 
           <div class="tile s4">
             <div class="th"><span class="label">Net nu</span><span class="aside" id="homeNow"></span></div>
-            <div class="netrow" data-e="${c.power}"><svg class="gl3 lg" viewBox="0 0 100 100" id="netIc"></svg><div class="bigv num" id="netNow">—</div></div>
+            <div class="netrow" data-e="${c.power}"><svg class="gl3 lg" viewBox="0 0 100 100" id="netIc"></svg><div class="nwv"><div class="bigv num" id="netNow">—</div><div class="nst" id="netState2"></div></div></div>
             <div class="state" id="netState"></div>
             <div class="bidir"><i id="bidir"></i></div>
             <div class="scale"><span>← terug</span><span>0</span><span>af →</span></div>
@@ -1716,6 +1738,14 @@ class VerbruikCard extends HTMLElement {
     set('upto', `t/m ${fmtTime(now)}`);
     const fixedToday = frac * ((fx.electricity_day || 0) + (fx.gas_day || 0) + (fx.export_year || 0) / 365);
     set('tTot', eur((eNet || 0) + (eGas || 0) + (eWat || 0) + fixedToday));
+    set('mtNet', `<span style="color:var(--imp)">${fmt(dImp, 1)}</span><small>kWh af</small>`);
+    set('mtNetS', `<span style="color:var(--exp)">↑ ${fmt(dExp, 1)} kWh terug</span><br><b>${eur(eNet)}</b> · netto ${fmt(Math.abs(dNet), 1)}`);
+    set('mtGas', `<span style="color:var(--gas)">${fmt(dGas, 2)}</span><small>m³</small>`);
+    set('mtGasS', `<b>${eur(eGas)}</b><br>gisteren ${fmt(yGas, 2)} m³`);
+    set('mtWat', `<span style="color:var(--water)">${fmt(dWat * 1000, 0)}</span><small>L</small>`);
+    set('mtWatS', `<b>${eur(eWat)}</b>${wd.length ? `<br>gem. ${fmt(wd.reduce((a, b) => a + b, 0) / wd.length * 1000)} L per dag` : ''}`);
+    set('mtTot', eur((eNet || 0) + (eGas || 0) + (eWat || 0) + fixedToday));
+    set('mtTotS', `incl. <b>${eur(fixedToday)}</b> vaste kosten`);
 
     // net nu
     const p = this._num(c.power), pv = this._num(c.solar_power) || 0;
@@ -1724,6 +1754,7 @@ class VerbruikCard extends HTMLElement {
     set('netNow', `<span style="color:${exp ? 'var(--exp)' : imp ? 'var(--imp)' : 'inherit'}">${p == null ? '—' : fmt(Math.abs(p))}</span><small>W</small>`);
     set('netIc', `<use href="#${exp ? 'gSun' : 'gBolt'}"/>`);
     set('netState', `<i class="dotc" style="--c:${sc}"></i>${exp ? 'Teruglevering aan het net' : imp ? 'Afname van het net' : 'In balans met het net'}`);
+    set('netState2', exp ? 'Teruglevering aan het net' : imp ? 'Afname van het net' : 'In balans met het net');
     const hv = p == null ? null : p + pv;
     set('homeNow', hv == null || hv < -50 ? '' : `huis <b class="num">${fmt(Math.max(0, hv))} W</b>`);
     const bar = this.$('bidir'), w = clamp(Math.abs(p || 0) / 3000, 0, 1) * 50;
