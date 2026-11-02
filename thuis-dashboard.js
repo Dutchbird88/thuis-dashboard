@@ -226,7 +226,7 @@ const tabsHtml = (active, nav = NAV) => `
     <button class="${active === 'thuis' ? 'on' : ''}" style="--tc:#7cb6ff" data-nav="${nav.thuis}">${fi('house')}Thuis</button>
     <button class="tk${active === 'kamers' ? ' on' : ''}" style="--tc:#b98bff" data-nav="${nav.kamers || NAV.kamers}">${fi('rooms')}Kamers</button>
     <button class="${active === 'nu' ? 'on' : ''}" style="--tc:var(--sun)" data-nav="${nav.nu}">${fi('sun')}Nu</button>
-    <button class="${active === 'verbruik' ? 'on' : ''}" style="--tc:#8fd65a" data-nav="${nav.verbruik}">${fi('leaf')}Energie</button>
+    <button class="${active === 'verbruik' ? 'on' : ''}" style="--tc:#22d37f" data-nav="${nav.verbruik}">${fi('leaf')}Energie</button>
     <button class="ta${active === 'auto' ? ' on' : ''}" style="--tc:#5ee1d0" data-nav="${nav.auto}">${fi('car')}Auto</button>
   </div>`;
 // naar een ander tabblad van hetzelfde dashboard
@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '158';
+const CARD_VERSION = '159';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
