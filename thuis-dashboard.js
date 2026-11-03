@@ -90,11 +90,6 @@ const niceMax = (v) => {
 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-const ICONS = {
-  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-  home: '<path d="M3 11.5 12 4l9 7.5M5.5 9.8V20h13V9.8M10 20v-5.5h4V20"/>',
-  grid: '<path d="M8.5 21 12 3l3.5 18M10 13h4M10.9 8.5h2.2M5 7h14M5 7l-1.5 3M19 7l1.5 3M9 17.5h6"/>',
-};
 /* ===== iconenset (stijl Rounded): één bron voor alle kaarten — RIC.svg(naam, toon), RIC.sym(id, naam) ===== */
 const RIC = (() => {
 /* ===== Iconenset "Rounded" (variant B): één bron, herbruikbaar via ic(naam, toon) =====
@@ -108,7 +103,7 @@ const G={ // verlopen: licht → vol → donker
  white:['#ffffff','#eef2f7','#cdd5e0'], metal:['#e6eaf0','#b9c1cc','#8d97a6'], dark:['#3a4250','#232934','#151a22'], brown:['#d9a77a','#a8703f','#7d4f28'],
  gray:['#a7afbd','#7e8798','#5c6575'], grayL:['#8e97a6','#6c7586','#525b6a'], grayD:['#6f7888','#555e6d','#3f4755'] };
 const OFFMAP={white:'grayL',metal:'grayD',dark:'dark'};
-let OFF=false, MONO=null, UID=0; const f=(k)=>`url(#g-${OFF?(OFFMAP[k]||'gray'):MONO?(k==='dark'||k==='metal'||k==='amber'||k==='brown'?'amber':'yellow'):k})`;
+let OFF=false, MONO=null; const f=(k)=>`url(#g-${OFF?(OFFMAP[k]||'gray'):MONO?(k==='dark'||k==='metal'||k==='amber'||k==='brown'?'amber':'yellow'):k})`;
 const HL=(d,w=5)=>`<path d="${d}" fill="none" stroke="#fff" stroke-opacity="${OFF?.18:.6}" stroke-width="${w}" stroke-linecap="round"/>`;
 const DRAW={
  bulb:()=>`<path d="M50 6a32 32 0 0 0-19.5 57.4c3.6 2.9 5.6 6.6 5.6 10.9v1.5h27.8v-1.5c0-4.3 2-8 5.6-10.9A32 32 0 0 0 50 6z" fill="${f('yellow')}"/>${HL('M30 36a21 21 0 0 1 13-17')}<rect x="35" y="78" width="30" height="7.5" rx="3.7" fill="${f('metal')}"/><rect x="38" y="87.5" width="24" height="7" rx="3.5" fill="${f('metal')}"/>`,
@@ -272,8 +267,6 @@ const go = (b) => {
   history.pushState(null, '', parts.join('/'));
   window.dispatchEvent(new CustomEvent('location-changed', { detail: { replace: false } }));
 };
-const icon = (name, x, y, s = 1.2) =>
-  `<g class="ic" transform="translate(${x - 12 * s} ${y - 12 * s}) scale(${s})">${ICONS[name]}</g>`;
 
 const STYLE = `
 :host {
@@ -1291,7 +1284,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '177';
+const CARD_VERSION = '178';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3466,7 +3459,6 @@ const DISH_NOTES = [
 
 // lamp in dezelfde glanzende stijl als de andere iconen: schuin verloop, witte glansstreep, schaduw eronder
 const mixHex = (a, b, t) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(a.substr(i, 2), 16) * (1 - t) + parseInt(b.substr(i, 2), 16) * t).toString(16).padStart(2, '0')).join('');
-const BULB_PATH = 'M50 4a31 31 0 0 0-19 55.5c4 3.2 6.5 7 6.5 11.5h25c0-4.5 2.5-8.3 6.5-11.5A31 31 0 0 0 50 4z';
 const toHex = (c) => { if (c[0] === '#') return c; const [h, sat, l] = c.match(/[\d.]+/g).map(Number), S = sat / 100, L = l / 100, k = (n) => (n + h / 30) % 12, f = (n) => L - S * Math.min(L, 1 - L) * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)); return '#' + [0, 8, 4].map((n) => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join(''); };
 const bulbSvg = (c) => { const col = toHex(c), id = `bu${col.slice(1)}`; return `<svg class="bulb" viewBox="0 0 100 100"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mixHex(col, '#ffffff', .7)}"/><stop offset=".55" stop-color="${col}"/><stop offset="1" stop-color="${mixHex(col, '#000000', .18)}"/></linearGradient></defs>
   <path d="M50 6a32 32 0 0 0-19.5 57.4c3.6 2.9 5.6 6.6 5.6 10.9v1.5h27.8v-1.5c0-4.3 2-8 5.6-10.9A32 32 0 0 0 50 6z" fill="url(#${id})"/><path d="M30 36a21 21 0 0 1 13-17" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/>
@@ -3486,59 +3478,21 @@ const PRESETS = {
   away: ['Weg', 'door', '#c3cad6'],
   holiday: ['Vakantie', 'sun', '#ffc83d'],
 };
-// kliko op de ophaaldag: gaat omhoog, kiept om, deksel valt open en het afval valt eruit
-const KLIKO_TONE = { binGft: 'green', binPmd: 'orange', binPap: 'blue', binRst: 'gray' };
-const klikoSvg = (sym, cls = '') => { const t = KLIKO_TONE[sym] || 'green', F = `url(#g-${t})`;
-  const D = [['rect', 'x="44" y="72" width="10" height="8" rx="2" fill="#9aa4b3"', -6, 160], ['circle', 'cx="56" cy="74" r="4.5" fill="#ffd166"', 4, 90], ['rect', 'x="50" y="71" width="7" height="11" rx="2" fill="#7cc4ff"', -12, -120], ['path', 'd="M58 72l8 3-5 6z" fill="#ff7a8a"', 10, 200], ['rect', 'x="47" y="73" width="12" height="5" rx="2" fill="#c3cad6"', -2, 70], ['circle', 'cx="52" cy="73" r="3.5" fill="#8fd65a"', 7, -60]];
-  const LEAF = (x, y, c) => `d="M${x} ${y}c4-6 13-6 16 0-3 6-12 6-16 0z" fill="${c}"`;
-  const D2 = sym === 'binGft' ? [['path', LEAF(42, 74, '#4fd07f'), -14, 200], ['path', LEAF(52, 72, '#22a35a'), 9, -160], ['path', LEAF(46, 76, '#8fd65a'), -4, 250], ['path', LEAF(56, 75, '#3fbf6f'), 15, -220], ['path', LEAF(48, 72, '#a6dd5a'), -9, 180], ['path', LEAF(50, 77, '#2fb86a'), 4, -280]] : D;
-  return `<svg class="${cls} kliko" viewBox="0 0 100 100"><g class="kk-all"><path d="M27 27h46l-4.4 57a6 6 0 0 1-6 5.5H37.4a6 6 0 0 1-6-5.5z" fill="${F}"/><path d="M33 36l2.4 46M67 36l-2.4 46" stroke="#000" stroke-opacity=".13" stroke-width="3.5" stroke-linecap="round"/><rect x="40" y="40" width="20" height="10" rx="3.5" fill="#fff" fill-opacity=".35"/><circle cx="35" cy="90" r="6" fill="url(#g-dark)"/><circle cx="65" cy="90" r="6" fill="url(#g-dark)"/>`
-    + `<g class="kk-lid"><path d="M21 18a5 5 0 0 1 5-5h48a5 5 0 0 1 5 5v7a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3z" fill="${F}"/><path d="M25 18h50" stroke="#fff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/><rect x="66" y="5" width="13" height="8" rx="3" fill="url(#g-dark)"/></g></g>`
-    + `<g>${D2.map(([tag, at, dx, r], i) => `<${tag} class="kk-drop" style="--dx:${dx}px;--r:${r}deg;animation-delay:${(i * 0.08).toFixed(2)}s" ${at}/>`).join('')}</g></svg>`; };
 const BINS = { gft: ['binGft', '#1fa85a', 'groene bak'], pmd: ['binPmd', '#f28a1c', 'oranje bak'], papier: ['binPap', '#2f6fe0', 'blauwe bak'], rest: ['binRst', '#6b7587', 'grijze bak'] };
 const DIRS = ['N', 'NO', 'O', 'ZO', 'Z', 'ZW', 'W', 'NW'];
 
 // platte iconen voor de tegels op de telefoon
 const MTHERM = '<svg viewBox="0 0 24 24"><path d="M12 1.8a3.6 3.6 0 0 0-3.6 3.6v8.4a5.6 5.6 0 1 0 7.2 0V5.4A3.6 3.6 0 0 0 12 1.8z"/></svg>';
-const MBOLT = '<svg viewBox="0 0 24 24"><path d="M13.2 2 4.5 13.4h6.3L9.9 22l8.6-11.6h-6.3z"/></svg>';
-const MPLUG = '<svg viewBox="0 0 24 24"><path d="M8 2.5a1 1 0 0 1 1 1V7h6V3.5a1 1 0 1 1 2 0V7h1a1 1 0 0 1 1 1v3a7 7 0 0 1-6 6.9V21a1 1 0 1 1-2 0v-3.1A7 7 0 0 1 5 11V8a1 1 0 0 1 1-1h1V3.5a1 1 0 0 1 1-1z"/></svg>';
-const MCLOCK = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm1 3v4.6l3.2 1.9-1 1.7-4.2-2.5V7z"/></svg>';
 const MBULB = '<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4.2 12.6c.7.5 1.2 1.3 1.2 2.2V18h6v-1.2c0-.9.5-1.7 1.2-2.2A7 7 0 0 0 12 2zM9 19.3h6v.7a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/></svg>';
 // rolluik als raampje met kozijn; het rolluik zakt ervoor (p = % open)
 const mBlind = (p) => { const h = 14.5 * (1 - p / 100); return `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="5" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="12.8" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="2" y="2.5" width="20" height="3.6" rx="1.2" fill="currentColor"/>${h > 0.5 ? `<rect x="3.8" y="6" width="16.4" height="${h.toFixed(1)}" fill="currentColor"/>${Array.from({ length: Math.floor(h / 2.4) }, (_, i) => `<path d="M3.8 ${(8.2 + i * 2.4).toFixed(1)}h16.4" stroke="#0005" stroke-width=".6"/>`).join('')}` : ''}</svg>`; };
-const MDROP = '<svg viewBox="0 0 24 30"><path d="M12 1C12 1 2 13 2 19a10 10 0 0 0 20 0C22 13 12 1 12 1z"/></svg>';
 // kamericonen (tabblad Kamers)
-const RICON = {
-  sofa: '<path d="M6 5h12a2 2 0 0 1 2 2v3.1a2.6 2.6 0 0 0-3 2.6V13H7v-.3a2.6 2.6 0 0 0-3-2.6V7a2 2 0 0 1 2-2z"/><path d="M1.5 12.7a2.2 2.2 0 0 1 4.4 0V14h12.2v-1.3a2.2 2.2 0 0 1 4.4 0V18a1 1 0 0 1-1 1h-1v1.5h-2V19H5.5v1.5h-2V19h-1a1 1 0 0 1-1-1z"/>',
-  pot: '<path d="M2 9.5h20v1.8h-1.5V16a4 4 0 0 1-4 4h-9a4 4 0 0 1-4-4v-4.7H2z"/><path d="M8 3.5c1 1 1 2 0 3M12 3c1 1 1 2.2 0 3.5M16 3.5c1 1 1 2 0 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
-  door: '<path fill-rule="evenodd" d="M5 3.5A1.5 1.5 0 0 1 6.5 2h11A1.5 1.5 0 0 1 19 3.5V20h2v2H3v-2h2zm9.5 9.7a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z"/>',
-  toilet: '<path d="M5 2h6v7H5zM3 10h16a1 1 0 0 1 1 1 7 7 0 0 1-5 6.7V21a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-3.6A7 7 0 0 1 2 11a1 1 0 0 1 1-1z"/>',
-  bed: '<path d="M2 5h2.2v7.5H22V20h-2.2v-2.5H4.2V20H2z"/><rect x="5.5" y="8" width="5.5" height="3.6" rx="1.6"/><path d="M12.2 8h6.8a3 3 0 0 1 3 3v.6h-9.8z"/>',
-  bath: '<path d="M6 4.5A2.5 2.5 0 0 1 11 4h-2a.5.5 0 0 0-1 .5V11h14v2a6 6 0 0 1-4 5.6V21h-2v-2H8v2H6v-2.4A6 6 0 0 1 2 13v-2h4z"/>',
-  desk: '<path d="M4 3h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7v3h4v2H7v-2h4v-3H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>',
-  stairs: '<path d="M15 3h6v18H3v-6h6v-6h6z"/>',
-  tree: '<path d="M12 1.8 18.5 10h-3.2l4.5 6.5H13v5.7h-2v-5.7H4.2L8.7 10H5.5z"/>',
-  drive: '<path d="M9 2h6l1 4H8zM7 8h10v2H7zM10 12h4v10h-4z"/>',
-  shed: '<path d="M12 2 2 9v2h1.5v10h17V11H22V9zM8 13h8v8h-2v-6h-4v6H8z"/>',
-  wash: '<path fill-rule="evenodd" d="M5 2h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm7 18a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM6.5 4v1.8h1.8V4zm3 0v1.8h1.8V4z"/>',
-  dish: '<path fill-rule="evenodd" d="M5 2h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 5v13h12V7zm1-3.2v1.6h1.6V3.8zm3 0v1.6h7V3.8z"/><circle cx="12" cy="13.5" r="3.6"/>',
-  oven: '<path fill-rule="evenodd" d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2 6v9h12V9zm1-4v2h2V5zm4 0v2h2V5z"/>',
-  therm: '<path d="M10 4a2 2 0 1 1 4 0v9.3a4 4 0 1 1-4 0z"/>',
-};
 // glanzende pil-iconen: lamp aan/uit en een raam met rolluik (p = % open)
 const gBulb = (on) => `<svg viewBox="0 0 100 100"><use href="#${on ? 'gBulbOn' : 'gBulbOff'}"/></svg>`;
 const gBlind = (p) => RIC.svg('blind', p < 99 ? 'on' : 'off');
-const ric = (k) => `<svg viewBox="0 0 24 24">${RICON[k] || RICON.door}</svg>`;
 // standaardscènes van Hue: in het kamerpaneel alleen de eigen scènes tonen
 const HUE_SCENES = ['ontspannen', 'concentreren', 'energie', 'lezen', 'helder', 'gedimd', 'nachtlampje', 'arctische dageraad', 'lentebloesem', 'savanne zonsondergang', 'tropische schemering'];
 const KSTYLE = `
-.kliko .kk-all { transform-box: view-box; transform-origin: 50px 50px; } .kliko.play .kk-all { animation: kkTip 3.4s cubic-bezier(.45,0,.3,1) 2; }
-.kliko .kk-lid { transform-box: view-box; transform-origin: 79px 24px; } .kliko.play .kk-lid { animation: kkLid 3.4s ease-in-out 2; }
-.kliko .kk-drop { opacity: 0; transform-box: fill-box; transform-origin: center; } .kliko.play .kk-drop { animation: kkDrop 3.4s cubic-bezier(.5,0,.9,.6) 2; }
-@keyframes kkTip { 0%, 18%, 100% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-6px) rotate(0); } 52%, 66% { transform: translateY(-6px) rotate(150deg); } 84% { transform: translateY(-6px) rotate(0); } 94% { transform: translateY(0) rotate(0); } }
-@keyframes kkLid { 0%, 44%, 74%, 100% { transform: rotate(0); } 52%, 66% { transform: rotate(70deg); } }
-@keyframes kkDrop { 0%, 52% { opacity: 0; transform: translate(0, 0) rotate(0); } 55% { opacity: 1; transform: translate(0, 0) rotate(0); } 74% { opacity: 1; transform: translate(var(--dx), 44px) rotate(var(--r)); } 78%, 100% { opacity: 0; transform: translate(var(--dx), 50px) rotate(var(--r)); } }
-@media (prefers-reduced-motion: reduce) { .kliko.play .kk-all, .kliko.play .kk-lid, .kliko.play .kk-drop { animation: none; } }
 .kmode .tcols, .kmode .mcol, .kmode .thead .clock, .kmode .thead .hppl { display: none !important; }
 #kview { display: none; } .kmode #kview { display: block; max-width: 640px; margin: 0 auto; }
 .ksub { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; margin: 6px 4px 2px; }
@@ -3620,12 +3574,6 @@ class ThuisCard extends HTMLElement {
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
   connectedCallback() {
-    if (!this._kkHooks) {
-      this._kkHooks = true;
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && this.isConnected) setTimeout(() => this._kkPlay(), 300); });
-      window.addEventListener('location-changed', () => setTimeout(() => { if (this.isConnected && this.offsetParent !== null) this._kkPlay(); }, 300));
-    }
-    setTimeout(() => this._kkPlay(), 400);
     this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); }, 10000);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
     if (this._hass && !this._unsubs) this._subForecast();
@@ -4543,12 +4491,6 @@ class ThuisCard extends HTMLElement {
 
   /* ---------- afval ---------- */
   // afvalsensoren: uit de instellingen, anders automatisch die van Afvalbeheer (attribuut Wastecollector)
-  // kliko op de ophaaldag: 2x afspelen (bij openen, terug naar de app, terug naar Thuis)
-  _kkPlay() {
-    if (this._kmode || !this.shadowRoot) return;
-    this._kkUntil = Date.now() + 7200;
-    this.shadowRoot.querySelectorAll('svg.kliko').forEach((el) => { el.classList.remove('play'); void el.getBoundingClientRect(); el.classList.add('play'); });
-  }
   _wasteList() {
     if (this._config.waste.length) return this._config.waste;
     const kind = (t) => /gft|groen/.test(t) ? 'gft' : /pmd|plastic|pbd/.test(t) ? 'pmd' : /papier|karton/.test(t) ? 'papier' : /rest/.test(t) ? 'rest' : null;
@@ -4600,7 +4542,6 @@ class ThuisCard extends HTMLElement {
     mf.style.setProperty('--bc', next ? next.meta[1] : 'var(--muted)');
     mf.innerHTML = next ? `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag">${fd(next).toUpperCase()}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : '<div class="mlab">♻ Afval</div><span>Geen ophaaldata</span>';
     mf.onclick = () => next && this._moreInfo(next.entity);
-    if (Date.now() < (this._kkUntil || 0)) this.shadowRoot.querySelectorAll('svg.kliko:not(.play)').forEach((el) => el.classList.add('play'));
   }
 
   /* ---------- Picnic-bezorging (alleen telefoon, alleen op de dag zelf) ---------- */
@@ -5184,8 +5125,9 @@ class ThuisCard extends HTMLElement {
   _areaRooms() {
     const h = this._hass, A = h?.areas, E = h?.entities, D = h?.devices || {}, F = h?.floors || {};
     if (!A || !E) return [];
-    const c0 = this._config, key = Object.keys(A).length + ':' + Object.keys(E).length + JSON.stringify([c0.room_merge, c0.room_order]);
-    if (this._arKey === key && this._arRooms) return this._arRooms;
+    const c0 = this._config;
+    // opnieuw opbouwen als de registers van Home Assistant veranderen (ruimte, apparaat of entiteit verplaatst) of de instellingen
+    if (this._arRooms && this._arRef && this._arRef[0] === A && this._arRef[1] === E && this._arRef[2] === h.devices && this._arRef[3] === F && this._arRef[4] === c0) return this._arRooms;
     // ruimtes samenvoegen (room_merge: { "Zolder overloop": "Zolder" }) en eigen volgorde (room_order: [namen])
     const lc = (x) => String(x || '').trim().toLowerCase(), byName = {};
     Object.entries(A).forEach(([id, a]) => { byName[lc(a.name)] = id; byName[lc(id)] = id; });
@@ -5220,18 +5162,26 @@ class ThuisCard extends HTMLElement {
     const oRank = (r) => { const i = order.indexOf(lc(r.name)); return i < 0 ? 1e3 : i; };
     rooms.forEach((r, i) => { r._i = i; r.level = fRank(r); });
     rooms.sort((a, b) => a.level - b.level || oRank(a) - oRank(b) || a._i - b._i);
-    this._arKey = key; this._arRooms = rooms;
+    this._arRef = [A, E, h.devices, F, c0]; this._arRooms = rooms;
     return rooms;
   }
   _rooms() {
+    // één keer per update van Home Assistant uitrekenen (Thuis, meldingen en Kamers gebruiken dezelfde lijst)
+    if (this._rmMemo && this._rmMemo.h === this._hass && this._rmMemo.c === this._config && this._rmMemo.k === (this._kOpt ? 1 : 0) && this._rmMemo.t === Math.floor(Date.now() / 5000)) return this._rmMemo.v;
+    const v = this._roomsBuild();
+    this._rmMemo = { h: this._hass, c: this._config, k: this._kOpt ? 1 : 0, t: Math.floor(Date.now() / 5000), v };
+    return v;
+  }
+  _roomsBuild() {
     const st = (id) => this._state(id);
     const list = (this._config.rooms || []).length ? this._config.rooms : this._areaRooms();
+    const isG = (x) => !!x.attributes.is_hue_group, lc = (x) => String(x || '').toLowerCase(), byName = {}, sceneIds = [];
+    // lampen van een Hue-kamer erbij zoeken op naam (attribuut lights); de Hue-kamer zelf alleen tonen als er niets los te vinden is
+    Object.values(this._hass.states).forEach((x) => { const id = x.entity_id;
+      if (id.startsWith('light.') && !isG(x) && x.state !== 'unavailable') byName[lc(x.attributes.friendly_name)] ??= x;
+      else if (id.startsWith('scene.')) sceneIds.push(id); });
     return list.map((r, i) => {
       const all = (r.lights || []).map(st).filter(Boolean);
-      const isG = (x) => !!x.attributes.is_hue_group;
-      // lampen van een Hue-kamer erbij zoeken op naam (attribuut lights); de Hue-kamer zelf alleen tonen als er niets los te vinden is
-      const lc = (x) => String(x || '').toLowerCase(), byName = {};
-      Object.values(this._hass.states).forEach((x) => { if (x.entity_id.startsWith('light.') && !isG(x) && x.state !== 'unavailable') byName[lc(x.attributes.friendly_name)] ??= x; });
       const members = all.filter(isG).flatMap((g) => (Array.isArray(g.attributes.lights) ? g.attributes.lights : []).map((n) => byName[lc(n)]).filter(Boolean));
       let cand = [...all.filter((x) => !isG(x)), ...members].filter((x) => x.state !== 'unavailable');
       if (!cand.length) cand = all.filter((x) => isG(x) && x.state !== 'unavailable');
@@ -5248,7 +5198,7 @@ class ThuisCard extends HTMLElement {
       const apps = (r.apps || []).map((k) => { const box = this.$(k); if (!box || box.hidden) return null; return { k, box, txt: box.querySelector('.tm')?.textContent || box.querySelector('.rt b')?.textContent || '' }; }).filter(Boolean);
       const slug = r.scenes || r.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
       const strip = (n) => { const re = new RegExp(`^${r.name}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
-      const scenes = Object.keys(this._hass.states).filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(x.attributes.friendly_name || k), t: Date.parse(x.state) || 0 }; })
+      const scenes = sceneIds.filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(x.attributes.friendly_name || k), t: Date.parse(x.state) || 0 }; })
         .map((x) => ({ ...x, own: !HUE_SCENES.includes(x.name.toLowerCase()) && !/^nieuw/i.test(x.name) && !/^\d+$/.test(x.name) }));
       const E = this._hass.entities || {}, S = this._hass.states;
       // sensoren per apparaat: hoofdsensor + lux en batterij van hetzelfde apparaat
@@ -5297,7 +5247,7 @@ class ThuisCard extends HTMLElement {
       if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? (rm.apps.length && dn[0].pos > 1 && !dn[0].moving ? `${100 - dn[0].pos}%` : this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase())) : `${dn.length} dicht`}</span>` : `<span>${BL(100)}Open</span>`); }
       // apparaat: Rounded-icoon en wat er gebeurt ("Wast nog 42 min")
       const AP = { was: ['washer', 1, 'Wast', 'Wasmachine'], dish: ['dish', 1, 'Vaatwasser', 'Vaatwasser'], oven: ['ovenX', 'run', 'Oven', 'Oven'] };
-      rm.apps.forEach((a) => { const [ic, md, verb, nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
+      rm.apps.forEach((a) => { const [ic, md, , nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
         const txt = /^\d/.test(t) ? `Nog ${t}` : t ? `${nm} ${t.charAt(0).toLowerCase()}${t.slice(1)}` : `${nm} bezig`;
         l2.push(`<span class="ap"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw(ic, 'on', md)}</svg>${txt}</span>`); });
       // temperatuur klein in de statusregel
@@ -5305,7 +5255,7 @@ class ThuisCard extends HTMLElement {
       return `<div class="kr${lit ? ' lit' : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}</div>`;
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
-    const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f), n = rs.reduce((a, x) => a + x.on, 0);
+    const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f);
       return `${f ? `<div class="kfh"><b>${f}</b></div>` : ''}<div class="krs">${rs.map(row).join('')}</div>`; }).join('');
     // pillen: lampen, rolluiken, klimaat (huis)
     const lOn = rooms.reduce((a, x) => a + x.on, 0), cv = rooms.flatMap((x) => x.covers), cDn = cv.filter((c) => c.pos < 99).length;
