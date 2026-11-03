@@ -171,7 +171,10 @@ Object.assign(DRAW, {
  contact:(t)=>t==='orange'?`<rect x="22" y="8" width="56" height="80" rx="9" fill="${f('dark')}"/><path d="M22 14a6 6 0 0 1 7.4-5.8L62 15.6a6 6 0 0 1 4.6 5.8v57.2a6 6 0 0 1-4.6 5.8L29.4 91.8A6 6 0 0 1 22 86z" fill="${f('orange')}"/><circle cx="56" cy="52" r="4.5" fill="${f('white')}"/><rect x="12" y="84" width="76" height="8" rx="4" fill="${f('metal')}"/>`:DRAW.door(),
  windowS:(t)=>`<rect x="12" y="8" width="76" height="84" rx="12" fill="${f('white')}"/><rect x="21" y="17" width="25" height="30" rx="5" fill="${f('sky')}"/><rect x="54" y="17" width="25" height="30" rx="5" fill="${f(t==='orange'?'orange':'sky')}"/><rect x="21" y="55" width="25" height="28" rx="5" fill="${f('sky')}"/><rect x="54" y="55" width="25" height="28" rx="5" fill="${f(t==='orange'?'orange':'sky')}"/>${HL('M26 24v12',4)}`,
 });
-const ROOMICON = { sofa: 'sofa', pot: 'pot', door: 'door', toilet: 'toilet', bed: 'bed', bath: 'bath', desk: 'desk', stairs: 'stairs', tree: 'tree', drive: 'car', shed: 'shed', wash: 'washer' };
+Object.assign(DRAW, {
+ attic:()=>`<rect x="20" y="50" width="60" height="40" rx="5" fill="${f('white')}"/><path d="M50 10 92 50H8z" fill="${f('amber')}" stroke="${f('amber')}" stroke-width="8" stroke-linejoin="round"/><circle cx="50" cy="35" r="8.5" fill="${f('yellow')}"/><circle cx="50" cy="35" r="8.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2.5"/><rect x="42" y="66" width="16" height="24" rx="3" fill="${f('metal')}"/>${HL('M24 42 44 24',4.5)}`,
+});
+const ROOMICON = { attic: 'attic', sofa: 'sofa', pot: 'pot', door: 'door', toilet: 'toilet', bed: 'bed', bath: 'bath', desk: 'desk', stairs: 'stairs', tree: 'tree', drive: 'car', shed: 'shed', wash: 'washer' };
 // tekenen: toon 'off' = gedempt grijs, 'lit' = één warme kleur (kamers die oplichten), anders de eigen kleuren
 const draw = (n, t = 'on', ...a) => { OFF = t === 'off'; MONO = t === 'lit'; const s = DRAW[n](t, ...a); OFF = false; MONO = null; return s; };
 const grads = Object.entries(G).map(([k, [a, b, c]]) => `<linearGradient id="g-${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient>`).join('');
@@ -1287,7 +1290,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '170';
+const CARD_VERSION = '171';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5122,17 +5125,22 @@ class ThuisCard extends HTMLElement {
   _areaRooms() {
     const h = this._hass, A = h?.areas, E = h?.entities, D = h?.devices || {}, F = h?.floors || {};
     if (!A || !E) return [];
-    const key = Object.keys(A).length + ':' + Object.keys(E).length;
+    const c0 = this._config, key = Object.keys(A).length + ':' + Object.keys(E).length + JSON.stringify([c0.room_merge, c0.room_order]);
     if (this._arKey === key && this._arRooms) return this._arRooms;
+    // ruimtes samenvoegen (room_merge: { "Zolder overloop": "Zolder" }) en eigen volgorde (room_order: [namen])
+    const lc = (x) => String(x || '').trim().toLowerCase(), byName = {};
+    Object.entries(A).forEach(([id, a]) => { byName[lc(a.name)] = id; byName[lc(id)] = id; });
+    const merge = {}; Object.entries(c0.room_merge || {}).forEach(([from, to]) => { const f = byName[lc(from)], t = byName[lc(to)]; if (f && t && f !== t) merge[f] = t; });
+    const order = (c0.room_order || []).map(lc);
     const byArea = {};
     for (const [id, e] of Object.entries(E)) {
       if (e.hidden || e.disabled_by || e.entity_category) continue;
-      const a = e.area_id || D[e.device_id]?.area_id; if (!a) continue;
+      let a = e.area_id || D[e.device_id]?.area_id; if (!a) continue; a = merge[a] || a;
       (byArea[a] = byArea[a] || []).push(id);
     }
-    const icon = (n) => { n = n.toLowerCase(); return /woon/.test(n) ? 'sofa' : /keuken/.test(n) ? 'pot' : /toilet|wc/.test(n) ? 'toilet' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /bad/.test(n) ? 'bath' : /was/.test(n) ? 'wash' : /werk|kantoor|studeer/.test(n) ? 'desk' : /overloop|trap|gang/.test(n) ? 'stairs' : /slaap|kamer/.test(n) ? 'bed' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /oprit|garage|carport/.test(n) ? 'drive' : /schuur|berging/.test(n) ? 'shed' : 'door'; };
+    const icon = (n) => { n = n.toLowerCase(); return /woon/.test(n) ? 'sofa' : /keuken/.test(n) ? 'pot' : /toilet|wc/.test(n) ? 'toilet' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /bad/.test(n) ? 'bath' : /was/.test(n) ? 'wash' : /werk|kantoor|studeer/.test(n) ? 'desk' : /^zolder|attic|vliering/.test(n) ? 'attic' : /overloop|trap|gang/.test(n) ? 'stairs' : /slaap|kamer/.test(n) ? 'bed' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /oprit|garage|carport/.test(n) ? 'drive' : /schuur|berging/.test(n) ? 'shed' : 'door'; };
     const c = this._config, flr = (f) => F[f] || {};
-    const rooms = Object.entries(A).map(([aid, a]) => {
+    const rooms = Object.entries(A).filter(([aid]) => !merge[aid]).map(([aid, a]) => {
       const ids = byArea[aid] || [], dom = (d) => ids.filter((x) => x.startsWith(d + '.'));
       const sens = (cls) => ids.filter((x) => x.startsWith('sensor.') && h.states[x]?.attributes.device_class === cls && !/inverter|omvormer|oven|wasmachine|vaatwasser|laadpaal/i.test(x));
       const lights = dom('light'), covers = dom('cover'), climate = dom('climate').length > 0;
@@ -5145,8 +5153,11 @@ class ThuisCard extends HTMLElement {
         temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors };
     }).filter(Boolean);
     // verdiepingen op volgorde (laag naar hoog, buiten als laatste); binnen een verdieping de volgorde van Home Assistant
-    rooms.forEach((r, i) => { r._i = i; if (/buiten/i.test(r.floor)) r.level = 999; });
-    rooms.sort((a, b) => a.level - b.level || a._i - b._i);
+    // verdieping: herken de naam (kelder, begane grond, eerste, tweede, zolder, buiten), anders het niveau uit Home Assistant
+    const fRank = (r) => { const n = lc(r.floor); return /buiten|tuin|outside/.test(n) ? 999 : /kelder|souterrain|basement/.test(n) ? -1 : /begane|parterre|ground/.test(n) ? 0 : /eerste|1e|first/.test(n) ? 1 : /tweede|2e|second/.test(n) ? 2 : /derde|3e|third/.test(n) ? 3 : /zolder|vliering|attic/.test(n) ? 50 : typeof r.level === 'number' ? r.level : 99; };
+    const oRank = (r) => { const i = order.indexOf(lc(r.name)); return i < 0 ? 1e3 : i; };
+    rooms.forEach((r, i) => { r._i = i; r.level = fRank(r); });
+    rooms.sort((a, b) => a.level - b.level || oRank(a) - oRank(b) || a._i - b._i);
     this._arKey = key; this._arRooms = rooms;
     return rooms;
   }

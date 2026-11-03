@@ -41,6 +41,14 @@ De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Ins
 
 Sensoren in het kamerpaneel: waterlek, rookmelder (ook met status als sensor, zoals Nest Protect), beweging, deur en raam. Bij rook, koolmonoxide of water verschijnt ook een rode melding op het Thuis-scherm.
 
+De verdiepingen staan op volgorde van laag naar hoog (begane grond, eerste, tweede, zolder) met Buiten als laatste. De volgorde van de kamers binnen een verdieping kun je zelf bepalen:
+
+```yaml
+  room_order: [Woonkamer, Keuken, Hal, Toilet]
+  room_merge:              # optioneel: ruimtes samen tonen als één kamer
+    Zolder overloop: Zolder
+```
+
 Wil je de kamers liever zelf vastleggen, dan kan dat met een lijst `rooms:`:
 
 ```yaml
