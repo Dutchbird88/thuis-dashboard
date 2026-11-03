@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '167';
+const CARD_VERSION = '168';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3499,7 +3499,7 @@ const KSTYLE = `
 .ksw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.25), 0 1px 1px rgba(0,0,0,.15); transition: left .25s; }
 .ksw.on { background: #ffb23e; } .ksw.on::after { left: 22px; } .kpad { width: 51px; flex: none; }
 /* kamerpaneel */
-.pmap { margin-top: 16px; border-radius: 22px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: #101a2c; min-height: 200px; }
+.pmap { touch-action: none; overscroll-behavior: contain; margin-top: 16px; border-radius: 22px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: #101a2c; min-height: 200px; }
 .pmap ha-card { border-radius: 0 !important; border: 0 !important; box-shadow: none !important; }
 .pwho { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .pc { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 18px; background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)); border: 1px solid rgba(255,255,255,.06); cursor: pointer; min-width: 0; }
@@ -3701,7 +3701,7 @@ class ThuisCard extends HTMLElement {
     // omlaag vegen vanaf de bovenkant sluit het paneel
     let sy = null;
     // niet bij de schuifregelaar: daar is vegen voor de stand, niet om het paneel te sluiten
-    this.$('sheet').addEventListener('touchstart', (e) => { sy = this.$('sheet').scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch') ? e.touches[0].clientY : null; }, { passive: true });
+    this.$('sheet').addEventListener('touchstart', (e) => { sy = this.$('sheet').scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap') ? e.touches[0].clientY : null; }, { passive: true });
     this.$('sheet').addEventListener('touchmove', (e) => { if (sy == null) return; const d = e.touches[0].clientY - sy; this.$('sheet').style.transform = d > 0 ? `translateY(${d}px)` : ''; }, { passive: true });
     this.$('sheet').addEventListener('touchend', (e) => { if (sy == null) return; const d = e.changedTouches[0].clientY - sy; sy = null; if (d > 90) this._closeSheet(); else this.$('sheet').style.transform = ''; });
     this.$('tPlus').addEventListener('click', () => this._tStep(1));
@@ -4667,6 +4667,7 @@ class ThuisCard extends HTMLElement {
       this._cvHist = false; this._pplMapEl = null;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
         <div class="pmap" id="pplMap"><div class="hnone">Kaart laden…</div></div><div class="pwho" id="pplWho"></div><div id="pplTl"><div class="hnone">Laden…</div></div>`;
+      const pm = this.$('pplMap'); pm.addEventListener('touchmove', (e) => { e.stopPropagation(); if (e.cancelable && e.touches.length === 1 && !e.target.closest?.('ha-map, .leaflet-container, canvas')) e.preventDefault(); }, { passive: false });
       setTimeout(() => { this._pplMap(); this._pplLog(); }, 0);
     } else if (kind === 'room') {
       this._cvHist = false; this._roomBack = null; this._roomIdx = id; this._rmKey = null;
