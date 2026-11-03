@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '164';
+const CARD_VERSION = '165';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4664,7 +4664,7 @@ class ThuisCard extends HTMLElement {
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     } else if (kind === 'ppl') {
-      this._cvHist = false; this._pplMapEl = null; this._pplFit = false; this._pplPins = null;
+      this._cvHist = false; this._pplMapEl = null;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
         <div class="pmap" id="pplMap"><div class="hnone">Kaart laden…</div></div><div class="pwho" id="pplWho"></div><div id="pplTl"><div class="hnone">Laden…</div></div>`;
       setTimeout(() => { this._pplMap(); this._pplLog(); }, 0);
@@ -5230,44 +5230,24 @@ class ThuisCard extends HTMLElement {
     try {
       const helpers = await window.loadCardHelpers();
       const ents = [...this._pplList().map((p) => p.entity), ...(this._state('zone.home') ? ['zone.home'] : [])];
-      const el = helpers.createCardElement({ type: 'map', entities: ents, theme_mode: 'dark', hours_to_show: 0, aspect_ratio: '70%', default_zoom: 14 });
+      const el = helpers.createCardElement({ type: 'map', entities: ents, theme_mode: 'dark', hours_to_show: 0, aspect_ratio: '70%', default_zoom: 14, cluster: false });
+      // pins van Home Assistant: rond, zonder donkere achtergrond en zonder staartje (via de thema-variabelen van de kaart)
+      [['--ha-picture-border-radius', '50%'], ['--ha-marker-background', 'transparent'], ['--ha-marker-color', 'transparent'], ['--ha-marker-size', '44px'], ['--ha-cluster-shadow', 'drop-shadow(0 4px 10px rgba(0,0,0,.55))']].forEach(([k, v]) => el.style.setProperty(k, v));
       el.hass = this._hass;
       if (this._sheet !== 'ppl' || !this.$('pplMap')) return;
       this.$('pplMap').replaceChildren(el); this._pplMapEl = el; this._pplMarkers();
     } catch (e) { console.warn('thuis-card: kaart laden mislukt', e); }
   }
-  // eigen ronde avatar-pins op de kaart van Home Assistant (de standaardpins van de personen worden verborgen)
+  // per persoon de kleur van de rand (thuis groen, weg grijsblauw, andere zone blauw) via de 'parts' van de kaart
   _pplMarkers(tries = 0) {
-    const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
-    walk(this._pplMapEl);
-    let hm = null, root = null;
-    for (const r of roots) { const m = r.querySelector('ha-map'); if (m) { hm = m; } if (r.querySelector('.leaflet-container')) root = r; }
-    const L = hm?.Leaflet || window.L, map = hm?.leafletMap;
-    if (!L || !map || !root) { if (tries < 60) setTimeout(() => this._pplMarkers(tries + 1), 250); return; }
-    if (!root.getElementById('tp-map')) {
-      const s = document.createElement('style'); s.id = 'tp-map';
-      s.textContent = '.leaflet-marker-icon:has(ha-entity-marker[entity-id^="person."]),ha-entity-marker[entity-id^="person."]{display:none!important}'
-        + '.tp-pin{background:none!important;border:0!important}.tp-pin div{width:44px;height:44px;border-radius:50%;box-sizing:border-box;border:3px solid var(--c);background:#2a3550 center/cover;box-shadow:0 4px 14px rgba(0,0,0,.55);display:grid;place-items:center;font:700 16px/1 sans-serif;color:#fff}';
-      root.appendChild(s);
-    }
-    const ps = this._pplList().filter((p) => p.st?.attributes.latitude != null);
-    this._pplPins = this._pplPins || {};
-    // personen op (bijna) dezelfde plek naast elkaar zetten
-    const groups = {};
-    ps.forEach((p) => { const k = `${p.st.attributes.latitude.toFixed(3)},${p.st.attributes.longitude.toFixed(3)}`; (groups[k] = groups[k] || []).push(p); });
-    const pts = [];
-    for (const g of Object.values(groups)) g.forEach((p, i) => {
-      const a = p.st.attributes, c = p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff', dx = (i - (g.length - 1) / 2) * 34;
-      const html = `<div style="--c:${c};${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div>`;
-      const icon = L.divIcon({ className: 'tp-pin', html, iconSize: [44, 44], iconAnchor: [22 - dx, 22] });
-      let mk = this._pplPins[p.entity];
-      if (!mk || mk._map !== map) { mk = L.marker([a.latitude, a.longitude], { icon, zIndexOffset: 1000 }).addTo(map); mk.on('click', () => this._moreInfo(p.entity)); this._pplPins[p.entity] = mk; }
-      else { mk.setLatLng([a.latitude, a.longitude]); if (mk._tpHtml !== html + dx) mk.setIcon(icon); }
-      mk._tpHtml = html + dx;
-      pts.push([a.latitude, a.longitude]);
-    });
-    const hz = this._state('zone.home')?.attributes; if (hz?.latitude != null) pts.push([hz.latitude, hz.longitude]);
-    if (!this._pplFit && pts.length) { this._pplFit = true; try { map.fitBounds(L.latLngBounds(pts).pad(0.35), { maxZoom: 15 }); } catch (e) { /* kaart nog niet klaar */ } }
+    const el = this._pplMapEl, root = el?.shadowRoot;
+    if (!root) { if (tries < 40) setTimeout(() => this._pplMarkers(tries + 1), 250); return; }
+    const ps = this._pplList();
+    const css = 'ha-map::part(marker){border-radius:50%!important;background:transparent!important;border-width:3px!important}'
+      + ps.map((p) => `ha-map::part(marker-${p.entity.replace('.', '-')}){border-color:${p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff'}!important}`).join('');
+    let st = root.getElementById('tp-pins');
+    if (!st) { st = document.createElement('style'); st.id = 'tp-pins'; root.appendChild(st); }
+    if (st.textContent !== css) st.textContent = css;
   }
   async _pplLog() {
     const ps = this._pplList(), box = this.$('pplTl'); if (!box || !ps.length) return;
