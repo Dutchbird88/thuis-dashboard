@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '162';
+const CARD_VERSION = '163';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4664,7 +4664,7 @@ class ThuisCard extends HTMLElement {
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     } else if (kind === 'ppl') {
-      this._cvHist = false; this._pplMapEl = null;
+      this._cvHist = false; this._pplMapEl = null; this._pplFit = false;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
         <div class="pmap" id="pplMap"><div class="hnone">Kaart laden…</div></div><div class="pwho" id="pplWho"></div><div id="pplTl"><div class="hnone">Laden…</div></div>`;
       setTimeout(() => { this._pplMap(); this._pplLog(); }, 0);
@@ -5240,8 +5240,8 @@ class ThuisCard extends HTMLElement {
   _pplMarkers(tries = 0) {
     const ps = this._pplList(), byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
     // rond, zonder donkere blokken: de pin zelf en de groep (cluster) eromheen transparant
-    const css = '.marker{border-radius:50%!important;overflow:hidden;padding:0!important;background:transparent!important;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}.entity-picture,img{border-radius:50%!important;width:100%!important;height:100%!important;background-size:cover!important}';
-    const mapCss = '.leaflet-marker-icon,.leaflet-div-icon,.marker-cluster,.marker-cluster div{background:transparent!important;border:0!important;box-shadow:none!important}ha-entity-marker{--ha-marker-border-radius:50%}';
+    const css = '.marker{border-radius:50%!important;overflow:hidden;padding:0!important;background:transparent!important;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}.entity-picture,img{border-radius:50%!important;width:100%!important;height:100%!important;background-size:cover!important}:host,div:not(.entity-picture):not(.marker){background:transparent!important;box-shadow:none!important;border:0!important}';
+    const mapCss = '.leaflet-marker-icon,.leaflet-div-icon,.marker-cluster,.marker-cluster div,.leaflet-marker-pane>*,ha-entity-marker{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}ha-entity-marker{--ha-marker-border-radius:50%;--card-background-color:transparent}';
     const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
     walk(this._pplMapEl);
     for (const r of roots) if (r.querySelector('.leaflet-container, .leaflet-marker-pane') && !r.getElementById('tp-map')) { const s = document.createElement('style'); s.id = 'tp-map'; s.textContent = mapCss; r.appendChild(s); }
@@ -5253,6 +5253,7 @@ class ThuisCard extends HTMLElement {
       const sr = m.shadowRoot; if (sr && !sr.getElementById('tp-pin')) { const s = document.createElement('style'); s.id = 'tp-pin'; s.textContent = css; sr.appendChild(s); }
     });
     if (found < ps.length && tries < 40) setTimeout(() => this._pplMarkers(tries + 1), 250);
+    else if (!this._pplFit) { this._pplFit = true; for (const r of roots) r.querySelectorAll('ha-map').forEach((m) => { try { m.fitMap?.(); } catch (e) { /* oudere HA */ } }); }
   }
   async _pplLog() {
     const ps = this._pplList(), box = this.$('pplTl'); if (!box || !ps.length) return;
