@@ -1291,7 +1291,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '175';
+const CARD_VERSION = '176';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2943,6 +2943,11 @@ const TDEFAULTS = {
   waste: [],                           // leeg = automatisch (Afvalbeheer); anders [{ name: 'GFT', type: 'gft', entity: 'sensor.…' }] — type: gft, pmd, papier, rest
   car_battery: 'sensor.byd_seal_batterijniveau',   // pil "Auto" op de telefoon (het tabblad Auto maakt daar plaats voor Kamers)
   car_charging: 'sensor.laadpaal_opladermodus',
+  charger_power: 'sensor.laadpaal_laadvermogen',   // laadvermogen (W of kW) voor de laadkaart op Thuis
+  battery_kwh: 82.5,                               // bruikbare accucapaciteit, voor 'vol om'
+  car_name: 'BYD Seal', car_image: '/local/auto-render.png',
+  car_schedule: 'switch.byd_seal_schedule_enabled', car_start: 'time.byd_seal_start_time',
+  efficiency: 0.92,
   // tabblad Kamers: per kamer de lampen (Hue-kamers worden herkend en niet dubbel geteld), rolluiken, temperatuur en apparaten;
   // icon: sofa, pot, door, toilet, bed, bath, desk, stairs, tree, drive, shed, wash; apps: was, dish, oven
   rooms: [],
@@ -3122,6 +3127,21 @@ const TSTYLE = `
 .was .t span { font-size: 12.5px; color: var(--muted); } .was .rt { text-align: right; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .was .rt b { display: block; font-size: 13px; font-weight: 600; color: #cfe3ff; margin-bottom: 2px; } .was.done .rt b { color: #9ff0c4; } .was.bad .rt b { color: #ff8a8a; }
 .was.idle { padding: 9px 14px; } .was.idle svg { width: 26px; height: 26px; } .was.idle .t b { font-size: 13.5px; font-weight: 500; }
+.was.xchg { padding: 14px 16px; border-radius: 22px; background: radial-gradient(90% 120% at 85% 60%, rgba(94,225,208,.28), transparent 60%), linear-gradient(135deg, #10283a, #0e1a2c) !important; border: 1px solid rgba(94,225,208,.38); box-shadow: 0 14px 34px -18px rgba(94,225,208,.75); }
+.was.xchg .xh { display: flex; align-items: center; gap: 10px; } .was.xchg .xh b { display: block; font-size: 15px; font-weight: 700; white-space: nowrap; } .was.xchg .xh span { display: block; font-size: 12.5px; color: #9fb3c8; white-space: nowrap; }
+.was.xchg .xq { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(160deg, rgba(94,225,208,.35), rgba(25,120,110,.35)); color: #5ee1d0; flex: none; } .was.xchg .xq svg { width: 18px; height: 18px; fill: currentColor; }
+.was.xchg .xp { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #d6fbf5; background: rgba(94,225,208,.22); border: 1px solid rgba(94,225,208,.45); white-space: nowrap; } .was.xchg .xp svg { width: 14px; height: 14px; fill: #5ee1d0; flex: none; }
+.was.xchg .xr { display: flex; align-items: center; gap: 6px; } .was.xchg .xl { flex: 1; min-width: 0; }
+.was.xchg .xbig { margin-top: 8px; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 26px; margin-left: 1px; }
+.was.xchg .xk { font-size: 13px; color: #a9bccd; margin-top: 4px; white-space: nowrap; }
+.was.xchg .bar { height: 6px; margin-top: 12px; } .was.xchg .bar i { background: linear-gradient(90deg, #1fa893, #7cf0dd); box-shadow: 0 0 10px rgba(94,225,208,.8); }
+.was.xchg svg.xi { width: 172px; height: 84px; flex: none; margin-right: -4px; }
+.was.xchg .evp { stroke-dasharray: 12 120; animation: evp 1.8s linear infinite; filter: drop-shadow(0 0 4px #5ee1d0); }
+@keyframes evp { from { stroke-dashoffset: 20; } to { stroke-dashoffset: -100; } }
+.was.xchg.evwait { background: linear-gradient(135deg, #142338, #0f1a2c) !important; border-color: rgba(140,170,220,.22); box-shadow: none; }
+.was.xchg.evwait .xq { background: rgba(255,255,255,.08); color: #cfd8e6; } .was.xchg.evwait .xh span, .was.xchg.evwait .xk { color: #93a3bb; }
+.was.xchg.evwait .xp { color: #dbe6f5; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); } .was.xchg.evwait .xp svg { fill: #cfd8e6; }
+.was.xchg.evwait .bar i { background: linear-gradient(90deg, #5aa8ff, #8fd0ff); box-shadow: 0 0 8px rgba(90,168,255,.6); }
 .was .bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 10px; overflow: hidden; }
 .was .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #7cc4ff, #4da3ff); box-shadow: 0 0 8px #4da3ff; transition: width 1s; } .was.done .bar i { background: #3ddc97; box-shadow: 0 0 8px #3ddc97; }
 
@@ -3480,6 +3500,9 @@ const DIRS = ['N', 'NO', 'O', 'ZO', 'Z', 'ZW', 'W', 'NW'];
 
 // platte iconen voor de tegels op de telefoon
 const MTHERM = '<svg viewBox="0 0 24 24"><path d="M12 1.8a3.6 3.6 0 0 0-3.6 3.6v8.4a5.6 5.6 0 1 0 7.2 0V5.4A3.6 3.6 0 0 0 12 1.8z"/></svg>';
+const MBOLT = '<svg viewBox="0 0 24 24"><path d="M13.2 2 4.5 13.4h6.3L9.9 22l8.6-11.6h-6.3z"/></svg>';
+const MPLUG = '<svg viewBox="0 0 24 24"><path d="M8 2.5a1 1 0 0 1 1 1V7h6V3.5a1 1 0 1 1 2 0V7h1a1 1 0 0 1 1 1v3a7 7 0 0 1-6 6.9V21a1 1 0 1 1-2 0v-3.1A7 7 0 0 1 5 11V8a1 1 0 0 1 1-1h1V3.5a1 1 0 0 1 1-1z"/></svg>';
+const MCLOCK = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm1 3v4.6l3.2 1.9-1 1.7-4.2-2.5V7z"/></svg>';
 const MBULB = '<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4.2 12.6c.7.5 1.2 1.3 1.2 2.2V18h6v-1.2c0-.9.5-1.7 1.2-2.2A7 7 0 0 0 12 2zM9 19.3h6v.7a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/></svg>';
 // rolluik als raampje met kozijn; het rolluik zakt ervoor (p = % open)
 const mBlind = (p) => { const h = 14.5 * (1 - p / 100); return `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="5" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="12.8" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="2" y="2.5" width="20" height="3.6" rx="1.2" fill="currentColor"/>${h > 0.5 ? `<rect x="3.8" y="6" width="16.4" height="${h.toFixed(1)}" fill="currentColor"/>${Array.from({ length: Math.floor(h / 2.4) }, (_, i) => `<path d="M3.8 ${(8.2 + i * 2.4).toFixed(1)}h16.4" stroke="#0005" stroke-width=".6"/>`).join('')}` : ''}</svg>`; };
@@ -3693,6 +3716,7 @@ class ThuisCard extends HTMLElement {
           <div class="tcol">
             <div class="alrt" id="alrt" hidden></div>
             <div class="was pic" id="pic" hidden></div>
+            <div class="was xchg" id="evc" hidden></div>
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
             <div class="was" id="oven" hidden></div>
@@ -3734,7 +3758,7 @@ class ThuisCard extends HTMLElement {
     // telefoon: eigen indeling (kop, statuspillen, camera, apparaten, thermostaat + afval, bediening, agenda);
     // de bestaande vakken worden verplaatst en op de computer weer teruggezet
     this._mq = this._mq || window.matchMedia('(max-width: 600px)');
-    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
+    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
     const marks = MOVE.map(([id]) => { const el = this.$(id), m = document.createComment(id); el.before(m); return m; });
     const placeBins = () => {
       const m = this._mq.matches;
@@ -3745,7 +3769,8 @@ class ThuisCard extends HTMLElement {
     placeBins();
     this.$('tMin').addEventListener('click', () => this._tStep(-1));
     // telefoon: meldingen en apparaten naar links wegvegen (zoals Apple Mail)
-    ['pic', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
+    ['pic', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
+    this.$('evc').addEventListener('click', () => go({ dataset: { nav: NAV.auto } }));
     this.$('mMin').addEventListener('click', (e) => { e.stopPropagation(); this._tStep(-1); });
     this.$('mPlus').addEventListener('click', (e) => { e.stopPropagation(); this._tStep(1); });
     // telefoon: tik = eigen paneel (thermostaat of weer), lang drukken op de temperatuur = venster van Home Assistant
@@ -4384,9 +4409,10 @@ class ThuisCard extends HTMLElement {
       else if (temp != null && temp >= 50) put(oBox, 'cool', block(ovenSvg('hot', temp), 'Oven koelt af', tt, 'Heet', 'uit · nog warm<br>pas op bij openen', null));
       else put(oBox, '', '');
     }
+    this._updCharge();
     this._updNotices();
     // bij twee of meer activiteiten of meldingen maakt Energie nu plaats
-    const busy = ['was', 'dish', 'oven', 'notTile'].filter((id) => this.$(id) && !this.$(id).hidden).length;
+    const busy = ['evc', 'was', 'dish', 'oven', 'notTile'].filter((id) => this.$(id) && !this.$(id).hidden).length;
     this.$('enTile').hidden = busy >= 2;
   }
   // meldingen: alleen zichtbaar als er iets is; "Gedaan" verbergt een melding tot hij opnieuw binnenkomt
@@ -4441,6 +4467,35 @@ class ThuisCard extends HTMLElement {
       el.addEventListener('click', () => this._openSheet('room', +el.dataset.ri));
       this._swipe(el, () => { try { const h = JSON.parse(localStorage.getItem('thuis-alarm') || '{}'); h[el.dataset.id] = el.dataset.k; localStorage.setItem('thuis-alarm', JSON.stringify(h)); } catch (e) { /* geen opslag */ } this._updNotices(); });
     });
+  }
+
+  // laadsessie: laadpaal met kabel naar de auto, een lichtpuls over de kabel en een voortgangsbalk (accu)
+  _updCharge() {
+    const box = this.$('evc'); if (!box) return;
+    const c = this._config, mode = String(this._state(c.car_charging)?.state || ''), soc = parseFloat(this._state(c.car_battery)?.state);
+    const charging = mode === 'connected_charging' || (/charg|laden|laadt/i.test(mode) && !/discharg|finish|niet/i.test(mode));
+    const plugged = charging || /^connected/.test(mode) && mode !== 'connected_finished';
+    if (!plugged || soc >= 100) { if (!box.hidden) { box.hidden = true; box._key = ''; } return; }
+    const pst = this._state(c.charger_power); let w = parseFloat(pst?.state);
+    if (!isNaN(w) && /kw/i.test(pst.attributes.unit_of_measurement || '')) w *= 1000;
+    const kw = !isNaN(w) && w > 300 ? w / 1000 : null;
+    const rem = !isNaN(soc) && kw ? Math.max(0, (100 - soc) / 100 * (c.battery_kwh || 82.5)) / (kw * (c.efficiency || 0.92)) : null;
+    const dur = (h) => { const m = Math.round(h * 60); return m >= 60 ? `${Math.floor(m / 60)} u ${m % 60} min` : `${m} min`; };
+    const pct = isNaN(soc) ? null : Math.round(soc);
+    const live = charging;
+    const sched = this._state(c.car_schedule)?.state === 'on', st0 = String(this._state(c.car_start)?.state || '').slice(0, 5);
+    const ttl = live ? 'Laden' : 'Wacht op laden';
+    const sub = live ? (rem != null ? `vol om ${fmtTime(Date.now() + rem * 3600000)}` : '') : sched && /^\d\d:\d\d$/.test(st0) ? `start om ${st0}` : '';
+    // auto links, laadpaal rechts; de lichtpuls loopt van de paal naar de auto
+    const cab = 'M163 44c0 24-26 26-38 16s-10-8-14-7';
+    const pic = `<svg class="xi" viewBox="34 0 152 74"><g transform="translate(40 10) scale(.76)">${RIC.draw('car', live ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</g>
+      <rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="${live ? '#5ee1d0' : '#8a94a6'}"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/>
+      <path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${live ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
+    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? (kw != null ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : 'laadt') : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
+    const cls = `was xchg ${live ? 'evon' : 'evwait'}`, key = cls + html;
+    if (box._key === key) return;
+    box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
+    this._applyHidden();
   }
 
   /* ---------- wasmachine ---------- */
@@ -4607,7 +4662,7 @@ class ThuisCard extends HTMLElement {
   }
   _applyHidden() {
     const h = this._hidden(); let dirty = false;
-    ['pic', 'was', 'dish', 'oven'].forEach((id) => {
+    ['pic', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
       const el = this.$(id); if (!el) return;
       // toestand veranderd (of apparaat uit): het verbergen vergeten, zodat het blok bij de volgende keer weer verschijnt
       if (h[id] != null && (h[id] !== this._sig(el) || el.hidden)) { delete h[id]; dirty = true; }
