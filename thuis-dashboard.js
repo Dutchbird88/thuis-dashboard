@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '163';
+const CARD_VERSION = '164';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4664,7 +4664,7 @@ class ThuisCard extends HTMLElement {
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     } else if (kind === 'ppl') {
-      this._cvHist = false; this._pplMapEl = null; this._pplFit = false;
+      this._cvHist = false; this._pplMapEl = null; this._pplFit = false; this._pplPins = null;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
         <div class="pmap" id="pplMap"><div class="hnone">Kaart laden…</div></div><div class="pwho" id="pplWho"></div><div id="pplTl"><div class="hnone">Laden…</div></div>`;
       setTimeout(() => { this._pplMap(); this._pplLog(); }, 0);
@@ -5236,24 +5236,38 @@ class ThuisCard extends HTMLElement {
       this.$('pplMap').replaceChildren(el); this._pplMapEl = el; this._pplMarkers();
     } catch (e) { console.warn('thuis-card: kaart laden mislukt', e); }
   }
-  // de pins van Home Assistant krijgen onze avatars en een gekleurde rand (thuis groen, weg grijsblauw)
+  // eigen ronde avatar-pins op de kaart van Home Assistant (de standaardpins van de personen worden verborgen)
   _pplMarkers(tries = 0) {
-    const ps = this._pplList(), byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
-    // rond, zonder donkere blokken: de pin zelf en de groep (cluster) eromheen transparant
-    const css = '.marker{border-radius:50%!important;overflow:hidden;padding:0!important;background:transparent!important;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}.entity-picture,img{border-radius:50%!important;width:100%!important;height:100%!important;background-size:cover!important}:host,div:not(.entity-picture):not(.marker){background:transparent!important;box-shadow:none!important;border:0!important}';
-    const mapCss = '.leaflet-marker-icon,.leaflet-div-icon,.marker-cluster,.marker-cluster div,.leaflet-marker-pane>*,ha-entity-marker{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;outline:0!important}ha-entity-marker{--ha-marker-border-radius:50%;--card-background-color:transparent}';
     const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
     walk(this._pplMapEl);
-    for (const r of roots) if (r.querySelector('.leaflet-container, .leaflet-marker-pane') && !r.getElementById('tp-map')) { const s = document.createElement('style'); s.id = 'tp-map'; s.textContent = mapCss; r.appendChild(s); }
-    let found = 0;
-    for (const r of roots) r.querySelectorAll('ha-entity-marker').forEach((m) => {
-      const p = byId[m.entityId || m.getAttribute('entity-id')]; if (!p) return; found++;
-      if (p.pic && m.entityPicture !== p.pic) m.entityPicture = p.pic;
-      m.style.setProperty('--pc', p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff');
-      const sr = m.shadowRoot; if (sr && !sr.getElementById('tp-pin')) { const s = document.createElement('style'); s.id = 'tp-pin'; s.textContent = css; sr.appendChild(s); }
+    let hm = null, root = null;
+    for (const r of roots) { const m = r.querySelector('ha-map'); if (m) { hm = m; } if (r.querySelector('.leaflet-container')) root = r; }
+    const L = hm?.Leaflet || window.L, map = hm?.leafletMap;
+    if (!L || !map || !root) { if (tries < 60) setTimeout(() => this._pplMarkers(tries + 1), 250); return; }
+    if (!root.getElementById('tp-map')) {
+      const s = document.createElement('style'); s.id = 'tp-map';
+      s.textContent = '.leaflet-marker-icon:has(ha-entity-marker[entity-id^="person."]),ha-entity-marker[entity-id^="person."]{display:none!important}'
+        + '.tp-pin{background:none!important;border:0!important}.tp-pin div{width:44px;height:44px;border-radius:50%;box-sizing:border-box;border:3px solid var(--c);background:#2a3550 center/cover;box-shadow:0 4px 14px rgba(0,0,0,.55);display:grid;place-items:center;font:700 16px/1 sans-serif;color:#fff}';
+      root.appendChild(s);
+    }
+    const ps = this._pplList().filter((p) => p.st?.attributes.latitude != null);
+    this._pplPins = this._pplPins || {};
+    // personen op (bijna) dezelfde plek naast elkaar zetten
+    const groups = {};
+    ps.forEach((p) => { const k = `${p.st.attributes.latitude.toFixed(3)},${p.st.attributes.longitude.toFixed(3)}`; (groups[k] = groups[k] || []).push(p); });
+    const pts = [];
+    for (const g of Object.values(groups)) g.forEach((p, i) => {
+      const a = p.st.attributes, c = p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff', dx = (i - (g.length - 1) / 2) * 34;
+      const html = `<div style="--c:${c};${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div>`;
+      const icon = L.divIcon({ className: 'tp-pin', html, iconSize: [44, 44], iconAnchor: [22 - dx, 22] });
+      let mk = this._pplPins[p.entity];
+      if (!mk || mk._map !== map) { mk = L.marker([a.latitude, a.longitude], { icon, zIndexOffset: 1000 }).addTo(map); mk.on('click', () => this._moreInfo(p.entity)); this._pplPins[p.entity] = mk; }
+      else { mk.setLatLng([a.latitude, a.longitude]); if (mk._tpHtml !== html + dx) mk.setIcon(icon); }
+      mk._tpHtml = html + dx;
+      pts.push([a.latitude, a.longitude]);
     });
-    if (found < ps.length && tries < 40) setTimeout(() => this._pplMarkers(tries + 1), 250);
-    else if (!this._pplFit) { this._pplFit = true; for (const r of roots) r.querySelectorAll('ha-map').forEach((m) => { try { m.fitMap?.(); } catch (e) { /* oudere HA */ } }); }
+    const hz = this._state('zone.home')?.attributes; if (hz?.latitude != null) pts.push([hz.latitude, hz.longitude]);
+    if (!this._pplFit && pts.length) { this._pplFit = true; try { map.fitBounds(L.latLngBounds(pts).pad(0.35), { maxZoom: 15 }); } catch (e) { /* kaart nog niet klaar */ } }
   }
   async _pplLog() {
     const ps = this._pplList(), box = this.$('pplTl'); if (!box || !ps.length) return;
