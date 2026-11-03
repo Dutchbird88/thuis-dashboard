@@ -1291,7 +1291,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '173';
+const CARD_VERSION = '174';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3530,9 +3530,9 @@ const KSTYLE = `
 .kr .ri { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.08); color: #aeb6c4; flex: none; } .kr .ri svg { width: 24px; height: 24px; fill: currentColor; }
 .kr.lit .ri { background: rgba(255,178,62,.24); color: #ffcf7a; }
 .kr .mid { flex: 1; min-width: 0; } .kr .nm { font-size: 17.5px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kr .ln { display: flex; gap: 12px; margin-top: 5px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; }
+.kr .ln { display: flex; gap: 11px; margin-top: 5px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; }
 .kr .ln span { display: inline-flex; align-items: center; gap: 4px; } .kr .ln svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
-.kr .ln .y { color: #ffcf7a; } .kr .ln .b { color: #8fbcff; }
+.kr .ln .y { color: #ffcf7a; } .kr .ln .b { color: #8fbcff; } .kr .ln .ap { color: #8fd3ff; } .kr .ln .ap svg.ri2 { width: 17px; height: 17px; }
 .kr .tp { font-size: 24px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; } .kr .tp small { font-size: 13px; color: var(--muted); font-weight: 500; vertical-align: top; }
 .ksw { all: unset; flex: none; width: 51px; height: 31px; border-radius: 99px; background: rgba(120,130,150,.32); position: relative; cursor: pointer; transition: background .25s; -webkit-tap-highlight-color: transparent; }
 .ksw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.25), 0 1px 1px rgba(0,0,0,.15); transition: left .25s; }
@@ -5237,7 +5237,13 @@ class ThuisCard extends HTMLElement {
       const lit = rm.lights.length && (opt[rm.i] ?? rm.on > 0), l1 = rm.lights.length ? (lit ? `<span class="y">${MBULB}${opt[rm.i] != null ? '' : rm.on}</span>` : `<span>${MBULB}Uit</span>`) : '';
       const l2 = [];
       if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase()) : `${dn.length} dicht`}</span>` : `<span>${BL(100)}Open</span>`); }
-      rm.apps.forEach((a) => l2.push(`<span class="b">${ric(a.k)}${a.txt}</span>`));
+      // apparaat: Rounded-icoon en wat er gebeurt ("Wast nog 42 min")
+      const AP = { was: ['washer', 1, 'Wast', 'Wasmachine'], dish: ['dish', 1, 'Vaatwasser', 'Vaatwasser'], oven: ['ovenX', 'run', 'Oven', 'Oven'] };
+      rm.apps.forEach((a) => { const [ic, md, verb, nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
+        // weinig ruimte (ook rolluik of meer apparaten): alleen "nog 42 min"
+        const kort = rm.covers.length || rm.apps.length > 1;
+        const txt = /^\d/.test(t) ? (kort ? t : `${verb} nog ${t}`) : t ? `${nm} ${t.charAt(0).toLowerCase()}${t.slice(1)}` : `${nm} bezig`;
+        l2.push(`<span class="ap"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw(ic, 'on', md)}</svg>${txt}</span>`); });
       return `<div class="kr${lit ? ' lit' : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.temp != null ? `<div class="tp">${fmtT(rm.temp)}<small>°</small></div>` : ''}${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}</div>`;
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
