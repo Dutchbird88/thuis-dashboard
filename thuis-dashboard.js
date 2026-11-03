@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '160';
+const CARD_VERSION = '161';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5217,7 +5217,7 @@ class ThuisCard extends HTMLElement {
   }
   _updPplSheet() {
     const ps = this._pplList(), n = ps.filter((p) => p.home).length;
-    const sum = !ps.length ? '' : n === ps.length ? (ps.length > 1 ? 'Iedereen thuis' : `${ps[0].name} thuis`) : n === 0 ? (ps.length > 1 ? 'Niemand thuis' : `${ps[0].name} weg`) : ps.map((p) => `${p.name} ${p.home ? 'thuis' : p.s === 'not_home' ? 'weg' : p.zone}`).join(' · ');
+    const sum = !ps.length ? '' : n === ps.length ? (ps.length > 1 ? 'Iedereen thuis' : `${ps[0].name} thuis`) : n === 0 ? (ps.length > 1 ? 'Niemand thuis' : `${ps[0].name} weg`) : ps.map((p) => `${p.name} ${p.home ? 'thuis' : p.s === 'not_home' ? 'weg' : p.s === 'unknown' || p.s === 'unavailable' ? 'onbekend' : /^werk$/i.test(p.zone) ? 'op werk' : `bij ${p.zone}`}`).join(' · ');
     const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
     set('pplS', sum);
     const col = (p) => (p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff');
@@ -5239,7 +5239,7 @@ class ThuisCard extends HTMLElement {
   // de pins van Home Assistant krijgen onze avatars en een gekleurde rand (thuis groen, weg grijsblauw)
   _pplMarkers(tries = 0) {
     const ps = this._pplList(), byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
-    const css = '.marker{border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}';
+    const css = '.marker{border-radius:50%!important;overflow:hidden;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}';
     const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
     walk(this._pplMapEl);
     let found = 0;
