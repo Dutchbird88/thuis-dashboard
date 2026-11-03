@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '159';
+const CARD_VERSION = '160';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3499,6 +3499,16 @@ const KSTYLE = `
 .ksw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.25), 0 1px 1px rgba(0,0,0,.15); transition: left .25s; }
 .ksw.on { background: #ffb23e; } .ksw.on::after { left: 22px; } .kpad { width: 51px; flex: none; }
 /* kamerpaneel */
+.pmap { margin-top: 16px; border-radius: 22px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: #101a2c; min-height: 200px; }
+.pmap ha-card { border-radius: 0 !important; border: 0 !important; box-shadow: none !important; }
+.pwho { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.pc { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 18px; background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)); border: 1px solid rgba(255,255,255,.06); cursor: pointer; min-width: 0; }
+.pc b { display: block; font-size: 14.5px; } .pc span { display: block; font-size: 12px; font-weight: 600; color: var(--c); } .pc em { display: block; font-style: normal; font-size: 11.5px; color: rgba(255,255,255,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pav { width: 38px; height: 38px; border-radius: 50%; flex: none; background: #2a3550 center / cover; border: 2.5px solid var(--c); display: grid; place-items: center; font-weight: 700; }
+.pev { display: flex; gap: 12px; align-items: flex-start; padding: 8px 4px; position: relative; } .pev .pav { width: 34px; height: 34px; position: relative; z-index: 1; }
+.pev:not(:last-child)::after { content: ''; position: absolute; left: 20px; top: 44px; bottom: -8px; width: 2px; background: rgba(255,255,255,.08); }
+.pt { flex: 1; min-width: 0; } .pt b { font-size: 14.5px; font-weight: 600; } .pt span { display: block; font-size: 12.5px; color: rgba(255,255,255,.55); margin-top: 2px; }
+.ptag { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); white-space: nowrap; }
 .kpre .fi { width: 24px; height: 24px; fill: currentColor; display: block; }
 .kth { margin: 24px 2px 10px; font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
 .sheet .kglass, .sheet .mstack > .was { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important; }
@@ -3779,7 +3789,8 @@ class ThuisCard extends HTMLElement {
     this.$('ppl').innerHTML = ps.map((p, i) => `<div class="av${p.state === 'home' ? '' : ' away'}" data-i="${i}" style="--pc:${p.pc}">
       <div class="ring"><div class="face" style="${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div></div>
       <span class="badge">${p.zone}</span><div class="nm">${p.name}</div></div>`).join('');
-    this.$('ppl').querySelectorAll('.av').forEach((el) => el.addEventListener('click', () => this._moreInfo(this._config.persons[+el.dataset.i].entity)));
+    // telefoon: tik = paneel Aanwezigheid (kaart en tijdlijn); computer: venster van Home Assistant
+    this.$('ppl').querySelectorAll('.av').forEach((el) => el.addEventListener('click', () => { if (this._mq?.matches) this._openSheet('ppl'); else this._moreInfo(this._config.persons[+el.dataset.i].entity); }));
   }
 
   /* ---------- thermostaat ---------- */
@@ -4569,7 +4580,7 @@ class ThuisCard extends HTMLElement {
     if (!this._mq?.matches) return;
     this._sheet = kind; this._shKey = null; this._cvId = id; this._thArc = null;
     const sh = this.$('sheet'), body = this.$('shBody');
-    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
+    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
     const HB = '<button class="cvhb" id="cvHb" aria-label="Geschiedenis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></button>';
     if (kind === 'lt') {
       this._cvHist = false;
@@ -4652,6 +4663,11 @@ class ThuisCard extends HTMLElement {
       const up = () => { if (!this._tDragging) return; this._tDragging = false; this._tSend(); };
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    } else if (kind === 'ppl') {
+      this._cvHist = false; this._pplMapEl = null;
+      body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
+        <div class="pmap" id="pplMap"><div class="hnone">Kaart laden…</div></div><div class="pwho" id="pplWho"></div><div id="pplTl"><div class="hnone">Laden…</div></div>`;
+      setTimeout(() => { this._pplMap(); this._pplLog(); }, 0);
     } else if (kind === 'room') {
       this._cvHist = false; this._roomBack = null; this._roomIdx = id; this._rmKey = null;
       body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="rmN"></b><span id="rmS"></span></div><div id="rmB"></div>`;
@@ -4884,11 +4900,13 @@ class ThuisCard extends HTMLElement {
     if (back != null) { if (this._sheet === 'th' && this._tMark) this._tMark.after(this.$('tTile')); this.$('sheet').classList.remove('therm', 'hot', 'lamp'); this._cvDrag = null; this._thArc = null; this._openSheet('room', back); return; }
     if (this._sheet === 'th' && this._tMark) this._tMark.after(this.$('tTile'));
     this._sheet = null;
+    this._pplMapEl = null;
     this.$('sheet').hidden = true; this.$('shV').hidden = true; this.$('shBody').innerHTML = ''; this.$('sheet').classList.remove('full', 'therm', 'hot', 'lamp'); this._cvDrag = null; this._cvHist = false; this._thArc = null;
   }
   _updSheet() {
     if (!this._sheet || !this._hass) return;
     if (this._sheet === 'room') { this._updRoomSheet(); return; }
+    if (this._sheet === 'ppl') { this._updPplSheet(); return; }
     const sh = this.$('sheet');
     if (this._sheet === 'lt') {
       const st = this._state(this._cvId); if (!st || this._cvHist || !this.$('cvF')) return;
@@ -5178,6 +5196,79 @@ class ThuisCard extends HTMLElement {
       rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt} <em class="hnm">· ${nm}</em></b>${this._who(l)}</div><div class="htm">${fmtTime(l.t)}</div></div>`;
     }
     this.$('hBody').innerHTML = rows || '<div class="hnone">Geen wijzigingen in de afgelopen 3 dagen</div>';
+  }
+
+  /* ---------- paneel Aanwezigheid: kaart met avatars, status per persoon en tijdlijn ---------- */
+  _pplList() {
+    const home = this._state('zone.home')?.attributes || {};
+    const km = (a, b) => { if (a?.latitude == null || b?.latitude == null) return null; const R = 6371, r = (x) => x * Math.PI / 180, dLa = r(b.latitude - a.latitude), dLo = r(b.longitude - a.longitude);
+      const h = Math.sin(dLa / 2) ** 2 + Math.cos(r(a.latitude)) * Math.cos(r(b.latitude)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+    return (this._config.persons || []).filter((p) => p.entity).map((p) => {
+      const st = this._state(p.entity), s = st?.state || 'unknown', a = st?.attributes || {};
+      const zone = s === 'home' ? 'Thuis' : s === 'not_home' ? 'Weg' : s === 'unknown' || s === 'unavailable' ? 'Onbekend' : (this._state(`zone.${s}`)?.attributes.friendly_name || s);
+      const d = s === 'not_home' ? km(a, home) : null;
+      return { ...p, st, s, zone, home: s === 'home', dist: d, pic: p.picture || a.entity_picture || '', since: st ? Date.parse(st.last_changed) : null };
+    });
+  }
+  _pplSince(t) {
+    if (!t) return '';
+    const day0 = startOfDay(Date.now()), k = Math.round((day0 - startOfDay(t)) / DAY);
+    return `sinds ${k === 0 ? '' : k === 1 ? 'gisteren ' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '') + ' '}${fmtTime(t)}`;
+  }
+  _updPplSheet() {
+    const ps = this._pplList(), n = ps.filter((p) => p.home).length;
+    const sum = !ps.length ? '' : n === ps.length ? (ps.length > 1 ? 'Iedereen thuis' : `${ps[0].name} thuis`) : n === 0 ? (ps.length > 1 ? 'Niemand thuis' : `${ps[0].name} weg`) : ps.map((p) => `${p.name} ${p.home ? 'thuis' : p.s === 'not_home' ? 'weg' : p.zone}`).join(' · ');
+    const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('pplS', sum);
+    const col = (p) => (p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff');
+    set('pplWho', ps.map((p, i) => `<div class="pc" data-i="${i}" style="--c:${col(p)}"><div class="pav" style="${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div><div><b>${p.name}</b><span>${p.zone}${p.dist != null ? ` · ${fmt(p.dist, p.dist < 10 ? 1 : 0)} km` : ''}</span><em>${this._pplSince(p.since)}</em></div></div>`).join(''));
+    this.$('pplWho')?.querySelectorAll('.pc').forEach((el) => { el.onclick = () => this._moreInfo(ps[+el.dataset.i].entity); });
+    if (this._pplMapEl) { this._pplMapEl.hass = this._hass; this._pplMarkers(); }
+  }
+  async _pplMap() {
+    const box = this.$('pplMap'); if (!box || !window.loadCardHelpers) return;
+    try {
+      const helpers = await window.loadCardHelpers();
+      const ents = [...this._pplList().map((p) => p.entity), ...(this._state('zone.home') ? ['zone.home'] : [])];
+      const el = helpers.createCardElement({ type: 'map', entities: ents, theme_mode: 'dark', hours_to_show: 0, aspect_ratio: '70%', default_zoom: 14 });
+      el.hass = this._hass;
+      if (this._sheet !== 'ppl' || !this.$('pplMap')) return;
+      this.$('pplMap').replaceChildren(el); this._pplMapEl = el; this._pplMarkers();
+    } catch (e) { console.warn('thuis-card: kaart laden mislukt', e); }
+  }
+  // de pins van Home Assistant krijgen onze avatars en een gekleurde rand (thuis groen, weg grijsblauw)
+  _pplMarkers(tries = 0) {
+    const ps = this._pplList(), byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
+    const css = '.marker{border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}';
+    const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
+    walk(this._pplMapEl);
+    let found = 0;
+    for (const r of roots) r.querySelectorAll('ha-entity-marker').forEach((m) => {
+      const p = byId[m.entityId || m.getAttribute('entity-id')]; if (!p) return; found++;
+      if (p.pic && m.entityPicture !== p.pic) m.entityPicture = p.pic;
+      m.style.setProperty('--pc', p.home ? '#3ddc97' : p.s === 'not_home' ? '#8fa6c8' : '#7cb6ff');
+      const sr = m.shadowRoot; if (sr && !sr.getElementById('tp-pin')) { const s = document.createElement('style'); s.id = 'tp-pin'; s.textContent = css; sr.appendChild(s); }
+    });
+    if (found < ps.length && tries < 40) setTimeout(() => this._pplMarkers(tries + 1), 250);
+  }
+  async _pplLog() {
+    const ps = this._pplList(), box = this.$('pplTl'); if (!box || !ps.length) return;
+    const now = Date.now(), from = new Date(now - 7 * DAY).toISOString();
+    const log = await this._hass.callApi('GET', `logbook/${from}?entity=${ps.map((p) => p.entity).join(',')}&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []);
+    if (this._sheet !== 'ppl' || !this.$('pplTl')) return;
+    const byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
+    const day0 = startOfDay(now), dname = (t) => { const k = Math.round((day0 - startOfDay(t)) / DAY); return k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }); };
+    const L = (Array.isArray(log) ? log : []).filter((l) => byId[l.entity_id] && l.state && !['unknown', 'unavailable'].includes(l.state)).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => b.t - a.t).slice(0, 60);
+    let last = '', rows = '';
+    for (const l of L) {
+      const p = byId[l.entity_id], dn = dname(l.t), home = l.state === 'home', away = l.state === 'not_home';
+      if (dn !== last) { rows += `<div class="hday">${dn}</div>`; last = dn; }
+      const zn = home ? 'Thuis' : away ? 'Weg' : (this._state(`zone.${l.state}`)?.attributes.friendly_name || l.state);
+      const txt = home ? `${p.name} is thuisgekomen` : away ? `${p.name} is weggegaan` : `${p.name} is bij ${zn}`;
+      const c = home ? '#3ddc97' : away ? '#8fa6c8' : '#7cb6ff';
+      rows += `<div class="pev" style="--c:${c}"><div class="pav" style="${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div><div class="pt"><b>${txt}</b><span>${fmtTime(l.t)}</span></div><span class="ptag">${zn.toLowerCase()}</span></div>`;
+    }
+    this.$('pplTl').innerHTML = rows || '<div class="hnone">Geen wijzigingen in de afgelopen 7 dagen</div>';
   }
 
   _updPills() {
