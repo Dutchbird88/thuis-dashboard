@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '165';
+const CARD_VERSION = '166';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5248,6 +5248,17 @@ class ThuisCard extends HTMLElement {
     let st = root.getElementById('tp-pins');
     if (!st) { st = document.createElement('style'); st.id = 'tp-pins'; root.appendChild(st); }
     if (st.textContent !== css) st.textContent = css;
+    // personen hebben in Home Assistant geen foto: onze avatar op de pin zetten (ook als de kaart pins opnieuw maakt)
+    const byId = Object.fromEntries(ps.filter((p) => p.pic).map((p) => [p.entity, p.pic]));
+    const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
+    walk(el);
+    let found = 0;
+    for (const r of roots) r.querySelectorAll('ha-entity-marker').forEach((m) => {
+      const pic = byId[m.entityId || m.getAttribute('entity-id')]; if (!pic) return; found++;
+      if (m.entityPicture !== pic) { m.entityPicture = pic; m.setAttribute('entity-picture', pic); }
+    });
+    clearTimeout(this._pplPicT);
+    if (this._sheet === 'ppl' && this._pplMapEl === el) this._pplPicT = setTimeout(() => this._pplMarkers(tries + 1), found ? 1500 : 250);
   }
   async _pplLog() {
     const ps = this._pplList(), box = this.$('pplTl'); if (!box || !ps.length) return;
