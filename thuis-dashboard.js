@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '166';
+const CARD_VERSION = '167';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3217,7 +3217,7 @@ const TSTYLE = `
   .tqst small { display: block; font-size: 10.5px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; white-space: nowrap; }
   .tqst b { display: block; font-size: 16.5px; white-space: nowrap; } .tqst b.up { color: #ffb27a; } .tqst b.dn { color: #9fe0a8; } .tqst em { display: block; font-style: normal; font-size: 11px; color: rgba(255,255,255,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hsec { font-size: 20px; font-weight: 700; margin: 22px 4px 0; }
-  .sheet.full { top: auto; height: 80vh; --k: #5aa2ff; background: radial-gradient(520px 420px at 75% 8%, rgba(70,140,255,.30), transparent 70%), radial-gradient(500px 420px at 10% 95%, rgba(60,90,200,.22), transparent 70%), linear-gradient(180deg, #14284a, #0d1730); }
+  .sheet.full { top: auto; height: 90vh; --k: #5aa2ff; background: radial-gradient(520px 420px at 75% 8%, rgba(70,140,255,.30), transparent 70%), radial-gradient(500px 420px at 10% 95%, rgba(60,90,200,.22), transparent 70%), linear-gradient(180deg, #14284a, #0d1730); }
   .cvx { position: absolute; right: 16px; top: 14px; background: none; color: rgba(255,255,255,.7); font-size: 19px; }
   .cvh { text-align: center; margin-top: 14px; } .cvh b { display: block; font-size: 30px; font-weight: 700; } .cvh span { display: block; font-size: 17px; font-weight: 600; color: #7cc0ff; margin-top: 6px; }
   .cvsl { position: relative; width: 140px; height: min(340px, 40vh); margin: 24px auto 0; border-radius: 42px; overflow: hidden; background: rgba(6,14,32,.5); touch-action: none; cursor: ns-resize; }
