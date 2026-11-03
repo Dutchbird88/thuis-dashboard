@@ -1284,7 +1284,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '179';
+const CARD_VERSION = '180';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4410,10 +4410,13 @@ class ThuisCard extends HTMLElement {
         if (hid[key]) { delete hid[key]; try { localStorage.setItem('thuis-meldingen', JSON.stringify(hid)); } catch (er) { /* geen opslag */ } }
         return;
       }
-      // rookmelders hebben al een eigen melding vanaf 20%
-      if (e.device_id && Object.keys(E).some((k) => E[k].device_id === e.device_id && (SMOKE_RE.test(k) || S[k]?.attributes.device_class === 'smoke'))) return;
+      // niet melden: rookmelders (eigen melding vanaf 20%), Hue-dimmers en -knoppen, deur- en raamsensoren
+      const d0 = D[e.device_id] || {}, dn = `${id} ${a.friendly_name || ''} ${d0.name || ''} ${d0.name_by_user || ''} ${d0.model || ''}`;
+      if (/dimmer|button|knop|smart_button|tap_dial|remote|afstandsbediening|door_window|deur|raam|window|contact/i.test(dn)) return;
+      if (e.device_id && Object.keys(E).some((k) => E[k].device_id === e.device_id && (SMOKE_RE.test(k) || ['smoke', 'door', 'window', 'opening', 'garage_door'].includes(S[k]?.attributes.device_class)))) return;
       const d = D[e.device_id] || {}, area = A[e.area_id || d.area_id]?.name;
-      const nm = (d.name_by_user || d.name || a.friendly_name || id).replace(/\s*(batterij(niveau)?|battery( level)?)\s*$/i, '').trim();
+      const raw = d.name_by_user || d.name || a.friendly_name || id.slice(7).replace(/_/g, ' ');
+      let nm = raw.replace(/[\s_]*(batterij(niveau)?|battery( level)?)\s*$/i, '').trim(); nm = nm.charAt(0).toUpperCase() + nm.slice(1);
       out.push({ id: key, since: 'low', t: nm, desc: `Batterij bijna leeg · nog ${Math.round(v)}%${area ? ` · ${area}` : ''}`, c: '#ff8a5c', ic: 'warn', svg: RIC.svg('battery', 'on', v) });
     });
     return out.sort((p, q) => parseFloat(p.desc.match(/(\d+)%/)?.[1]) - parseFloat(q.desc.match(/(\d+)%/)?.[1])).slice(0, 3);
