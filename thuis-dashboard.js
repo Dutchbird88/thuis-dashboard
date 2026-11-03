@@ -1263,7 +1263,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '161';
+const CARD_VERSION = '162';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5239,9 +5239,12 @@ class ThuisCard extends HTMLElement {
   // de pins van Home Assistant krijgen onze avatars en een gekleurde rand (thuis groen, weg grijsblauw)
   _pplMarkers(tries = 0) {
     const ps = this._pplList(), byId = Object.fromEntries(ps.map((p) => [p.entity, p]));
-    const css = '.marker{border-radius:50%!important;overflow:hidden;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}';
+    // rond, zonder donkere blokken: de pin zelf en de groep (cluster) eromheen transparant
+    const css = '.marker{border-radius:50%!important;overflow:hidden;padding:0!important;background:transparent!important;border:3px solid var(--pc,#3ddc97)!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;background-size:cover!important;background-position:center!important;width:42px!important;height:42px!important}.entity-picture,img{border-radius:50%!important;width:100%!important;height:100%!important;background-size:cover!important}';
+    const mapCss = '.leaflet-marker-icon,.leaflet-div-icon,.marker-cluster,.marker-cluster div{background:transparent!important;border:0!important;box-shadow:none!important}ha-entity-marker{--ha-marker-border-radius:50%}';
     const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const c of n.children || []) walk(c); };
     walk(this._pplMapEl);
+    for (const r of roots) if (r.querySelector('.leaflet-container, .leaflet-marker-pane') && !r.getElementById('tp-map')) { const s = document.createElement('style'); s.id = 'tp-map'; s.textContent = mapCss; r.appendChild(s); }
     let found = 0;
     for (const r of roots) r.querySelectorAll('ha-entity-marker').forEach((m) => {
       const p = byId[m.entityId || m.getAttribute('entity-id')]; if (!p) return; found++;
