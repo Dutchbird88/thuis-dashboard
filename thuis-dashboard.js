@@ -1284,7 +1284,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '178';
+const CARD_VERSION = '179';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4373,6 +4373,10 @@ class ThuisCard extends HTMLElement {
       if (hidden[n.id] === s.last_changed) return false;
       seen.add(n.t); n.since = s.last_changed; return true;
     });
+    // controle na updates: een entiteit die het dashboard eerder zag maar nu niet meer bestaat
+    this._health().forEach((n) => { if (hidden[n.id] !== n.since && !this._hass.states[n.id.slice(5)]) items.push(n); });
+    // batterij van sensoren op of onder 5% (telefoons en de auto niet)
+    this._lowBat().forEach((n) => { if (hidden[n.id] !== n.since) items.push(n); });
     // veiligheid: rookmelders (test, batterij) als melding; alarm en waarschuwing als balk bovenaan
     const safe = this._safety();
     safe.notes.forEach((n) => { const st = this._state(n.id); const since = `${n.key}:${st?.last_changed || ''}`; if (hidden[n.id + n.key] !== since) items.push({ ...n, id: n.id + n.key, since }); });
@@ -4389,6 +4393,64 @@ class ThuisCard extends HTMLElement {
     list.querySelectorAll('.nrow').forEach((r) => this._swipe(r, () => r.querySelector('button')?.click()));
   }
 
+  _lowBat() {
+    if (this._lb && Date.now() - this._lb.t < 20000) return this._lb.v;
+    const v = this._lowBatCheck(); this._lb = { t: Date.now(), v }; return v;
+  }
+  _lowBatCheck() {
+    const h = this._hass, S = h.states, E = h.entities || {}, D = h.devices || {}, A = h.areas || {}, c = this._config, out = [];
+    let hid = null;
+    Object.keys(S).forEach((id) => {
+      if (!id.startsWith('sensor.')) return;
+      const x = S[id], a = x.attributes; if (a.device_class !== 'battery' || (a.unit_of_measurement && a.unit_of_measurement !== '%')) return;
+      const e = E[id] || {}; if (e.platform === 'mobile_app' || id === c.car_battery || /byd|iphone|ipad|telefoon|phone|watch/i.test(id)) return;
+      const v = parseFloat(x.state), key = `bat:${id}`;
+      if (isNaN(v) || v > 5) { // weer opgeladen of vervangen: een weggeveegde melding vergeten
+        if (hid == null) try { hid = JSON.parse(localStorage.getItem('thuis-meldingen') || '{}'); } catch (er) { hid = {}; }
+        if (hid[key]) { delete hid[key]; try { localStorage.setItem('thuis-meldingen', JSON.stringify(hid)); } catch (er) { /* geen opslag */ } }
+        return;
+      }
+      // rookmelders hebben al een eigen melding vanaf 20%
+      if (e.device_id && Object.keys(E).some((k) => E[k].device_id === e.device_id && (SMOKE_RE.test(k) || S[k]?.attributes.device_class === 'smoke'))) return;
+      const d = D[e.device_id] || {}, area = A[e.area_id || d.area_id]?.name;
+      const nm = (d.name_by_user || d.name || a.friendly_name || id).replace(/\s*(batterij(niveau)?|battery( level)?)\s*$/i, '').trim();
+      out.push({ id: key, since: 'low', t: nm, desc: `Batterij bijna leeg · nog ${Math.round(v)}%${area ? ` · ${area}` : ''}`, c: '#ff8a5c', ic: 'warn', svg: RIC.svg('battery', 'on', v) });
+    });
+    return out.sort((p, q) => parseFloat(p.desc.match(/(\d+)%/)?.[1]) - parseFloat(q.desc.match(/(\d+)%/)?.[1])).slice(0, 3);
+  }
+  // controle na updates van Home Assistant of een integratie: entiteiten uit de instellingen die eerder bestonden en nu ontbreken
+  _health() {
+    // één keer per keer openen of herladen van de app; 15 seconden wachten, zodat integraties na een herstart van Home Assistant eerst kunnen opstarten
+    if (this._hc) return this._hc;
+    this._hcT0 ??= Date.now();
+    if (Date.now() - this._hcT0 < 15000) { if (!this._hcTimer) this._hcTimer = setTimeout(() => this._updNotices(), 15500); return []; }
+    this._hc = this._healthCheck(); return this._hc;
+  }
+  _healthCheck() {
+    const c = this._config, S = this._hass?.states; if (!S || Object.keys(S).length < 20) return [];
+    const ids = new Set(), add = (v) => { if (typeof v === 'string' && /^[a-z_]+\.[a-z0-9_]+$/.test(v)) ids.add(v); };
+    const NAMES = { washer: 'Wasmachine', climate: 'Thermostaat', weather: 'Weer', grid_power: 'Energie nu', solar_power: 'Zonnepanelen', car_battery: 'Auto', car_charging: 'Laadpaal', charger_power: 'Laadpaal' };
+    const label = {};
+    Object.entries(c).forEach(([k, v]) => { if (typeof v === 'string') { add(v); if (NAMES[k]) label[v] = NAMES[k]; } });
+    if (c.dishwasher) { add(`sensor.${c.dishwasher}_status`); label[`sensor.${c.dishwasher}_status`] = 'Vaatwasser'; }
+    if (c.oven) { add(`sensor.${c.oven}_status`); label[`sensor.${c.oven}_status`] = 'Oven'; }
+    (c.persons || []).forEach((p) => { add(p.entity); label[p.entity] = p.name || 'Persoon'; });
+    (c.covers || []).forEach((x) => { add(x); label[x] = 'Rolluik'; });
+    (c.calendars || []).forEach((x) => { add(x.entity || x); label[x.entity || x] = 'Agenda'; });
+    (c.waste || []).forEach((x) => { add(x.entity); label[x.entity] = `Afval ${x.name || ''}`.trim(); });
+    // onthoud wat er bestaat; meld alleen wat eerder bestond (dus geen meldingen voor dingen die je nooit had)
+    let seen = {}; try { seen = JSON.parse(localStorage.getItem('thuis-gezien') || '{}'); } catch (e) { /* geen opslag */ }
+    let dirty = false; const out = [];
+    ids.forEach((id) => {
+      if (S[id]) { if (!seen[id]) { seen[id] = 1; dirty = true; } return; }
+      if (seen[id]) out.push({ id: `gone:${id}`, since: 'gone', t: `${label[id] || id.split('.')[1].replace(/_/g, ' ')} niet gevonden`, desc: id, c: '#ffb340', ic: 'warn' });
+    });
+    if (dirty) try { localStorage.setItem('thuis-gezien', JSON.stringify(seen)); } catch (e) { /* geen opslag */ }
+    // weer gevonden: een eerder weggeveegde melding vergeten, zodat hij terugkomt als het opnieuw misgaat
+    try { const h = JSON.parse(localStorage.getItem('thuis-meldingen') || '{}'); let ch = false; Object.keys(h).forEach((k) => { if (k.startsWith('gone:') && S[k.slice(5)]) { delete h[k]; ch = true; } }); if (ch) localStorage.setItem('thuis-meldingen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
+    return out.slice(0, 3);
+  }
+
   // rookmelders en waterlek-sensoren uit alle kamers
   _safety() {
     const alarms = [], notes = [];
@@ -4397,7 +4459,7 @@ class ThuisCard extends HTMLElement {
       if (x.alarm || x.warn) alarms.push({ ...x, room: rm.name, ri: rm.i });
       if (x.kind !== 'smoke') return;
       if (x.txt === 'Test bezig') notes.push({ id: x.id, key: 'test', t: 'Rookmelder test bezig', desc: `${rm.name} · de melder test zichzelf`, c: '#7cb6ff', ic: 'warn', svg: RIC.svg('smoke', 'on') });
-      if (x.bat != null && x.bat <= 20) notes.push({ id: x.id, key: 'bat', t: 'Batterij rookmelder bijna leeg', desc: `${rm.name} · nog ${Math.round(x.bat)}%`, c: '#ffb340', ic: 'warn', svg: RIC.svg('battery', 'on', x.bat) });
+      if (x.bat != null && x.bat <= 20) notes.push({ id: x.id, key: 'bat', t: 'Rookmelder', desc: `Batterij bijna leeg · nog ${Math.round(x.bat)}% · ${rm.name}`, c: '#ffb340', ic: 'warn', svg: RIC.svg('battery', 'on', x.bat) });
     }));
     return { alarms, notes };
   }
