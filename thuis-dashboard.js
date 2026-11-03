@@ -1291,7 +1291,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '176';
+const CARD_VERSION = '177';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4851,7 +4851,9 @@ class ThuisCard extends HTMLElement {
     }
     // wie of wat: het logboekbericht vlak voor de wijziging
     const L = (Array.isArray(log) ? log : []).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => a.t - b.t);
-    const who = (t) => this._who([...L].reverse().find((x) => x.t <= t + 3000 && x.t >= t - 5 * 60000));
+    // bij een rolluik komt de eindstand (bv. 60% dicht) vaak van het apparaat zelf, zonder bron; neem dan de bron van de beweging ervoor ("gaat dicht" via de app)
+    const hasSrc = (x) => x.context_user_id || x.context_entity_id || x.context_event_type === 'call_service' || x.context_domain === 'homekit' || x.context_event_type === 'homekit_state_change';
+    const who = (t) => { const w = [...L].reverse().filter((x) => x.t <= t + 3000 && x.t >= t - 5 * 60000); return this._who(w.find(hasSrc) || w[0]); };
     // grafiek afgelopen 24 uur
     const t0 = now - DAY, W = 340, H = 80, X = (t) => (Math.max(t, t0) - t0) / DAY * W, Y = (p) => (H - 2) - (lamp ? p : 100 - p) / 100 * (H - 8);
     let p0 = lamp ? 0 : 100; for (const e of ev) if (e.t <= t0) p0 = e.pos;
