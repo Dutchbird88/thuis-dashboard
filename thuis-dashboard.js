@@ -65,9 +65,10 @@ const fmtTime = (t) => new Date(t).toLocaleTimeString('nl-NL', { hour: '2-digit'
 // sensoren in het kamerpaneel
 const SENS_KIND = { moisture: 'leak', smoke: 'smoke', gas: 'smoke', carbon_monoxide: 'smoke', motion: 'motion', occupancy: 'motion', presence: 'motion', door: 'door', window: 'window', opening: 'door', garage_door: 'door', vibration: 'motion' };
 const SENS_ORDER = ['leak', 'smoke', 'door', 'window', 'motion'];
+const APP_RE = /(wasmachine|vaatwasser|droger|oven|magnetron|koelkast|vriezer|washer|dishwasher|dryer|fridge|freezer|microwave)/i;
 const SMOKE_RE = /(rookalarm|smoke_status|smoke_alarm|rookmelder_status)/i, CO_RE = /(co_alarm|co_status|koolmonoxide_status)/i;
 const SENS_TXT = {
-  leak: { label: 'Waterlek', on: 'Water gedetecteerd', off: 'Droog', alarm: true, since: true },
+  leak: { label: 'Waterlekkage-sensor', on: 'Water gedetecteerd', off: 'Geen water gedetecteerd', alarm: true, since: true },
   smoke: { label: 'Rookmelder', on: 'Alarm', off: 'Geen rook', alarm: true, since: true },
   motion: { label: 'Beweging', on: 'Beweging nu', off: 'Geen beweging', last: true },
   door: { label: 'Deur', on: 'Open', off: 'Dicht', since: true },
@@ -1290,7 +1291,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '172';
+const CARD_VERSION = '173';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3520,7 +3521,7 @@ const KSTYLE = `
 .khead { margin: 2px 4px 18px; } .khead h1 { font-weight: 600; }
 #kview .kpills { display: flex; gap: 8px; overflow-x: auto; margin: 0 -12px; padding: 2px 12px 4px; scrollbar-width: none; } #kview .kpills::-webkit-scrollbar { display: none; }
 #kview .mp { flex: none; display: flex; align-items: center; gap: 9px; padding: 9px 16px 9px 9px; border-radius: 99px; background: rgba(255,255,255,.07); cursor: pointer; } #kview .mp.hot { background: color-mix(in srgb, var(--c) 18%, transparent); } #kview .mp b { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; } #kview .mp span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.2; }
-.kfh { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 4px 10px; } .kfh b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; } .kfh span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.kfh { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 4px 12px; } .kfh:first-child { margin-top: 24px; } .kfh b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; } .kfh span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .krs { display: flex; flex-direction: column; gap: 8px; }
 .kr { position: relative; display: flex; align-items: center; gap: 12px; height: 76px; padding: 0 15px; box-sizing: border-box; border-radius: 22px; border: 1px solid rgba(255,255,255,.06); background: linear-gradient(135deg, rgba(28,38,60,.6), rgba(20,28,46,.6)); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s, background .3s; user-select: none; -webkit-user-select: none; }
 .kr:active { transform: scale(.985); }
@@ -5146,7 +5147,10 @@ class ThuisCard extends HTMLElement {
       const lights = dom('light'), covers = dom('cover'), climate = dom('climate').length > 0;
       const apps = [[`sensor.${c.dishwasher}_status`, 'dish'], [`sensor.${c.oven}_status`, 'oven'], [c.washer, 'was']].filter(([e]) => ids.includes(e)).map(([, k]) => k);
       // sensoren: binary_sensor (waterlek, rook, beweging, deur, raam) en rookmelders die hun status als sensor geven (zoals Nest Protect)
-      const sensors = ids.filter((x) => (x.startsWith('binary_sensor.') && SENS_KIND[h.states[x]?.attributes.device_class]) || (x.startsWith('sensor.') && SMOKE_RE.test(x)));
+      // deuren van huishoudelijke apparaten (wasmachine, vaatwasser, oven …) zijn geen kamersensor
+      const appDev = new Set([c0.washer, c0.dishwasher && `sensor.${c0.dishwasher}_status`, c0.oven && `sensor.${c0.oven}_status`].filter(Boolean).map((e) => E[e]?.device_id).filter(Boolean));
+      const isApp = (x) => appDev.has(E[x]?.device_id) || APP_RE.test(x) || APP_RE.test(h.states[x]?.attributes.friendly_name || '');
+      const sensors = ids.filter((x) => ((x.startsWith('binary_sensor.') && SENS_KIND[h.states[x]?.attributes.device_class]) || (x.startsWith('sensor.') && SMOKE_RE.test(x))) && !(SENS_KIND[h.states[x]?.attributes.device_class] !== 'leak' && isApp(x)));
       if (!lights.length && !covers.length && !climate && !sensors.length) return null;
       const t = sens('temperature'), hu = sens('humidity');
       return { name: a.name, floor: flr(a.floor_id).name || '', level: flr(a.floor_id).level ?? 99, icon: icon(a.name), climate, lights, covers, apps, scenes: aid,
@@ -5238,7 +5242,7 @@ class ThuisCard extends HTMLElement {
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
     const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f), n = rs.reduce((a, x) => a + x.on, 0);
-      return `${f ? `<div class="kfh"><b>${f}</b><span>${n ? `${n} ${n === 1 ? 'lamp' : 'lampen'} aan` : 'alles uit'}</span></div>` : ''}<div class="krs">${rs.map(row).join('')}</div>`; }).join('');
+      return `${f ? `<div class="kfh"><b>${f}</b></div>` : ''}<div class="krs">${rs.map(row).join('')}</div>`; }).join('');
     // pillen: lampen, rolluiken, klimaat (huis)
     const lOn = rooms.reduce((a, x) => a + x.on, 0), cv = rooms.flatMap((x) => x.covers), cDn = cv.filter((c) => c.pos < 99).length;
     const cl = this._state(this._climateId()), ct = cl?.attributes.current_temperature;
