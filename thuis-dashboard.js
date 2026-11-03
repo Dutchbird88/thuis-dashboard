@@ -1290,7 +1290,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '171';
+const CARD_VERSION = '172';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5199,17 +5199,19 @@ class ThuisCard extends HTMLElement {
         const sibs = dev ? Object.keys(E).filter((k) => k !== x.entity_id && E[k].device_id === dev && S[k]) : [];
         const sib = (cls, re) => { const k = sibs.find((k) => k.startsWith('sensor.') && (S[k].attributes.device_class === cls || (re && re.test(k)))); const v = k ? parseFloat(S[k].state) : NaN; return isNaN(v) ? null : v; };
         const bat = sib('battery', /_(batterij|batterijniveau|battery|battery_level)$/), lux = sib('illuminance'), t = Date.parse(x.last_changed) || 0;
-        let on = x.state === 'on', off = ['unavailable', 'unknown'].includes(x.state), warn = false, txt;
+        let on = x.state === 'on', off = ['unavailable', 'unknown'].includes(x.state), warn = false, txt; let pid = x.entity_id;
         if (kind === 'smoke') {
           const lvl = (e) => !e ? 0 : e.entity_id.startsWith('binary_sensor.') ? (e.state === 'on' ? 2 : 0) : /warn|heads|waarschuw/i.test(e.state) ? 1 : /emerg|alarm|detect|gevaar|nood|^on$/i.test(e.state) ? 2 : 0;
           const smoke = isS || dc === 'smoke' ? x : S[sibs.find((k) => SMOKE_RE.test(k) || S[k].attributes.device_class === 'smoke')];
+          // tikken opent de rookstatus; koolmonoxide wordt wel meegelezen
+          if (smoke) { pid = smoke.entity_id; off = ['unavailable', 'unknown'].includes(smoke.state); }
           const co = S[[x.entity_id, ...sibs].find((k) => CO_RE.test(k) || S[k]?.attributes.device_class === 'carbon_monoxide')];
           const ls = lvl(smoke), lc = lvl(co), lv = Math.max(ls, lc);
           const test = [smoke, co].some((e) => e?.state === 'testing');
           on = lv === 2; warn = lv === 1;
           txt = off ? 'Niet bereikbaar' : lv === 2 ? `${ls === 2 ? 'Rook' : 'Koolmonoxide'} gedetecteerd · sinds ${fmtTime(t)}` : lv === 1 ? `Waarschuwing ${ls === 1 ? 'rook' : 'koolmonoxide'}` : test ? 'Test bezig' : co ? 'Geen rook of koolmonoxide' : 'Geen rook';
         } else txt = off ? 'Niet bereikbaar' : on ? `${K.on}${K.since ? ` · sinds ${Date.now() - t < 12 * HOUR ? fmtTime(t) : relTime(t)}` : ''}` : `${K.last && t ? `Laatst ${relTime(t)}` : K.off}`;
-        return { id: x.entity_id, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, label: K.label, txt };
+        return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, label: K.label, txt };
       }).filter(Boolean).sort((p, q) => (q.alarm - p.alarm) || (q.warn - p.warn) || (SENS_ORDER.indexOf(p.kind) - SENS_ORDER.indexOf(q.kind)));
       return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, scenes, sensors };
     });
