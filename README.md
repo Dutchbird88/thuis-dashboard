@@ -31,6 +31,19 @@ Er zitten geen persoonlijke gegevens in de code. Je eigen entiteiten, personen e
       picture: /local/avatar.jpg
   covers:
     - cover.woonkamer
+```
+
+Gebruik voor `custom:kamers-card` dezelfde instellingen als voor `thuis-card`.
+
+### Kamers
+
+De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.
+
+Sensoren in het kamerpaneel: waterlek, rookmelder (ook met status als sensor, zoals Nest Protect), beweging, deur en raam. Bij rook, koolmonoxide of water verschijnt ook een rode melding op het Thuis-scherm.
+
+Wil je de kamers liever zelf vastleggen, dan kan dat met een lijst `rooms:`:
+
+```yaml
   rooms:
     - name: Woonkamer
       floor: Begane grond
@@ -41,9 +54,8 @@ Er zitten geen persoonlijke gegevens in de code. Je eigen entiteiten, personen e
       apps: [dish]        # was, dish, oven
       temp: sensor.temperatuur_woonkamer
       humidity: sensor.vochtigheid_woonkamer
+      sensors: [binary_sensor.waterlek_keuken]
 ```
-
-Gebruik voor `custom:kamers-card` dezelfde instellingen als voor `thuis-card`.
 
 Als je een instelling weglaat, zoekt de kaart zelf zoveel mogelijk op: de eerste thermostaat, alle camera's, de Hue-kamers, de afvalsensoren van Afvalbeheer en alle agenda's.
 

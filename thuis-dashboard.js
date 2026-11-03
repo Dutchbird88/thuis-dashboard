@@ -62,6 +62,23 @@ const fmt = (v, d = 0) =>
 const fmtPower = (w) =>
   w == null ? { v: '—', u: 'W' } : Math.abs(w) >= 1000 ? { v: fmt(w / 1000, 2), u: 'kW' } : { v: fmt(w), u: 'W' };
 const fmtTime = (t) => new Date(t).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+// sensoren in het kamerpaneel
+const SENS_KIND = { moisture: 'leak', smoke: 'smoke', gas: 'smoke', carbon_monoxide: 'smoke', motion: 'motion', occupancy: 'motion', presence: 'motion', door: 'door', window: 'window', opening: 'door', garage_door: 'door', vibration: 'motion' };
+const SENS_ORDER = ['leak', 'smoke', 'door', 'window', 'motion'];
+const SMOKE_RE = /(rookalarm|smoke_status|smoke_alarm|rookmelder_status)/i, CO_RE = /(co_alarm|co_status|koolmonoxide_status)/i;
+const SENS_TXT = {
+  leak: { label: 'Waterlek', on: 'Water gedetecteerd', off: 'Droog', alarm: true, since: true },
+  smoke: { label: 'Rookmelder', on: 'Alarm', off: 'Geen rook', alarm: true, since: true },
+  motion: { label: 'Beweging', on: 'Beweging nu', off: 'Geen beweging', last: true },
+  door: { label: 'Deur', on: 'Open', off: 'Dicht', since: true },
+  window: { label: 'Raam', on: 'Open', off: 'Dicht', since: true },
+};
+const SENS_ICON = (x) => x.off ? RIC.svg({ leak: 'leak', smoke: 'smoke', motion: 'motionS', door: 'contact', window: 'windowS' }[x.kind], 'off')
+  : x.kind === 'leak' ? RIC.svg('leak', x.on ? 'red' : 'on') : x.kind === 'smoke' ? RIC.svg('smoke', x.on ? 'red' : x.warn ? 'orange' : 'on') : x.kind === 'motion' ? RIC.svg('motionS', x.on ? 'yellow' : 'on')
+  : RIC.svg(x.kind === 'door' ? 'contact' : 'windowS', x.on ? 'orange' : 'on');
+const relTime = (t) => { const m = (Date.now() - t) / 6e4; if (m < 1) return 'zojuist'; if (m < 60) return `${Math.round(m)} min geleden`;
+  const d = new Date(t), now = new Date(), day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), dd = (day(now) - day(d)) / 864e5;
+  return dd === 0 ? fmtTime(t) : dd === 1 ? `gisteren ${fmtTime(t)}` : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }); };
 const startOfDay = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const ts = (v) => (typeof v === 'number' ? v : Date.parse(v));
 const niceMax = (v) => {
@@ -146,6 +163,13 @@ Object.assign(DRAW, {
  stairs:()=>`<g fill="${f('amber')}"><rect x="10" y="66" width="80" height="24" rx="5"/><rect x="30" y="46" width="60" height="44" rx="5"/><rect x="50" y="26" width="40" height="64" rx="5"/><rect x="70" y="8" width="20" height="82" rx="5"/></g>${HL('M74 14v8',4)}`,
  shed:()=>`<path d="M10 42 50 12l40 30v42a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z" fill="${f('amber')}" stroke="${f('amber')}" stroke-width="4" stroke-linejoin="round"/><rect x="34" y="54" width="32" height="36" rx="4" fill="${f('brown')}"/><path d="M34 54l32 36M66 54 34 90" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>`,
  ovenX:(t,mode,temp)=>{const run=mode==='run',hot=mode==='hot';return `<rect x="10" y="8" width="80" height="84" rx="12" fill="${f('white')}"/><path d="M10 24V20A12 12 0 0 1 22 8h56a12 12 0 0 1 12 12v4z" fill="${f('dark')}"/><rect x="30" y="12" width="26" height="8" rx="2.5" fill="#0d1117"/>${temp!=null?`<text x="43" y="18.6" font-size="6.5" font-weight="700" fill="${run||hot?'#ffa53a':'#8a909a'}" text-anchor="middle" font-family="sans-serif">${Math.round(temp)}°</text>`:''}<circle cx="70" cy="16" r="3.4" fill="${f('metal')}"/><circle cx="80" cy="16" r="3.4" fill="${f('metal')}"/><rect x="18" y="30" width="64" height="50" rx="8" fill="${run||hot?f('orange'):f('dark')}" opacity="${hot?.8:1}">${run?'<animate attributeName="opacity" values=".8;1;.8" dur="2.2s" repeatCount="indefinite"/>':''}</rect>${run?'<path d="M24 38h52M24 72h52" stroke="#fff3c4" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 3"><animate attributeName="stroke-opacity" values=".4;1;.4" dur="1.1s" repeatCount="indefinite"/></path><path d="M38 64c0-6 6-6 6-12M54 64c0-6 6-6 6-12" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"><animateTransform attributeName="transform" type="translate" values="0 4;0 -4" dur="1.8s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values="0;.75;0" dur="1.8s" repeatCount="indefinite"/></path>':''}<rect x="24" y="84" width="52" height="4" rx="2" fill="${f('metal')}"/>${HL('M24 36v14',3.5)}`;},
+});
+Object.assign(DRAW, {
+ leak:(t)=>`<path d="M50 6S22 38 22 60a28 28 0 0 0 56 0C78 38 50 6 50 6z" fill="${f(t==='red'?'red':'sky')}"/>${HL('M35 62a15 15 0 0 0 9 13',5)}`,
+ motionS:(t)=>{const c=t==='yellow'?'yellow':'white';return `<circle cx="57" cy="14" r="10.5" fill="${f(c)}"/><g fill="none" stroke="${f(c)}" stroke-linecap="round" stroke-linejoin="round"><path d="M53 32 45 58" stroke-width="17"/><path d="M50 36 37 47l-10-4M55 35l9 13 13 3" stroke-width="9"/><path d="M45 58l12 15-2 19M44 58l-8 17-14 9" stroke-width="11"/></g>${HL('M53 9a6 6 0 0 1 5-2',3.5)}`},
+ smoke:(t)=>`<circle cx="50" cy="50" r="42" fill="${f('white')}"/><circle cx="50" cy="50" r="29" fill="${f('metal')}"/><g fill="#000" fill-opacity=".12">${[0,45,90,135,180,225,270,315].map(a=>`<rect x="47.5" y="25" width="5" height="11" rx="2.5" transform="rotate(${a} 50 50)"/>`).join('')}</g><circle cx="50" cy="50" r="9" fill="${f(t==='red'?'red':t==='orange'?'orange':'green')}"/>${HL('M20 40a32 32 0 0 1 14-18',4.5)}`,
+ contact:(t)=>t==='orange'?`<rect x="22" y="8" width="56" height="80" rx="9" fill="${f('dark')}"/><path d="M22 14a6 6 0 0 1 7.4-5.8L62 15.6a6 6 0 0 1 4.6 5.8v57.2a6 6 0 0 1-4.6 5.8L29.4 91.8A6 6 0 0 1 22 86z" fill="${f('orange')}"/><circle cx="56" cy="52" r="4.5" fill="${f('white')}"/><rect x="12" y="84" width="76" height="8" rx="4" fill="${f('metal')}"/>`:DRAW.door(),
+ windowS:(t)=>`<rect x="12" y="8" width="76" height="84" rx="12" fill="${f('white')}"/><rect x="21" y="17" width="25" height="30" rx="5" fill="${f('sky')}"/><rect x="54" y="17" width="25" height="30" rx="5" fill="${f(t==='orange'?'orange':'sky')}"/><rect x="21" y="55" width="25" height="28" rx="5" fill="${f('sky')}"/><rect x="54" y="55" width="25" height="28" rx="5" fill="${f(t==='orange'?'orange':'sky')}"/>${HL('M26 24v12',4)}`,
 });
 const ROOMICON = { sofa: 'sofa', pot: 'pot', door: 'door', toilet: 'toilet', bed: 'bed', bath: 'bath', desk: 'desk', stairs: 'stairs', tree: 'tree', drive: 'car', shed: 'shed', wash: 'washer' };
 // tekenen: toon 'off' = gedempt grijs, 'lit' = één warme kleur (kamers die oplichten), anders de eigen kleuren
@@ -1263,7 +1287,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '169';
+const CARD_VERSION = '170';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3077,8 +3101,16 @@ const TSTYLE = `
 .achips em { font-style: normal; font-size: 11px; color: #cfe3ff; padding: 3px 9px; border-radius: 99px; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
 /* meldingen */
 #notTile[hidden], #enTile[hidden] { display: none; }
+.alrt { display: flex; flex-direction: column; gap: 12px; } .alrt[hidden] { display: none; }
+.alr { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 22px; cursor: pointer; background: linear-gradient(135deg, rgba(255,69,58,.34), rgba(150,28,40,.34)) #0e1626; box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.55), 0 10px 30px -12px rgba(255,59,48,.55); }
+.alr i { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,69,58,.34); flex: none; animation: lkp 1.6s ease-in-out infinite; } .alr i .ri2 { width: 30px; height: 30px; }
+.alr b { display: block; font-size: 17px; font-weight: 700; color: #ffd2cc; } .alr span { display: block; font-size: 13.5px; color: #ffb0a8; margin-top: 2px; }
+.alr em { margin-left: auto; font-style: normal; font-size: 26px; color: #ffb0a8; }
+.alr.warn { background: linear-gradient(135deg, rgba(255,159,10,.30), rgba(150,80,10,.30)) #0e1626; box-shadow: inset 0 0 0 1.5px rgba(255,170,60,.5); } .alr.warn i { background: rgba(255,159,10,.3); animation: none; } .alr.warn b { color: #ffe2b8; } .alr.warn span, .alr.warn em { color: #ffc680; }
+@keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
+.nrow .mi svg.ri2 { width: 21px; height: 21px; position: static; margin: 0; transform: none; }
 .nrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); } .nrow:first-child { border-top: 0; padding-top: 0; }
-.nrow .mi { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); flex: none; } .nrow .mi svg { width: 16px; height: 16px; }
+.nrow .mi { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; gap: 0; border-radius: 50%; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); flex: none; } .nrow .mi svg { width: 16px; height: 16px; }
 .nrow > div { flex: 1; min-width: 0; } .nrow b { display: block; font-size: 13.5px; font-weight: 600; } .nrow span { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nrow button { all: unset; cursor: pointer; font-size: 11.5px; color: #cfe3ff; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
 .was .r { display: flex; align-items: center; gap: 12px; } .was svg { width: 38px; height: 38px; flex: none; overflow: visible; }
@@ -3251,7 +3283,7 @@ const TSTYLE = `
   .cfbig { flex: none; width: 100%; aspect-ratio: var(--ar, 4 / 3); max-height: 70vh; }
   .cfrow { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; } .cfrow::-webkit-scrollbar { display: none; }
   .cfrow div { width: 112px; height: 64px; flex: none; }
-  .mstack > .was, #notList .nrow { position: relative; z-index: 1; touch-action: pan-y; }
+  .mstack > .was, #notList .nrow, .alrt .alr { position: relative; z-index: 1; touch-action: pan-y; }
   .mstack > .was { background-color: #0e1626 !important; } #notList .nrow.swiping { background: var(--tile2); }
   .swact { position: absolute; z-index: 0; display: flex; justify-content: flex-end; align-items: stretch; padding: 7px; box-sizing: border-box; background: rgba(255,69,58,.16); }
   .swact button { all: unset; cursor: pointer; width: 84px; border-radius: 14px; background: #ff453a; color: #fff; font-size: 12.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: width .2s; }
@@ -3513,6 +3545,24 @@ const KSTYLE = `
 .pt { flex: 1; min-width: 0; } .pt b { font-size: 14.5px; font-weight: 600; } .pt span { display: block; font-size: 12.5px; color: rgba(255,255,255,.55); margin-top: 2px; }
 .ptag { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); white-space: nowrap; }
 .kpre .fi { width: 24px; height: 24px; fill: currentColor; display: block; }
+.klk { display: flex; flex-direction: column; padding: 0; border-radius: 20px; overflow: hidden; }
+.klk .lk { display: flex; align-items: center; gap: 14px; padding: 11px 16px; cursor: pointer; position: relative; }
+.klk .lk + .lk::before { content: ''; position: absolute; top: 0; left: 70px; right: 0; height: 1px; background: rgba(255,255,255,.07); }
+.klk .lk i { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.07); flex: none; }
+.klk .lk i .ri2 { width: 28px; height: 28px; }
+.klk .lk { padding: 13px 16px; } .klk .lk:first-child { border-radius: 20px 20px 0 0; } .klk .lk:last-child { border-radius: 0 0 20px 20px; } .klk .lk:only-child { border-radius: 20px; }
+.klk .lk.wet + .lk::before, .klk .lk + .lk.wet::before { display: none; }
+.sheet .klk:has(> .lk.wet:only-child) { border-color: transparent !important; }
+.klk .lk.on i { background: rgba(255,200,61,.16); } .klk .lk.k-door.on i, .klk .lk.k-window.on i { background: rgba(255,159,10,.16); }
+.klk .lk b { display: block; font-size: 16px; font-weight: 600; } .klk .lk span { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.klk .lk.on span { color: #e8c46a; } .klk .lk.k-door.on span, .klk .lk.k-window.on span { color: #ffb340; }
+.klk .lk em { margin-left: auto; font-style: normal; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; } .klk .lk small { font-size: 12.5px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.klk .lk small .ri2 { width: 20px; height: 20px; } .klk .lk small.low { color: #ffb340; }
+.klk .lk.wet { background: linear-gradient(135deg, rgba(255,69,58,.30), rgba(150,28,40,.30)); box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.55); }
+.klk .lk.wet i { background: rgba(255,69,58,.32); animation: lkp 1.6s ease-in-out infinite; } .klk .lk.wet b { color: #ff8a80; } .klk .lk.wet span { color: #ffb0a8; }
+.klk .lk.warn i { background: rgba(255,159,10,.18); } .klk .lk.warn span { color: #ffb340; }
+.klk .lk.off i { background: rgba(255,255,255,.06); color: var(--muted); } .klk .lk.off b { color: var(--muted); }
+@keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
 .kth { margin: 24px 2px 10px; font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
 .sheet .kglass, .sheet .mstack > .was { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important; }
 .sheet .mstack { display: flex; flex-direction: column; gap: 10px; }
@@ -3636,6 +3686,7 @@ class ThuisCard extends HTMLElement {
           </div>
 
           <div class="tcol">
+            <div class="alrt" id="alrt" hidden></div>
             <div class="was pic" id="pic" hidden></div>
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
@@ -3678,7 +3729,7 @@ class ThuisCard extends HTMLElement {
     // telefoon: eigen indeling (kop, statuspillen, camera, apparaten, thermostaat + afval, bediening, agenda);
     // de bestaande vakken worden verplaatst en op de computer weer teruggezet
     this._mq = this._mq || window.matchMedia('(max-width: 600px)');
-    const MOVE = [['camTile', 'mA'], ['pic', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
+    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
     const marks = MOVE.map(([id]) => { const el = this.$(id), m = document.createComment(id); el.before(m); return m; });
     const placeBins = () => {
       const m = this._mq.matches;
@@ -4343,7 +4394,11 @@ class ThuisCard extends HTMLElement {
       if (hidden[n.id] === s.last_changed) return false;
       seen.add(n.t); n.since = s.last_changed; return true;
     });
-    const html = items.map((n) => `<div class="nrow" style="--c:${n.c}"><span class="mi">${NI[n.ic]}</span><div><b>${n.t}</b><span>${n.desc}</span></div><button data-id="${n.id}" data-since="${n.since}">Gedaan</button></div>`).join('');
+    // veiligheid: rookmelders (test, batterij) als melding; alarm en waarschuwing als balk bovenaan
+    const safe = this._safety();
+    safe.notes.forEach((n) => { const st = this._state(n.id); const since = `${n.key}:${st?.last_changed || ''}`; if (hidden[n.id + n.key] !== since) items.push({ ...n, id: n.id + n.key, since }); });
+    this._updAlarm(safe.alarms);
+    const html = items.map((n) => `<div class="nrow" style="--c:${n.c}"><span class="mi">${n.svg || NI[n.ic]}</span><div><b>${n.t}</b><span>${n.desc}</span></div><button data-id="${n.id}" data-since="${n.since}">Gedaan</button></div>`).join('');
     box.hidden = !items.length;
     this.$('notN').textContent = items.length || '';
     if (list.innerHTML === html) return;
@@ -4353,6 +4408,34 @@ class ThuisCard extends HTMLElement {
       this._updNotices();
     }));
     list.querySelectorAll('.nrow').forEach((r) => this._swipe(r, () => r.querySelector('button')?.click()));
+  }
+
+  // rookmelders en waterlek-sensoren uit alle kamers
+  _safety() {
+    const alarms = [], notes = [];
+    let rooms = []; try { rooms = this._rooms(); } catch (e) { /* nog geen ruimtes */ }
+    rooms.forEach((rm) => rm.sensors.filter((x) => x.kind === 'smoke' || x.kind === 'leak').forEach((x) => {
+      if (x.alarm || x.warn) alarms.push({ ...x, room: rm.name, ri: rm.i });
+      if (x.kind !== 'smoke') return;
+      if (x.txt === 'Test bezig') notes.push({ id: x.id, key: 'test', t: 'Rookmelder test bezig', desc: `${rm.name} · de melder test zichzelf`, c: '#7cb6ff', ic: 'warn', svg: RIC.svg('smoke', 'on') });
+      if (x.bat != null && x.bat <= 20) notes.push({ id: x.id, key: 'bat', t: 'Batterij rookmelder bijna leeg', desc: `${rm.name} · nog ${Math.round(x.bat)}%`, c: '#ffb340', ic: 'warn', svg: RIC.svg('battery', 'on', x.bat) });
+    }));
+    return { alarms, notes };
+  }
+  _updAlarm(all) {
+    const box = this.$('alrt'); if (!box) return;
+    // wegvegen verbergt een alarm tot de sensor opnieuw verandert
+    let hid = {}; try { hid = JSON.parse(localStorage.getItem('thuis-alarm') || '{}'); } catch (e) { /* geen opslag */ }
+    const key = (x) => `${x.txt.split(' · ')[0]}|${this._state(x.id)?.last_changed || ''}`;
+    const list = all.filter((x) => hid[x.id] !== key(x));
+    const html = list.map((x) => `<div class="alr${x.alarm ? '' : ' warn'}" data-ri="${x.ri}" data-id="${x.id}" data-k="${key(x)}"><i>${SENS_ICON(x)}</i><div><b>${x.txt.split(' · ')[0]}</b><span>${x.room}${x.txt.includes(' · ') ? ` · ${x.txt.split(' · ')[1]}` : ''}</span></div><em>›</em></div>`).join('');
+    box.hidden = !list.length;
+    if (box.innerHTML === html) return;
+    box.innerHTML = html;
+    box.querySelectorAll('.alr').forEach((el) => {
+      el.addEventListener('click', () => this._openSheet('room', +el.dataset.ri));
+      this._swipe(el, () => { try { const h = JSON.parse(localStorage.getItem('thuis-alarm') || '{}'); h[el.dataset.id] = el.dataset.k; localStorage.setItem('thuis-alarm', JSON.stringify(h)); } catch (e) { /* geen opslag */ } this._updNotices(); });
+    });
   }
 
   /* ---------- wasmachine ---------- */
@@ -5035,9 +5118,42 @@ class ThuisCard extends HTMLElement {
   /* ---------- statuspillen (telefoon) ---------- */
   /* ---------- tabblad Kamers ---------- */
   // per kamer: lampen (Hue-kamers niet dubbel), rolluiken, temperatuur, apparaten en eigen scènes
+  // kamers uit de ruimtes en verdiepingen van Home Assistant (als er geen 'rooms' in de instellingen staan)
+  _areaRooms() {
+    const h = this._hass, A = h?.areas, E = h?.entities, D = h?.devices || {}, F = h?.floors || {};
+    if (!A || !E) return [];
+    const key = Object.keys(A).length + ':' + Object.keys(E).length;
+    if (this._arKey === key && this._arRooms) return this._arRooms;
+    const byArea = {};
+    for (const [id, e] of Object.entries(E)) {
+      if (e.hidden || e.disabled_by || e.entity_category) continue;
+      const a = e.area_id || D[e.device_id]?.area_id; if (!a) continue;
+      (byArea[a] = byArea[a] || []).push(id);
+    }
+    const icon = (n) => { n = n.toLowerCase(); return /woon/.test(n) ? 'sofa' : /keuken/.test(n) ? 'pot' : /toilet|wc/.test(n) ? 'toilet' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /bad/.test(n) ? 'bath' : /was/.test(n) ? 'wash' : /werk|kantoor|studeer/.test(n) ? 'desk' : /overloop|trap|gang/.test(n) ? 'stairs' : /slaap|kamer/.test(n) ? 'bed' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /oprit|garage|carport/.test(n) ? 'drive' : /schuur|berging/.test(n) ? 'shed' : 'door'; };
+    const c = this._config, flr = (f) => F[f] || {};
+    const rooms = Object.entries(A).map(([aid, a]) => {
+      const ids = byArea[aid] || [], dom = (d) => ids.filter((x) => x.startsWith(d + '.'));
+      const sens = (cls) => ids.filter((x) => x.startsWith('sensor.') && h.states[x]?.attributes.device_class === cls && !/inverter|omvormer|oven|wasmachine|vaatwasser|laadpaal/i.test(x));
+      const lights = dom('light'), covers = dom('cover'), climate = dom('climate').length > 0;
+      const apps = [[`sensor.${c.dishwasher}_status`, 'dish'], [`sensor.${c.oven}_status`, 'oven'], [c.washer, 'was']].filter(([e]) => ids.includes(e)).map(([, k]) => k);
+      // sensoren: binary_sensor (waterlek, rook, beweging, deur, raam) en rookmelders die hun status als sensor geven (zoals Nest Protect)
+      const sensors = ids.filter((x) => (x.startsWith('binary_sensor.') && SENS_KIND[h.states[x]?.attributes.device_class]) || (x.startsWith('sensor.') && SMOKE_RE.test(x)));
+      if (!lights.length && !covers.length && !climate && !sensors.length) return null;
+      const t = sens('temperature'), hu = sens('humidity');
+      return { name: a.name, floor: flr(a.floor_id).name || '', level: flr(a.floor_id).level ?? 99, icon: icon(a.name), climate, lights, covers, apps, scenes: aid,
+        temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors };
+    }).filter(Boolean);
+    // verdiepingen op volgorde (laag naar hoog, buiten als laatste); binnen een verdieping de volgorde van Home Assistant
+    rooms.forEach((r, i) => { r._i = i; if (/buiten/i.test(r.floor)) r.level = 999; });
+    rooms.sort((a, b) => a.level - b.level || a._i - b._i);
+    this._arKey = key; this._arRooms = rooms;
+    return rooms;
+  }
   _rooms() {
     const st = (id) => this._state(id);
-    return (this._config.rooms || []).map((r, i) => {
+    const list = (this._config.rooms || []).length ? this._config.rooms : this._areaRooms();
+    return list.map((r, i) => {
       const all = (r.lights || []).map(st).filter(Boolean);
       const isG = (x) => !!x.attributes.is_hue_group;
       // lampen van een Hue-kamer erbij zoeken op naam (attribuut lights); de Hue-kamer zelf alleen tonen als er niets los te vinden is
@@ -5061,7 +5177,30 @@ class ThuisCard extends HTMLElement {
       const strip = (n) => { const re = new RegExp(`^${r.name}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
       const scenes = Object.keys(this._hass.states).filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(x.attributes.friendly_name || k), t: Date.parse(x.state) || 0 }; })
         .map((x) => ({ ...x, own: !HUE_SCENES.includes(x.name.toLowerCase()) && !/^nieuw/i.test(x.name) && !/^\d+$/.test(x.name) }));
-      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, scenes };
+      const E = this._hass.entities || {}, S = this._hass.states;
+      // sensoren per apparaat: hoofdsensor + lux en batterij van hetzelfde apparaat
+      const seenDev = new Set();
+      const sensors = [...(r.sensors || []), ...(r.leaks || [])].map(st).filter(Boolean).map((x) => {
+        const dc = x.attributes.device_class, isS = x.entity_id.startsWith('sensor.');
+        const kind = isS ? 'smoke' : SENS_KIND[dc] || 'motion', K = SENS_TXT[kind], dev = E[x.entity_id]?.device_id;
+        // rookmelder: één regel per apparaat (rook + koolmonoxide samen)
+        if (kind === 'smoke' && dev) { if (seenDev.has(dev)) return null; seenDev.add(dev); }
+        const sibs = dev ? Object.keys(E).filter((k) => k !== x.entity_id && E[k].device_id === dev && S[k]) : [];
+        const sib = (cls, re) => { const k = sibs.find((k) => k.startsWith('sensor.') && (S[k].attributes.device_class === cls || (re && re.test(k)))); const v = k ? parseFloat(S[k].state) : NaN; return isNaN(v) ? null : v; };
+        const bat = sib('battery', /_(batterij|batterijniveau|battery|battery_level)$/), lux = sib('illuminance'), t = Date.parse(x.last_changed) || 0;
+        let on = x.state === 'on', off = ['unavailable', 'unknown'].includes(x.state), warn = false, txt;
+        if (kind === 'smoke') {
+          const lvl = (e) => !e ? 0 : e.entity_id.startsWith('binary_sensor.') ? (e.state === 'on' ? 2 : 0) : /warn|heads|waarschuw/i.test(e.state) ? 1 : /emerg|alarm|detect|gevaar|nood|^on$/i.test(e.state) ? 2 : 0;
+          const smoke = isS || dc === 'smoke' ? x : S[sibs.find((k) => SMOKE_RE.test(k) || S[k].attributes.device_class === 'smoke')];
+          const co = S[[x.entity_id, ...sibs].find((k) => CO_RE.test(k) || S[k]?.attributes.device_class === 'carbon_monoxide')];
+          const ls = lvl(smoke), lc = lvl(co), lv = Math.max(ls, lc);
+          const test = [smoke, co].some((e) => e?.state === 'testing');
+          on = lv === 2; warn = lv === 1;
+          txt = off ? 'Niet bereikbaar' : lv === 2 ? `${ls === 2 ? 'Rook' : 'Koolmonoxide'} gedetecteerd · sinds ${fmtTime(t)}` : lv === 1 ? `Waarschuwing ${ls === 1 ? 'rook' : 'koolmonoxide'}` : test ? 'Test bezig' : co ? 'Geen rook of koolmonoxide' : 'Geen rook';
+        } else txt = off ? 'Niet bereikbaar' : on ? `${K.on}${K.since ? ` · sinds ${Date.now() - t < 12 * HOUR ? fmtTime(t) : relTime(t)}` : ''}` : `${K.last && t ? `Laatst ${relTime(t)}` : K.off}`;
+        return { id: x.entity_id, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, label: K.label, txt };
+      }).filter(Boolean).sort((p, q) => (q.alarm - p.alarm) || (q.warn - p.warn) || (SENS_ORDER.indexOf(p.kind) - SENS_ORDER.indexOf(q.kind)));
+      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, scenes, sensors };
     });
   }
   _roomToggle(i) {
@@ -5109,7 +5248,7 @@ class ThuisCard extends HTMLElement {
     return `<div class="lt${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : 'Uit'}</div></div>`;
   }
   _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
-  _shortName(n) { const rm = this._config.rooms?.[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${rm.name}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
+  _shortName(n) { const rm = ((this._config.rooms || []).length ? this._config.rooms : this._areaRooms())[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${rm.name}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
   _bindTiles(box, ri) {
     box.querySelectorAll('.lt, .cv').forEach((el) => {
       const id = el.dataset.id, lamp = el.classList.contains('lt');
@@ -5128,7 +5267,7 @@ class ThuisCard extends HTMLElement {
   _updRoomSheet() {
     const B = this.$('rmB'); if (!B || this._cvHist) return;
     const rm = this._rooms()[this._roomIdx]; if (!rm) return;
-    const n = rm.lights.length, sum = [n ? (rm.on ? `${rm.on} ${rm.on === 1 ? 'lamp' : 'lampen'} aan` : 'lampen uit') : '', rm.covers.length ? (rm.covers.some((c) => c.pos < 99) ? (rm.covers.length === 1 ? `rolluik ${this._coverTxt(rm.covers[0])}` : `${rm.covers.filter((c) => c.pos < 99).length} rolluiken dicht`) : (rm.covers.length === 1 ? 'rolluik open' : 'rolluiken open')) : '', ...rm.apps.map((a) => `${a.k === 'was' ? 'wasmachine' : a.k === 'dish' ? 'vaatwasser' : 'oven'} bezig`)].filter(Boolean).join(' · ');
+    const n = rm.lights.length; let sum = [n ? (rm.on ? `${rm.on} ${rm.on === 1 ? 'lamp' : 'lampen'} aan` : 'lampen uit') : '', rm.covers.length ? (rm.covers.some((c) => c.pos < 99) ? (rm.covers.length === 1 ? `rolluik ${this._coverTxt(rm.covers[0])}` : `${rm.covers.filter((c) => c.pos < 99).length} rolluiken dicht`) : (rm.covers.length === 1 ? 'rolluik open' : 'rolluiken open')) : '', ...rm.apps.map((a) => `${a.k === 'was' ? 'wasmachine' : a.k === 'dish' ? 'vaatwasser' : 'oven'} bezig`)].filter(Boolean); rm.sensors.filter((x) => x.alarm).forEach((x) => sum.unshift(x.txt.split(' · ')[0].toLowerCase())); sum = sum.join(' · ');
     this.$('rmN').textContent = rm.name; this.$('rmS').textContent = sum.charAt(0).toUpperCase() + sum.slice(1);
     // klimaat: thermostaat (zoals op Thuis) of de temperatuur van de sensor
     let clim = '';
@@ -5147,6 +5286,7 @@ class ThuisCard extends HTMLElement {
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
       + (rm.apps.length ? `<div class="kth">Apparaten</div><div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : '')
+      + (rm.sensors.length ? `<div class="kth">Sensoren</div><div class="kglass klk">${rm.sensors.map((x) => `<div class="lk k-${x.kind}${x.alarm ? ' wet' : x.warn ? ' warn' : x.on ? ' on' : ''}${x.off ? ' off' : ''}" data-id="${x.id}"><i>${SENS_ICON(x)}</i><div><b>${x.label}</b><span>${x.txt}</span></div><em>${x.lux != null ? `<small>${fmt(x.lux)} lux</small>` : ''}${x.bat != null ? `<small class="${x.bat <= 20 ? 'low' : ''}">${RIC.svg('battery', 'on', x.bat)}${Math.round(x.bat)}%</small>` : ''}</em></div>`).join('')}</div>` : '')
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
     this._rmKey = html; B.innerHTML = html;
@@ -5158,6 +5298,7 @@ class ThuisCard extends HTMLElement {
       th.addEventListener('click', () => { this._openSheet('th'); this._roomBack = ri; });
     }
     B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
+    B.querySelectorAll('.klk .lk').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.id)));
     B.querySelectorAll('.ksc .mp').forEach((el) => el.addEventListener('click', () => { this._hass.callService('scene', 'turn_on', { entity_id: el.dataset.id }); el.classList.add('hot'); }));
     B.querySelector('.kall')?.addEventListener('click', () => { this._rmAllSc = !this._rmAllSc; this._rmKey = null; this._updRoomSheet(); });
   }
