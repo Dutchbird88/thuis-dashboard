@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '207';
+const CARD_VERSION = '208';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2963,6 +2963,7 @@ const TDEFAULTS = {
   waste: [],                           // leeg = automatisch (Afvalbeheer); anders [{ name: 'GFT', type: 'gft', entity: 'sensor.…' }] — type: gft, pmd, papier, rest
   car_battery: 'sensor.byd_seal_batterijniveau',   // pil "Auto" op de telefoon (het tabblad Auto maakt daar plaats voor Kamers)
   car_charging: 'sensor.laadpaal_opladermodus',
+  car_refresh: 'button.byd_seal_geforceerd_ophalen', car_updated: 'sensor.byd_seal_laatst_bijgewerkt', // auto verversen bij openen van de app (alleen als hij aan de laadpaal hangt)
   charger_power: 'sensor.laadpaal_laadvermogen',   // laadvermogen (W of kW) voor de laadkaart op Thuis
   charger_online: 'binary_sensor.laadpaal_online', charger_temp: 'sensor.laadpaal_temperatuur_intern', charger_firmware: 'update.laadpaal_firmware',
   charger_name: 'Zaptec Go 2', charger_current_a: 'number.laadpaal_max_stroom', charger_switch: 'switch.laadpaal_opladen',
@@ -3636,12 +3637,14 @@ class ThuisCard extends HTMLElement {
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
   connectedCallback() {
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); }, 10000);
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._carRefresh(); }, 10000);
+    if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') setTimeout(() => this._carRefresh(true), 800); }; document.addEventListener('visibilitychange', this._carVis); }
+    setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
     if (this._hass && !this._unsubs) this._subForecast();
   }
   disconnectedCallback() {
-    clearInterval(this._tick); clearInterval(this._htimer);
+    clearInterval(this._tick); clearInterval(this._htimer); if (this._carVis) { document.removeEventListener('visibilitychange', this._carVis); this._carVis = null; }
     (this._unsubs || []).forEach((p) => p.then((u) => u && u()).catch(() => {}));
     this._unsubs = null;
   }
@@ -4422,7 +4425,7 @@ class ThuisCard extends HTMLElement {
       const lamp = '';
       const tt = temp != null ? `${fmt(temp)}°` : '—', time = ol != null ? `nog ${dur(ol)}${oe ? ` · klaar ${oe}` : ''}` : '';
       // magnetron: eigen naam, icoon en vermogen in plaats van temperatuur
-      const ap = st(`select.${o}_actieve_programma`) || '', mw = /microwave/.test(ap) ? (ap.match(/microwave_(\d+)_watt/)?.[1] ? `${ap.match(/microwave_(\d+)_watt/)[1]} W` : 'Max') : null;
+      const ap = (/microwave|cooking/.test(st(`select.${o}_actieve_programma`) || '') ? st(`select.${o}_actieve_programma`) : st(`select.${o}_geselecteerd_programma`)) || '', mw = /microwave/.test(ap) ? (ap.match(/microwave_(\d+)_watt/)?.[1] ? `${ap.match(/microwave_(\d+)_watt/)[1]} W` : 'Max') : null;
       if (mw && ['run', 'pause', 'finished', 'delayedstart'].includes(os)) {
         const ph = os === 'run' ? 'Bezig' : os === 'pause' ? 'Gepauzeerd' : os === 'finished' ? 'Klaar' : 'Uitgesteld';
         put(oBox, os === 'finished' ? 'done' : 'oven run', block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
@@ -4432,6 +4435,9 @@ class ThuisCard extends HTMLElement {
       else if (os === 'delayedstart') put(oBox, 'oven run', block(ovenSvg('', temp), 'Oven', 'Gepland', 'Uitgesteld', `${op}<br>${oe ? `klaar ${oe}` : ''}`, null));
       else if (os === 'finished') put(oBox, 'done', block(ovenSvg('hot', temp), 'Oven is klaar', tt, 'Klaar', `${op}<br>baktijd voorbij`, 100));
       else if (['actionrequired', 'error'].includes(os)) put(oBox, 'bad', block(ovenSvg('', temp), 'Oven', tt, os === 'error' ? 'Storing' : 'Actie nodig', 'controleer de oven', null));
+      else if (st(`switch.${o}_inschakelen`) === 'on' && /microwave/.test(st(`select.${o}_geselecteerd_programma`) || '')) {
+        const sp = st(`select.${o}_geselecteerd_programma`), w = sp.match(/microwave_(\d+)_watt/)?.[1];
+        put(oBox, 'ready', block(microSvg(''), 'Magnetron', w ? `${w} W` : 'Max', 'Aan', 'klaar om te starten', null)); }
       else if (st(`switch.${o}_inschakelen`) === 'on') { const sel = prog(`select.${o}_geselecteerd_programma`, OVEN_PROG); put(oBox, 'ready', block(ovenSvg(temp >= 50 ? 'hot' : '', temp), 'Oven', tt, 'Aan', sel ? `${sel}<br>klaar om te starten` : 'geen programma gekozen', null)); }
       else if (temp != null && temp >= 50) put(oBox, 'cool', block(ovenSvg('hot', temp), 'Oven koelt af', tt, 'Heet', 'uit · nog warm<br>pas op bij openen', null));
       else put(oBox, '', '');
@@ -4666,6 +4672,18 @@ class ThuisCard extends HTMLElement {
     if (box._key === key) return;
     box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
     this._applyHidden();
+  }
+
+  // accu en laadtijd actueel houden: bij openen van de app (en elke 5 min tijdens het laden) de auto laten verversen
+  _carRefresh(open) {
+    const c = this._config, S = this._hass?.states; if (!S || this._kmode || document.visibilityState !== 'visible') return;
+    const b = S[c.car_refresh]; if (!b || b.state === 'unavailable' || !/^connected/.test(String(S[c.car_charging]?.state || ''))) return;
+    const now = Date.now(), upd = Date.parse(S[c.car_updated]?.state) || 0;
+    let last = 0; try { last = +localStorage.getItem('thuis-auto-ververst') || 0; } catch (e) { /* geen opslag */ }
+    const wait = open ? 2 * 60000 : 5 * 60000;
+    if (now - Math.max(upd, last) < wait) return;
+    try { localStorage.setItem('thuis-auto-ververst', String(now)); } catch (e) { /* geen opslag */ }
+    Promise.resolve(this._hass.callService('button', 'press', { entity_id: c.car_refresh }, undefined, false)).catch(() => {});
   }
 
   /* ---------- wasmachine ---------- */
