@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '204';
+const CARD_VERSION = '205';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3383,6 +3383,8 @@ const TSTYLE = `
   .maf .mbin { position: absolute; right: 4px; top: 22px; width: 72px; height: 72px; overflow: visible; }
   .maf b { font-size: 23px; font-weight: 600; margin-top: 6px; } .maf em { font-style: normal; font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .maf em.mtag { align-self: flex-start; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; color: #fff; background: var(--bc); margin: 4px 0 8px; }
+  .maf.quiet .mbin { opacity: .45; width: 50px; height: 50px; top: 14px; right: 8px; } .maf.quiet b { font-size: 20px; } .maf .mq { margin-top: 2px; }
+  .maf em.mchip { align-self: flex-start; margin: 8px 0 0; padding: 3px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 700; color: var(--text); background: rgba(255,255,255,.08); }
   .maf span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* bediening en agenda: titel boven de tegels */
   #bedTile, #agTile { background: none; border: 0; box-shadow: none; padding: 0; margin-top: 8px; }
@@ -4753,6 +4755,13 @@ class ThuisCard extends HTMLElement {
     const rest = items.filter((i) => i !== next && i.days != null && i.days >= min).slice(0, 2);
     const mf = this.$('mAf');
     mf.style.setProperty('--bc', next ? next.meta[1] : 'var(--muted)');
+    // geen bak vandaag of morgen: rustige stand, de bak verschijnt pas de dag ervoor (MORGEN)
+    const quiet = next && next.days >= 2;
+    const until = quiet ? (next.days === 2 ? 'vandaag en morgen' : `tot en met ${new Date(next.t - DAY).toLocaleDateString('nl-NL', { weekday: 'long' })}`) : '';
+    if (quiet) { mf.classList.add('quiet'); mf.style.setProperty('--bc', 'var(--muted)');
+      mf.innerHTML = `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#binRst"/></svg><b>Geen afval</b><span class="mq">${until}</span><em class="mchip">${next.name} · ${fd(next)}</em>`;
+      mf.onclick = () => this._moreInfo(next.entity); return; }
+    mf.classList.remove('quiet');
     mf.innerHTML = next ? `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag">${fd(next).toUpperCase()}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : '<div class="mlab">♻ Afval</div><span>Geen ophaaldata</span>';
     mf.onclick = () => next && this._moreInfo(next.entity);
   }
