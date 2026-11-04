@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '186';
+const CARD_VERSION = '187';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2392,7 +2392,13 @@ class AutoCard extends HTMLElement {
     // alleen de laadpaal bedienen; de auto levert alleen accu en tijd
     const sw = this._state(c.charger_switch), useSw = sw && !['unavailable', 'unknown'].includes(sw.state);
     if (st.charging) { if (useSw) this._hass.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else this._press(c.charger_stop); }
-    else if (st.plugged) { if (useSw) this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch }); else this._press(c.charger_resume); }
+    else if (st.plugged) {
+      // hervatten: schakelaar aan én de hervat-knop (als die beschikbaar is); na 25 s nog niet aan het laden, dan nog één keer
+      const go = () => { if (useSw) this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch });
+        const rb = this._state(c.charger_resume); if (rb && rb.state !== 'unavailable') this._press(c.charger_resume); };
+      go(); clearTimeout(this._cRetry);
+      this._cRetry = setTimeout(() => { if (!this._chargeState().charging && this._chargeState().plugged) go(); }, 25000);
+    }
     else return;
     this._cBusy = { t: Date.now(), charging: st.charging, mode: st.mode };
     clearTimeout(this._cBusyT); this._cBusyT = setTimeout(() => { this._cBusy = null; this._update(); }, 45000);
