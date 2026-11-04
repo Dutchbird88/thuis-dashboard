@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '210';
+const CARD_VERSION = '211';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3579,6 +3579,7 @@ const KSTYLE = `
 .wsr { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 22px; margin-top: 10px; cursor: pointer; background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)); border: 1px solid rgba(255,255,255,.05); }
 .wsr svg { width: 56px; height: 56px; flex: none; overflow: visible; } .wsr b { display: block; font-size: 18px; font-weight: 700; } .wsr span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
 .wsr em { margin-left: auto; font-style: normal; font-size: 13px; font-weight: 700; white-space: nowrap; color: color-mix(in srgb, var(--c) 70%, #fff); padding: 4px 10px; border-radius: 99px; background: color-mix(in srgb, var(--c) 22%, transparent); }
+.wsr.wdone { opacity: .6; } .wsr.wdone em { color: #3ddc97; background: rgba(61,220,151,.16); }
 .wsr.first { padding: 18px 16px; margin-top: 18px; border-color: color-mix(in srgb, var(--c) 50%, transparent); box-shadow: 0 10px 30px -18px var(--c); } .wsr.first svg { width: 84px; height: 84px; } .wsr.first b { font-size: 24px; }
 .hico.app { background: rgba(255,255,255,.06) !important; } .hico.app svg { width: 26px !important; height: 26px !important; } .hwho.hrun { color: #8fd3ff; } .hwho.hbad { color: #ff8a80; }
 .evsec .was.xchg { margin: 0; } .evsec .evoff { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: none !important; }
@@ -4762,13 +4763,17 @@ class ThuisCard extends HTMLElement {
     }
     if (!list.length) list = (this._binItems || []).filter((i) => i.days != null).map((i) => ({ type: i.type, t: startOfDay(i.t), entity: i.entity }));
     const ent = Object.fromEntries((this._binItems || []).map((i) => [i.type, i.entity]));
-    list = list.map((x) => ({ ...x, days: Math.round((x.t - day0) / DAY) })).filter((x) => x.days >= min).sort((a, b) => a.t - b.t);
+    list = list.map((x) => ({ ...x, days: Math.round((x.t - day0) / DAY) }));
+    // vandaag (na 15:00) al opgehaald: de volgende datum komt pas na middernacht van Afvalbeheer
+    const done = list.filter((x) => x.days === 0 && min === 1 && !list.some((y) => y.type === x.type && y.days > 0));
+    list = list.filter((x) => x.days >= min).sort((a, b) => a.t - b.t);
     const soon = list.filter((x) => x.days <= 14), later = list.filter((x) => x.days > 14 && !soon.some((y) => y.type === x.type));
     const lbl = (d) => d === 0 ? 'vandaag' : d === 1 ? 'morgen' : `over ${d} d`;
     const dd = (x, long) => long ? new Date(x.t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }) : x.days === 0 ? 'Vandaag' : x.days === 1 ? `Morgen · ${new Date(x.t).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '')}` : new Date(x.t).toLocaleDateString('nl-NL', long ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '');
     const row = (x, i) => { const m = BINS[x.type] || BINS.rest; return `<div class="wsr${i === 0 ? ' first' : ''}" style="--c:${m[1]}" data-e="${x.entity || ent[x.type] || ''}"><svg viewBox="0 0 100 100"><use href="#${m[0]}"/></svg><div><b>${names[x.type]}</b><span>${dd(x, i === 0)}</span></div><em>${lbl(x.days)}</em></div>`; };
     box.innerHTML = (soon.length ? soon.map(row).join('') : '<div class="hnone">Geen ophaaldagen in de komende twee weken</div>')
-      + (later.length ? `<div class="hday">Later</div>${later.map((x) => row(x, 1)).join('')}` : '');
+      + (later.length ? `<div class="hday">Later</div>${later.map((x) => row(x, 1)).join('')}` : '')
+      + (done.length ? `<div class="hday">Vandaag opgehaald</div>${done.map((x) => { const m = BINS[x.type] || BINS.rest; return `<div class="wsr wdone" style="--c:${m[1]}" data-e="${x.entity || ent[x.type] || ''}"><svg viewBox="0 0 100 100"><use href="#${m[0]}"/></svg><div><b>${names[x.type]}</b><span>volgende datum volgt morgen</span></div><em>✓</em></div>`; }).join('')}` : '');
     box.querySelectorAll('.wsr[data-e]').forEach((el) => el.addEventListener('click', () => el.dataset.e && this._moreInfo(el.dataset.e)));
   }
 
