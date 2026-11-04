@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '197';
+const CARD_VERSION = '198';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2401,9 +2401,10 @@ class AutoCard extends HTMLElement {
       let back = c.charger_max_a || 16; try { back = parseFloat(localStorage.getItem('thuis-laadstroom')) || back; } catch (e) { /* geen opslag */ }
       const go = () => { if (canZero && !(parseFloat(this._state(c.charger_current)?.state) > 0)) setA(back);
         if (useSw && this._state(c.charger_switch)?.state === 'off') this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch });
-        const rb = this._state(c.charger_resume); if (rb && rb.state !== 'unavailable') this._press(c.charger_resume); };
+        const rb = this._state(c.charger_resume); if (rb && rb.state !== 'unavailable') this._press(c.charger_resume);
+        setTimeout(() => { const cb = this._state(this._e('button', 'start_charging')); if (cb && cb.state !== 'unavailable') this._press(this._e('button', 'start_charging')); }, 4000); };
       go(); clearTimeout(this._cRetry);
-      this._cRetry = setTimeout(() => { if (!this._chargeState().charging && this._chargeState().plugged) go(); }, 25000);
+      this._cRetry = setTimeout(() => { const p = this._num(c.charger_power); if (this._chargeState().plugged && !(p > 300)) go(); }, 45000);
     }
     else return;
     this._cBusy = { t: Date.now(), charging: st.charging, mode: st.mode };
@@ -2964,7 +2965,7 @@ const TDEFAULTS = {
   charger_power: 'sensor.laadpaal_laadvermogen',   // laadvermogen (W of kW) voor de laadkaart op Thuis
   charger_online: 'binary_sensor.laadpaal_online', charger_temp: 'sensor.laadpaal_temperatuur_intern', charger_firmware: 'update.laadpaal_firmware',
   charger_name: 'Zaptec Go 2', charger_current_a: 'number.laadpaal_max_stroom', charger_switch: 'switch.laadpaal_opladen',
-  charger_stop: 'button.laadpaal_stop_het_opladen', charger_resume: 'button.laadpaal_hervat_het_opladen', charger_max_a: 16, car_range: 'sensor.byd_seal_bereik',
+  charger_stop: 'button.laadpaal_stop_het_opladen', charger_resume: 'button.laadpaal_hervat_het_opladen', charger_max_a: 16, car_start_button: 'button.byd_seal_start_charging', car_range: 'sensor.byd_seal_bereik',
   battery_kwh: 82.5,                               // bruikbare accucapaciteit, voor 'vol om'
   car_name: 'BYD Seal', car_image: '/local/auto-render.png',
   car_schedule: 'switch.byd_seal_schedule_enabled', car_start: 'time.byd_seal_start_time',
@@ -4558,12 +4559,14 @@ class ThuisCard extends HTMLElement {
       if (canZero) { const v = amps(); try { localStorage.setItem('thuis-laadstroom', String(v >= 6 ? v : back)); } catch (e) { /* geen opslag */ } setA(0); }
       else if (swOk()) call('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
     } else if (a === 'start') {
+      // de Zaptec stopt de sessie bij een pauze (FinalStop); de BYD vraagt daarna zelf geen stroom meer:
+      // laadpaal vrijgeven én de auto vragen om te starten (de knop is er alleen als de auto niet laadt)
       const go = () => { if (canZero && !(amps() > 0)) setA(back);
         if (swOk() && sw().state === 'off') call('switch', 'turn_on', { entity_id: c.charger_switch });
-        press(c.charger_resume); };
+        press(c.charger_resume); setTimeout(() => press(c.car_start_button), 4000); };
       go();
       // de Zaptec-cloud reageert soms traag: na 30 s nog niet terug, dan nogmaals
-      this._evRetry = setTimeout(() => { if (canZero && !(amps() > 0)) go(); }, 30000);
+      this._evRetry = setTimeout(() => { const p = parseFloat(st0(c.charger_power)?.state); if (!(amps() > 0) || !(p > 300)) go(); }, 45000);
     } else if (a === 'stop') {
       if (canZero && !(amps() > 0)) setA(back); // geen 0 A achterlaten, anders start de volgende sessie niet
       if (swOk()) call('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
