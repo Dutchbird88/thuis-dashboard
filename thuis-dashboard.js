@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '185';
+const CARD_VERSION = '186';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2017,6 +2017,7 @@ const ADEFAULTS = {
   charger_current: 'number.laadpaal_max_stroom',          // maximale laadstroom (A), wordt via de schuif ingesteld
   charger_resume: 'button.laadpaal_hervat_het_opladen',
   charger_stop: 'button.laadpaal_stop_het_opladen',
+  charger_switch: 'switch.laadpaal_opladen',      // Zaptec-schakelaar Opladen: echte pauze/hervatten (sessie blijft open); anders de knoppen
   charger_online: 'binary_sensor.laadpaal_online',
   charger_temp: 'sensor.laadpaal_temperatuur_intern',
   charger_firmware: 'update.laadpaal_firmware',
@@ -2389,8 +2390,9 @@ class AutoCard extends HTMLElement {
     if (this._cBusy || !this._hass) return;
     const st = this._chargeState();
     // alleen de laadpaal bedienen; de auto levert alleen accu en tijd
-    if (st.charging) this._press(c.charger_stop);
-    else if (st.plugged) this._press(c.charger_resume);
+    const sw = this._state(c.charger_switch), useSw = sw && !['unavailable', 'unknown'].includes(sw.state);
+    if (st.charging) { if (useSw) this._hass.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else this._press(c.charger_stop); }
+    else if (st.plugged) { if (useSw) this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch }); else this._press(c.charger_resume); }
     else return;
     this._cBusy = { t: Date.now(), charging: st.charging, mode: st.mode };
     clearTimeout(this._cBusyT); this._cBusyT = setTimeout(() => { this._cBusy = null; this._update(); }, 45000);
@@ -4431,7 +4433,7 @@ class ThuisCard extends HTMLElement {
       }
       // niet melden: rookmelders (eigen melding vanaf 20%), Hue-dimmers en -knoppen, deur- en raamsensoren
       const d0 = D[e.device_id] || {}, dn = `${id} ${a.friendly_name || ''} ${d0.name || ''} ${d0.name_by_user || ''} ${d0.model || ''}`;
-      if (/dimmer|button|knop|smart_button|tap_dial|remote|afstandsbediening|door_window|deur|raam|window|contact/i.test(dn)) return;
+      if (/dimmer|button|knop|smart_button|tap_dial|remote|afstandsbediening|door_window|deur|raam|window|contact|io_series|toothbrush|tandenborstel|watch|airpods/i.test(dn)) return;
       if (e.device_id && Object.keys(E).some((k) => E[k].device_id === e.device_id && (SMOKE_RE.test(k) || ['smoke', 'door', 'window', 'opening', 'garage_door'].includes(S[k]?.attributes.device_class)))) return;
       const d = D[e.device_id] || {}, area = A[e.area_id || d.area_id]?.name;
       const raw = d.name_by_user || d.name || a.friendly_name || id.slice(7).replace(/_/g, ' ');
