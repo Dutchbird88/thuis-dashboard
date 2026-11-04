@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '184';
+const CARD_VERSION = '185';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2388,12 +2388,10 @@ class AutoCard extends HTMLElement {
     const c = this._config;
     if (this._cBusy || !this._hass) return;
     const st = this._chargeState();
+    // alleen de laadpaal bedienen; de auto levert alleen accu en tijd
     if (st.charging) this._press(c.charger_stop);
-    else if (st.plugged) {
-      // de Zaptec vrijgeven en de auto zelf laten starten (anders wacht hij op zijn eigen laadschema)
-      this._press(c.charger_resume);
-      this._press(this._e('button', 'start_charging'));
-    } else return;
+    else if (st.plugged) this._press(c.charger_resume);
+    else return;
     this._cBusy = { t: Date.now(), charging: st.charging, mode: st.mode };
     clearTimeout(this._cBusyT); this._cBusyT = setTimeout(() => { this._cBusy = null; this._update(); }, 45000);
     this._update();
@@ -2439,7 +2437,7 @@ class AutoCard extends HTMLElement {
     const c = this._config, mode = this._state(c.charger_mode)?.state || '', hasMode = !!mode && mode !== 'unavailable' && mode !== 'unknown';
     const soc = parseFloat(this._state(this._e('sensor', 'batterijniveau'))?.state ?? this._state(c.car_battery)?.state);
     const charging = hasMode ? mode === 'connected_charging' : this._on(this._e('binary_sensor', 'opladen'));
-    const plugged = charging || mode.startsWith('connected') || this._on(this._e('binary_sensor', 'stekker'));
+    const plugged = charging || mode.startsWith('connected') || (!hasMode && this._on(this._e('binary_sensor', 'stekker')));
     // Zaptec meldt na pauzeren ook "connected_finished": alleen vol als de accu (bijna) vol is, anders gepauzeerd
     const done = mode === 'connected_finished', full = done && (isNaN(soc) || soc >= 99);
     return { mode, charging, plugged, finished: full, paused: done && !full };
@@ -2549,7 +2547,7 @@ class AutoCard extends HTMLElement {
     let bh, bc = 'cbtn';
     if (this._cBusy) { bc += ' busy'; bh = '<i class="cspin"></i>Opdracht verstuurd…'; }
     else if (st.charging) bh = '<svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg>Laden pauzeren';
-    else { bc += st.plugged && !st.finished ? ' go' : ' off'; bh = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>Nu laden'; }
+    else { bc += st.plugged && !st.finished ? ' go' : ' off'; bh = `<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>${st.paused ? 'Laden hervatten' : 'Nu laden'}`; }
     btn.className = bc;
     if (btn.innerHTML !== bh) btn.innerHTML = bh;
 
