@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '195';
+const CARD_VERSION = '196';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3575,7 +3575,8 @@ const KSTYLE = `
 .evone .evseg button { all: unset; cursor: pointer; height: 38px; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 14.5px; font-weight: 600; color: var(--text); -webkit-tap-highlight-color: transparent; }
 .evone .evseg button + button { border-left: 1px solid rgba(140,170,240,.22); } .evone .evseg button:active { background: rgba(255,255,255,.12); }
 .evone .evseg button svg { width: 14px !important; height: 14px !important; padding: 0 !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; flex: none; }
-.evone .evseg button.on { background: rgba(94,225,208,.28); color: #fff; } .evone .evseg button[disabled] { opacity: .4; pointer-events: none; } .evone .evseg.busy button { opacity: .6; pointer-events: none; }
+.evone .evseg button.on { background: none; } .evone .evseg button[disabled] { opacity: .4; pointer-events: none; } .evone .evseg.busy button { opacity: .6; pointer-events: none; }
+.evsec .everr { margin-top: 10px; font-size: 12.5px; color: #ff8a80; }
 .evsec .evh { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 13px; color: var(--muted); } .evsec .evh b { color: var(--text); font-weight: 600; }
 .evsec .evh span { display: inline-flex; align-items: center; gap: 6px; } .evsec .evh i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 .evb { margin-top: 20px !important; } .evb button svg { width: 72px !important; height: 72px !important; padding: 23px !important; }
@@ -4539,23 +4540,33 @@ class ThuisCard extends HTMLElement {
     }
     const dis = st.plugged ? '' : ' disabled', B = (a, l, ic, on) => `<button data-a="${a}" class="${on ? 'on' : ''}"${dis}><svg viewBox="0 0 24 24">${ic}</svg><span>${l}</span></button>`;
     const busy = this._evBusy && Date.now() - this._evBusy < 20000;
-    return `<div class="kth">Laadpaal</div><div class="evsec evone">${card.replace(/<\/div>$/, '')}<div class="evseg${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div></div></div>`;
+    return `<div class="kth">Laadpaal</div><div class="evsec evone">${card.replace(/<\/div>$/, '')}<div class="evseg${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div>${this._evErr ? `<div class="everr">${this._evErr}</div>` : ''}</div></div>`;
   }
   _evAct(a) {
-    const c = this._config, S = this._hass.states, h = this._hass, cur = S[c.charger_current_a], sw = S[c.charger_switch];
-    const canZero = cur && Number(cur.attributes.min) === 0, swOk = sw && !['unavailable', 'unknown'].includes(sw.state);
-    const setA = (v) => h.callService('number', 'set_value', { entity_id: c.charger_current_a, value: v });
-    const press = (id) => { if (S[id] && S[id].state !== 'unavailable') h.callService('button', 'press', { entity_id: id }); };
+    const c = this._config, h = this._hass, st0 = (id) => this._hass.states[id];
+    const fail = (e) => { this._evErr = `Laadpaal reageert niet: ${e?.message || e || 'onbekende fout'}`; this._rmKey = null; this._updRoomSheet(); };
+    const call = (d, sv, data) => Promise.resolve(h.callService(d, sv, data)).catch(fail);
+    const cur = () => st0(c.charger_current_a), sw = () => st0(c.charger_switch);
+    const canZero = cur() && Number(cur().attributes.min) === 0, swOk = () => sw() && !['unavailable', 'unknown'].includes(sw().state);
+    const amps = () => parseFloat(cur()?.state);
+    const setA = (v) => call('number', 'set_value', { entity_id: c.charger_current_a, value: v });
+    const press = (id) => { if (st0(id) && st0(id).state !== 'unavailable') call('button', 'press', { entity_id: id }); };
+    let back = c.charger_max_a || 16; try { back = parseFloat(localStorage.getItem('thuis-laadstroom')) || back; } catch (e) { /* geen opslag */ }
+    if (!(back >= 6)) back = c.charger_max_a || 16;
+    this._evErr = null; clearTimeout(this._evRetry);
     if (a === 'pause') {
-      if (canZero) { const v = parseFloat(cur.state); try { localStorage.setItem('thuis-laadstroom', String(v > 0 ? v : c.charger_max_a || 16)); } catch (e) { /* geen opslag */ } setA(0); }
-      else if (swOk) h.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
+      if (canZero) { const v = amps(); try { localStorage.setItem('thuis-laadstroom', String(v >= 6 ? v : back)); } catch (e) { /* geen opslag */ } setA(0); }
+      else if (swOk()) call('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
     } else if (a === 'start') {
-      let back = c.charger_max_a || 16; try { back = parseFloat(localStorage.getItem('thuis-laadstroom')) || back; } catch (e) { /* geen opslag */ }
-      if (canZero && !(parseFloat(cur.state) > 0)) setA(back);
-      if (swOk && sw.state === 'off') h.callService('switch', 'turn_on', { entity_id: c.charger_switch });
-      press(c.charger_resume);
+      const go = () => { if (canZero && !(amps() > 0)) setA(back);
+        if (swOk() && sw().state === 'off') call('switch', 'turn_on', { entity_id: c.charger_switch });
+        press(c.charger_resume); };
+      go();
+      // de Zaptec-cloud reageert soms traag: na 30 s nog niet terug, dan nogmaals
+      this._evRetry = setTimeout(() => { if (canZero && !(amps() > 0)) go(); }, 30000);
     } else if (a === 'stop') {
-      if (swOk) h.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
+      if (canZero && !(amps() > 0)) setA(back); // geen 0 A achterlaten, anders start de volgende sessie niet
+      if (swOk()) call('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
     }
     this._evBusy = Date.now(); this._rmKey = null; this._updRoomSheet(); setTimeout(() => { this._rmKey = null; this._updRoomSheet(); }, 20500);
   }
