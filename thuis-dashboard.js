@@ -514,6 +514,10 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
 class ZonnepanelenCard extends HTMLElement {
   setConfig(config) {
     this._config = { ...DEFAULTS, ...config };
+    // paneelnummers: 'n' (sommige YAML-lezers maken van de sleutel n een false), of 'nr'; ontbreekt het, dan doornummeren
+    let pn = 0;
+    this._config.inverters = (this._config.inverters || []).map((inv) => ({ ...inv, panels: (inv.panels || []).map((p) => {
+      const v = Number(p.n ?? p.nr ?? p.number ?? p.false ?? p['false']); pn = Number.isFinite(v) && v > 0 ? v : pn + 1; return { ...p, n: pn }; }) }));
     this._config.photo = { ...DEFAULTS.photo, ...(config.photo || {}) };
     this._config.forecast = { ...DEFAULTS.forecast, ...(config.forecast || {}) };
     this._photoKey = null;
@@ -1284,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '180';
+const CARD_VERSION = '181';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
