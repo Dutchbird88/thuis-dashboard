@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 4 november 2026, versie **v214** (commit `e967e08`).*
+*Bijgewerkt: 4 november 2026, versie **v215**.*
 
 ## Huidige stand
 
-- **De versie die de gebruiker gebruikt is v214**, geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v215** (namen via het register). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v214.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v215.
 
 ## Gerealiseerde functies (per tab)
 
@@ -83,15 +83,11 @@
 | v207–v208 | Magnetronstand van de oven. De auto ververst bij openen van de app en tijdens laden. |
 | v209 | Bron in de kamergeschiedenis. Geschiedenis van de apparaten. |
 | v213–v214 | Rustige telefoonstijl (`CALM`) met effen vensters. Titels gecentreerd. |
+| v215 | Namen via `_nm()`: eerst `hass.formatEntityName` (register, HA 2025.10+), dan `friendly_name`, dan apparaat- + entiteitnaam uit het register. Getest: beeld gelijk aan v214, ook zonder `friendly_name`. |
 
 ## Volgende stappen
 
-1. **`friendly_name`-verharding.** De gebruiker heeft hiermee ingestemd, mits het geen zichtbare impact heeft.
-   - Plan: een hulpfunctie `_name(id)` die eerst de registernaam gebruikt (`hass.entities[id].name`, en de apparaatnaam via `hass.devices[...]`) en daarna `attributes.friendly_name`.
-   - Vervang daarmee de directe aanroepen van `friendly_name`.
-   - Controleer dat de getoonde namen gelijk blijven: test met en zonder registernaam en doe een pixel-regressie op de computerweergave.
-   - Daarna komt v215.
-2. **Gebruiker helpen bij de overgang naar de Marketplace** (HA 2026.11): GitHub koppelen en de repository opnieuw toevoegen als dat nodig is.
+1. **Gebruiker helpen bij de overgang naar de Marketplace** (HA 2026.11): GitHub koppelen en de repository opnieuw toevoegen als dat nodig is.
 
 ## Open ideeën (uitgesteld, alleen na een mockup en akkoord)
 

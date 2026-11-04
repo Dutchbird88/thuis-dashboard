@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '214';
+const CARD_VERSION = '215';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3668,6 +3668,17 @@ class ThuisCard extends HTMLElement {
 
   $(id) { return this.shadowRoot.getElementById(id); }
   _state(id) { return this._hass?.states[id]; }
+  // naam van een entiteit (state of id): eerst zoals HA hem uit het register samenstelt (formatEntityName, HA 2025.10+),
+  // dan friendly_name, dan zelf uit het register (entiteit + apparaat); '' als er niets is
+  _nm(x) {
+    const h = this._hass, s = typeof x === 'string' ? h?.states[x] : x, id = typeof x === 'string' ? x : x?.entity_id;
+    if (!s && !id) return '';
+    if (s && h?.states[id] === s && typeof h.formatEntityName === 'function') { try { const n = h.formatEntityName(s); if (n) return n; } catch (e) { /* oudere HA */ } }
+    const fn = s?.attributes?.friendly_name; if (fn) return fn;
+    const e = h?.entities?.[id]; if (!e) return '';
+    const d = h.devices?.[e.device_id], dn = d ? (d.name_by_user || d.name || '') : '';
+    return (e.has_entity_name || !e.name ? [dn, e.name] : [e.name]).filter(Boolean).join(' ');
+  }
   _moreInfo(entityId) { if (entityId) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
   _climateId() { return this._config.climate || Object.keys(this._hass?.states || {}).find((k) => k.startsWith('climate.')); }
   _lightIds() {
@@ -3678,19 +3689,19 @@ class ThuisCard extends HTMLElement {
       const norm = (x) => String(x || '').toLowerCase().replace(/^hue\s+/, '').replace(/[^a-z0-9]+/g, ' ').replace(/([a-z])\1+/g, '$1').trim();
       return this._config.lights.map((want) => {
         if (String(want).startsWith('light.')) return want;
-        const w = norm(want), named = all0.map((s) => [s, norm(s.attributes.friendly_name)]);
+        const w = norm(want), named = all0.map((s) => [s, norm(this._nm(s))]);
         const hit = named.find(([, n]) => n === w) || named.find(([, n]) => n.startsWith(w)) || named.find(([, n]) => n.includes(w));
         return hit ? hit[0].entity_id : `missing:${want}`;
       });
     }
     const all = Object.values(this._hass?.states || {}).filter((s) => s.entity_id.startsWith('light.') && s.state !== 'unavailable');
     const groups = all.filter((s) => s.attributes.is_hue_group);
-    return (groups.length ? groups : all).sort((a, b) => (a.attributes.friendly_name || '').localeCompare(b.attributes.friendly_name || '')).slice(0, 8).map((s) => s.entity_id);
+    return (groups.length ? groups : all).sort((a, b) => this._nm(a).localeCompare(this._nm(b))).slice(0, 8).map((s) => s.entity_id);
   }
   _cameraIds() {
     if (this._config.cameras.length) return this._config.cameras;
     // volgorde: oprit, deurbel, tuin, dan de rest (op naam of entiteit)
-    const rank = (k) => { const n = `${k} ${this._state(k)?.attributes.friendly_name || ''}`.toLowerCase(); return /oprit/.test(n) ? 0 : /deurbel|doorbell|voordeur/.test(n) ? 1 : /tuin|garden|achter/.test(n) ? 2 : 3; };
+    const rank = (k) => { const n = `${k} ${this._nm(k)}`.toLowerCase(); return /oprit/.test(n) ? 0 : /deurbel|doorbell|voordeur/.test(n) ? 1 : /tuin|garden|achter/.test(n) ? 2 : 3; };
     return Object.keys(this._hass?.states || {}).filter((k) => k.startsWith('camera.') && !k.startsWith('camera.buienradar')).sort((x, y) => rank(x) - rank(y) || x.localeCompare(y)).slice(0, 4);
   }
 
@@ -3899,7 +3910,7 @@ class ThuisCard extends HTMLElement {
       const st = p.entity ? this._state(p.entity) : null;
       const state = st ? st.state : p.placeholder ? 'home' : 'unknown';
       const pic = p.picture || st?.attributes.entity_picture || '';
-      const zone = state === 'home' ? 'Thuis' : state === 'not_home' ? 'Weg' : state === 'unknown' ? '?' : (this._state(`zone.${state}`)?.attributes.friendly_name || state);
+      const zone = state === 'home' ? 'Thuis' : state === 'not_home' ? 'Weg' : state === 'unknown' ? '?' : (this._nm(`zone.${state}`) || state);
       const pc = state === 'home' ? 'var(--exp)' : state === 'not_home' || state === 'unknown' ? '#6b7385' : '#4f73f0';
       return { ...p, state, pic, zone, pc };
     });
@@ -4125,7 +4136,7 @@ class ThuisCard extends HTMLElement {
     const list = ids.map((id) => {
       const st = this._state(id), a = st.attributes;
       const pos = a.current_position != null ? a.current_position : st.state === 'closed' ? 0 : 100;
-      return { id, pos, moving: ['opening', 'closing'].includes(st.state), name: (a.friendly_name || id).replace(/^Rolluik /, '') };
+      return { id, pos, moving: ['opening', 'closing'].includes(st.state), name: (this._nm(st) || id).replace(/^Rolluik /, '') };
     });
     const key = JSON.stringify(list);
     if (key === this._cvKey) return;
@@ -4155,7 +4166,7 @@ class ThuisCard extends HTMLElement {
     const ids = this._cameraIds();
     if (!ids.length) { this.$('camLive').innerHTML = '<div class="wempty" style="padding:20px">Geen camera gevonden</div>'; return; }
     if (!this._camId || !ids.includes(this._camId)) this._camId = ids[0];
-    this.$('camTag').title = this._state(this._camId)?.attributes.friendly_name || this._camId;
+    this.$('camTag').title = this._nm(this._camId) || this._camId;
     this._liveCam();
     this._thumbs();
   }
@@ -4184,7 +4195,7 @@ class ThuisCard extends HTMLElement {
     if (!id || !window.loadCardHelpers) return;
     this.$('cFull').hidden = false;
     // UniFi noemt de stream "Deurbel High resolution channel": alleen de cameranaam tonen
-    const nm = (c) => (this._state(c)?.attributes.friendly_name || c).replace(/\s*[-–]?\s*(high|medium|low)\s+resolution\s+channel\s*$/i, '').replace(/\s*(hoge|gemiddelde|lage)\s+resolutie.*$/i, '').trim();
+    const nm = (c) => (this._nm(c) || c).replace(/\s*[-–]?\s*(high|medium|low)\s+resolution\s+channel\s*$/i, '').replace(/\s*(hoge|gemiddelde|lage)\s+resolutie.*$/i, '').trim();
     this.$('cfName').textContent = nm(id);
     this._applySound();
     const row = this.$('cfRow');
@@ -4297,7 +4308,7 @@ class ThuisCard extends HTMLElement {
     const key = JSON.stringify([ids, this._camId]);
     if (key !== this._thumbKey) {
       this._thumbKey = key;
-      box.innerHTML = ids.map((id) => `<div class="thumb${id === this._camId ? ' on' : ''}" data-id="${id}" title="${this._state(id)?.attributes.friendly_name || id}"><img alt=""><i></i></div>`).join('');
+      box.innerHTML = ids.map((id) => `<div class="thumb${id === this._camId ? ' on' : ''}" data-id="${id}" title="${this._nm(id) || id}"><img alt=""><i></i></div>`).join('');
       box.querySelectorAll('.thumb').forEach((el) => el.addEventListener('click', () => { this._camId = el.dataset.id; this._updCams(); }));
     }
     // stilstaand beeld elke 10 seconden vernieuwen
@@ -4331,7 +4342,7 @@ class ThuisCard extends HTMLElement {
     const box = this.$('lights');
     box.innerHTML = ls.map((s) => {
       const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a);
-      const name = (a.friendly_name || s.entity_id).replace(/^Hue /, '');
+      const name = (this._nm(s) || s.entity_id).replace(/^Hue /, '');
       return `<div class="lt${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
         <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
@@ -4515,11 +4526,11 @@ class ThuisCard extends HTMLElement {
         return;
       }
       // niet melden: rookmelders (eigen melding vanaf 20%), Hue-dimmers en -knoppen, deur- en raamsensoren
-      const d0 = D[e.device_id] || {}, dn = `${id} ${a.friendly_name || ''} ${d0.name || ''} ${d0.name_by_user || ''} ${d0.model || ''}`;
+      const d0 = D[e.device_id] || {}, dn = `${id} ${this._nm(id)} ${d0.name || ''} ${d0.name_by_user || ''} ${d0.model || ''}`;
       if (/dimmer|button|knop|smart_button|tap_dial|remote|afstandsbediening|door_window|deur|raam|window|contact|io_series|toothbrush|tandenborstel|watch|airpods/i.test(dn)) return;
       if (e.device_id && Object.keys(E).some((k) => E[k].device_id === e.device_id && (SMOKE_RE.test(k) || ['smoke', 'door', 'window', 'opening', 'garage_door'].includes(S[k]?.attributes.device_class)))) return;
       const d = D[e.device_id] || {}, area = A[e.area_id || d.area_id]?.name;
-      const raw = d.name_by_user || d.name || a.friendly_name || id.slice(7).replace(/_/g, ' ');
+      const raw = d.name_by_user || d.name || this._nm(id) || id.slice(7).replace(/_/g, ' ');
       let nm = raw.replace(/[\s_]*(batterij(niveau)?|battery( level)?)\s*$/i, '').trim(); nm = nm.charAt(0).toUpperCase() + nm.slice(1);
       out.push({ id: key, since: 'low', t: nm, desc: `Batterij bijna leeg · nog ${Math.round(v)}%${area ? ` · ${area}` : ''}`, c: '#ff8a5c', ic: 'warn', svg: RIC.svg('battery', 'on', v) });
     });
@@ -4756,7 +4767,7 @@ class ThuisCard extends HTMLElement {
     const names = { gft: 'GFT', pmd: 'PMD', papier: 'Papier', rest: 'Rest' };
     return Object.values(this._hass?.states || {})
       .filter((st) => st.entity_id.startsWith('sensor.') && (st.attributes.Wastecollector || st.attributes.wastecollector))
-      .map((st) => ({ st, type: kind(st.entity_id + ' ' + (st.attributes.friendly_name || '').toLowerCase()) }))
+      .map((st) => ({ st, type: kind(st.entity_id + ' ' + this._nm(st).toLowerCase()) }))
       .filter((x) => x.type)
       .map((x) => ({ name: names[x.type], type: x.type, entity: x.st.entity_id }));
   }
@@ -5073,7 +5084,7 @@ class ThuisCard extends HTMLElement {
   }
   /* geschiedenis van een rolluik: grafiek van 24 uur en een tijdlijn per dag (uit history en logbook van HA) */
   async _cvHistory() {
-    const id = this._cvId, body = this.$('shBody'), lamp = id.startsWith('light.'), name = (this._state(id)?.attributes.friendly_name || id).replace(/^Rolluik /, '').replace(/^Hue /, '');
+    const id = this._cvId, body = this.$('shBody'), lamp = id.startsWith('light.'), name = (this._nm(id) || id).replace(/^Rolluik /, '').replace(/^Hue /, '');
     this._cvHist = true;
     body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${name}</button></div>
       <div class="hti"><b>Geschiedenis</b><span>${lamp ? 'Lamp' : 'Rolluik'} ${name}</span></div><div id="hBody"><div class="hnone">Laden…</div></div>`;
@@ -5305,7 +5316,7 @@ class ThuisCard extends HTMLElement {
       const st = this._state(this._cvId); if (!st || this._cvHist || !this.$('cvF')) return;
       const a = st.attributes, on = st.state === 'on', b = on ? Math.round((a.brightness ?? 255) / 2.55) : 0, v = this._cvDrag ?? b;
       const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
-      set('cvN', (a.friendly_name || this._cvId).replace(/^Hue /, ''));
+      set('cvN', (this._nm(st) || this._cvId).replace(/^Hue /, ''));
       set('cvS', st.state === 'unavailable' ? 'Niet bereikbaar' : v > 0 ? `Aan · ${v}%` : 'Uit');
       this.$('cvF').style.height = `${v}%`;
       this.$('cvSl').classList.toggle('off', v <= 0);
@@ -5320,7 +5331,7 @@ class ThuisCard extends HTMLElement {
       const a = st.attributes, pos = a.current_position ?? (st.state === 'closed' ? 0 : 100);
       const d = this._cvDrag ?? 100 - pos, p = 100 - d;
       const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
-      set('cvN', (a.friendly_name || this._cvId).replace(/^Rolluik /, ''));
+      set('cvN', (this._nm(st) || this._cvId).replace(/^Rolluik /, ''));
       set('cvS', this._cvDrag == null && st.state === 'opening' ? 'Gaat open' : this._cvDrag == null && st.state === 'closing' ? 'Gaat dicht' : p >= 99 ? 'Open' : p <= 1 ? 'Dicht' : `${d}% dicht`);
       this.$('cvF').style.height = `${d}%`;
       set('cvI', mBlind(p));
@@ -5380,7 +5391,7 @@ class ThuisCard extends HTMLElement {
       rain = `<div class="shcard"><div class="shlab">Regen komende 2 uur <span>${this._rainSoon() || ''}</span></div><div class="shrain">${list.map((x) => `<i style="height:${Math.max(2, x.v / mx * 46).toFixed(1)}px;opacity:${x.v >= 0.1 ? 1 : 0.25}"></i>`).join('')}</div><div class="shrx"><span>nu</span><span>+30</span><span>+60</span><span>+90</span><span>+120</span></div></div>`;
     }
     const hrs = (this._fc_hourly || []).filter((f) => Date.parse(f.datetime) > now - 3600000).slice(0, 6);
-    const wn = (e) => /buienradar/.test(e || '') ? 'Buienradar' : /^weather\.forecast_/.test(e || '') ? 'Met.no' : (this._state(e)?.attributes.friendly_name || e || '').replace(/^Forecast\s*/i, '');
+    const wn = (e) => /buienradar/.test(e || '') ? 'Buienradar' : /^weather\.forecast_/.test(e || '') ? 'Met.no' : (this._nm(e) || e || '').replace(/^Forecast\s*/i, '');
     const srcTxt = wn(w.entity_id);
     const hour = hrs.length ? `<div class="shcard"><div class="shlab">Per uur</div><div class="shhrs">${hrs.map((f, i) => {
       const p = num(f.precipitation_probability), mmv = num(f.precipitation);
@@ -5457,7 +5468,7 @@ class ThuisCard extends HTMLElement {
       // sensoren: binary_sensor (waterlek, rook, beweging, deur, raam) en rookmelders die hun status als sensor geven (zoals Nest Protect)
       // deuren van huishoudelijke apparaten (wasmachine, vaatwasser, oven …) zijn geen kamersensor
       const appDev = new Set([c0.washer, c0.dishwasher && `sensor.${c0.dishwasher}_status`, c0.oven && `sensor.${c0.oven}_status`].filter(Boolean).map((e) => E[e]?.device_id).filter(Boolean));
-      const isApp = (x) => appDev.has(E[x]?.device_id) || APP_RE.test(x) || APP_RE.test(h.states[x]?.attributes.friendly_name || '');
+      const isApp = (x) => appDev.has(E[x]?.device_id) || APP_RE.test(x) || APP_RE.test(this._nm(x));
       // camera's (bv. UniFi Protect): hun detecties (beweging, persoon, geluid van rook/CO) zijn geen losse sensoren of rookmelders
       const camDev = this._camDev ||= new Set(Object.keys(E).filter((k) => k.startsWith('camera.')).map((k) => E[k].device_id).filter(Boolean));
       const cams = [...new Map(ids.filter((x) => x.startsWith('camera.') && E[x]?.device_id).map((x) => [E[x].device_id, x])).values()];
@@ -5495,18 +5506,18 @@ class ThuisCard extends HTMLElement {
     const isG = (x) => !!x.attributes.is_hue_group, lc = (x) => String(x || '').toLowerCase(), byName = {}, sceneIds = [];
     // lampen van een Hue-kamer erbij zoeken op naam (attribuut lights); de Hue-kamer zelf alleen tonen als er niets los te vinden is
     Object.values(this._hass.states).forEach((x) => { const id = x.entity_id;
-      if (id.startsWith('light.') && !isG(x) && x.state !== 'unavailable') byName[lc(x.attributes.friendly_name)] ??= x;
+      if (id.startsWith('light.') && !isG(x) && x.state !== 'unavailable') byName[lc(this._nm(x))] ??= x;
       else if (id.startsWith('scene.')) sceneIds.push(id); });
     return list.map((r, i) => {
       const all = (r.lights || []).map(st).filter(Boolean);
       const members = all.filter(isG).flatMap((g) => (Array.isArray(g.attributes.lights) ? g.attributes.lights : []).map((n) => byName[lc(n)]).filter(Boolean));
       let cand = [...all.filter((x) => !isG(x)), ...members].filter((x) => x.state !== 'unavailable');
       if (!cand.length) cand = all.filter((x) => isG(x) && x.state !== 'unavailable');
-      const seen = new Set(), lights = cand.filter((x) => { const k = lc(x.attributes.friendly_name); if (seen.has(k)) return false; seen.add(k); return true; });
+      const seen = new Set(), lights = cand.filter((x) => { const k = lc(this._nm(x)); if (seen.has(k)) return false; seen.add(k); return true; });
       const on = lights.filter((x) => x.state === 'on').length;
       const covers = (r.covers || []).map(st).filter(Boolean).map((x) => {
         const a = x.attributes, pos = a.current_position != null ? a.current_position : x.state === 'closed' ? 0 : 100;
-        return { id: x.entity_id, pos, moving: ['opening', 'closing'].includes(x.state), name: (a.friendly_name || x.entity_id).replace(/^Rolluik /, '') };
+        return { id: x.entity_id, pos, moving: ['opening', 'closing'].includes(x.state), name: (this._nm(x) || x.entity_id).replace(/^Rolluik /, '') };
       });
       let temp = null, hum = null, heat = false;
       if (r.climate) { const c = st(this._climateId()); temp = c?.attributes.current_temperature ?? null; heat = isHeating(c?.attributes); }
@@ -5515,7 +5526,7 @@ class ThuisCard extends HTMLElement {
       const apps = (r.apps || []).map((k) => { const box = this.$(k); if (!box || box.hidden) return null; return { k, box, txt: k === 'evc' ? (box.querySelector('.xbig')?.textContent || '') : box.querySelector('.tm')?.textContent || box.querySelector('.rt b')?.textContent || '' }; }).filter(Boolean);
       const slug = r.scenes || r.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
       const strip = (n) => { const re = new RegExp(`^${r.name}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
-      const scenes = sceneIds.filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(x.attributes.friendly_name || k), t: Date.parse(x.state) || 0 }; })
+      const scenes = sceneIds.filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(this._nm(x) || k), t: Date.parse(x.state) || 0 }; })
         .map((x) => ({ ...x, own: !HUE_SCENES.includes(x.name.toLowerCase()) && !/^nieuw/i.test(x.name) && !/^\d+$/.test(x.name) }));
       const E = this._hass.entities || {}, S = this._hass.states;
       // sensoren per apparaat: hoofdsensor + lux en batterij van hetzelfde apparaat
@@ -5549,7 +5560,7 @@ class ThuisCard extends HTMLElement {
       const plugs = (r.plugs || []).map(st).filter((x) => x && x.state !== 'unavailable').map((x) => {
         const d = E[x.entity_id]?.device_id, dv = this._hass.devices?.[d] || {}, pid = d && Object.keys(E).find((k) => E[k].device_id === d && S[k]?.attributes.device_class === 'power');
         const w = pid ? parseFloat(S[pid].state) : NaN;
-        return { id: x.entity_id, on: x.state === 'on', w: isNaN(w) ? null : w, nm: dv.name_by_user || x.attributes.friendly_name || dv.name || x.entity_id };
+        return { id: x.entity_id, on: x.state === 'on', w: isNaN(w) ? null : w, nm: dv.name_by_user || this._nm(x) || dv.name || x.entity_id };
       });
       // camera: één pil met de laatste detectie (persoon, auto, dier, aanbellen of beweging)
       const KIND = [[/persoon|person/, 'Persoon'], [/voertuig|vehicle/, 'Auto'], [/animal|dier/, 'Dier'], [/_deurbel$|doorbell|_ring$/, 'Aangebeld'], [/beweging|motion/, 'Beweging']];
@@ -5559,7 +5570,7 @@ class ThuisCard extends HTMLElement {
           .map((k) => { const m = KIND.find(([re]) => re.test(k)); return m ? { k, lb: m[1], on: S[k].state === 'on', t: Date.parse(S[k].last_changed) || 0, pr: KIND.indexOf(m) } : null; }).filter(Boolean);
         const cur = det.filter((x) => x.on).sort((p, q) => p.pr - q.pr)[0];
         const last = det.sort((p, q) => (q.t - p.t) || (p.pr - q.pr))[0];
-        return { id, nm: dv.name_by_user || dv.name || S[id].attributes.friendly_name || 'Camera', on: !!cur, txt: cur ? `${cur.lb} nu` : last ? `${last.lb} · ${relTime(last.t)}` : 'Geen detectie' };
+        return { id, nm: dv.name_by_user || dv.name || this._nm(id) || 'Camera', on: !!cur, txt: cur ? `${cur.lb} nu` : last ? `${last.lb} · ${relTime(last.t)}` : 'Geen detectie' };
       });
       return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams };
     });
@@ -5613,7 +5624,7 @@ class ThuisCard extends HTMLElement {
   }
   // lamp- en rolluiktegels zoals bij Bediening (telefoon): tik = eigen paneel, tik op het rondje = aan/uit of open/dicht, lang = HA-venster
   _ltTile(s) {
-    const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a), name = this._shortName(a.friendly_name || s.entity_id);
+    const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a), name = this._shortName(this._nm(s) || s.entity_id);
     return `<div class="lt${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : 'Uit'}</div></div>`;
   }
   _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
@@ -5723,7 +5734,7 @@ class ThuisCard extends HTMLElement {
     let last = '', rows = '';
     for (const l of L) {
       const dn = dname(l.t); if (dn !== last) { rows += `<div class="hday">${dn}</div>`; last = dn; }
-      const lamp = l.entity_id.startsWith('light.'), nm = lamp ? this._shortName(this._state(l.entity_id)?.attributes.friendly_name || l.name || '') : (l.name || '').replace(/^Rolluik /, '');
+      const lamp = l.entity_id.startsWith('light.'), nm = lamp ? this._shortName(this._nm(l.entity_id) || l.name || '') : (l.name || '').replace(/^Rolluik /, '');
       const ico = lamp ? `<i class="hico lmp${l.state === 'on' ? ' on' : ''}">${MBULB}</i>` : `<i class="hico${l.state === 'closed' ? ' dn' : ''}">${l.state === 'closed' ? DN : UP}</i>`;
       const txt = lamp ? (l.state === 'on' ? 'Aan' : 'Uit') : l.state === 'open' ? 'Open' : 'Dicht';
       rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt} <em class="hnm">· ${nm}</em></b>${this._who(src(l))}</div><div class="htm">${fmtTime(l.t)}</div></div>`;
@@ -5785,7 +5796,7 @@ class ThuisCard extends HTMLElement {
       const h = Math.sin(dLa / 2) ** 2 + Math.cos(r(a.latitude)) * Math.cos(r(b.latitude)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
     return (this._config.persons || []).filter((p) => p.entity).map((p) => {
       const st = this._state(p.entity), s = st?.state || 'unknown', a = st?.attributes || {};
-      const zone = s === 'home' ? 'Thuis' : s === 'not_home' ? 'Weg' : s === 'unknown' || s === 'unavailable' ? 'Onbekend' : (this._state(`zone.${s}`)?.attributes.friendly_name || s);
+      const zone = s === 'home' ? 'Thuis' : s === 'not_home' ? 'Weg' : s === 'unknown' || s === 'unavailable' ? 'Onbekend' : (this._nm(`zone.${s}`) || s);
       const d = s === 'not_home' ? km(a, home) : null;
       return { ...p, st, s, zone, home: s === 'home', dist: d, pic: p.picture || a.entity_picture || '', since: st ? Date.parse(st.last_changed) : null };
     });
@@ -5852,7 +5863,7 @@ class ThuisCard extends HTMLElement {
     for (const l of L) {
       const p = byId[l.entity_id], dn = dname(l.t), home = l.state === 'home', away = l.state === 'not_home';
       if (dn !== last) { rows += `<div class="hday">${dn}</div>`; last = dn; }
-      const zn = home ? 'Thuis' : away ? 'Weg' : (this._state(`zone.${l.state}`)?.attributes.friendly_name || l.state);
+      const zn = home ? 'Thuis' : away ? 'Weg' : (this._nm(`zone.${l.state}`) || l.state);
       const txt = home ? `${p.name} is thuisgekomen` : away ? `${p.name} is weggegaan` : `${p.name} is bij ${zn}`;
       const c = home ? '#3ddc97' : away ? '#8fa6c8' : '#7cb6ff';
       rows += `<div class="pev" style="--c:${c}"><div class="pav" style="${p.pic ? `background-image:url('${p.pic}')` : ''}">${p.pic ? '' : (p.name || '?')[0]}</div><div class="pt"><b>${txt}</b><span>${fmtTime(l.t)}</span></div><span class="ptag">${zn.toLowerCase()}</span></div>`;

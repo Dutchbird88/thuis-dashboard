@@ -238,8 +238,9 @@ Verdere regels:
 - **HA 2026.11:** HACS wordt de *Marketplace*.
   - De migratie gaat automatisch, maar voor deze eigen repository is een GitHub-koppeling nodig (device login).
   - Updates lopen daarna via Instellingen → Marketplace / Updates.
-- **`friendly_name` gaat op termijn verdwijnen** (aangekondigd in 2026.11). De kaart leest op veel plekken `attributes.friendly_name`.
-  - Geplande verbetering: eerst de naam uit het register (`hass.entities[id].name` en de apparaatnaam), en `friendly_name` als terugval. Zie PROGRESS.md.
+- **`friendly_name` gaat op termijn verdwijnen** (aangekondigd in 2026.11). Sinds v215 lopen alle namen in Thuis/Kamers via `_nm(id of state)`:
+  - eerst `hass.formatEntityName` (HA 2025.10+, naam uit het register), dan `friendly_name`, dan apparaat- + entiteitnaam uit `hass.entities`/`hass.devices`;
+  - gebruik `_nm()` voor nieuwe code, lees `attributes.friendly_name` niet direct.
 - **Cache:** na een update ziet de gebruiker soms nog de oude versie. Download dan opnieuw in HACS en wis de frontend- of app-cache.
 - **Entity-ids van laadpaal en auto** zijn standaardwaarden voor de integraties Zaptec en BYD. Een ander merk heeft andere namen nodig in de YAML.
 - **De Buienradar-integratie levert soms geen verwachting.** Dan komt alles van de andere weer-entiteit. Dat is zo bedoeld.
