@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '205';
+const CARD_VERSION = '206';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3335,6 +3335,7 @@ const TSTYLE = `
   .cfrow { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; } .cfrow::-webkit-scrollbar { display: none; }
   .cfrow div { width: 112px; height: 64px; flex: none; }
   .mstack > .was, #notList .nrow, .alrt .alr { position: relative; z-index: 1; touch-action: pan-y; }
+  #camTag { display: none; } /* telefoon: geen knipperend rood bolletje op het camerabeeld */
   .mstack > .was { background-color: #0e1626 !important; } #notList .nrow.swiping { background: var(--tile2); }
   .swact { position: absolute; z-index: 0; display: flex; justify-content: flex-end; align-items: stretch; padding: 7px; box-sizing: border-box; background: rgba(255,69,58,.16); }
   .swact button { all: unset; cursor: pointer; width: 84px; border-radius: 14px; background: #ff453a; color: #fff; font-size: 12.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: width .2s; }
