@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '208';
+const CARD_VERSION = '209';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3576,6 +3576,7 @@ const KSTYLE = `
 .kspills .mp.alarm { background: linear-gradient(135deg, rgba(255,69,58,.4), rgba(150,28,40,.4)); box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.6); } .kspills .mp.alarm span { color: #ffd2cc; font-weight: 700; }
 .kspills .mp.alarm i.g { animation: lkp 1.6s ease-in-out infinite; border-radius: 50%; }
 .klk.koff .lk b { font-size: 15.5px; }
+.hico.app { background: rgba(255,255,255,.06) !important; } .hico.app svg { width: 26px !important; height: 26px !important; } .hwho.hrun { color: #8fd3ff; } .hwho.hbad { color: #ff8a80; }
 .evsec .was.xchg { margin: 0; } .evsec .evoff { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: none !important; }
 .evsec .evoff svg.xo { width: 46px; height: 72px; margin-right: 8px; } .evsec .evoff .xh b { font-size: 17px; } .evsec .evoff .xh span { font-size: 14px; margin-top: 2px; }
 .evone .evseg { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; border-radius: 99px; overflow: hidden; background: rgba(70,105,180,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
@@ -3838,7 +3839,9 @@ class ThuisCard extends HTMLElement {
       e.stopPropagation(); this._cfSound = !this._cfSound; this._applySound();
       const id = this._cfEl?._entity; if (id && customElements.get('ha-camera-stream')) { this._cfEl = null; this._openCam(id, true); }
     });
-    this.$('was').addEventListener('click', () => this._moreInfo(this._config.washer));
+    this.$('was').addEventListener('click', () => this._appOpen('was'));
+    this.$('dish').addEventListener('click', () => this._appOpen('dish'));
+    this.$('oven').addEventListener('click', () => this._appOpen('oven'));
     this.$('cFull').addEventListener('click', (e) => { if (e.target === this.$('cFull')) this._closeCam(); });
     this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open'));
     this._camEl = null; this._camId = null; this._lightKey = null; this._pplKey = null; this._binKey = null; this._thumbKey = null;
@@ -5623,10 +5626,11 @@ class ThuisCard extends HTMLElement {
       th.querySelectorAll('.mstp button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); this._tStep(+b.dataset.d); }));
       th.addEventListener('click', () => { this._openSheet('th'); this._roomBack = ri; });
     }
-    B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
+    B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._appHistory(this._roomIdx, el.dataset.k)));
     B.querySelectorAll('.evb button, .evseg button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
     B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
     B.querySelectorAll('.kspills .mp[data-plug]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._hass.callService('switch', 'toggle', { entity_id: el.dataset.plug }); }, true));
+    B.querySelectorAll('.klk.koff .lk').forEach((el) => el.addEventListener('click', (e) => { if (el.dataset.k && el.dataset.k !== 'evc') { e.stopImmediatePropagation(); this._appHistory(this._roomIdx, el.dataset.k); } }, true));
     B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));
     B.querySelectorAll('.ksc .mp').forEach((el) => el.addEventListener('click', () => { this._hass.callService('scene', 'turn_on', { entity_id: el.dataset.id }); el.classList.add('hot'); }));
     B.querySelector('.kall')?.addEventListener('click', () => { this._rmAllSc = !this._rmAllSc; this._rmKey = null; this._updRoomSheet(); });
@@ -5660,16 +5664,67 @@ class ThuisCard extends HTMLElement {
     const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
     const DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
     const day0 = startOfDay(Date.now()), dname = (t) => { const k = Math.round((day0 - startOfDay(t)) / DAY); return k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }); };
-    const L = (Array.isArray(log) ? log : []).filter((l) => ['on', 'off', 'open', 'closed'].includes(l.state)).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => b.t - a.t).slice(0, 120);
+    const ALL = (Array.isArray(log) ? log : []).map((l) => ({ ...l, t: Date.parse(l.when) }));
+    // eindstand zonder bron (bv. rolluik meldt zelf "dicht"): de bron van de opdracht ervoor (tot 5 min) gebruiken
+    const hasSrc = (x) => x.context_user_id || x.context_entity_id || x.context_event_type === 'call_service' || x.context_domain === 'homekit' || x.context_event_type === 'homekit_state_change';
+    const src = (l) => hasSrc(l) ? l : ALL.filter((x) => x.entity_id === l.entity_id && x.t <= l.t && x.t >= l.t - 5 * 60000 && hasSrc(x)).sort((a, b) => b.t - a.t)[0] || l;
+    const L = ALL.filter((l) => ['on', 'off', 'open', 'closed'].includes(l.state)).sort((a, b) => b.t - a.t).slice(0, 120);
     let last = '', rows = '';
     for (const l of L) {
       const dn = dname(l.t); if (dn !== last) { rows += `<div class="hday">${dn}</div>`; last = dn; }
       const lamp = l.entity_id.startsWith('light.'), nm = lamp ? this._shortName(this._state(l.entity_id)?.attributes.friendly_name || l.name || '') : (l.name || '').replace(/^Rolluik /, '');
       const ico = lamp ? `<i class="hico lmp${l.state === 'on' ? ' on' : ''}">${MBULB}</i>` : `<i class="hico${l.state === 'closed' ? ' dn' : ''}">${l.state === 'closed' ? DN : UP}</i>`;
       const txt = lamp ? (l.state === 'on' ? 'Aan' : 'Uit') : l.state === 'open' ? 'Open' : 'Dicht';
-      rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt} <em class="hnm">· ${nm}</em></b>${this._who(l)}</div><div class="htm">${fmtTime(l.t)}</div></div>`;
+      rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt} <em class="hnm">· ${nm}</em></b>${this._who(src(l))}</div><div class="htm">${fmtTime(l.t)}</div></div>`;
     }
     this.$('hBody').innerHTML = rows || '<div class="hnone">Geen wijzigingen in de afgelopen 3 dagen</div>';
+  }
+
+  // geschiedenis van een apparaat: elke keer dat het aan het werk was, met programma, duur en afloop (7 dagen)
+  _appOpen(k) {
+    const ri = this._rooms().findIndex((r) => (r.r.apps || []).includes(k));
+    const c = this._config, id = k === 'was' ? c.washer : `sensor.${c[k === 'dish' ? 'dishwasher' : 'oven']}_status`;
+    if (ri < 0) return this._moreInfo(id);
+    if (this._sheet !== 'room' || this._roomIdx !== ri) this._openSheet('room', ri);
+    setTimeout(() => this._appHistory(ri, k), 60);
+  }
+  async _appHistory(i, k) {
+    const rm = this._rooms()[i], body = this.$('shBody'), c = this._config; if (!rm) return;
+    this._cvHist = true;
+    const NM = { was: 'Wasmachine', dish: 'Vaatwasser', oven: 'Oven' }[k];
+    const sid = k === 'was' ? c.washer : `sensor.${c[k === 'dish' ? 'dishwasher' : 'oven']}_status`;
+    const pid = k === 'was' ? `${c.washer}_programma` : `select.${c[k === 'dish' ? 'dishwasher' : 'oven']}_actieve_programma`;
+    const tid = k === 'was' ? `${c.washer}_temperatuur` : null;
+    body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${rm.name}</button></div>
+      <div class="hti"><b>${NM}</b><span>Afgelopen 7 dagen</span></div><div id="hBody"><div class="hnone">Laden…</div></div>`;
+    this.$('hBack').addEventListener('click', () => { this._cvHist = false; this._rmKey = null; this._openSheet('room', i); });
+    const from = new Date(Date.now() - 7 * DAY).toISOString(), end = encodeURIComponent(new Date().toISOString());
+    const ids = [sid, pid, tid].filter((x) => x && this._state(x));
+    const log = await this._hass.callApi('GET', `logbook/${from}?entity=${ids.join(',')}&end_time=${end}`).catch(() => []);
+    if (this._sheet !== 'room' || !this._cvHist) return;
+    const L = (Array.isArray(log) ? log : []).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => a.t - b.t);
+    const RUN = /^(in_use|run|running|pause|rinse_hold)$/, OK = /^(finished|program_ended|end)$/, BAD = /^(aborting|program_interrupted|failure|error)$/;
+    const progAt = (t) => { const p = [...L].reverse().find((x) => x.entity_id === pid && x.t <= t + 3 * 60000 && !/^(no_program|unknown|unavailable)$/.test(x.state)); if (!p) return '';
+      const map = k === 'was' ? WPROG : k === 'dish' ? DISH_PROG : OVEN_PROG; const key = Object.keys(map).find((x) => p.state === x || p.state.endsWith(x)); return key ? map[key] : p.state.replace(/^.*program_/, '').replace(/_/g, ' '); };
+    const tempAt = (t) => { if (!tid) return ''; const p = [...L].reverse().find((x) => x.entity_id === tid && x.t <= t + 10 * 60000 && !isNaN(parseFloat(x.state))); return p ? `${fmt(parseFloat(p.state))}°` : ''; };
+    const sessions = []; let cur = null;
+    for (const l of L.filter((x) => x.entity_id === sid)) {
+      if (RUN.test(l.state)) { if (!cur) cur = { t0: l.t }; }
+      else if (cur) { sessions.push({ ...cur, t1: l.t, res: OK.test(l.state) ? 'ok' : BAD.test(l.state) ? 'bad' : 'ok' }); cur = null; }
+    }
+    if (cur) sessions.push({ ...cur, t1: null, res: 'run' });
+    const day0 = startOfDay(Date.now()), dname = (t) => { const k2 = Math.round((day0 - startOfDay(t)) / DAY); return k2 === 0 ? 'Vandaag' : k2 === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }); };
+    const dur = (m) => m >= 60 ? `${Math.floor(m / 60)} u ${m % 60} min` : `${m} min`;
+    const ic = `<i class="hico app">${k === 'was' ? washSvg(0) : k === 'dish' ? dishSvg(false) : ovenSvg('', null)}</i>`;
+    let last = '', rows = '';
+    for (const x of sessions.reverse().filter((x) => !x.t1 || x.t1 - x.t0 > 60000).slice(0, 40)) {
+      const dn = dname(x.t0); if (dn !== last) { rows += `<div class="hday">${dn}</div>`; last = dn; }
+      const pr = [progAt(x.t0), tempAt(x.t0)].filter(Boolean).join(' · ') || NM;
+      const m = x.t1 ? Math.round((x.t1 - x.t0) / 60000) : null;
+      const st = x.res === 'run' ? '<span class="hwho hrun">Bezig</span>' : x.res === 'bad' ? '<span class="hwho hbad">Afgebroken</span>' : `<span class="hwho">Klaar · ${dur(m)}</span>`;
+      rows += `<div class="hrow"><div class="hline">${ic}</div><div class="htx"><b>${pr}</b>${st}</div><div class="htm">${fmtTime(x.t0)}${x.t1 ? `–${fmtTime(x.t1)}` : ''}</div></div>`;
+    }
+    this.$('hBody').innerHTML = rows || `<div class="hnone">${NM} is de afgelopen 7 dagen niet gebruikt</div>`;
   }
 
   /* ---------- paneel Aanwezigheid: kaart met avatars, status per persoon en tijdlijn ---------- */
