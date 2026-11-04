@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '194';
+const CARD_VERSION = '195';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2962,6 +2962,7 @@ const TDEFAULTS = {
   car_battery: 'sensor.byd_seal_batterijniveau',   // pil "Auto" op de telefoon (het tabblad Auto maakt daar plaats voor Kamers)
   car_charging: 'sensor.laadpaal_opladermodus',
   charger_power: 'sensor.laadpaal_laadvermogen',   // laadvermogen (W of kW) voor de laadkaart op Thuis
+  charger_online: 'binary_sensor.laadpaal_online', charger_temp: 'sensor.laadpaal_temperatuur_intern', charger_firmware: 'update.laadpaal_firmware',
   charger_name: 'Zaptec Go 2', charger_current_a: 'number.laadpaal_max_stroom', charger_switch: 'switch.laadpaal_opladen',
   charger_stop: 'button.laadpaal_stop_het_opladen', charger_resume: 'button.laadpaal_hervat_het_opladen', charger_max_a: 16, car_range: 'sensor.byd_seal_bereik',
   battery_kwh: 82.5,                               // bruikbare accucapaciteit, voor 'vol om'
@@ -3569,7 +3570,14 @@ const KSTYLE = `
 .kspills .mp.alarm i.g { animation: lkp 1.6s ease-in-out infinite; border-radius: 50%; }
 .klk.koff .lk b { font-size: 15.5px; }
 .evsec .was.xchg { margin: 0; } .evsec .evoff { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: none !important; }
-.evsec .evoff svg.xo { width: 58px; height: 92px; margin-right: 6px; }
+.evsec .evoff svg.xo { width: 46px; height: 72px; margin-right: 8px; } .evsec .evoff .xh b { font-size: 17px; } .evsec .evoff .xh span { font-size: 14px; margin-top: 2px; }
+.evone .evseg { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; border-radius: 99px; overflow: hidden; background: rgba(70,105,180,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.evone .evseg button { all: unset; cursor: pointer; height: 38px; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 14.5px; font-weight: 600; color: var(--text); -webkit-tap-highlight-color: transparent; }
+.evone .evseg button + button { border-left: 1px solid rgba(140,170,240,.22); } .evone .evseg button:active { background: rgba(255,255,255,.12); }
+.evone .evseg button svg { width: 14px !important; height: 14px !important; padding: 0 !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; flex: none; }
+.evone .evseg button.on { background: rgba(94,225,208,.28); color: #fff; } .evone .evseg button[disabled] { opacity: .4; pointer-events: none; } .evone .evseg.busy button { opacity: .6; pointer-events: none; }
+.evsec .evh { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 13px; color: var(--muted); } .evsec .evh b { color: var(--text); font-weight: 600; }
+.evsec .evh span { display: inline-flex; align-items: center; gap: 6px; } .evsec .evh i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 .evb { margin-top: 20px !important; } .evb button svg { width: 72px !important; height: 72px !important; padding: 23px !important; }
 .evb button.on svg { background: linear-gradient(180deg, rgba(94,225,208,.45), rgba(31,168,147,.35)) !important; border-color: rgba(94,225,208,.6) !important; }
 .evb button[disabled] { opacity: .35; pointer-events: none; } .evb.busy button { opacity: .6; pointer-events: none; }
@@ -3765,7 +3773,11 @@ class ThuisCard extends HTMLElement {
     this.$('tMin').addEventListener('click', () => this._tStep(-1));
     // telefoon: meldingen en apparaten naar links wegvegen (zoals Apple Mail)
     ['pic', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
-    this.$('evc').addEventListener('click', () => go({ dataset: { nav: NAV.auto } }));
+    this.$('evc').addEventListener('click', () => {
+      // naar het paneel van de kamer met de laadpaal (bediening); anders het tabblad Auto
+      const ri = this._rooms().findIndex((r) => (r.r.apps || []).includes('evc'));
+      if (ri >= 0) { this._openSheet('room', ri); setTimeout(() => this.$('rmB')?.querySelector('.evsec')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350); } else go({ dataset: { nav: NAV.auto } });
+    });
     this.$('mMin').addEventListener('click', (e) => { e.stopPropagation(); this._tStep(-1); });
     this.$('mPlus').addEventListener('click', (e) => { e.stopPropagation(); this._tStep(1); });
     // telefoon: tik = eigen paneel (thermostaat of weer), lang drukken op de temperatuur = venster van Home Assistant
@@ -4520,13 +4532,14 @@ class ThuisCard extends HTMLElement {
     let card;
     if (st.plugged && box && box.innerHTML) card = `<div class="${box.className.replace(/\bgone\b/, '')}">${box.innerHTML}</div>`;
     else {
-      const rng = parseFloat(S[c.car_range]?.state);
-      card = `<div class="was xchg evwait evoff"><div class="xr"><div class="xl"><div class="xh"><div><b>${c.charger_name || 'Laadpaal'}</b><span>Niet aangesloten</span></div></div><div class="xbig">${isNaN(st.soc) ? '—' : `${Math.round(st.soc)}<small>%</small>`}</div><div class="xk">${isNaN(rng) ? 'accu auto' : `accu auto · ${fmt(rng)} km`}</div></div>
-        <svg class="xi xo" viewBox="140 0 46 74"><rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="#8a94a6"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/><path d="M163 42c0 14 2 22-6 26" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/></svg></div><div class="bar"><i style="width:${isNaN(st.soc) ? 0 : Math.round(st.soc)}%"></i></div></div>`;
+      const on = S[c.charger_online], fw = S[c.charger_firmware];
+      const hl = `<div class="evh">${on ? `<span><i style="background:${on.state === 'on' ? '#3ddc97' : '#ff6b5e'}"></i>${on.state === 'on' ? 'online' : 'offline'}</span>` : ''}${fw ? `<span>firmware <b${fw.state === 'on' ? ' style="color:var(--sun)"' : ''}>${fw.state === 'on' ? 'update' : 'actueel'}</b></span>` : ''}</div>`;
+      card = `<div class="was xchg evwait evoff"><div class="xr"><div class="xl"><div class="xh"><div><b>Niet aangesloten</b></div></div>${hl}</div>
+        <svg class="xi xo" viewBox="140 0 46 74"><rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="#8a94a6"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/><path d="M163 42c0 14 2 22-6 26" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/></svg></div></div>`;
     }
     const dis = st.plugged ? '' : ' disabled', B = (a, l, ic, on) => `<button data-a="${a}" class="${on ? 'on' : ''}"${dis}><svg viewBox="0 0 24 24">${ic}</svg><span>${l}</span></button>`;
     const busy = this._evBusy && Date.now() - this._evBusy < 20000;
-    return `<div class="kth">Laadpaal</div><div class="evsec">${card}<div class="cvb evb${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div></div>`;
+    return `<div class="kth">Laadpaal</div><div class="evsec evone">${card.replace(/<\/div>$/, '')}<div class="evseg${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div></div></div>`;
   }
   _evAct(a) {
     const c = this._config, S = this._hass.states, h = this._hass, cur = S[c.charger_current_a], sw = S[c.charger_switch];
@@ -5525,7 +5538,7 @@ class ThuisCard extends HTMLElement {
       th.addEventListener('click', () => { this._openSheet('th'); this._roomBack = ri; });
     }
     B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
-    B.querySelectorAll('.evb button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
+    B.querySelectorAll('.evb button, .evseg button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
     B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
     B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));
     B.querySelectorAll('.ksc .mp').forEach((el) => el.addEventListener('click', () => { this._hass.callService('scene', 'turn_on', { entity_id: el.dataset.id }); el.classList.add('hot'); }));
