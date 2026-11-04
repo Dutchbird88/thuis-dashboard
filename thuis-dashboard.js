@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '198';
+const CARD_VERSION = '199';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2402,7 +2402,7 @@ class AutoCard extends HTMLElement {
       const go = () => { if (canZero && !(parseFloat(this._state(c.charger_current)?.state) > 0)) setA(back);
         if (useSw && this._state(c.charger_switch)?.state === 'off') this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch });
         const rb = this._state(c.charger_resume); if (rb && rb.state !== 'unavailable') this._press(c.charger_resume);
-        setTimeout(() => { const cb = this._state(this._e('button', 'start_charging')); if (cb && cb.state !== 'unavailable') this._press(this._e('button', 'start_charging')); }, 4000); };
+        setTimeout(() => { const id = this._e('button', 'start_charging'), cb = this._state(id), pw = this._num(c.charger_power); if (cb && cb.state !== 'unavailable' && !(pw > 300)) Promise.resolve(this._hass.callService('button', 'press', { entity_id: id }, undefined, false)).catch(() => {}); }, 4000); };
       go(); clearTimeout(this._cRetry);
       this._cRetry = setTimeout(() => { const p = this._num(c.charger_power); if (this._chargeState().plugged && !(p > 300)) go(); }, 45000);
     }
@@ -4540,6 +4540,7 @@ class ThuisCard extends HTMLElement {
         <svg class="xi xo" viewBox="140 0 46 74"><rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="#8a94a6"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/><path d="M163 42c0 14 2 22-6 26" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/></svg></div></div>`;
     }
     const dis = st.plugged ? '' : ' disabled', B = (a, l, ic, on) => `<button data-a="${a}" class="${on ? 'on' : ''}"${dis}><svg viewBox="0 0 24 24">${ic}</svg><span>${l}</span></button>`;
+    if (this._evErr && st.charging) this._evErr = null;
     const busy = this._evBusy && Date.now() - this._evBusy < 20000;
     return `<div class="kth">Laadpaal</div><div class="evsec evone">${card.replace(/<\/div>$/, '')}<div class="evseg${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div>${this._evErr ? `<div class="everr">${this._evErr}</div>` : ''}</div></div>`;
   }
@@ -4563,7 +4564,11 @@ class ThuisCard extends HTMLElement {
       // laadpaal vrijgeven én de auto vragen om te starten (de knop is er alleen als de auto niet laadt)
       const go = () => { if (canZero && !(amps() > 0)) setA(back);
         if (swOk() && sw().state === 'off') call('switch', 'turn_on', { entity_id: c.charger_switch });
-        press(c.charger_resume); setTimeout(() => press(c.car_start_button), 4000); };
+        press(c.charger_resume); setTimeout(carStart, 4000); };
+      // auto alleen vragen als hij nog geen stroom neemt; een weigering van de auto (laadt al) negeren, zonder melding
+      const carStart = () => { const b = st0(c.car_start_button), pw = parseFloat(st0(c.charger_power)?.state);
+        if (!b || b.state === 'unavailable' || pw > 300) return;
+        Promise.resolve(h.callService('button', 'press', { entity_id: c.car_start_button }, undefined, false)).catch(() => {}); };
       go();
       // de Zaptec-cloud reageert soms traag: na 30 s nog niet terug, dan nogmaals
       this._evRetry = setTimeout(() => { const p = parseFloat(st0(c.charger_power)?.state); if (!(amps() > 0) || !(p > 300)) go(); }, 45000);
