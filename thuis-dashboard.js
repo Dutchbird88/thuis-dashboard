@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '193';
+const CARD_VERSION = '194';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3155,6 +3155,8 @@ const TSTYLE = `
 .was.xchg .xp { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #d6fbf5; background: rgba(94,225,208,.22); border: 1px solid rgba(94,225,208,.45); white-space: nowrap; } .was.xchg .xp svg { width: 14px; height: 14px; fill: #5ee1d0; flex: none; }
 .was.xchg .xr { display: flex; align-items: center; gap: 6px; } .was.xchg .xl { flex: 1; min-width: 0; }
 .was.xchg .xh b .xs { display: inline; font-size: 14px; font-weight: 500; color: #9fb3c8; margin: 0; }
+.was.xchg .xtop { display: flex; align-items: center; gap: 12px; } .was.xchg .xtop .xbig { margin: 0; }
+.was.xchg .xnx { padding-left: 12px; border-left: 1px solid rgba(255,255,255,.14); line-height: 1.3; white-space: nowrap; } .was.xchg .xnx b { display: block; font-size: 15px; font-weight: 600; } .was.xchg .xnx span { display: block; font-size: 13px; color: #9fb3c8; }
 .was.xchg .xbig { margin-top: 2px; font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 22px; margin-left: 1px; }
 .was.xchg .xk { font-size: 13px; color: #a9bccd; margin-top: 4px; white-space: nowrap; }
 .was.xchg .bar { height: 6px; margin-top: 10px; } .was.xchg .bar i { background: linear-gradient(90deg, #1fa893, #7cf0dd); box-shadow: 0 0 10px rgba(94,225,208,.8); }
@@ -4616,7 +4618,7 @@ class ThuisCard extends HTMLElement {
     const pic = `<svg class="xi" viewBox="34 0 152 74"><g transform="translate(40 10) scale(.76)">${RIC.draw('car', live ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</g>
       <rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="${live ? '#5ee1d0' : '#8a94a6'}"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/>
       <path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${live ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
-    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}${sub ? `<span class="xs"> · ${sub}</span>` : ''}</b></div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
+    const html = `<div class="xr"><div class="xl"><div class="xtop"><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xnx"><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
     const cls = `was xchg ${live ? 'evon' : 'evwait'}`, key = cls + html;
     if (box._key === key) return;
     box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
