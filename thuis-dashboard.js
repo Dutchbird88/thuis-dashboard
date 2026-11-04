@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '181';
+const CARD_VERSION = '183';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3531,6 +3531,15 @@ const KSTYLE = `
 .pt { flex: 1; min-width: 0; } .pt b { font-size: 14.5px; font-weight: 600; } .pt span { display: block; font-size: 12.5px; color: rgba(255,255,255,.55); margin-top: 2px; }
 .ptag { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); white-space: nowrap; }
 .kpre .fi { width: 24px; height: 24px; fill: currentColor; display: block; }
+.kspills { display: flex; gap: 8px; overflow-x: auto; margin: 14px -16px 0; padding: 2px 16px 4px; scrollbar-width: none; } .kspills::-webkit-scrollbar { display: none; }
+.kspills .mp { flex: none; display: flex; align-items: center; gap: 9px; padding: 8px 16px 8px 9px; border-radius: 99px; background: rgba(255,255,255,.07); cursor: pointer; }
+.kspills .mp i.g { width: 30px; height: 30px; display: grid; place-items: center; } .kspills .mp i.g .ri2 { width: 26px; height: 26px; }
+.kspills .mp b { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; } .kspills .mp span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.2; white-space: nowrap; }
+.kspills .mp.hot { background: rgba(255,200,61,.14); } .kspills .mp.hot span { color: #ffcf7a; }
+.kspills .mp.warn { background: rgba(255,159,10,.16); } .kspills .mp.warn span { color: #ffb340; }
+.kspills .mp.alarm { background: linear-gradient(135deg, rgba(255,69,58,.4), rgba(150,28,40,.4)); box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.6); } .kspills .mp.alarm span { color: #ffd2cc; font-weight: 700; }
+.kspills .mp.alarm i.g { animation: lkp 1.6s ease-in-out infinite; border-radius: 50%; }
+.klk.koff .lk b { font-size: 15.5px; }
 .klk { display: flex; flex-direction: column; padding: 0; border-radius: 20px; overflow: hidden; }
 .klk .lk { display: flex; align-items: center; gap: 14px; padding: 11px 16px; cursor: pointer; position: relative; }
 .klk .lk + .lk::before { content: ''; position: absolute; top: 0; left: 70px; right: 0; height: 1px; background: rgba(255,255,255,.07); }
@@ -3550,6 +3559,7 @@ const KSTYLE = `
 .klk .lk.off i { background: rgba(255,255,255,.06); color: var(--muted); } .klk .lk.off b { color: var(--muted); }
 @keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
 .kth { margin: 24px 2px 10px; font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+.sheet .mstack > .was.xchg.evon { background: radial-gradient(120% 160% at 0% 0%, rgba(94,225,208,.18), transparent 55%), linear-gradient(135deg, #10283a, #0e1a2c) !important; border: 1px solid rgba(94,225,208,.3) !important; }
 .sheet .kglass, .sheet .mstack > .was { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important; }
 .sheet .mstack { display: flex; flex-direction: column; gap: 10px; }
 .ksc { display: flex; flex-wrap: wrap; gap: 8px; } .ksc .mp { padding: 10px 16px; } .ksc .mp b { font-size: 14px; }
@@ -5210,11 +5220,14 @@ class ThuisCard extends HTMLElement {
     }
     const icon = (n) => { n = n.toLowerCase(); return /woon/.test(n) ? 'sofa' : /keuken/.test(n) ? 'pot' : /toilet|wc/.test(n) ? 'toilet' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /bad/.test(n) ? 'bath' : /was/.test(n) ? 'wash' : /werk|kantoor|studeer/.test(n) ? 'desk' : /^zolder|attic|vliering/.test(n) ? 'attic' : /overloop|trap|gang/.test(n) ? 'stairs' : /slaap|kamer/.test(n) ? 'bed' : /tuin|zwembad|terras|balkon/.test(n) ? 'tree' : /oprit|garage|carport/.test(n) ? 'drive' : /schuur|berging/.test(n) ? 'shed' : 'door'; };
     const c = this._config, flr = (f) => F[f] || {};
+    // laadpaal: in de ruimte van de laadpaal, anders bij de oprit/garage
+    const evE = E[c.car_charging] || {}, evArea = c.car_charging ? (merge[evE.area_id || D[evE.device_id]?.area_id] || evE.area_id || D[evE.device_id]?.area_id) : null;
     const rooms = Object.entries(A).filter(([aid]) => !merge[aid]).map(([aid, a]) => {
       const ids = byArea[aid] || [], dom = (d) => ids.filter((x) => x.startsWith(d + '.'));
       const sens = (cls) => ids.filter((x) => x.startsWith('sensor.') && h.states[x]?.attributes.device_class === cls && !/inverter|omvormer|oven|wasmachine|vaatwasser|laadpaal/i.test(x));
       const lights = dom('light'), covers = dom('cover'), climate = dom('climate').length > 0;
       const apps = [[`sensor.${c.dishwasher}_status`, 'dish'], [`sensor.${c.oven}_status`, 'oven'], [c.washer, 'was']].filter(([e]) => ids.includes(e)).map(([, k]) => k);
+      if (c.car_charging && (evArea ? evArea === aid : /oprit|garage|carport|driveway/i.test(a.name))) apps.push('evc');
       // sensoren: binary_sensor (waterlek, rook, beweging, deur, raam) en rookmelders die hun status als sensor geven (zoals Nest Protect)
       // deuren van huishoudelijke apparaten (wasmachine, vaatwasser, oven …) zijn geen kamersensor
       const appDev = new Set([c0.washer, c0.dishwasher && `sensor.${c0.dishwasher}_status`, c0.oven && `sensor.${c0.oven}_status`].filter(Boolean).map((e) => E[e]?.device_id).filter(Boolean));
@@ -5264,7 +5277,7 @@ class ThuisCard extends HTMLElement {
       if (r.climate) { const c = st(this._climateId()); temp = c?.attributes.current_temperature ?? null; heat = isHeating(c?.attributes); }
       if (r.temp) { const v = parseFloat(st(r.temp)?.state); if (!isNaN(v)) temp = v; }
       if (r.humidity) { const v = parseFloat(st(r.humidity)?.state); if (!isNaN(v)) hum = v; }
-      const apps = (r.apps || []).map((k) => { const box = this.$(k); if (!box || box.hidden) return null; return { k, box, txt: box.querySelector('.tm')?.textContent || box.querySelector('.rt b')?.textContent || '' }; }).filter(Boolean);
+      const apps = (r.apps || []).map((k) => { const box = this.$(k); if (!box || box.hidden) return null; return { k, box, txt: k === 'evc' ? (box.querySelector('.xbig')?.textContent || '') : box.querySelector('.tm')?.textContent || box.querySelector('.rt b')?.textContent || '' }; }).filter(Boolean);
       const slug = r.scenes || r.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
       const strip = (n) => { const re = new RegExp(`^${r.name}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
       const scenes = sceneIds.filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(x.attributes.friendly_name || k), t: Date.parse(x.state) || 0 }; })
@@ -5294,7 +5307,11 @@ class ThuisCard extends HTMLElement {
         } else txt = off ? 'Niet bereikbaar' : on ? `${K.on}${K.since ? ` · sinds ${Date.now() - t < 12 * HOUR ? fmtTime(t) : relTime(t)}` : ''}` : `${K.last && t ? `Laatst ${relTime(t)}` : K.off}`;
         return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, label: K.label, txt };
       }).filter(Boolean).sort((p, q) => (q.alarm - p.alarm) || (q.warn - p.warn) || (SENS_ORDER.indexOf(p.kind) - SENS_ORDER.indexOf(q.kind)));
-      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, scenes, sensors };
+      // apparaten die uit staan: rustig in een lijst in het kamerpaneel
+      const cf = this._config;
+      const NM = { was: ['Wasmachine', 'washer', cf.washer], dish: ['Vaatwasser', 'dish', `sensor.${cf.dishwasher}_status`], oven: ['Oven', 'ovenX', `sensor.${cf.oven}_status`], evc: ['Laadpaal', 'car', cf.car_charging] };
+      const offApps = (r.apps || []).filter((k) => !apps.some((a) => a.k === k) && NM[k] && S[NM[k][2]]).map((k) => ({ k, id: NM[k][2], nm: NM[k][0], ic: NM[k][1], txt: 'Stand-by' }));
+      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors };
     });
   }
   _roomToggle(i) {
@@ -5316,7 +5333,9 @@ class ThuisCard extends HTMLElement {
       if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? (rm.apps.length && dn[0].pos > 1 && !dn[0].moving ? `${100 - dn[0].pos}%` : this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase())) : `${dn.length} dicht`}</span>` : `<span>${BL(100)}Open</span>`); }
       // apparaat: Rounded-icoon en wat er gebeurt ("Wast nog 42 min")
       const AP = { was: ['washer', 1, 'Wast', 'Wasmachine'], dish: ['dish', 1, 'Vaatwasser', 'Vaatwasser'], oven: ['ovenX', 'run', 'Oven', 'Oven'] };
-      rm.apps.forEach((a) => { const [ic, md, , nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
+      rm.apps.forEach((a) => {
+        if (a.k === 'evc') { const on = a.box.classList.contains('evon'); l2.push(`<span class="ap" style="color:${on ? '#5ee1d0' : ''}"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</svg>${a.txt}${on ? ' · laadt' : ' · wacht'}</span>`); return; }
+        const [ic, md, , nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
         const txt = /^\d/.test(t) ? `Nog ${t}` : t ? `${nm} ${t.charAt(0).toLowerCase()}${t.slice(1)}` : `${nm} bezig`;
         l2.push(`<span class="ap"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw(ic, 'on', md)}</svg>${txt}</span>`); });
       // temperatuur klein in de statusregel
@@ -5367,7 +5386,7 @@ class ThuisCard extends HTMLElement {
   _updRoomSheet() {
     const B = this.$('rmB'); if (!B || this._cvHist) return;
     const rm = this._rooms()[this._roomIdx]; if (!rm) return;
-    const n = rm.lights.length; let sum = [n ? (rm.on ? `${rm.on} ${rm.on === 1 ? 'lamp' : 'lampen'} aan` : 'lampen uit') : '', rm.covers.length ? (rm.covers.some((c) => c.pos < 99) ? (rm.covers.length === 1 ? `rolluik ${this._coverTxt(rm.covers[0])}` : `${rm.covers.filter((c) => c.pos < 99).length} rolluiken dicht`) : (rm.covers.length === 1 ? 'rolluik open' : 'rolluiken open')) : '', ...rm.apps.map((a) => `${a.k === 'was' ? 'wasmachine' : a.k === 'dish' ? 'vaatwasser' : 'oven'} bezig`)].filter(Boolean); rm.sensors.filter((x) => x.alarm).forEach((x) => sum.unshift(x.txt.split(' · ')[0].toLowerCase())); sum = sum.join(' · ');
+    const n = rm.lights.length; let sum = [n ? (rm.on ? `${rm.on} ${rm.on === 1 ? 'lamp' : 'lampen'} aan` : 'lampen uit') : '', rm.covers.length ? (rm.covers.some((c) => c.pos < 99) ? (rm.covers.length === 1 ? `rolluik ${this._coverTxt(rm.covers[0])}` : `${rm.covers.filter((c) => c.pos < 99).length} rolluiken dicht`) : (rm.covers.length === 1 ? 'rolluik open' : 'rolluiken open')) : '', ...rm.apps.map((a) => a.k === 'evc' ? (a.box.classList.contains('evon') ? 'auto laadt' : 'auto aangesloten') : `${a.k === 'was' ? 'wasmachine' : a.k === 'dish' ? 'vaatwasser' : 'oven'} bezig`)].filter(Boolean); rm.sensors.filter((x) => x.alarm).forEach((x) => sum.unshift(x.txt.split(' · ')[0].toLowerCase())); sum = sum.join(' · ');
     this.$('rmN').textContent = rm.name; this.$('rmS').textContent = sum.charAt(0).toUpperCase() + sum.slice(1);
     // klimaat: thermostaat (zoals op Thuis) of de temperatuur van de sensor
     let clim = '';
@@ -5382,11 +5401,15 @@ class ThuisCard extends HTMLElement {
     }
     const own = rm.scenes.filter((x) => x.own), shown = this._rmAllSc ? rm.scenes : own;
     const recent = rm.on ? rm.scenes.reduce((m, x) => (x.t > (m?.t || 0) ? x : m), null) : null;
-    const html = (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
+    // sensoren als pillen bovenaan, zoals op het Thuis-scherm
+    const PILL = { leak: ['Waterlek', 'Geen water', 'Water!'], smoke: ['Rookmelder', 'In orde', 'Alarm!'], motion: ['Beweging', '', 'Nu'], door: ['Deur', 'Dicht', 'Open'], window: ['Raam', 'Dicht', 'Open'] };
+    const pills = rm.sensors.map((x) => { const [lb, ok, on] = PILL[x.kind] || PILL.motion;
+      const v = x.off ? 'Niet bereikbaar' : x.alarm ? (x.kind === 'smoke' && /kool/i.test(x.txt) ? 'CO-alarm!' : on) : x.warn ? 'Waarschuwing' : x.on ? on : x.kind === 'motion' ? x.txt.replace(/^Laatst /, '') : x.kind === 'smoke' && x.txt === 'Test bezig' ? 'Test' : ok;
+      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v}</span></div></div>`; }).join('');
+    const html = (pills ? `<div class="kspills">${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
-      + (rm.apps.length ? `<div class="kth">Apparaten</div><div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : '')
-      + (rm.sensors.length ? `<div class="kth">Sensoren</div><div class="kglass klk">${rm.sensors.map((x) => `<div class="lk k-${x.kind}${x.alarm ? ' wet' : x.warn ? ' warn' : x.on ? ' on' : ''}${x.off ? ' off' : ''}" data-id="${x.id}"><i>${SENS_ICON(x)}</i><div><b>${x.label}</b><span>${x.txt}</span></div><em>${x.lux != null ? `<small>${fmt(x.lux)} lux</small>` : ''}${x.bat != null ? `<small class="${x.bat <= 20 ? 'low' : ''}">${RIC.svg('battery', 'on', x.bat)}${Math.round(x.bat)}%</small>` : ''}</em></div>`).join('')}</div>` : '')
+      + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
     this._rmKey = html; B.innerHTML = html;
@@ -5397,8 +5420,8 @@ class ThuisCard extends HTMLElement {
       th.querySelectorAll('.mstp button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); this._tStep(+b.dataset.d); }));
       th.addEventListener('click', () => { this._openSheet('th'); this._roomBack = ri; });
     }
-    B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
-    B.querySelectorAll('.klk .lk').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.id)));
+    B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
+    B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));
     B.querySelectorAll('.ksc .mp').forEach((el) => el.addEventListener('click', () => { this._hass.callService('scene', 'turn_on', { entity_id: el.dataset.id }); el.classList.add('hot'); }));
     B.querySelector('.kall')?.addEventListener('click', () => { this._rmAllSc = !this._rmAllSc; this._rmKey = null; this._updRoomSheet(); });
   }
