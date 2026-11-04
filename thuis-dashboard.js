@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '191';
+const CARD_VERSION = '192';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3137,6 +3137,7 @@ const TSTYLE = `
 .alr em { margin-left: auto; font-style: normal; font-size: 26px; color: #ffb0a8; }
 .alr.warn { background: linear-gradient(135deg, rgba(255,159,10,.30), rgba(150,80,10,.30)) #0e1626; box-shadow: inset 0 0 0 1.5px rgba(255,170,60,.5); } .alr.warn i { background: rgba(255,159,10,.3); animation: none; } .alr.warn b { color: #ffe2b8; } .alr.warn span, .alr.warn em { color: #ffc680; }
 @keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
+.shsrc { float: right; font-style: normal; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); }
 .shpl { display: flex; flex-direction: column; justify-content: center; margin-left: 14px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,.12); font-size: 13px; color: var(--muted); line-height: 1.35; align-self: center; } .shpl em { font-style: normal; font-size: 17px; font-weight: 600; color: #fff; }
 .nrow .mi svg.ri2 { width: 21px; height: 21px; position: static; margin: 0; transform: none; }
 .nrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); } .nrow:first-child { border-top: 0; padding-top: 0; }
@@ -3982,7 +3983,7 @@ class ThuisCard extends HTMLElement {
     const sub = (ent, type) => conn.subscribeMessage((msg) => {
       (this._fcSrc[type] ||= {})[ent] = msg.forecast || [];
       const own = this._fcSrc[type][id] || [], alt = other ? this._fcSrc[type][other] || [] : [];
-      this['_fc_' + type] = own.length ? own : alt;
+      this['_fc_' + type] = own.length ? own : alt; (this._fcFrom ||= {})[type] = own.length ? id : other;
       this._updWeather(true);
     }, { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: ent }).catch(() => null);
     this._unsubs = ['hourly', 'daily'].flatMap((type) => [sub(id, type), ...(other ? [sub(other, type)] : [])]);
@@ -4020,10 +4021,10 @@ class ThuisCard extends HTMLElement {
     const storm = ws >= 62 || gust >= 75, hard = !storm && (ws >= 39 || w.state.startsWith('windy'));
     if (storm) [label, ic] = ['Storm', 'wStormW']; else if (hard && !/rain|pour|snow|hail|lightning/.test(w.state)) [label, ic] = ['Harde wind', 'wWind'];
     this.$('wIc').setAttribute('href', '#' + ic);
-    set('wT', `${fmt(a.temperature, 1)}°`);
+    set('wT', `${fmt(a.temperature)}°`);
     set('wD', label);
     this.$('mWIc').setAttribute('href', '#' + ic);
-    set('mWT', `${fmt(a.temperature, 1)}°`);
+    set('mWT', `${fmt(a.temperature)}°`);
     const dir = a.wind_bearing != null ? DIRS[Math.round(a.wind_bearing / 45) % 8] : '';
     const hrs = (this._fc_hourly || []).filter((f) => Date.parse(f.datetime) >= Date.now() - 3600000).slice(0, 12);
     const key = JSON.stringify([hrs.map((h) => [h.temperature, h.precipitation]), (this._fc_daily || []).length, a.temperature, this._state(this._config.rain_now)?.state, w.state, ws, gust]);
@@ -5248,7 +5249,8 @@ class ThuisCard extends HTMLElement {
       rain = `<div class="shcard"><div class="shlab">Regen komende 2 uur <span>${this._rainSoon() || ''}</span></div><div class="shrain">${list.map((x) => `<i style="height:${Math.max(2, x.v / mx * 46).toFixed(1)}px;opacity:${x.v >= 0.1 ? 1 : 0.25}"></i>`).join('')}</div><div class="shrx"><span>nu</span><span>+30</span><span>+60</span><span>+90</span><span>+120</span></div></div>`;
     }
     const hrs = (this._fc_hourly || []).filter((f) => Date.parse(f.datetime) > now - 3600000).slice(0, 6);
-    const hour = hrs.length ? `<div class="shcard"><div class="shlab">Per uur</div><div class="shhrs">${hrs.map((f, i) => {
+    const src = (t) => { const e = this._fcFrom?.[t]; return e && e !== this._wxId() ? `<em class="shsrc">via ${(this._state(e)?.attributes.friendly_name || e).replace(/^Forecast\s*/i, '')}</em>` : ''; };
+    const hour = hrs.length ? `<div class="shcard"><div class="shlab">Per uur${src('hourly')}</div><div class="shhrs">${hrs.map((f, i) => {
       const p = num(f.precipitation_probability), mmv = num(f.precipitation);
       const extra = p != null && p >= 30 ? `${Math.round(p)}%` : mmv != null && mmv >= 0.1 ? `${fmt(mmv, 1)} mm` : '';
       return `<div>${i === 0 ? 'Nu' : new Date(f.datetime).getHours().toString().padStart(2, '0')}${I((WCOND[f.condition] || ['', 'wCloud'])[1])}<b>${fmt(f.temperature)}°</b><em>${extra}</em></div>`;
@@ -5257,7 +5259,7 @@ class ThuisCard extends HTMLElement {
     let daily = '';
     if (days.length) {
       const L = Math.min(...days.map((f) => f.templow ?? f.temperature)), H = Math.max(...days.map((f) => f.temperature)), R = Math.max(1, H - L);
-      daily = `<div class="shcard"><div class="shlab">Komende dagen</div>${days.map((f) => {
+      daily = `<div class="shcard"><div class="shlab">Komende dagen${src('daily')}</div>${days.map((f) => {
         const lo = f.templow ?? f.temperature, hi = f.temperature, di = (WCOND[f.condition] || ['', 'wCloud'])[1];
         const d = startOfDay(Date.parse(f.datetime)) === startOfDay(now) ? 'Vandaag' : new Date(f.datetime).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '').replace(/^./, (c) => c.toUpperCase());
         return `<div class="shday"><span>${d}</span>${I(di === 'wNight' ? 'wSunny' : di)}<span class="l">${fmt(Math.floor(lo))}°</span><div class="shbar"><i style="left:${((lo - L) / R * 100).toFixed(0)}%;right:${((H - hi) / R * 100).toFixed(0)}%"></i></div><span class="h">${fmt(Math.ceil(hi))}°</span></div>`;
@@ -5269,7 +5271,7 @@ class ThuisCard extends HTMLElement {
     if (num(a.uv_index) != null) det.push(['UV-index', fmt(a.uv_index), a.uv_index < 3 ? 'laag' : a.uv_index < 6 ? 'matig' : a.uv_index < 8 ? 'hoog' : 'zeer hoog']);
     if (num(a.pressure) != null) det.push(['Luchtdruk', `${fmt(a.pressure)} hPa`, '']);
     const feels = num(a.apparent_temperature);
-    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature, 1)}°</b><span class="shpl">${this._config.weather_place ? `<em>${this._config.weather_place}</em>` : ''}${/buienradar/.test(w.entity_id || '') ? 'Buienradar' : (w.attributes.friendly_name || '').replace(/^Forecast\s*/i, '')}</span></div><div class="shcond">${label}</div>
+    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature)}°</b><span class="shpl">${this._config.weather_place ? `<em>${this._config.weather_place}</em>` : ''}${/buienradar/.test(w.entity_id || '') ? 'Buienradar' : (w.attributes.friendly_name || '').replace(/^Forecast\s*/i, '')}</span></div><div class="shcond">${label}</div>
         <div class="shmm">${feels != null ? `voelt als ${fmt(feels)}° · ` : ''}<span class="lo">↓ ${this.$('wLo').textContent}</span> <span class="hi">↑ ${this.$('wHi').textContent}</span></div></div><button class="shx" aria-label="Sluiten">✕</button></div>
       ${rain}${hour}${daily}${det.length ? `<div class="shgrid">${det.map(([t, v, s2]) => `<div><small>${t}</small><b>${v}</b><span>${s2}</span></div>`).join('')}</div>` : ''}
       <button class="shrbtn" id="shRb">Buienradar bekijken</button><div class="shrad" id="shRad" hidden><iframe title="Buienradar"></iframe><i class="home"></i></div>`;
