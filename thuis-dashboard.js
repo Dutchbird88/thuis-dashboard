@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '202';
+const CARD_VERSION = '203';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5435,7 +5435,7 @@ class ThuisCard extends HTMLElement {
         if (kind === 'smoke' && dev) { if (seenDev.has(dev)) return null; seenDev.add(dev); }
         const sibs = dev ? Object.keys(E).filter((k) => k !== x.entity_id && E[k].device_id === dev && S[k]) : [];
         const sib = (cls, re) => { const k = sibs.find((k) => k.startsWith('sensor.') && (S[k].attributes.device_class === cls || (re && re.test(k)))); const v = k ? parseFloat(S[k].state) : NaN; return isNaN(v) ? null : v; };
-        const bat = sib('battery', /_(batterij|batterijniveau|battery|battery_level)$/), lux = sib('illuminance'), t = Date.parse(x.last_changed) || 0;
+        const bat = sib('battery', /_(batterij|batterijniveau|battery|battery_level)$/), lux = sib('illuminance'), tmp = sib('temperature'), t = Date.parse(x.last_changed) || 0;
         let on = x.state === 'on', off = ['unavailable', 'unknown'].includes(x.state), warn = false, txt; let pid = x.entity_id;
         if (kind === 'smoke') {
           const lvl = (e) => !e ? 0 : e.entity_id.startsWith('binary_sensor.') ? (e.state === 'on' ? 2 : 0) : /warn|heads|waarschuw/i.test(e.state) ? 1 : /emerg|alarm|detect|gevaar|nood|^on$/i.test(e.state) ? 2 : 0;
@@ -5448,7 +5448,7 @@ class ThuisCard extends HTMLElement {
           on = lv === 2; warn = lv === 1;
           txt = off ? 'Niet bereikbaar' : lv === 2 ? `${ls === 2 ? 'Rook' : 'Koolmonoxide'} gedetecteerd · sinds ${fmtTime(t)}` : lv === 1 ? `Waarschuwing ${ls === 1 ? 'rook' : 'koolmonoxide'}` : test ? 'Test bezig' : co ? 'Geen rook of koolmonoxide' : 'Geen rook';
         } else txt = off ? 'Niet bereikbaar' : on ? `${K.on}${K.since ? ` · sinds ${Date.now() - t < 12 * HOUR ? fmtTime(t) : relTime(t)}` : ''}` : `${K.last && t ? `Laatst ${relTime(t)}` : K.off}`;
-        return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, label: K.label, txt };
+        return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, tmp, label: K.label, txt };
       }).filter(Boolean).sort((p, q) => (q.alarm - p.alarm) || (q.warn - p.warn) || (SENS_ORDER.indexOf(p.kind) - SENS_ORDER.indexOf(q.kind)));
       // apparaten die uit staan: rustig in een lijst in het kamerpaneel
       const cf = this._config;
@@ -5563,7 +5563,10 @@ class ThuisCard extends HTMLElement {
     const PILL = { leak: ['Watersensor', 'Geen water', 'Water!'], smoke: ['Rookmelder', 'In orde', 'Alarm!'], motion: ['Beweging', '', 'Nu'], door: ['Deur', 'Dicht', 'Open'], window: ['Raam', 'Dicht', 'Open'] };
     const pills = rm.sensors.map((x) => { const [lb, ok, on] = PILL[x.kind] || PILL.motion;
       const v = x.off ? 'Niet bereikbaar' : x.alarm ? (x.kind === 'smoke' && /kool/i.test(x.txt) ? 'CO-alarm!' : on) : x.warn ? 'Waarschuwing' : x.on ? on : x.kind === 'motion' ? x.txt.replace(/^Laatst /, '') : x.kind === 'smoke' && x.txt === 'Test bezig' ? 'Test' : ok;
-      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v}</span></div></div>`; }).join('');
+      // bewegingssensor: ook licht (lux) en, als de kamer een thermostaat heeft, de eigen temperatuur
+      const extra = x.kind === 'motion' && !x.off ? [x.lux != null ? `${fmt(x.lux)} lux` : '', x.tmp != null && rm.r.climate ? `${fmt(x.tmp, 1)}°` : ''].filter(Boolean).join(' · ') : '';
+      const v2 = extra ? `${v} · ${extra}` : v;
+      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${rm.name}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc'), scenes: [] }; } // oprit: geen scènes
