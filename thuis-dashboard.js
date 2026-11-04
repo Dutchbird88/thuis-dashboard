@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '187';
+const CARD_VERSION = '188';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2391,10 +2391,16 @@ class AutoCard extends HTMLElement {
     const st = this._chargeState();
     // alleen de laadpaal bedienen; de auto levert alleen accu en tijd
     const sw = this._state(c.charger_switch), useSw = sw && !['unavailable', 'unknown'].includes(sw.state);
-    if (st.charging) { if (useSw) this._hass.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else this._press(c.charger_stop); }
-    else if (st.plugged) {
-      // hervatten: schakelaar aan én de hervat-knop (als die beschikbaar is); na 25 s nog niet aan het laden, dan nog één keer
-      const go = () => { if (useSw) this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch });
+    const cur = this._state(c.charger_current), canZero = cur && Number(cur.attributes.min) === 0;
+    const setA = (v) => this._hass.callService('number', 'set_value', { entity_id: c.charger_current, value: v });
+    if (st.charging && !st.paused) {
+      // echte pauze: laadstroom naar 0 A; de sessie blijft open en de auto gaat vanzelf verder als de stroom terugkomt
+      if (canZero) { const v = parseFloat(cur.state); try { localStorage.setItem('thuis-laadstroom', String(v > 0 ? v : c.charger_max_a || 16)); } catch (e) { /* geen opslag */ } setA(0); }
+      else if (useSw) this._hass.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else this._press(c.charger_stop);
+    } else if (st.plugged) {
+      let back = c.charger_max_a || 16; try { back = parseFloat(localStorage.getItem('thuis-laadstroom')) || back; } catch (e) { /* geen opslag */ }
+      const go = () => { if (canZero && !(parseFloat(this._state(c.charger_current)?.state) > 0)) setA(back);
+        if (useSw && this._state(c.charger_switch)?.state === 'off') this._hass.callService('switch', 'turn_on', { entity_id: c.charger_switch });
         const rb = this._state(c.charger_resume); if (rb && rb.state !== 'unavailable') this._press(c.charger_resume); };
       go(); clearTimeout(this._cRetry);
       this._cRetry = setTimeout(() => { if (!this._chargeState().charging && this._chargeState().plugged) go(); }, 25000);
@@ -2448,7 +2454,8 @@ class AutoCard extends HTMLElement {
     const plugged = charging || mode.startsWith('connected') || (!hasMode && this._on(this._e('binary_sensor', 'stekker')));
     // Zaptec meldt na pauzeren ook "connected_finished": alleen vol als de accu (bijna) vol is, anders gepauzeerd
     const done = mode === 'connected_finished', full = done && (isNaN(soc) || soc >= 99);
-    return { mode, charging, plugged, finished: full, paused: done && !full };
+    const zeroA = parseFloat(this._state(c.charger_current)?.state) === 0;
+    return { mode, charging: charging && !zeroA, plugged, finished: full, paused: (done && !full) || (plugged && zeroA) };
   }
 
   // maandtotaal (kWh) en aantal sessies; elke 10 minuten
@@ -4514,7 +4521,8 @@ class ThuisCard extends HTMLElement {
     const box = this.$('evc'); if (!box) return;
     const c = this._config, mode = String(this._state(c.car_charging)?.state || ''), soc = parseFloat(this._state(c.car_battery)?.state);
     const charging = mode === 'connected_charging' || (/charg|laden|laadt/i.test(mode) && !/discharg|finish|niet|disconn/i.test(mode));
-    const paused = mode === 'connected_finished' && !(soc >= 99);
+    const zeroA = parseFloat(this._state(c.charger_current_a || 'number.laadpaal_max_stroom')?.state) === 0;
+    const paused = (mode === 'connected_finished' && !(soc >= 99)) || (/^connected/.test(mode) && zeroA);
     const plugged = charging || paused || (/^connected/.test(mode) && mode !== 'connected_finished');
     if (!plugged || soc >= 100) { if (!box.hidden) { box.hidden = true; box._key = ''; } return; }
     const pst = this._state(c.charger_power); let w = parseFloat(pst?.state);
@@ -4523,7 +4531,7 @@ class ThuisCard extends HTMLElement {
     const rem = !isNaN(soc) && kw ? Math.max(0, (100 - soc) / 100 * (c.battery_kwh || 82.5)) / (kw * (c.efficiency || 0.92)) : null;
     const dur = (h) => { const m = Math.round(h * 60); return m >= 60 ? `${Math.floor(m / 60)} u ${m % 60} min` : `${m} min`; };
     const pct = isNaN(soc) ? null : Math.round(soc);
-    const live = charging && kw != null, starting = charging && kw == null;
+    const live = charging && !paused && kw != null, starting = charging && !paused && kw == null;
     const sched = this._state(c.car_schedule)?.state === 'on', st0 = String(this._state(c.car_start)?.state || '').slice(0, 5);
     const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Wacht op laden';
     const sub = live ? (rem != null ? `vol om ${fmtTime(Date.now() + rem * 3600000)}` : '') : starting || paused ? '' : sched && /^\d\d:\d\d$/.test(st0) ? `start om ${st0}` : '';
