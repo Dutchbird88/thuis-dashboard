@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '190';
+const CARD_VERSION = '191';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2935,7 +2935,8 @@ window.customCards.push({ type: 'auto-card', name: 'Auto', description: 'BYD-aut
 
 const TDEFAULTS = {
   climate: null,                       // leeg = de eerste climate.* (Toon)
-  weather: 'weather.forecast_thuis',
+  weather: null,                       // leeg = automatisch: Buienradar, anders de eerste weer-entiteit
+  weather_place: null,               // plaatsnaam naast het weer
   rain_now: 'sensor.buienradar_regen_2u', // regen per 5 minuten voor de komende 2 uur (REST-sensor)  // voor de regenkans als de eigen verwachting die niet heeft
   radar_zoom: 11,                      // Buienradar-kaart: hoger = verder ingezoomd
   inside_name: 'Woonkamer',
@@ -3136,6 +3137,7 @@ const TSTYLE = `
 .alr em { margin-left: auto; font-style: normal; font-size: 26px; color: #ffb0a8; }
 .alr.warn { background: linear-gradient(135deg, rgba(255,159,10,.30), rgba(150,80,10,.30)) #0e1626; box-shadow: inset 0 0 0 1.5px rgba(255,170,60,.5); } .alr.warn i { background: rgba(255,159,10,.3); animation: none; } .alr.warn b { color: #ffe2b8; } .alr.warn span, .alr.warn em { color: #ffc680; }
 @keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
+.shpl { display: flex; flex-direction: column; justify-content: center; margin-left: 14px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,.12); font-size: 13px; color: var(--muted); line-height: 1.35; align-self: center; } .shpl em { font-style: normal; font-size: 17px; font-weight: 600; color: #fff; }
 .nrow .mi svg.ri2 { width: 21px; height: 21px; position: static; margin: 0; transform: none; }
 .nrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); } .nrow:first-child { border-top: 0; padding-top: 0; }
 .nrow .mi { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; gap: 0; border-radius: 50%; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); flex: none; } .nrow .mi svg { width: 16px; height: 16px; }
@@ -3784,7 +3786,7 @@ class ThuisCard extends HTMLElement {
     dial.addEventListener('pointermove', (ev) => this._tDrag(ev, 'move'));
     dial.addEventListener('pointerup', (ev) => this._tDrag(ev, 'end'));
     dial.addEventListener('pointercancel', (ev) => this._tDrag(ev, 'end'));
-    this.$('wNow').addEventListener('click', () => this._moreInfo(c.weather));
+    this.$('wNow').addEventListener('click', () => this._moreInfo(this._wxId()));
     this.shadowRoot.querySelectorAll('#wSeg button').forEach((b) => b.addEventListener('click', (e) => {
       e.stopPropagation(); const r = b.dataset.v === 'r';
       if (r) this.$('radar').style.height = this.$('wView').offsetHeight + 'px';
@@ -3972,12 +3974,18 @@ class ThuisCard extends HTMLElement {
 
   /* ---------- weer ---------- */
   _subForecast() {
-    const conn = this._hass?.connection, id = this._config.weather;
+    const conn = this._hass?.connection, id = this._wxId();
     if (!conn?.subscribeMessage || !this._state(id) || this._unsubs) return;
-    this._unsubs = ['hourly', 'daily'].map((type) => conn.subscribeMessage((msg) => {
-      this['_fc_' + type] = msg.forecast || [];
+    // Buienradar heeft soms geen verwachting per uur: dan die van een andere weer-entiteit gebruiken
+    const other = Object.keys(this._hass.states).find((k) => k.startsWith('weather.') && k !== id);
+    this._fcSrc = {};
+    const sub = (ent, type) => conn.subscribeMessage((msg) => {
+      (this._fcSrc[type] ||= {})[ent] = msg.forecast || [];
+      const own = this._fcSrc[type][id] || [], alt = other ? this._fcSrc[type][other] || [] : [];
+      this['_fc_' + type] = own.length ? own : alt;
       this._updWeather(true);
-    }, { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: id }).catch(() => null));
+    }, { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: ent }).catch(() => null);
+    this._unsubs = ['hourly', 'daily'].flatMap((type) => [sub(id, type), ...(other ? [sub(other, type)] : [])]);
   }
 
   // Buienradar per 5 minuten: "HH:MM;v,v,v,..." met v = 0..255; mm/u = 10^((v-109)/32)
@@ -4535,9 +4543,14 @@ class ThuisCard extends HTMLElement {
   }
 
   // weer: de ingestelde weer-entiteit; is die (even) niet beschikbaar, dan een andere weer-entiteit (bv. Buienradar)
+  _wxId() {
+    const S = this._hass?.states || {}, c = this._config;
+    if (c.weather && S[c.weather]) return c.weather;
+    return Object.keys(S).find((k) => k === 'weather.buienradar') || Object.keys(S).find((k) => k.startsWith('weather.')) || c.weather;
+  }
   _wxState() {
     const ok = (x) => x && !['unavailable', 'unknown'].includes(x.state), S = this._hass?.states || {};
-    const w = this._state(this._config.weather); if (ok(w)) return w;
+    const w = this._state(this._wxId()); if (ok(w)) return w;
     const alt = Object.values(S).find((x) => x.entity_id.startsWith('weather.') && ok(x));
     if (alt) return alt;
     // niets beschikbaar: het eerste uur van de verwachting als 'nu' gebruiken
@@ -4987,7 +5000,7 @@ class ThuisCard extends HTMLElement {
       <div id="hBody"><div class="hnone">Laden…</div></div>`;
     this.$('hBack').addEventListener('click', () => this._openSheet('th'));
     const now = Date.now(), from = new Date(now - 8 * DAY).toISOString(), endQ = `end_time=${encodeURIComponent(new Date(now).toISOString())}`;
-    const wx = this._config.weather && this._state(this._config.weather) ? this._config.weather : null;
+    const wx = this._state(this._wxId()) ? this._wxId() : null;
     const autos = Object.keys(this._hass.states).filter((k) => /^(automation|script)\./.test(k));
     const [hist, whist, alog] = await Promise.all([
       this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${id}&${endQ}`).catch(() => []),
@@ -5256,7 +5269,7 @@ class ThuisCard extends HTMLElement {
     if (num(a.uv_index) != null) det.push(['UV-index', fmt(a.uv_index), a.uv_index < 3 ? 'laag' : a.uv_index < 6 ? 'matig' : a.uv_index < 8 ? 'hoog' : 'zeer hoog']);
     if (num(a.pressure) != null) det.push(['Luchtdruk', `${fmt(a.pressure)} hPa`, '']);
     const feels = num(a.apparent_temperature);
-    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature, 1)}°</b></div><div class="shcond">${label}</div>
+    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature, 1)}°</b><span class="shpl">${this._config.weather_place ? `<em>${this._config.weather_place}</em>` : ''}${/buienradar/.test(w.entity_id || '') ? 'Buienradar' : (w.attributes.friendly_name || '').replace(/^Forecast\s*/i, '')}</span></div><div class="shcond">${label}</div>
         <div class="shmm">${feels != null ? `voelt als ${fmt(feels)}° · ` : ''}<span class="lo">↓ ${this.$('wLo').textContent}</span> <span class="hi">↑ ${this.$('wHi').textContent}</span></div></div><button class="shx" aria-label="Sluiten">✕</button></div>
       ${rain}${hour}${daily}${det.length ? `<div class="shgrid">${det.map(([t, v, s2]) => `<div><small>${t}</small><b>${v}</b><span>${s2}</span></div>`).join('')}</div>` : ''}
       <button class="shrbtn" id="shRb">Buienradar bekijken</button><div class="shrad" id="shRad" hidden><iframe title="Buienradar"></iframe><i class="home"></i></div>`;
