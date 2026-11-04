@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '189';
+const CARD_VERSION = '190';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4003,10 +4003,10 @@ class ThuisCard extends HTMLElement {
     return `${drop}<b style="color:#38bdf8;font-weight:600">Regen over ${Math.max(5, Math.round((list[wetI].t - now) / 60000 / 5) * 5)} min</b> · ${peak}`;
   }
   _updWeather(force) {
-    const w = this._state(this._config.weather);
+    const w = this._wxState();
     if (!w) return;
     const a = w.attributes, set = (id, html) => { const el = this.$(id); if (el.innerHTML !== html) el.innerHTML = html; };
-    let [label, ic] = WCOND[w.state] || [w.state, 'wCloud'];
+    let [label, ic] = WCOND[w.state] || [/^(unavailable|unknown)$/.test(w.state) ? 'Geen actueel weer' : w.state, 'wCloud'];
     // wind: harde wind vanaf 6 Bft (39 km/u), storm vanaf 8 Bft (62 km/u) of windstoten vanaf 75 km/u
     const ws = +a.wind_speed || 0, gust = +a.wind_gust_speed || 0;
     const storm = ws >= 62 || gust >= 75, hard = !storm && (ws >= 39 || w.state.startsWith('windy'));
@@ -4532,6 +4532,17 @@ class ThuisCard extends HTMLElement {
       if (swOk) h.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
     }
     this._evBusy = Date.now(); this._rmKey = null; this._updRoomSheet(); setTimeout(() => { this._rmKey = null; this._updRoomSheet(); }, 20500);
+  }
+
+  // weer: de ingestelde weer-entiteit; is die (even) niet beschikbaar, dan een andere weer-entiteit (bv. Buienradar)
+  _wxState() {
+    const ok = (x) => x && !['unavailable', 'unknown'].includes(x.state), S = this._hass?.states || {};
+    const w = this._state(this._config.weather); if (ok(w)) return w;
+    const alt = Object.values(S).find((x) => x.entity_id.startsWith('weather.') && ok(x));
+    if (alt) return alt;
+    // niets beschikbaar: het eerste uur van de verwachting als 'nu' gebruiken
+    const f = (this._fc_hourly || []).find((x) => Date.parse(x.datetime) >= Date.now() - 3600000);
+    return w ? { ...w, state: f?.condition || 'cloudy', attributes: { ...w.attributes, temperature: f?.temperature ?? w.attributes.temperature } } : null;
   }
 
   // rookmelders en waterlek-sensoren uit alle kamers
@@ -5209,7 +5220,7 @@ class ThuisCard extends HTMLElement {
       return;
     }
     // weer
-    const w = this._state(this._config.weather); if (!w) return;
+    const w = this._wxState(); if (!w) return;
     const a = w.attributes, ic = this.$('mWIc').getAttribute('href').slice(1), label = this.$('wD').textContent;
     const I = (k) => `<svg viewBox="0 0 100 100"><use href="#${k}"/></svg>`;
     const now = Date.now(), num = (v) => (v == null || isNaN(+v) ? null : +v);
