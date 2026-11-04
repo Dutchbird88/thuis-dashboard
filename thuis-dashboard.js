@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '212';
+const CARD_VERSION = '213';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3518,6 +3518,18 @@ const PRESETS = {
   away: ['Weg', 'door', '#c3cad6'],
   holiday: ['Vakantie', 'sun', '#ffc83d'],
 };
+
+/* rustiger (telefoon): effen vlakken, geen gekleurde gloed; kleur alleen waar hij iets betekent */
+const CALM = `@media (max-width: 600px) {
+  .sheet, .sheet.full, .sheet.full.lamp, .sheet.full.therm, .sheet.full.therm.hot { background: #111827 !important; }
+  .cvh { text-align: left !important; padding: 0 44px 0 4px; margin-top: 44px !important; } .cvh span { color: var(--muted) !important; font-weight: 500 !important; }
+  .sheet .hti { text-align: left; padding: 0 4px; }
+  .was.xchg, .was.xchg.evon, .mstack > .was.xchg { background: #141c2b !important; border: 1px solid rgba(255,255,255,.07) !important; box-shadow: none !important; }
+  .was.run, .was.oven.run, .was.done, .mstack > .was.run, .mstack > .was.done { background: #141c2b !important; border-color: rgba(255,255,255,.07) !important; box-shadow: none !important; }
+  .sheet .mstack > .was.xchg.evon { background: #172030 !important; border-color: rgba(255,255,255,.06) !important; }
+  .wsr { background: #172030 !important; border-color: rgba(255,255,255,.05) !important; box-shadow: none !important; } .wsr.first { border-color: rgba(255,255,255,.08) !important; }
+  .wsr em { color: #cfd5e0 !important; background: rgba(255,255,255,.08) !important; } .wsr.wdone em { color: #3ddc97 !important; }
+}`;
 const BINS = { gft: ['binGft', '#1fa85a', 'groene bak'], pmd: ['binPmd', '#f28a1c', 'oranje bak'], papier: ['binPap', '#2f6fe0', 'blauwe bak'], rest: ['binRst', '#6b7587', 'grijze bak'] };
 const DIRS = ['N', 'NO', 'O', 'ZO', 'Z', 'ZW', 'W', 'NW'];
 
@@ -3687,7 +3699,7 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
       <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
