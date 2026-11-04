@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '183';
+const CARD_VERSION = '184';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2394,7 +2394,8 @@ class AutoCard extends HTMLElement {
       this._press(c.charger_resume);
       this._press(this._e('button', 'start_charging'));
     } else return;
-    this._cBusy = { t: Date.now(), charging: st.charging };
+    this._cBusy = { t: Date.now(), charging: st.charging, mode: st.mode };
+    clearTimeout(this._cBusyT); this._cBusyT = setTimeout(() => { this._cBusy = null; this._update(); }, 45000);
     this._update();
   }
 
@@ -2434,10 +2435,14 @@ class AutoCard extends HTMLElement {
   }
 
   _chargeState() {
-    const c = this._config, mode = this._state(c.charger_mode)?.state || '';
-    const charging = this._on(this._e('binary_sensor', 'opladen')) || mode === 'connected_charging';
+    // de laadpaal (Zaptec) is leidend; de auto meldt zijn status vaak minuten later (na pauzeren bleef "laadt" staan)
+    const c = this._config, mode = this._state(c.charger_mode)?.state || '', hasMode = !!mode && mode !== 'unavailable' && mode !== 'unknown';
+    const soc = parseFloat(this._state(this._e('sensor', 'batterijniveau'))?.state ?? this._state(c.car_battery)?.state);
+    const charging = hasMode ? mode === 'connected_charging' : this._on(this._e('binary_sensor', 'opladen'));
     const plugged = charging || mode.startsWith('connected') || this._on(this._e('binary_sensor', 'stekker'));
-    return { mode, charging, plugged, finished: mode === 'connected_finished' };
+    // Zaptec meldt na pauzeren ook "connected_finished": alleen vol als de accu (bijna) vol is, anders gepauzeerd
+    const done = mode === 'connected_finished', full = done && (isNaN(soc) || soc >= 99);
+    return { mode, charging, plugged, finished: full, paused: done && !full };
   }
 
   // maandtotaal (kWh) en aantal sessies; elke 10 minuten
@@ -2480,13 +2485,14 @@ class AutoCard extends HTMLElement {
     const { lo, hi, kw } = this._ampRange();
     const limA = this._spdDrag ?? this._spdSet?.v ?? this._num(c.charger_current) ?? hi;
     if (this._spdSet && (Math.round(this._num(c.charger_current)) === this._spdSet.v || Date.now() - this._spdSet.t > 60000)) this._spdSet = null;
-    if (this._cBusy && (st.charging !== this._cBusy.charging || Date.now() - this._cBusy.t > 60000)) this._cBusy = null;
+    if (this._cBusy && (st.charging !== this._cBusy.charging || st.mode !== this._cBusy.mode || Date.now() - this._cBusy.t > 45000)) { this._cBusy = null; clearTimeout(this._cBusyT); }
 
     // kop
     const mins = (iso) => Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
     const dur = (m) => m >= 60 ? `${Math.floor(m / 60)} u ${m % 60} min` : `${m} min`;
     set('cNote', st.charging ? `<i class="cd" style="--c:var(--car)"></i><b>laadt</b>${modeSt ? ` · ${dur(mins(modeSt.last_changed))}` : ''}`
       : st.finished || (st.plugged && soc >= 100) ? '<i class="cd" style="--c:var(--exp)"></i><b>aangesloten</b> · vol'
+      : st.paused ? '<i class="cd" style="--c:var(--home)"></i><b>gepauzeerd</b>'
       : st.plugged ? '<i class="cd" style="--c:var(--home)"></i><b>aangesloten</b> · wacht'
       : '<i class="cd" style="--c:#6b7385"></i>niet aangesloten');
     this.$('cTile').classList.toggle('live', st.charging);
@@ -2496,9 +2502,10 @@ class AutoCard extends HTMLElement {
     const hm = (h) => { const m = Math.round(h * 60); return m >= 60 ? `${Math.floor(m / 60)}<small>u</small>${String(m % 60).padStart(2, '0')}<small>min</small>` : `${m}<small>min</small>`; };
     const sched = this._on(this._e('switch', 'schedule_enabled')), start = this._state(this._e('time', 'start_time'))?.state;
     const startTxt = sched && start && /^\d\d:\d\d/.test(start) ? start.slice(0, 5) : null;
-    const full = st.plugged && (st.finished || soc >= 100 || remKwh === 0);
+    const full = st.plugged && !st.paused && (st.finished || soc >= 100 || remKwh === 0);
     let bigHtml, subHtml = '', txt = false;
     if (!st.plugged) { txt = true; bigHtml = 'Niet<br>aangesloten'; }
+    else if (st.paused) { txt = true; bigHtml = 'Gepauzeerd'; subHtml = remKwh != null ? `nog ${fmt(remKwh, 1)} kWh tot vol` : ''; }
     else if (full) { bigHtml = 'Vol'; subHtml = 'klaar met laden'; }
     else if (remKwh == null) { txt = true; bigHtml = st.charging ? 'Laadt' : 'Aangesloten'; }
     else {
@@ -3124,15 +3131,15 @@ const TSTYLE = `
 .was .t span { font-size: 12.5px; color: var(--muted); } .was .rt { text-align: right; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .was .rt b { display: block; font-size: 13px; font-weight: 600; color: #cfe3ff; margin-bottom: 2px; } .was.done .rt b { color: #9ff0c4; } .was.bad .rt b { color: #ff8a8a; }
 .was.idle { padding: 9px 14px; } .was.idle svg { width: 26px; height: 26px; } .was.idle .t b { font-size: 13.5px; font-weight: 500; }
-.was.xchg { padding: 14px 16px; border-radius: 22px; background: radial-gradient(90% 120% at 85% 60%, rgba(94,225,208,.28), transparent 60%), linear-gradient(135deg, #10283a, #0e1a2c) !important; border: 1px solid rgba(94,225,208,.38); box-shadow: 0 14px 34px -18px rgba(94,225,208,.75); }
+.was.xchg { padding: 12px 16px 14px; border-radius: 22px; background: radial-gradient(90% 120% at 85% 60%, rgba(94,225,208,.28), transparent 60%), linear-gradient(135deg, #10283a, #0e1a2c) !important; border: 1px solid rgba(94,225,208,.38); box-shadow: 0 14px 34px -18px rgba(94,225,208,.75); }
 .was.xchg .xh { display: flex; align-items: center; gap: 10px; } .was.xchg .xh b { display: block; font-size: 15px; font-weight: 700; white-space: nowrap; } .was.xchg .xh span { display: block; font-size: 12.5px; color: #9fb3c8; white-space: nowrap; }
 .was.xchg .xq { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(160deg, rgba(94,225,208,.35), rgba(25,120,110,.35)); color: #5ee1d0; flex: none; } .was.xchg .xq svg { width: 18px; height: 18px; fill: currentColor; }
 .was.xchg .xp { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #d6fbf5; background: rgba(94,225,208,.22); border: 1px solid rgba(94,225,208,.45); white-space: nowrap; } .was.xchg .xp svg { width: 14px; height: 14px; fill: #5ee1d0; flex: none; }
 .was.xchg .xr { display: flex; align-items: center; gap: 6px; } .was.xchg .xl { flex: 1; min-width: 0; }
-.was.xchg .xbig { margin-top: 8px; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 26px; margin-left: 1px; }
+.was.xchg .xbig { margin-top: 4px; font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 22px; margin-left: 1px; }
 .was.xchg .xk { font-size: 13px; color: #a9bccd; margin-top: 4px; white-space: nowrap; }
-.was.xchg .bar { height: 6px; margin-top: 12px; } .was.xchg .bar i { background: linear-gradient(90deg, #1fa893, #7cf0dd); box-shadow: 0 0 10px rgba(94,225,208,.8); }
-.was.xchg svg.xi { width: 172px; height: 84px; flex: none; margin-right: -4px; }
+.was.xchg .bar { height: 6px; margin-top: 10px; } .was.xchg .bar i { background: linear-gradient(90deg, #1fa893, #7cf0dd); box-shadow: 0 0 10px rgba(94,225,208,.8); }
+.was.xchg svg.xi { width: 150px; height: 72px; flex: none; margin-right: -4px; }
 .was.xchg .evp { stroke-dasharray: 12 120; animation: evp 1.8s linear infinite; filter: drop-shadow(0 0 4px #5ee1d0); }
 @keyframes evp { from { stroke-dashoffset: 20; } to { stroke-dashoffset: -100; } }
 .was.xchg.evwait { background: linear-gradient(135deg, #142338, #0f1a2c) !important; border-color: rgba(140,170,220,.22); box-shadow: none; }
@@ -4500,8 +4507,9 @@ class ThuisCard extends HTMLElement {
   _updCharge() {
     const box = this.$('evc'); if (!box) return;
     const c = this._config, mode = String(this._state(c.car_charging)?.state || ''), soc = parseFloat(this._state(c.car_battery)?.state);
-    const charging = mode === 'connected_charging' || (/charg|laden|laadt/i.test(mode) && !/discharg|finish|niet/i.test(mode));
-    const plugged = charging || /^connected/.test(mode) && mode !== 'connected_finished';
+    const charging = mode === 'connected_charging' || (/charg|laden|laadt/i.test(mode) && !/discharg|finish|niet|disconn/i.test(mode));
+    const paused = mode === 'connected_finished' && !(soc >= 99);
+    const plugged = charging || paused || (/^connected/.test(mode) && mode !== 'connected_finished');
     if (!plugged || soc >= 100) { if (!box.hidden) { box.hidden = true; box._key = ''; } return; }
     const pst = this._state(c.charger_power); let w = parseFloat(pst?.state);
     if (!isNaN(w) && /kw/i.test(pst.attributes.unit_of_measurement || '')) w *= 1000;
@@ -4509,16 +4517,16 @@ class ThuisCard extends HTMLElement {
     const rem = !isNaN(soc) && kw ? Math.max(0, (100 - soc) / 100 * (c.battery_kwh || 82.5)) / (kw * (c.efficiency || 0.92)) : null;
     const dur = (h) => { const m = Math.round(h * 60); return m >= 60 ? `${Math.floor(m / 60)} u ${m % 60} min` : `${m} min`; };
     const pct = isNaN(soc) ? null : Math.round(soc);
-    const live = charging;
+    const live = charging && kw != null, starting = charging && kw == null;
     const sched = this._state(c.car_schedule)?.state === 'on', st0 = String(this._state(c.car_start)?.state || '').slice(0, 5);
-    const ttl = live ? 'Laden' : 'Wacht op laden';
-    const sub = live ? (rem != null ? `vol om ${fmtTime(Date.now() + rem * 3600000)}` : '') : sched && /^\d\d:\d\d$/.test(st0) ? `start om ${st0}` : '';
+    const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Wacht op laden';
+    const sub = live ? (rem != null ? `vol om ${fmtTime(Date.now() + rem * 3600000)}` : '') : starting || paused ? '' : sched && /^\d\d:\d\d$/.test(st0) ? `start om ${st0}` : '';
     // auto links, laadpaal rechts; de lichtpuls loopt van de paal naar de auto
     const cab = 'M163 44c0 24-26 26-38 16s-10-8-14-7';
     const pic = `<svg class="xi" viewBox="34 0 152 74"><g transform="translate(40 10) scale(.76)">${RIC.draw('car', live ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</g>
       <rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="${live ? '#5ee1d0' : '#8a94a6'}"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/>
       <path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${live ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
-    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? (kw != null ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : 'laadt') : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
+    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
     const cls = `was xchg ${live ? 'evon' : 'evwait'}`, key = cls + html;
     if (box._key === key) return;
     box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
