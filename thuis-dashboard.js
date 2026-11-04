@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '203';
+const CARD_VERSION = '204';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4732,8 +4732,10 @@ class ThuisCard extends HTMLElement {
       const days = isNaN(t) ? null : Math.round((startOfDay(t) - day0) / DAY);
       return { ...b, t, days, meta: BINS[b.type] || BINS.rest };
     }).sort((a, b) => (a.days ?? 999) - (b.days ?? 999));
-    const next = items.find((i) => i.days != null && i.days >= 0);
-    const key = JSON.stringify(items.map((i) => [i.name, i.days]));
+    // na 15:00 is de bak van vandaag geleegd: dan de bak van morgen (of later) tonen
+    const late = new Date().getHours() >= 15, min = late ? 1 : 0;
+    const next = items.find((i) => i.days != null && i.days >= min);
+    const key = JSON.stringify([late, items.map((i) => [i.name, i.days])]);
     if (key === this._binKey) return;
     this._binKey = key;
     box.className = 'bins';
@@ -4748,7 +4750,7 @@ class ThuisCard extends HTMLElement {
     box.querySelectorAll('[data-e]').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.e)));
     // telefoon: eerstvolgende bak groot met icoon, daaronder de volgende twee
     const fd = (i) => (i.days === 0 ? 'Vandaag' : i.days === 1 ? 'Morgen' : new Date(i.t).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, ''));
-    const rest = items.filter((i) => i !== next && i.days != null && i.days >= 0).slice(0, 2);
+    const rest = items.filter((i) => i !== next && i.days != null && i.days >= min).slice(0, 2);
     const mf = this.$('mAf');
     mf.style.setProperty('--bc', next ? next.meta[1] : 'var(--muted)');
     mf.innerHTML = next ? `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag">${fd(next).toUpperCase()}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : '<div class="mlab">♻ Afval</div><span>Geen ophaaldata</span>';
