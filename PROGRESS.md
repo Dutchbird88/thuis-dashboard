@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 4 november 2026, versie **v215**.*
+*Bijgewerkt: 4 november 2026, versie **v216**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v215** (namen via het register). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v216** (eigen pil voor licht/lux, telefoon). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v215.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v216.
 
 ## Gerealiseerde functies (per tab)
 
@@ -42,7 +42,7 @@
 - Kamers uit de ruimtes en verdiepingen van HA, met `room_order` en `room_merge`.
 - Kamerkaarten met lampen, rolluiken, een grijze temperatuur in de statusregel en apparaten met "Nog xx min".
 - Kamerpaneel:
-  - sensorpillen voor water, rook en CO, beweging met lux, deur, raam, camera en slimme stekker;
+  - sensorpillen voor water, rook en CO, beweging, licht (lux, eigen pil op de telefoon), deur, raam, camera en slimme stekker;
   - apparaten en Stand-by;
   - scènes;
   - geschiedenis.
@@ -84,6 +84,7 @@
 | v209 | Bron in de kamergeschiedenis. Geschiedenis van de apparaten. |
 | v213–v214 | Rustige telefoonstijl (`CALM`) met effen vensters. Titels gecentreerd. |
 | v215 | Namen via `_nm()`: eerst `hass.formatEntityName` (register, HA 2025.10+), dan `friendly_name`, dan apparaat- + entiteitnaam uit het register. Getest: beeld gelijk aan v214, ook zonder `friendly_name`. |
+| v216 | Telefoon, kamerpaneel: lux als eigen pil na Beweging ("340 lux" / Donker, Schemerig, Helder, Zonnig; maan onder 10 lux). Computer ongewijzigd. |
 
 ## Volgende stappen
 

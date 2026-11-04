@@ -101,7 +101,8 @@ Verdere regels:
 
 **Kamerpaneel**
 
-- `_updRoomSheet` toont de sensoren als pillen bovenaan: Watersensor, Rookmelder (rook én CO, zoals Nest Protect), Beweging (met lux en temperatuur), deur en raam.
+- `_updRoomSheet` toont de sensoren als pillen bovenaan: Watersensor, Rookmelder (rook én CO, zoals Nest Protect), Beweging (met temperatuur), deur en raam.
+  - Lux van de bewegingssensor: op de telefoon een eigen pil direct na Beweging ("340 lux" met Donker < 10, Schemerig < 100, Helder < 1000, anders Zonnig; maan of zon). Op de computer staat de lux nog in de bewegingspil.
 - Slimme stekkers verschijnen automatisch als pil: een switch met vermogensmeter, of met "plug", "stopcontact" of "grillplats" in de naam.
 - Camera-apparaten krijgen één pil met de laatste detectie. Die detecties tellen **niet** als bewegings- of rookmelder en geven geen alarm.
 - Apparaten die niets doen staan als "Stand-by" in een lijst.
