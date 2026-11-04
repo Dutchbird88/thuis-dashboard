@@ -1289,7 +1289,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '209';
+const CARD_VERSION = '210';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3576,6 +3576,10 @@ const KSTYLE = `
 .kspills .mp.alarm { background: linear-gradient(135deg, rgba(255,69,58,.4), rgba(150,28,40,.4)); box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.6); } .kspills .mp.alarm span { color: #ffd2cc; font-weight: 700; }
 .kspills .mp.alarm i.g { animation: lkp 1.6s ease-in-out infinite; border-radius: 50%; }
 .klk.koff .lk b { font-size: 15.5px; }
+.wsr { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 22px; margin-top: 10px; cursor: pointer; background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)); border: 1px solid rgba(255,255,255,.05); }
+.wsr svg { width: 56px; height: 56px; flex: none; overflow: visible; } .wsr b { display: block; font-size: 18px; font-weight: 700; } .wsr span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+.wsr em { margin-left: auto; font-style: normal; font-size: 13px; font-weight: 700; white-space: nowrap; color: color-mix(in srgb, var(--c) 70%, #fff); padding: 4px 10px; border-radius: 99px; background: color-mix(in srgb, var(--c) 22%, transparent); }
+.wsr.first { padding: 18px 16px; margin-top: 18px; border-color: color-mix(in srgb, var(--c) 50%, transparent); box-shadow: 0 10px 30px -18px var(--c); } .wsr.first svg { width: 84px; height: 84px; } .wsr.first b { font-size: 24px; }
 .hico.app { background: rgba(255,255,255,.06) !important; } .hico.app svg { width: 26px !important; height: 26px !important; } .hwho.hrun { color: #8fd3ff; } .hwho.hbad { color: #ff8a80; }
 .evsec .was.xchg { margin: 0; } .evsec .evoff { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: none !important; }
 .evsec .evoff svg.xo { width: 46px; height: 72px; margin-right: 8px; } .evsec .evoff .xh b { font-size: 17px; } .evsec .evoff .xh span { font-size: 14px; margin-top: 2px; }
@@ -4744,6 +4748,30 @@ class ThuisCard extends HTMLElement {
       .filter((x) => x.type)
       .map((x) => ({ name: names[x.type], type: x.type, entity: x.st.entity_id }));
   }
+  // afvalvenster: ophaaldagen van de komende twee weken (uit de afvalkalender als die er is, anders de eerstvolgende per bak)
+  async _wasteSheet() {
+    const box = this.$('wsB'); if (!box) return;
+    const S = this._hass.states, day0 = startOfDay(Date.now()), min = this._binMin ?? 0;
+    const kind = (t) => /gft|groen/i.test(t) ? 'gft' : /pmd|plastic|pbd/i.test(t) ? 'pmd' : /papier|karton/i.test(t) ? 'papier' : /rest/i.test(t) ? 'rest' : null;
+    const names = { gft: 'GFT', pmd: 'PMD', papier: 'Papier', rest: 'Restafval' };
+    let list = [];
+    const cal = Object.keys(S).find((k) => k.startsWith('calendar.') && /afval|cyclus|waste|ophaal/.test(k) && S[k].state !== 'unavailable');
+    if (cal) {
+      const ev = await this._hass.callApi('GET', `calendars/${cal}?start=${encodeURIComponent(new Date(day0).toISOString())}&end=${encodeURIComponent(new Date(day0 + 15 * DAY).toISOString())}`).catch(() => []);
+      list = (Array.isArray(ev) ? ev : []).map((e) => { const tp = kind(e.summary || ''); const t = Date.parse(e.start?.date || e.start?.dateTime || e.start); return tp && !isNaN(t) ? { type: tp, t: startOfDay(t) } : null; }).filter(Boolean);
+    }
+    if (!list.length) list = (this._binItems || []).filter((i) => i.days != null).map((i) => ({ type: i.type, t: startOfDay(i.t), entity: i.entity }));
+    const ent = Object.fromEntries((this._binItems || []).map((i) => [i.type, i.entity]));
+    list = list.map((x) => ({ ...x, days: Math.round((x.t - day0) / DAY) })).filter((x) => x.days >= min).sort((a, b) => a.t - b.t);
+    const soon = list.filter((x) => x.days <= 14), later = list.filter((x) => x.days > 14 && !soon.some((y) => y.type === x.type));
+    const lbl = (d) => d === 0 ? 'vandaag' : d === 1 ? 'morgen' : `over ${d} d`;
+    const dd = (x, long) => long ? new Date(x.t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }) : x.days === 0 ? 'Vandaag' : x.days === 1 ? `Morgen · ${new Date(x.t).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '')}` : new Date(x.t).toLocaleDateString('nl-NL', long ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '');
+    const row = (x, i) => { const m = BINS[x.type] || BINS.rest; return `<div class="wsr${i === 0 ? ' first' : ''}" style="--c:${m[1]}" data-e="${x.entity || ent[x.type] || ''}"><svg viewBox="0 0 100 100"><use href="#${m[0]}"/></svg><div><b>${names[x.type]}</b><span>${dd(x, i === 0)}</span></div><em>${lbl(x.days)}</em></div>`; };
+    box.innerHTML = (soon.length ? soon.map(row).join('') : '<div class="hnone">Geen ophaaldagen in de komende twee weken</div>')
+      + (later.length ? `<div class="hday">Later</div>${later.map((x) => row(x, 1)).join('')}` : '');
+    box.querySelectorAll('.wsr[data-e]').forEach((el) => el.addEventListener('click', () => el.dataset.e && this._moreInfo(el.dataset.e)));
+  }
+
   _updWaste() {
     const list = this._wasteList();
     const box = this.$('bins');
@@ -4767,6 +4795,7 @@ class ThuisCard extends HTMLElement {
     // na 15:00 is de bak van vandaag geleegd: dan de bak van morgen (of later) tonen
     const late = new Date().getHours() >= 15, min = late ? 1 : 0;
     const next = items.find((i) => i.days != null && i.days >= min);
+    this._binItems = items; this._binMin = min;
     const key = JSON.stringify([late, items.map((i) => [i.name, i.days])]);
     if (key === this._binKey) return;
     this._binKey = key;
@@ -4790,10 +4819,10 @@ class ThuisCard extends HTMLElement {
     const until = quiet ? (next.days === 2 ? 'vandaag en morgen' : `tot en met ${new Date(next.t - DAY).toLocaleDateString('nl-NL', { weekday: 'long' })}`) : '';
     if (quiet) { mf.classList.add('quiet'); mf.style.setProperty('--bc', 'var(--muted)');
       mf.innerHTML = `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#binRst"/></svg><b>Geen afval</b><span class="mq">${until}</span><em class="mchip">${next.name} · ${fd(next)}</em>`;
-      mf.onclick = () => this._moreInfo(next.entity); return; }
+      mf.onclick = () => this._openSheet('waste'); return; }
     mf.classList.remove('quiet');
     mf.innerHTML = next ? `<div class="mlab"><i>♻</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag">${fd(next).toUpperCase()}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : '<div class="mlab">♻ Afval</div><span>Geen ophaaldata</span>';
-    mf.onclick = () => next && this._moreInfo(next.entity);
+    mf.onclick = () => next && this._openSheet('waste');
   }
 
   /* ---------- Picnic-bezorging (alleen telefoon, alleen op de dag zelf) ---------- */
@@ -4919,7 +4948,7 @@ class ThuisCard extends HTMLElement {
     if (!this._mq?.matches) return;
     this._sheet = kind; this._shKey = null; this._cvId = id; this._thArc = null;
     const sh = this.$('sheet'), body = this.$('shBody');
-    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
+    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl', 'waste'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
     const HB = '<button class="cvhb" id="cvHb" aria-label="Geschiedenis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></button>';
     if (kind === 'lt') {
       this._cvHist = false;
@@ -5002,6 +5031,10 @@ class ThuisCard extends HTMLElement {
       const up = () => { if (!this._tDragging) return; this._tDragging = false; this._tSend(); };
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    } else if (kind === 'waste') {
+      this._cvHist = false;
+      body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Afval</b><span>Komende twee weken</span></div><div id="wsB"><div class="hnone">Laden…</div></div>`;
+      setTimeout(() => this._wasteSheet(), 0);
     } else if (kind === 'ppl') {
       this._cvHist = false; this._pplMapEl = null;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Aanwezigheid</b><span id="pplS"></span></div>
