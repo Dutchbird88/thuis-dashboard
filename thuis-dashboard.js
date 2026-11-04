@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '188';
+const CARD_VERSION = '189';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2961,6 +2961,8 @@ const TDEFAULTS = {
   car_battery: 'sensor.byd_seal_batterijniveau',   // pil "Auto" op de telefoon (het tabblad Auto maakt daar plaats voor Kamers)
   car_charging: 'sensor.laadpaal_opladermodus',
   charger_power: 'sensor.laadpaal_laadvermogen',   // laadvermogen (W of kW) voor de laadkaart op Thuis
+  charger_name: 'Zaptec Go 2', charger_current_a: 'number.laadpaal_max_stroom', charger_switch: 'switch.laadpaal_opladen',
+  charger_stop: 'button.laadpaal_stop_het_opladen', charger_resume: 'button.laadpaal_hervat_het_opladen', charger_max_a: 16, car_range: 'sensor.byd_seal_bereik',
   battery_kwh: 82.5,                               // bruikbare accucapaciteit, voor 'vol om'
   car_name: 'BYD Seal', car_image: '/local/auto-render.png',
   car_schedule: 'switch.byd_seal_schedule_enabled', car_start: 'time.byd_seal_start_time',
@@ -3560,6 +3562,11 @@ const KSTYLE = `
 .kspills .mp.alarm { background: linear-gradient(135deg, rgba(255,69,58,.4), rgba(150,28,40,.4)); box-shadow: inset 0 0 0 1.5px rgba(255,90,80,.6); } .kspills .mp.alarm span { color: #ffd2cc; font-weight: 700; }
 .kspills .mp.alarm i.g { animation: lkp 1.6s ease-in-out infinite; border-radius: 50%; }
 .klk.koff .lk b { font-size: 15.5px; }
+.evsec .was.xchg { margin: 0; } .evsec .evoff { background: linear-gradient(135deg, rgba(28,38,60,.55), rgba(20,28,46,.55)) !important; border: 1px solid rgba(255,255,255,.05) !important; box-shadow: none !important; }
+.evsec .evoff svg.xo { width: 58px; height: 92px; margin-right: 6px; }
+.evb { margin-top: 20px !important; } .evb button svg { width: 72px !important; height: 72px !important; padding: 23px !important; }
+.evb button.on svg { background: linear-gradient(180deg, rgba(94,225,208,.45), rgba(31,168,147,.35)) !important; border-color: rgba(94,225,208,.6) !important; }
+.evb button[disabled] { opacity: .35; pointer-events: none; } .evb.busy button { opacity: .6; pointer-events: none; }
 .klk { display: flex; flex-direction: column; padding: 0; border-radius: 20px; overflow: hidden; }
 .klk .lk { display: flex; align-items: center; gap: 14px; padding: 11px 16px; cursor: pointer; position: relative; }
 .klk .lk + .lk::before { content: ''; position: absolute; top: 0; left: 70px; right: 0; height: 1px; background: rgba(255,255,255,.07); }
@@ -4488,6 +4495,45 @@ class ThuisCard extends HTMLElement {
     return out.slice(0, 3);
   }
 
+  // laadpaal in het kamerpaneel: kaart + knoppen Laden / Pauze / Stop (alleen de laadpaal wordt bediend)
+  _evState() {
+    const c = this._config, S = this._hass.states, mode = String(S[c.car_charging]?.state || ''), a = parseFloat(S[c.charger_current_a]?.state);
+    const plugged = /^connected/.test(mode), zero = a === 0, soc = parseFloat(S[c.car_battery]?.state);
+    return { plugged, charging: mode === 'connected_charging' && !zero, paused: plugged && (zero || (mode === 'connected_finished' && !(soc >= 99))), soc };
+  }
+  _evSection(rm) {
+    if (!(rm.r.apps || []).includes('evc')) return '';
+    const c = this._config, S = this._hass.states, st = this._evState(), box = this.$('evc');
+    let card;
+    if (st.plugged && box && box.innerHTML) card = `<div class="${box.className.replace(/\bgone\b/, '')}">${box.innerHTML}</div>`;
+    else {
+      const rng = parseFloat(S[c.car_range]?.state);
+      card = `<div class="was xchg evwait evoff"><div class="xr"><div class="xl"><div class="xh"><div><b>${c.charger_name || 'Laadpaal'}</b><span>Niet aangesloten</span></div></div><div class="xbig">${isNaN(st.soc) ? '—' : `${Math.round(st.soc)}<small>%</small>`}</div><div class="xk">${isNaN(rng) ? 'accu auto' : `accu auto · ${fmt(rng)} km`}</div></div>
+        <svg class="xi xo" viewBox="140 0 46 74"><rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="#8a94a6"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/><path d="M163 42c0 14 2 22-6 26" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/></svg></div><div class="bar"><i style="width:${isNaN(st.soc) ? 0 : Math.round(st.soc)}%"></i></div></div>`;
+    }
+    const dis = st.plugged ? '' : ' disabled', B = (a, l, ic, on) => `<button data-a="${a}" class="${on ? 'on' : ''}"${dis}><svg viewBox="0 0 24 24">${ic}</svg><span>${l}</span></button>`;
+    const busy = this._evBusy && Date.now() - this._evBusy < 20000;
+    return `<div class="kth">Laadpaal</div><div class="evsec">${card}<div class="cvb evb${busy ? ' busy' : ''}">${B('start', 'Laden', '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', st.charging)}${B('pause', 'Pauze', '<rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/>', st.paused)}${B('stop', 'Stop', '<rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/>', false)}</div></div>`;
+  }
+  _evAct(a) {
+    const c = this._config, S = this._hass.states, h = this._hass, cur = S[c.charger_current_a], sw = S[c.charger_switch];
+    const canZero = cur && Number(cur.attributes.min) === 0, swOk = sw && !['unavailable', 'unknown'].includes(sw.state);
+    const setA = (v) => h.callService('number', 'set_value', { entity_id: c.charger_current_a, value: v });
+    const press = (id) => { if (S[id] && S[id].state !== 'unavailable') h.callService('button', 'press', { entity_id: id }); };
+    if (a === 'pause') {
+      if (canZero) { const v = parseFloat(cur.state); try { localStorage.setItem('thuis-laadstroom', String(v > 0 ? v : c.charger_max_a || 16)); } catch (e) { /* geen opslag */ } setA(0); }
+      else if (swOk) h.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
+    } else if (a === 'start') {
+      let back = c.charger_max_a || 16; try { back = parseFloat(localStorage.getItem('thuis-laadstroom')) || back; } catch (e) { /* geen opslag */ }
+      if (canZero && !(parseFloat(cur.state) > 0)) setA(back);
+      if (swOk && sw.state === 'off') h.callService('switch', 'turn_on', { entity_id: c.charger_switch });
+      press(c.charger_resume);
+    } else if (a === 'stop') {
+      if (swOk) h.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else press(c.charger_stop);
+    }
+    this._evBusy = Date.now(); this._rmKey = null; this._updRoomSheet(); setTimeout(() => { this._rmKey = null; this._updRoomSheet(); }, 20500);
+  }
+
   // rookmelders en waterlek-sensoren uit alle kamers
   _safety() {
     const alarms = [], notes = [];
@@ -5407,7 +5453,7 @@ class ThuisCard extends HTMLElement {
   }
   _updRoomSheet() {
     const B = this.$('rmB'); if (!B || this._cvHist) return;
-    const rm = this._rooms()[this._roomIdx]; if (!rm) return;
+    let rm = this._rooms()[this._roomIdx]; if (!rm) return;
     const n = rm.lights.length; let sum = [n ? (rm.on ? `${rm.on} ${rm.on === 1 ? 'lamp' : 'lampen'} aan` : 'lampen uit') : '', rm.covers.length ? (rm.covers.some((c) => c.pos < 99) ? (rm.covers.length === 1 ? `rolluik ${this._coverTxt(rm.covers[0])}` : `${rm.covers.filter((c) => c.pos < 99).length} rolluiken dicht`) : (rm.covers.length === 1 ? 'rolluik open' : 'rolluiken open')) : '', ...rm.apps.map((a) => a.k === 'evc' ? (a.box.classList.contains('evon') ? 'auto laadt' : 'auto aangesloten') : `${a.k === 'was' ? 'wasmachine' : a.k === 'dish' ? 'vaatwasser' : 'oven'} bezig`)].filter(Boolean); rm.sensors.filter((x) => x.alarm).forEach((x) => sum.unshift(x.txt.split(' · ')[0].toLowerCase())); sum = sum.join(' · ');
     this.$('rmN').textContent = rm.name; this.$('rmS').textContent = sum.charAt(0).toUpperCase() + sum.slice(1);
     // klimaat: thermostaat (zoals op Thuis) of de temperatuur van de sensor
@@ -5428,9 +5474,11 @@ class ThuisCard extends HTMLElement {
     const pills = rm.sensors.map((x) => { const [lb, ok, on] = PILL[x.kind] || PILL.motion;
       const v = x.off ? 'Niet bereikbaar' : x.alarm ? (x.kind === 'smoke' && /kool/i.test(x.txt) ? 'CO-alarm!' : on) : x.warn ? 'Waarschuwing' : x.on ? on : x.kind === 'motion' ? x.txt.replace(/^Laatst /, '') : x.kind === 'smoke' && x.txt === 'Test bezig' ? 'Test' : ok;
       return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v}</span></div></div>`; }).join('');
+    const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc') }; }
     const html = (pills ? `<div class="kspills">${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
+      + this._evSection(rm)
       + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
@@ -5443,6 +5491,8 @@ class ThuisCard extends HTMLElement {
       th.addEventListener('click', () => { this._openSheet('th'); this._roomBack = ri; });
     }
     B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.k === 'was' ? this._config.washer : `sensor.${this._config[el.dataset.k === 'dish' ? 'dishwasher' : 'oven']}_status`)));
+    B.querySelectorAll('.evb button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
+    B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
     B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));
     B.querySelectorAll('.ksc .mp').forEach((el) => el.addEventListener('click', () => { this._hass.callService('scene', 'turn_on', { entity_id: el.dataset.id }); el.classList.add('hot'); }));
     B.querySelector('.kall')?.addEventListener('click', () => { this._rmAllSc = !this._rmAllSc; this._rmKey = null; this._updRoomSheet(); });
