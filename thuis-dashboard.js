@@ -1288,7 +1288,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '192';
+const CARD_VERSION = '193';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3138,7 +3138,7 @@ const TSTYLE = `
 .alr.warn { background: linear-gradient(135deg, rgba(255,159,10,.30), rgba(150,80,10,.30)) #0e1626; box-shadow: inset 0 0 0 1.5px rgba(255,170,60,.5); } .alr.warn i { background: rgba(255,159,10,.3); animation: none; } .alr.warn b { color: #ffe2b8; } .alr.warn span, .alr.warn em { color: #ffc680; }
 @keyframes lkp { 50% { box-shadow: 0 0 0 7px rgba(255,69,58,0); } 0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,.5); } }
 .shsrc { float: right; font-style: normal; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); }
-.shpl { display: flex; flex-direction: column; justify-content: center; margin-left: 14px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,.12); font-size: 13px; color: var(--muted); line-height: 1.35; align-self: center; } .shpl em { font-style: normal; font-size: 17px; font-weight: 600; color: #fff; }
+.shpl { white-space: nowrap; display: flex; flex-direction: column; justify-content: center; margin-left: 14px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,.12); font-size: 13px; color: var(--muted); line-height: 1.35; align-self: center; } .shpl em { font-style: normal; font-size: 17px; font-weight: 600; color: #fff; }
 .nrow .mi svg.ri2 { width: 21px; height: 21px; position: static; margin: 0; transform: none; }
 .nrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); } .nrow:first-child { border-top: 0; padding-top: 0; }
 .nrow .mi { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; gap: 0; border-radius: 50%; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); flex: none; } .nrow .mi svg { width: 16px; height: 16px; }
@@ -3154,7 +3154,8 @@ const TSTYLE = `
 .was.xchg .xq { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(160deg, rgba(94,225,208,.35), rgba(25,120,110,.35)); color: #5ee1d0; flex: none; } .was.xchg .xq svg { width: 18px; height: 18px; fill: currentColor; }
 .was.xchg .xp { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #d6fbf5; background: rgba(94,225,208,.22); border: 1px solid rgba(94,225,208,.45); white-space: nowrap; } .was.xchg .xp svg { width: 14px; height: 14px; fill: #5ee1d0; flex: none; }
 .was.xchg .xr { display: flex; align-items: center; gap: 6px; } .was.xchg .xl { flex: 1; min-width: 0; }
-.was.xchg .xbig { margin-top: 4px; font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 22px; margin-left: 1px; }
+.was.xchg .xh b .xs { display: inline; font-size: 14px; font-weight: 500; color: #9fb3c8; margin: 0; }
+.was.xchg .xbig { margin-top: 2px; font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .was.xchg .xbig small { font-size: 22px; margin-left: 1px; }
 .was.xchg .xk { font-size: 13px; color: #a9bccd; margin-top: 4px; white-space: nowrap; }
 .was.xchg .bar { height: 6px; margin-top: 10px; } .was.xchg .bar i { background: linear-gradient(90deg, #1fa893, #7cf0dd); box-shadow: 0 0 10px rgba(94,225,208,.8); }
 .was.xchg svg.xi { width: 150px; height: 72px; flex: none; margin-right: -4px; }
@@ -3983,7 +3984,8 @@ class ThuisCard extends HTMLElement {
     const sub = (ent, type) => conn.subscribeMessage((msg) => {
       (this._fcSrc[type] ||= {})[ent] = msg.forecast || [];
       const own = this._fcSrc[type][id] || [], alt = other ? this._fcSrc[type][other] || [] : [];
-      this['_fc_' + type] = own.length ? own : alt; (this._fcFrom ||= {})[type] = own.length ? id : other;
+      const useOwn = (this._fcSrc.daily?.[id] || []).length || (this._fcSrc.hourly?.[id] || []).length;
+      ['hourly', 'daily'].forEach((t) => { this['_fc_' + t] = (useOwn ? this._fcSrc[t]?.[id] : this._fcSrc[t]?.[other]) || []; (this._fcFrom ||= {})[t] = useOwn ? id : other; });
       this._updWeather(true);
     }, { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: ent }).catch(() => null);
     this._unsubs = ['hourly', 'daily'].flatMap((type) => [sub(id, type), ...(other ? [sub(other, type)] : [])]);
@@ -4551,6 +4553,9 @@ class ThuisCard extends HTMLElement {
   }
   _wxState() {
     const ok = (x) => x && !['unavailable', 'unknown'].includes(x.state), S = this._hass?.states || {};
+    // één bron: levert de gekozen bron geen verwachting, dan alles (ook het actuele weer) van de bron die dat wel doet
+    const fe = this._fcFrom?.daily || this._fcFrom?.hourly, fs = fe && fe !== this._wxId() ? this._state(fe) : null;
+    if (ok(fs)) return fs;
     const w = this._state(this._wxId()); if (ok(w)) return w;
     const alt = Object.values(S).find((x) => x.entity_id.startsWith('weather.') && ok(x));
     if (alt) return alt;
@@ -4611,7 +4616,7 @@ class ThuisCard extends HTMLElement {
     const pic = `<svg class="xi" viewBox="34 0 152 74"><g transform="translate(40 10) scale(.76)">${RIC.draw('car', live ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</g>
       <rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="${live ? '#5ee1d0' : '#8a94a6'}"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/>
       <path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${live ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
-    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
+    const html = `<div class="xr"><div class="xl"><div class="xh"><div><b>${ttl}${sub ? `<span class="xs"> · ${sub}</span>` : ''}</b></div></div><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
     const cls = `was xchg ${live ? 'evon' : 'evwait'}`, key = cls + html;
     if (box._key === key) return;
     box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
@@ -5249,8 +5254,9 @@ class ThuisCard extends HTMLElement {
       rain = `<div class="shcard"><div class="shlab">Regen komende 2 uur <span>${this._rainSoon() || ''}</span></div><div class="shrain">${list.map((x) => `<i style="height:${Math.max(2, x.v / mx * 46).toFixed(1)}px;opacity:${x.v >= 0.1 ? 1 : 0.25}"></i>`).join('')}</div><div class="shrx"><span>nu</span><span>+30</span><span>+60</span><span>+90</span><span>+120</span></div></div>`;
     }
     const hrs = (this._fc_hourly || []).filter((f) => Date.parse(f.datetime) > now - 3600000).slice(0, 6);
-    const src = (t) => { const e = this._fcFrom?.[t]; return e && e !== this._wxId() ? `<em class="shsrc">via ${(this._state(e)?.attributes.friendly_name || e).replace(/^Forecast\s*/i, '')}</em>` : ''; };
-    const hour = hrs.length ? `<div class="shcard"><div class="shlab">Per uur${src('hourly')}</div><div class="shhrs">${hrs.map((f, i) => {
+    const wn = (e) => /buienradar/.test(e || '') ? 'Buienradar' : /^weather\.forecast_/.test(e || '') ? 'Met.no' : (this._state(e)?.attributes.friendly_name || e || '').replace(/^Forecast\s*/i, '');
+    const srcTxt = wn(w.entity_id);
+    const hour = hrs.length ? `<div class="shcard"><div class="shlab">Per uur</div><div class="shhrs">${hrs.map((f, i) => {
       const p = num(f.precipitation_probability), mmv = num(f.precipitation);
       const extra = p != null && p >= 30 ? `${Math.round(p)}%` : mmv != null && mmv >= 0.1 ? `${fmt(mmv, 1)} mm` : '';
       return `<div>${i === 0 ? 'Nu' : new Date(f.datetime).getHours().toString().padStart(2, '0')}${I((WCOND[f.condition] || ['', 'wCloud'])[1])}<b>${fmt(f.temperature)}°</b><em>${extra}</em></div>`;
@@ -5259,7 +5265,7 @@ class ThuisCard extends HTMLElement {
     let daily = '';
     if (days.length) {
       const L = Math.min(...days.map((f) => f.templow ?? f.temperature)), H = Math.max(...days.map((f) => f.temperature)), R = Math.max(1, H - L);
-      daily = `<div class="shcard"><div class="shlab">Komende dagen${src('daily')}</div>${days.map((f) => {
+      daily = `<div class="shcard"><div class="shlab">Komende dagen</div>${days.map((f) => {
         const lo = f.templow ?? f.temperature, hi = f.temperature, di = (WCOND[f.condition] || ['', 'wCloud'])[1];
         const d = startOfDay(Date.parse(f.datetime)) === startOfDay(now) ? 'Vandaag' : new Date(f.datetime).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '').replace(/^./, (c) => c.toUpperCase());
         return `<div class="shday"><span>${d}</span>${I(di === 'wNight' ? 'wSunny' : di)}<span class="l">${fmt(Math.floor(lo))}°</span><div class="shbar"><i style="left:${((lo - L) / R * 100).toFixed(0)}%;right:${((H - hi) / R * 100).toFixed(0)}%"></i></div><span class="h">${fmt(Math.ceil(hi))}°</span></div>`;
@@ -5271,7 +5277,7 @@ class ThuisCard extends HTMLElement {
     if (num(a.uv_index) != null) det.push(['UV-index', fmt(a.uv_index), a.uv_index < 3 ? 'laag' : a.uv_index < 6 ? 'matig' : a.uv_index < 8 ? 'hoog' : 'zeer hoog']);
     if (num(a.pressure) != null) det.push(['Luchtdruk', `${fmt(a.pressure)} hPa`, '']);
     const feels = num(a.apparent_temperature);
-    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature)}°</b><span class="shpl">${this._config.weather_place ? `<em>${this._config.weather_place}</em>` : ''}${/buienradar/.test(w.entity_id || '') ? 'Buienradar' : (w.attributes.friendly_name || '').replace(/^Forecast\s*/i, '')}</span></div><div class="shcond">${label}</div>
+    const html = `<div class="shtop"><div><div class="shwx">${I(ic)}<b>${fmt(a.temperature)}°</b><span class="shpl">${this._config.weather_place ? `<em>${this._config.weather_place}</em>` : ''}${srcTxt}</span></div><div class="shcond">${label}</div>
         <div class="shmm">${feels != null ? `voelt als ${fmt(feels)}° · ` : ''}<span class="lo">↓ ${this.$('wLo').textContent}</span> <span class="hi">↑ ${this.$('wHi').textContent}</span></div></div><button class="shx" aria-label="Sluiten">✕</button></div>
       ${rain}${hour}${daily}${det.length ? `<div class="shgrid">${det.map(([t, v, s2]) => `<div><small>${t}</small><b>${v}</b><span>${s2}</span></div>`).join('')}</div>` : ''}
       <button class="shrbtn" id="shRb">Buienradar bekijken</button><div class="shrad" id="shRad" hidden><iframe title="Buienradar"></iframe><i class="home"></i></div>`;
