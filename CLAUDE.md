@@ -1,0 +1,245 @@
+# CLAUDE.md — Thuis Dashboard
+
+Handleiding voor Claude Code-sessies in deze repository. Lees ook **PROGRESS.md**. Daarin staan de huidige stand en de volgende stappen.
+
+## In het kort
+
+Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand**, `thuis-dashboard.js`. Het bestaat uit web components met shadow DOM, zonder build-stap, framework of afhankelijkheden. Het wordt via HACS geïnstalleerd: het type is *Dashboard* en de instellingen staan in `hacs.json`. De stijl is donker en lijkt op een iPhone-app. Alle teksten in de app zijn Nederlands.
+
+| Bestand | Inhoud |
+|---|---|
+| `thuis-dashboard.js` | De hele app, ruim 5.900 regels. Dit is het enige codebestand. |
+| `README.md` | Uitleg voor gebruikers: installatie en YAML-instellingen. HACS toont dit bestand (`render_readme`). |
+| `hacs.json` | HACS-metadata: naam "Thuis Dashboard", minimaal HA 2024.1.0. |
+| `CLAUDE.md` / `PROGRESS.md` | Documentatie voor ontwikkelaars en Claude. |
+
+## Communicatie en werkafspraken (gebruiker)
+
+- **Antwoord in het Nederlands**, eenvoudig en duidelijk, zonder jargon.
+- **Altijd eerst een mockup bij visuele wijzigingen.** Bouw pas na akkoord.
+  - Een mockup is een HTML-pagina of screenshot met de echte stijl. Bied bij twijfel 2 tot 4 opties aan (A/B/C).
+- **Geef eerst een reactie of analyse als de gebruiker daarom vraagt** ("pas nog niks aan"), en verander dan nog niets.
+- **Telefoon en computer:** de telefoon (≤ 600px) heeft een eigen indeling. Laat de computerweergave ongewijzigd, tenzij de gebruiker daar expliciet om vraagt.
+- **Geef advies als de gebruiker erom vraagt.** Kies zelf, met een korte motivatie.
+- **Na publiceren:** noem het versienummer. De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
+
+## Privacy en veiligheid (strikt)
+
+De repository is **openbaar**. Zet er nooit persoonlijke gegevens in:
+
+- namen van gezinsleden, adres, woonplaats, postcode;
+- serienummers van de P1-meter en de omvormers, de laadpaal-ID, VIN, pincodes, GPS-locaties;
+- de eigen kamerindeling en entity-ids die naar de eigen apparaten verwijzen;
+- merknamen van eigen apparaten die niet algemeen in de code nodig zijn.
+
+Verdere regels:
+
+- Persoonlijke waarden horen **alleen in de dashboard-YAML van de gebruiker** in Home Assistant, niet in de code.
+  - In de code staan `null` of `[]` als standaard, of algemene namen zoals `sensor.laadpaal_*` en `sensor.byd_seal_*`. Die zijn op het merk gebaseerd en niet herleidbaar.
+- **Controleer vóór elke commit en push** met een grep op persoonlijke termen. De uitkomst moet 0 zijn.
+  - De lijst met termen staat níet in deze repo, want die is zelf persoonlijk. Vraag de gebruiker ernaar als je de lijst niet hebt.
+  - Controleer in elk geval op: namen, straat, plaats, postcode, serienummers, de laadpaal-ID en eigen entity-ids van apparaten.
+- Vraag de gebruiker **nooit** om tokens of wachtwoorden in de chat te plakken.
+- Camerastatussen bevatten `access_token` en `entity_picture`. Die zijn privé: niet loggen en niet delen.
+- Deel geen attributen van de laadpaal zoals pincode en adres.
+- Herinner de gebruiker bij screenshots aan kentekens, gevels, GPS, de Nabu Casa-URL en werk- of thuislocaties.
+- Commits:
+  - auteur `Dutchbird88 <Dutchbird88@users.noreply.github.com>`;
+  - de commit-trailer die de sessie voorschrijft (Co-Authored-By en Claude-Session);
+  - geen modelnamen in code of commitberichten buiten die trailer.
+
+## Architectuur
+
+### Kaarten (custom elements)
+
+| Element | Class | Tab op de telefoon | Standaardwaarden | Stijl |
+|---|---|---|---|---|
+| `thuis-card` | `ThuisCard` | Thuis | `TDEFAULTS` | `TSTYLE` (+ `CALM`) |
+| `kamers-card` | `KamersCard extends ThuisCard` | Kamers | als thuis | als thuis + `KSTYLE` |
+| `zonnepanelen-card` | `ZonnepanelenCard` | Nu | `DEFAULTS` | `STYLE` |
+| `verbruik-card` | `VerbruikCard` | Energie | `VDEFAULTS` | `VSTYLE` |
+| `auto-card` | `AutoCard` | Auto | `ADEFAULTS` | `ASTYLE` |
+
+- **Configuratie:** de YAML wordt samengevoegd over de `*DEFAULTS`. Bij een sleutel die leeg is (`null` of `[]`) zoekt de kaart zelf: de eerste `climate.*`, alle `camera.*`, Hue-kamers, Afvalbeheer-sensoren, alle `calendar.*` en Buienradar als weer.
+- **Opbouw van het bestand** (bij benadering; zoek op naam, de regelnummers verschuiven):
+  - `DEFAULTS`, constanten (`SENS_KIND`, `SENS_TXT`, `SENS_ICON`, `APP_RE`, `SMOKE_RE`, `CO_RE`);
+  - de icoon-engine `RIC`;
+  - `ZonnepanelenCard`, `CARD_VERSION`, `VerbruikCard`, `AutoCard`;
+  - de constanten voor Thuis (`TDEFAULTS`, `TSTYLE`, `WPHASE`, `WPROG`, `DISH_PROG`, `OVEN_PROG`, `PRESETS`, `CALM`, `BINS`, `HUE_SCENES`, `KSTYLE`);
+  - `ThuisCard`, `KamersCard`.
+- **Versie:** `const CARD_VERSION = 'NNN'`. Die wordt in de console gelogd als `THUIS-ENERGIE-KAART vNNN`. **Verhoog het nummer bij elke publicatie.**
+- **Navigatie:** `NAV` koppelt tabs aan dashboard-paden (`thuis`, `kamers`, `pv-installatie`, `verbruik`, `auto`). Op de telefoon staat onderin een tabbalk.
+- **Rendering:** `_build()` bouwt de DOM één keer. Daarna past `set hass()` gericht aan via `_upd*`-methodes, zoals `_updWeather`, `_updRooms`, `_updCharge`, `_updWaste` en `_updAlarm`. Bouw niet bij elke update de hele DOM opnieuw op.
+
+### Gebruikte Home Assistant-API's
+
+- `hass.states`, en de registers `hass.areas`, `hass.floors`, `hass.entities` en `hass.devices` voor kamers en verdiepingen.
+- `hass.callService(domain, service, data, target, false)`. Het vijfde argument `false` onderdrukt de foutmeldingen van HA. Dat wordt bewust gebruikt bij de BYD-start.
+- WebSocket:
+  - `weather/subscribe_forecast` (`_subForecast`);
+  - `recorder/statistics_during_period` (Energie);
+  - `logbook/<start>?entity=…&end_time=…` (geschiedenis);
+  - `calendars/<id>?start&end` (agenda, afval).
+- `hass-more-info`-event (`_moreInfo`) voor het standaardvenster van HA.
+
+### Thuis/Kamers: belangrijke onderdelen
+
+**Vensters (bottom sheets)**
+
+- `_openSheet(kind, id)`, met de soorten `th` (thermostaat), `wx` (weer), `cv` (rolluik), `lt` (lamp), `room`, `ppl` (aanwezigheid) en `waste`.
+- Geschiedenis wordt in het kamervenster getoond met de vlag `this._cvHist`, via `_cvHistory`, `_thHistory`, `_roomHistory` en `_appHistory`.
+
+**Kamers**
+
+- De keten is `_areaRooms()` → `_rooms()` → `_roomsBuild()`.
+  - `_areaRooms()` haalt de kamers uit de registers. De cache hangt aan de identiteit van de registers (`_arRef`).
+  - `_rooms()` onthoudt het resultaat per hass-object en per tijdvak van 5 s.
+- Met `rooms:` in de YAML kun je de kamers met de hand vastleggen.
+- `room_order` bepaalt de volgorde binnen een verdieping. `room_merge` voegt ruimtes samen.
+- Verdiepingen staan op naam gesorteerd: begane grond → eerste → tweede → zolder, en Buiten als laatste.
+- Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.
+
+**Kamerpaneel**
+
+- `_updRoomSheet` toont de sensoren als pillen bovenaan: Watersensor, Rookmelder (rook én CO, zoals Nest Protect), Beweging (met lux en temperatuur), deur en raam.
+- Slimme stekkers verschijnen automatisch als pil: een switch met vermogensmeter, of met "plug", "stopcontact" of "grillplats" in de naam.
+- Camera-apparaten krijgen één pil met de laatste detectie. Die detecties tellen **niet** als bewegings- of rookmelder en geven geen alarm.
+- Apparaten die niets doen staan als "Stand-by" in een lijst.
+- In de kamer van de laadpaal (Oprit) zijn de scènes verborgen en staat de laadkaart met de knoppen Laden, Pauze en Stop.
+
+**Apparaten**
+
+- `_updAppliances`, `_updWasher`, `_appOpen` en `_appHistory` (7 dagen geschiedenis).
+- Wasmachine (Miele) en vaatwasser/oven (Home Connect) met programma, fase en resterende tijd.
+- Magnetronstand: het actieve of geselecteerde programma `microwave_*` toont "Magnetron" met een eigen icoon en het vermogen.
+
+**Meldingen**
+
+- `_safety` en `_updAlarm` tonen rook, CO en water als rode kaart onder de camera's op Thuis. De melding is weg te vegen en komt terug bij een nieuwe verandering.
+- `_updNotices`, `_health` en `_lowBat` geven verder meldingen voor:
+  - entiteiten die ontbreken (1x per keer openen, na 15 s);
+  - een batterij op of onder 5%, met uitzondering van Hue-dimmers en -knoppen, deur- en raamsensoren, telefoons, de auto, tandenborstels en horloges;
+  - een rookmelder met een batterij op of onder 20%, of een test die bezig is.
+
+**Weer**
+
+- `_wxId` en `_wxState`. Met `weather: null` kiest de kaart automatisch, met Buienradar eerst.
+- Alles komt uit **één bron**: heeft Buienradar geen verwachting, dan komt alles van de andere weer-entiteit (bijvoorbeeld Met.no).
+- De temperatuur staat in hele graden. Onder de plaatsnaam (`weather_place`) staat de bron.
+
+**Afval**
+
+- `_updWaste`, `_wasteList`, `_wasteSheet` en de constante `BINS`, met de types gft, pmd, papier en rest.
+- Wanneer staat een bak in beeld:
+  - een dag van tevoren met MORGEN;
+  - op de dag zelf met VANDAAG, tot 15:00;
+  - na 15:00 komt de volgende bak.
+  - Is er geen bak aan de beurt, dan staat er "Geen afval · tot en met <dag>".
+- Het afvalvenster toont 2 weken vooruit:
+  - uit de afvalkalender als die er is, en anders de eerstvolgende datum per bak;
+  - plus de groepen "Vandaag opgehaald" en "Zonder datum".
+
+**Laden (laadpaal Zaptec + auto BYD)**
+
+- De functies zijn `_evState`, `_evSection`, `_evAct` en `_updCharge`. In de Auto-kaart zijn dat `_chargeState` en `_chargeBtn`.
+- **De laadpaal is leidend** (`sensor.laadpaal_opladermodus`). De auto levert alleen het accupercentage en de resterende tijd.
+- `connected_finished` met een accu onder 99% geldt als *Gepauzeerd*. Een maximale stroom van 0 A geldt ook als gepauzeerd.
+- **Pauze:** zet `number.…max_stroom` op 0 A. De vorige waarde wordt onthouden in localStorage `thuis-laadstroom`.
+  - Een pauze met de schakelaar beëindigt de sessie, en dat gaf problemen.
+- **Hervatten**, in deze volgorde:
+  1. zet de stroom terug;
+  2. zet `switch.…opladen` aan;
+  3. druk op `button.…hervat` als die beschikbaar is;
+  4. druk na 4 s op `button.byd_seal_start_charging`, maar alleen als het vermogen dan nog 300 W of minder is. Een weigering van de auto wordt stil genegeerd.
+  - Na 30–45 s volgt een tweede poging.
+  - De knop toont "Opdracht verstuurd…" tot de laadpaal reageert, maximaal 45 s.
+- **Stop:** zet de schakelaar uit. Laat nooit 0 A achter.
+- **Auto verversen** (`_carRefresh`): druk op `button.byd_seal_geforceerd_ophalen`, maar alleen als de auto aan de laadpaal hangt:
+  - bij het openen van de app of als de app weer zichtbaar wordt, hooguit 1x per 2 min (`thuis-auto-ververst`);
+  - elke 5 min tijdens het laden.
+- **Laadkaart op Thuis:**
+  - tik opent het kamerpaneel met de laadpaal en scrolt ernaartoe;
+  - vegen verbergt de kaart;
+  - de kaart is teal met een gloed en een balk over de hele breedte;
+  - bovenaan "72% | Laden / vol om …", daaronder "3,7 kW · nog …".
+
+**localStorage-sleutels** (allemaal met try/catch):
+
+| Sleutel | Waarvoor |
+|---|---|
+| `thuis-verborgen`, `thuis-verborgen-v` | weggeveegde kaarten |
+| `thuis-meldingen`, `thuis-gezien` | meldingen |
+| `thuis-alarm` | weggeveegd alarm |
+| `thuis-laadstroom` | stroom vóór de pauze |
+| `thuis-auto-ververst` | wanneer de auto voor het laatst is ververst |
+| `thuis-vaat-klaar` | vaatwasser klaar |
+
+### Iconen: `RIC` (stijl "Rounded")
+
+- Gebruik `RIC.draw(name, tone, …)`, `RIC.svg(name, tone)` en `RIC.room(icon)`. De tekeningen staan in de map `DRAW`, de verlopen zijn `url(#g-<naam>)`. `OFF`/`'off'` geeft de grijze variant.
+- Kamericonen (`ROOMICON`): attic, sofa, pot, door, toilet, bed, bath, desk, stairs, tree, drive, shed, wash.
+- Sensoren en apparaten: leak, smoke, motionS (lopend poppetje), contact, windowS, washer, micro (zwarte magnetron, ontwerp C) en meer.
+- Nieuwe iconen maak je in dezelfde Rounded-stijl, en eerst als mockup.
+
+## Ontwerpafspraken (UI)
+
+- **Donker en rustig**, in Apple-stijl, zonder kleuren of gloed die er "AI-achtig" uitzien.
+  - Kleur alleen met betekenis: rood = alarm, oranje = waarschuwing/open, teal = laden, blauw = wacht/gepland.
+- **Telefoon (`CALM`, alleen ≤ 600px, Thuis en Kamers):**
+  - effen vensters (`#111827`) en apparaatkaarten zonder gekleurde rand of gloed;
+  - grijze chips en grijze afvallabels;
+  - venstertitels en ondertitels **gecentreerd**, de ondertitel grijs;
+  - alarmen houden hun rode gloed.
+  - Het pulserende rode bolletje bij de camera op de telefoon is weg.
+- **Kamerkaart:** de temperatuur staat klein en grijs in de statusregel, met een effen thermometer. Bij apparaten staat alleen "Nog xx min". Het aantal lampen staat niet achter de verdiepingen.
+- **Teksten:**
+  - "Stand-by" alleen als een apparaat niets doet;
+  - "Watersensor" met "Geen water gedetecteerd" / "Water gedetecteerd";
+  - bij laden "Laden", "Gepauzeerd", "Laden start", "Aangesloten", "Niet aangesloten";
+  - knoppen "Laden", "Pauze", "Stop" in een neutrale stijl (de stijl van de thermostaat-stepper), zonder kleur.
+- **Stekkerpil:** bij Aan licht alleen het stekkericoon op. Er staat geen tekst "Aan" en er is geen gele gloed. Bij Uit is de pil grijs.
+- **Lichte weergave:** daar is een mockup van gemaakt, maar die is niet gebouwd. Het advies is donker, eventueel automatisch wisselend.
+
+## Ontwikkelen, testen en publiceren
+
+### Bronbestand
+
+- Pas `thuis-dashboard.js` **rechtstreeks** aan. Het is de openbare versie: alle persoonlijke waarden staan in de YAML van de gebruiker.
+- In eerdere sessies bestond een tijdelijk werkbestand (`zp.js`) met persoonlijke standaardwaarden. Een script (`split.js`) maakte daar de openbare versie van. Die bestanden stonden in een tijdelijke scratchpad en zijn in een nieuwe sessie niet aanwezig.
+  - Het resultaat was byte voor byte gelijk aan `thuis-dashboard.js`, dus er gaat niets verloren.
+  - Voeg nooit persoonlijke standaardwaarden toe aan het bestand in de repo.
+
+### Testen (zonder echte Home Assistant)
+
+- **Syntax:** `node --check thuis-dashboard.js`.
+- **Lint:** `npx --yes eslint@8.57.0 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-undef":"error","no-redeclare":"error","no-dupe-keys":"error"}' thuis-dashboard.js`. Dit moet 0 fouten geven en is getest bij v214. Gebruik eventueel ook `no-unused-vars` als waarschuwing.
+- **Visueel:**
+  - Maak een HTML-pagina met een nep-`hass` object: states, `areas`, `floors`, `entities`, `devices`, `callService`, en `callWS`/`callApi` voor logbook en kalender.
+  - Laad het script, zet `card.setConfig({...})` en `card.hass = mock`.
+  - Bekijk het resultaat met Playwright/Chromium, dat al is geïnstalleerd: `require('playwright')`.
+    - Telefoon: een viewport van 390×844.
+    - Computer: 1280 breed.
+- **Regressie:** vergelijk de computerweergave met de vorige versie als pixeldiff, want die moet ongewijzigd blijven bij wijzigingen voor de telefoon.
+- De eerdere testpagina met vlaggen zoals `?ev`, `?brand` en `?nat` stond in de tijdelijke scratchpad en is niet bewaard. Maak die opnieuw als dat nodig is, **zonder persoonlijke entity-ids**.
+
+### Publiceren (na akkoord van de gebruiker)
+
+1. Verhoog `CARD_VERSION`.
+2. Voer `node --check` en lint uit.
+3. Doe de persoonlijke-gegevens-grep. De uitkomst moet 0 zijn.
+4. Werk de README bij als er instellingen bij zijn gekomen.
+5. `git fetch origin main`, dan een commit met de titel `vNNN: <korte Nederlandse omschrijving>` en daarna `git push -u origin main`.
+   - Er wordt direct op `main` gewerkt: dat is de afspraak in dit project. Maak geen PR, tenzij de gebruiker erom vraagt.
+6. Voeg een regel toe aan PROGRESS.md (versiegeschiedenis).
+7. Zeg tegen de gebruiker: "Werk bij via HACS (opnieuw downloaden) en herlaad."
+
+## Bekende aandachtspunten
+
+- **HA 2026.11:** HACS wordt de *Marketplace*.
+  - De migratie gaat automatisch, maar voor deze eigen repository is een GitHub-koppeling nodig (device login).
+  - Updates lopen daarna via Instellingen → Marketplace / Updates.
+- **`friendly_name` gaat op termijn verdwijnen** (aangekondigd in 2026.11). De kaart leest op veel plekken `attributes.friendly_name`.
+  - Geplande verbetering: eerst de naam uit het register (`hass.entities[id].name` en de apparaatnaam), en `friendly_name` als terugval. Zie PROGRESS.md.
+- **Cache:** na een update ziet de gebruiker soms nog de oude versie. Download dan opnieuw in HACS en wis de frontend- of app-cache.
+- **Entity-ids van laadpaal en auto** zijn standaardwaarden voor de integraties Zaptec en BYD. Een ander merk heeft andere namen nodig in de YAML.
+- **De Buienradar-integratie levert soms geen verwachting.** Dan komt alles van de andere weer-entiteit. Dat is zo bedoeld.
