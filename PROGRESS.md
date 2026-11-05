@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v226**.*
+*Bijgewerkt: 5 november 2026, versie **v227**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v226** (telefoon: Opbrengst opent standaard op Week). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v227** (telefoon: schaal van Opgewekt vandaag volgt de beste dag). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v226.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v227.
 
 ## Gerealiseerde functies (per tab)
 
@@ -95,6 +95,7 @@
 | v224 | Telefoon, pagina Nu: grafiek Vandaag alleen over het deel van de dag met zon (tot nu en tot het einde van de verwachting); verwachting per uur in het midden van het uur en zonder platte staart na zonsondergang; Opbrengst met strakkere schaal (vier ronde stappen boven de hoogste waarde). Computer pixelgelijk. |
 | v225 | Herstel van v224: de verwachtingspunten stonden al in het midden van het uur (`_fetchStats`), v224 schoof ze nog een half uur op, waardoor de stippellijn een uur te laat liep. Nu niet meer verschoven; de lijn begint en eindigt op 0 aan het begin en eind van de uren met zon. |
 | v226 | Telefoon, pagina Nu: de grafiek Opbrengst opent standaard op Week in plaats van Maand. |
+| v227 | Telefoon, pagina Nu: de meter Opgewekt vandaag loopt tot de beste dag van de afgelopen 30 dagen (incl. vandaag), naar boven afgerond op een even getal (minimaal 4; zonder gegevens 20). |
 
 ## Volgende stappen
 
