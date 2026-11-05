@@ -624,7 +624,7 @@ const fcPeriods = (hours) => {
 const THEME_CARDS = new Set();
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
-  if (cfg) { let t = cfg.theme; try { if (t) localStorage.setItem('thuis-thema', t); else t = localStorage.getItem('thuis-thema'); } catch (e) { /* geen opslag */ } el._theme = String(t || 'licht').toLowerCase(); }
+  if (cfg) { el._theme = String(cfg.theme || 'licht').toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
   THEME_CARDS.add(el);
   const t = el._theme || 'licht', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
@@ -1662,7 +1662,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '237';
+const CARD_VERSION = '238';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
