@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v240**.*
+*Bijgewerkt: 5 november 2026, versie **v241**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v240** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v241** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v240.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v241.
 
 ## Gerealiseerde functies (per tab)
 
@@ -109,6 +109,7 @@
 | v238 | Geen onthouden thema meer (`thuis-thema` wordt gewist): een oude keuze `automatisch`/`donker` hield de app donker. Elke kaart volgt alleen zijn eigen `theme`, standaard licht. |
 | v239 | Licht verbeterd: Picnic-tijd en resttijd apparaten waren wit op wit (inline `color:#fff`), koppen Bediening/Rolluiken/Agenda zwart, geen extra wit vlak achter Bediening, Agenda en camera, statuslabels donkerder (Bezig blauw, Vandaag rood). Bovenste rand (statusbalk, `theme-color` en HA-kleuren) volgt het thema: licht `#f6f7fb`, donker `#0a111d`. |
 | v240 | Op verzoek weer standaard donker (de gebruiker kiest voor donker). Lichte weergave blijft beschikbaar met `theme: licht`/`automatisch`. Telefoon zonder `theme` pixelgelijk aan v235. |
+| v241 | Telefoon: Picnic-kaart subtieler (optie C): gedempt Picnic-rood, rand `rgba(255,120,120,.14)`, "Vandaag"/"Onderweg" zacht rood `#ffc2c2`, balk zonder gloed. Rood blijft voor alarmen. |
 
 ## Volgende stappen
 

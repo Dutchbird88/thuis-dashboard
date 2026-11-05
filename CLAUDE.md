@@ -209,6 +209,7 @@ Verdere regels:
   - venstertitels en ondertitels **gecentreerd**, de ondertitel grijs;
   - alarmen houden hun rode gloed.
   - Het pulserende rode bolletje bij de camera op de telefoon is weg.
+- **Picnic-kaart (telefoon, v241):** gedempt Picnic-rood (zachte tint, dunne rand, `#ffc2c2` voor Vandaag/Onderweg, balk zonder gloed). Een bezorging is informatie, geen waarschuwing.
 - **Kamerkaart:** de temperatuur staat klein en grijs in de statusregel, met een effen thermometer. Bij apparaten staat alleen "Nog xx min". Het aantal lampen staat niet achter de verdiepingen.
 - **Teksten:**
   - "Stand-by" alleen als een apparaat niets doet;
