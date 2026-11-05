@@ -201,7 +201,7 @@ Verdere regels:
 
 ## Ontwerpafspraken (UI)
 
-- **Rustig**, in Apple-stijl (telefoon standaard licht sinds v237, computer altijd donker), zonder kleuren of gloed die er "AI-achtig" uitzien.
+- **Donker en rustig**, in Apple-stijl (de gebruiker koos in v240 voor donker; licht kan via `theme: licht`, alleen op de telefoon), zonder kleuren of gloed die er "AI-achtig" uitzien.
   - Kleur alleen met betekenis: rood = alarm, oranje = waarschuwing/open, teal = laden, blauw = wacht/gepland.
 - **Telefoon (`CALM`, alleen ≤ 600px, Thuis en Kamers):**
   - effen vensters (`#111827`) en apparaatkaarten zonder gekleurde rand of gloed;
@@ -216,7 +216,7 @@ Verdere regels:
   - bij laden "Laden", "Gepauzeerd", "Laden start", "Aangesloten", "Niet aangesloten";
   - knoppen "Laden", "Pauze", "Stop" in een neutrale stijl (de stijl van de thermostaat-stepper), zonder kleur.
 - **Stekkerpil:** bij Aan licht alleen het stekkericoon op. Er staat geen tekst "Aan" en er is geen gele gloed. Bij Uit is de pil grijs.
-- **Lichte weergave (v236, alleen telefoon):** `theme: licht (standaard sinds v237) | donker | automatisch`. `applyTheme(el, config)` in elke `setConfig` zet `data-th="l"` op de host; `automatisch` volgt `prefers-color-scheme`. Geen onthouden keuze meer (v238: `thuis-thema` wordt gewist), elke kaart volgt alleen zijn eigen `theme`. Alle stijl staat in de constante `LIGHT` (onder `:host([data-th=l])` en `@media (max-width: 600px)`), achteraan in elke `<style>`. Algemene tekstkleuren gelden alleen binnen `.znu`/`.twrap`, zodat Energie en Auto hun gekleurde cijfers houden (donkerdere varianten via de variabelen). Thermostaatvenster: `isLight(this)` tekent een eigen boog (zelfde geometrie, dus slepen werkt gelijk) en toont `#thPow` (aan/uit via `set_hvac_mode`, alleen als `hvac_modes` `off` bevat). Uit-iconen: `#g-gray`/`#g-grayL`/`#g-grayD` licht blauwgrijs. De bovenste rand (statusbalk) volgt het thema via `chromeApply` (v239). Let op: inline `style="color:#fff"` (zoals `.was .tm`) moet in `LIGHT` apart worden overschreven, en telefoonregels met `background: none` (`#bedTile`, `#agTile`, `#camTile`) ook.
+- **Lichte weergave (v236, alleen telefoon):** `theme: donker (standaard, weer sinds v240) | licht | automatisch`. `applyTheme(el, config)` in elke `setConfig` zet `data-th="l"` op de host; `automatisch` volgt `prefers-color-scheme`. Geen onthouden keuze meer (v238: `thuis-thema` wordt gewist), elke kaart volgt alleen zijn eigen `theme`. Alle stijl staat in de constante `LIGHT` (onder `:host([data-th=l])` en `@media (max-width: 600px)`), achteraan in elke `<style>`. Algemene tekstkleuren gelden alleen binnen `.znu`/`.twrap`, zodat Energie en Auto hun gekleurde cijfers houden (donkerdere varianten via de variabelen). Thermostaatvenster: `isLight(this)` tekent een eigen boog (zelfde geometrie, dus slepen werkt gelijk) en toont `#thPow` (aan/uit via `set_hvac_mode`, alleen als `hvac_modes` `off` bevat). Uit-iconen: `#g-gray`/`#g-grayL`/`#g-grayD` licht blauwgrijs. De bovenste rand (statusbalk) volgt het thema via `chromeApply` (v239). Let op: inline `style="color:#fff"` (zoals `.was .tm`) moet in `LIGHT` apart worden overschreven, en telefoonregels met `background: none` (`#bedTile`, `#agTile`, `#camTile`) ook.
 
 ## Ontwikkelen, testen en publiceren
 

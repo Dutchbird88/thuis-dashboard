@@ -41,14 +41,14 @@ Op de telefoon kun je kiezen voor een lichte weergave met `theme`:
 
 ```yaml
 - type: custom:thuis-card
-  theme: licht   # licht (standaard), donker of automatisch
+  theme: licht   # donker (standaard), licht of automatisch
 ```
 
-- `licht` (standaard): lichte achtergrond, doorschijnende tegels en een glazen menubalk. Het thermostaatvenster krijgt een aan/uit-knop.
-- `donker`: de donkere weergave.
+- `donker` (standaard): de donkere weergave.
+- `licht`: lichte achtergrond, doorschijnende tegels en een glazen menubalk. Het thermostaatvenster krijgt een aan/uit-knop.
 - `automatisch`: volgt de lichte of donkere stand van je telefoon.
 
-Zonder `theme` is de kaart licht. Wil je donker of automatisch, zet `theme` dan op elke kaart (Thuis, Kamers, Nu, Energie, Auto). Op de computer blijft de app altijd donker.
+Zonder `theme` is de kaart donker. Wil je licht of automatisch, zet `theme` dan op elke kaart (Thuis, Kamers, Nu, Energie, Auto). Op de computer blijft de app altijd donker.
 
 ### Kamers
 
