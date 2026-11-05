@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v230**.*
+*Bijgewerkt: 5 november 2026, versie **v231**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v230** (telefoon: langere stroomlijnen bij Mijn huis). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v231** (telefoon: stroomlijnen sluiten aan op de rondjes, achter de foto). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v230.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v231.
 
 ## Gerealiseerde functies (per tab)
 
@@ -99,6 +99,7 @@
 | v228 | Nu (telefoon én computer): opgewekt vandaag komt alleen nog van de ECU-teller (`solar_today`), zonder eigen schatting uit het vermogen. Verwachting: `fcPeriods` herkent of HA de waarde op het einde (oud, reeks begint met 0 bij zonsopkomst) of het begin van de periode zet, rekent korte periodes om naar watt en zet elk punt in het midden van de periode. Controleren met echte gegevens. |
 | v229 | Telefoon, pagina Nu: Mijn huis als stroom zon — huis — net. Rondjes op het midden van het huis, rechte stroomlijnen die het huis in lopen (amber zon→huis, groen huis→net, paars net→huis; snelheid naar vermogen; stil en grijs zonder stroom). Verbruik onder het huis in de kleur van de bron (groen/blauw/paars) met alleen het label "Verbruik". Kleuren van de pagina Energie. Computer pixelgelijk. |
 | v230 | Telefoon, Mijn huis: stroomlijnen vaste lengte 50 px en vóór de foto (z-index 2), zodat ze niet meer achter het huis of de boom wegvallen. Foto op het oude formaat. |
+| v231 | Telefoon, Mijn huis: stroomlijnen weer achter de foto, maar beginnen direct (3 px) bij de rondjes en zijn langer, zodat ze zichtbaar het huis in lopen. |
 
 ## Volgende stappen
 
