@@ -574,7 +574,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mimg { position: relative; z-index: 1; cursor: pointer; } .znu .mimg img { display: block; width: 80%; max-height: 170px; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
   .znu .mhv { text-align: center; margin-top: 2px; } .znu .mhv b { font-size: 22px; color: var(--hc, var(--text)); }
   /* stroomlijnen: vast spoor met stromende bolletjes (meer vermogen = sneller); naar links als er stroom van het net komt */
-  .znu .mln { position: absolute; z-index: 0; top: 50%; height: 3px; margin-top: -1.5px; left: 62px; width: calc((100% - 116px) * .24); border-radius: 99px;
+  .znu .mln { position: absolute; z-index: 2; top: 50%; height: 3px; margin-top: -1.5px; left: 62px; width: 50px; border-radius: 99px;
     background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) 0 center / 9px 3px repeat-x, rgba(255,255,255,.07); background-size: 0 0, auto; }
   .znu .mln.mlr { left: auto; right: 62px; }
   .znu .mln.on { background-size: 9px 3px, auto; animation: mflow 1s linear infinite; }
@@ -1526,7 +1526,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '229';
+const CARD_VERSION = '230';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
