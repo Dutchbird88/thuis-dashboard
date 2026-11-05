@@ -137,7 +137,7 @@ Verdere regels:
   - op de dag zelf met VANDAAG, tot 15:00;
   - na 15:00 komt de volgende bak.
   - Is er geen bak aan de beurt, dan staat er "Geen afval · tot en met <dag>".
-- Telefoon (v217): onder de naam van de bak staat een bolletje met "Vandaag" (zacht amber `#ffcf7a`) of "Morgen" (zacht blauw `#a9c8ff`), in gewone letters, zonder label. Het kopje "Afval" heeft het groene `RIC`-icoon `recycle`.
+- Telefoon (v217): onder de naam van de bak staat een bolletje met "Vandaag" (zacht amber `#ffcf7a`) of "Morgen" (zacht blauw `#a9c8ff`), in gewone letters, zonder label. Het bolletje heeft een zachte gloed in de eigen kleur (`0 0 6px`, zoals het online-bolletje van de laadpaal). Het kopje "Afval" heeft het groene `RIC`-icoon `recycle`: de gevouwen vorm van het officiële symbool (v218).
 - Het afvalvenster toont 2 weken vooruit:
   - uit de afvalkalender als die er is, en anders de eerstvolgende datum per bak;
   - plus de groepen "Vandaag opgehaald" en "Zonder datum".
