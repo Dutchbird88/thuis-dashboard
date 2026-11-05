@@ -562,7 +562,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .th .label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
   .znu .th .aside { font-size: 12px; text-align: right; }
   /* mijn huis: zon — huis — net op één lijn, kleuren zoals op de pagina Energie */
-  .znu .mfrow { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr) 58px; align-items: center; min-height: 150px; }
+  .znu .mfrow { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; min-height: 150px; margin-top: -8px; }
   .znu .mfs { position: relative; z-index: 2; display: flex; justify-content: center; cursor: pointer; }
   .znu .mnode { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #18243a; border: 1.5px solid color-mix(in srgb, var(--nc, #6b7385) 55%, transparent); }
   .znu .mnode svg { width: 26px; height: 26px; } .znu .mnode.off { --nc: #6b7385; } .znu .mnode.off svg { filter: grayscale(1); opacity: .5; }
@@ -571,12 +571,12 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mval b, .znu .mhv b { display: block; font-size: 16px; font-weight: 700; } .znu .mval b small, .znu .mhv b small { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; }
   .znu .mval span, .znu .mhv span { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
   .znu .mval b.exp { color: var(--exp); } .znu .mval b.imp { color: var(--grid-in); }
-  .znu .mimg { position: relative; z-index: 1; cursor: pointer; } .znu .mimg img { display: block; width: 80%; max-height: 170px; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
-  .znu .mhv { text-align: center; margin-top: 2px; } .znu .mhv b { font-size: 22px; line-height: 1.05; color: var(--hc, var(--text)); } .znu .mhv span { margin-top: -1px; }
+  .znu .mimg { position: relative; z-index: 1; cursor: pointer; } .znu .mimg img { display: block; width: calc(80% - 22px); max-height: 170px; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .znu .mhv { text-align: center; margin-top: 12px; } .znu .mhv b { font-size: 22px; line-height: 1.05; color: var(--hc, var(--text)); } .znu .mhv span { margin-top: -1px; }
   /* stroomlijnen: vast spoor met stromende bolletjes (meer vermogen = sneller); naar links als er stroom van het net komt */
-  .znu .mln { position: absolute; z-index: 0; top: 50%; height: 3px; margin-top: -1.5px; left: 54px; width: calc((100% - 116px) * .3 + 8px); border-radius: 99px;
+  .znu .mln { position: absolute; z-index: 0; top: 50%; height: 3px; margin-top: -1.5px; left: 47px; width: calc((100% - 88px) * .3 + 7px); border-radius: 99px;
     background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) 0 center / 9px 3px repeat-x, rgba(255,255,255,.07); background-size: 0 0, auto; }
-  .znu .mln.mlr { left: auto; right: 54px; }
+  .znu .mln.mlr { left: auto; right: 47px; }
   .znu .mln.on { background-size: 9px 3px, auto; animation: mflow 1s linear infinite; }
   .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: var(--grid-in); } .znu .mln.rev { animation-direction: reverse; }
   @keyframes mflow { to { background-position: 9px center, 0 0; } }
@@ -1526,7 +1526,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '232';
+const CARD_VERSION = '233';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
