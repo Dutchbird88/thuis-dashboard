@@ -595,6 +595,25 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
 }
 `;
 
+// verwachting (Forecast.Solar via energy/solar_forecast) → punten in watt, in het midden van elke periode.
+// Oudere HA-versies geven elke waarde op het EINDE van de periode (de dag begint dan met een 0 bij zonsopkomst),
+// nieuwere op het BEGIN. Periodes zijn niet altijd een heel uur (rond zonsopkomst en -ondergang korter).
+const fcPeriods = (hours) => {
+  const ks = [...hours.keys()].sort((a, b) => a - b), out = [];
+  const byDay = new Map();
+  for (const k of ks) { const d = startOfDay(k); if (!byDay.has(d)) byDay.set(d, []); byDay.get(d).push(k); }
+  for (const day of byDay.values()) {
+    const endKeyed = day.length > 1 && hours.get(day[0]) === 0;
+    for (let i = 0; i < day.length; i++) {
+      const s0 = endKeyed ? day[i - 1] : day[i], e0 = endKeyed ? day[i] : day[i + 1] ?? day[i] + HOUR;
+      if (s0 == null || e0 <= s0 || e0 - s0 > 2 * HOUR) continue;
+      const wh = hours.get(day[i]) || 0;
+      out.push({ t: (s0 + e0) / 2, s: s0, e: e0, v: wh / ((e0 - s0) / HOUR) });
+    }
+  }
+  return out.sort((a, b) => a.t - b.t);
+};
+
 class ZonnepanelenCard extends HTMLElement {
   setConfig(config) {
     this._config = { ...DEFAULTS, ...config };
@@ -872,11 +891,8 @@ class ZonnepanelenCard extends HTMLElement {
     this.$('gknob').setAttribute('cx', (100 + 80 * Math.cos(a)).toFixed(2));
     this.$('gknob').setAttribute('cy', (100 + 80 * Math.sin(a)).toFixed(2));
 
-    // today / avg / best — de ECU-teller loopt soms achter; dan de opbrengst uit het vermogen gebruiken
-    const day0n = startOfDay(Date.now());
-    const integ = this._todayPts.filter((p) => p.t >= day0n).reduce((a, p) => a + (p.v * 5) / 60 / 1000, 0);
-    const ecu = this._num(c.solar_today);
-    const today = ecu == null && !integ ? null : Math.max(ecu || 0, integ);
+    // today / avg / best — opgewekt vandaag komt alleen van de ECU-teller (geen eigen schatting uit het vermogen)
+    const today = this._num(c.solar_today);
     const days = this._dayValues();
     const past = days.slice(0, -1).filter((d) => d.v > 0);
     const avg = past.length ? past.reduce((s, d) => s + d.v, 0) / past.length : null;
@@ -1251,7 +1267,7 @@ class ZonnepanelenCard extends HTMLElement {
           const t = Date.parse(k);
           hours.set(t, (hours.get(t) || 0) + wh);
         }
-        this._fcPts = [...hours.entries()].sort((a, b) => a[0] - b[0]).map(([t, wh]) => ({ t: t + HOUR / 2, v: wh }));
+        this._fcPts = fcPeriods(hours);
       } catch (e) {
         this._fcPts = [];
       }
@@ -1332,7 +1348,7 @@ class ZonnepanelenCard extends HTMLElement {
     if (phone && on.length) {
       // telefoon: alleen het stuk van de dag met zon (een uur marge), en altijd tot nu
       t0 = day0 + Math.floor((on[0].t - day0) / HOUR - 1) * HOUR;
-      const lastPv = pts.filter((p) => p.v > 1).map((p) => p.t).pop() || 0, lastFc = fcPts.filter((p) => p.v > 1).map((p) => p.t + HOUR / 2).pop() || 0;
+      const lastPv = pts.filter((p) => p.v > 1).map((p) => p.t).pop() || 0, lastFc = fcPts.filter((p) => p.v > 1).map((p) => p.e ?? p.t + HOUR / 2).pop() || 0;
       t1 = day0 + Math.ceil((Math.max(lastPv, lastFc, now) - day0) / HOUR) * HOUR;
     } else if (on.length) {
       t0 = Math.min(t0, day0 + Math.floor((on[0].t - day0) / HOUR) * HOUR);
@@ -1369,7 +1385,7 @@ class ZonnepanelenCard extends HTMLElement {
     if (fcVis.length > 1) {
       // telefoon: alleen zolang er zon verwacht wordt (de punten staan al in het midden van het uur), van begin tot eind van die uren
       const fon = fcVis.filter((p) => p.v > 1);
-      const fp = phone && fon.length ? [{ t: fon[0].t - HOUR / 2, v: 0 }, ...fon, { t: fon[fon.length - 1].t + HOUR / 2, v: 0 }]
+      const fp = phone && fon.length ? [{ t: fon[0].s ?? fon[0].t - HOUR / 2, v: 0 }, ...fon, { t: fon[fon.length - 1].e ?? fon[fon.length - 1].t + HOUR / 2, v: 0 }]
         : [{ t: t0, v: 0 }, ...fcVis, { t: t1, v: 0 }];
       fcLine = `<path d="${fp.map((p, i) => `${i ? 'L' : 'M'}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join('')}" fill="none" stroke="rgba(255,226,160,.75)" stroke-width="1.6" stroke-dasharray="5 5" stroke-linejoin="round"/>`;
     }
@@ -1499,7 +1515,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '227';
+const CARD_VERSION = '228';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

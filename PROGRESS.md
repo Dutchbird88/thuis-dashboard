@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v227**.*
+*Bijgewerkt: 5 november 2026, versie **v228**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v227** (telefoon: schaal van Opgewekt vandaag volgt de beste dag). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v228** (opgewekt vandaag alleen van de ECU; verwachting op de goede tijd). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v227.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v228.
 
 ## Gerealiseerde functies (per tab)
 
@@ -96,6 +96,7 @@
 | v225 | Herstel van v224: de verwachtingspunten stonden al in het midden van het uur (`_fetchStats`), v224 schoof ze nog een half uur op, waardoor de stippellijn een uur te laat liep. Nu niet meer verschoven; de lijn begint en eindigt op 0 aan het begin en eind van de uren met zon. |
 | v226 | Telefoon, pagina Nu: de grafiek Opbrengst opent standaard op Week in plaats van Maand. |
 | v227 | Telefoon, pagina Nu: de meter Opgewekt vandaag loopt tot de beste dag van de afgelopen 30 dagen (incl. vandaag), naar boven afgerond op een even getal (minimaal 4; zonder gegevens 20). |
+| v228 | Nu (telefoon én computer): opgewekt vandaag komt alleen nog van de ECU-teller (`solar_today`), zonder eigen schatting uit het vermogen. Verwachting: `fcPeriods` herkent of HA de waarde op het einde (oud, reeks begint met 0 bij zonsopkomst) of het begin van de periode zet, rekent korte periodes om naar watt en zet elk punt in het midden van de periode. Controleren met echte gegevens. |
 
 ## Volgende stappen
 
