@@ -561,21 +561,25 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .th { margin-bottom: 8px; flex-wrap: nowrap; align-items: center; }
   .znu .th .label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
   .znu .th .aside { font-size: 12px; text-align: right; }
-  /* mijn huis: ring om het huis (kleuren van de pagina Energie), met glans */
-  .znu .mring { position: relative; aspect-ratio: 1 / 1.03; margin-top: 4px; }
-  .znu .mrs { position: absolute; left: 3%; top: 0; width: 94%; overflow: visible; }
-  .znu .mra { fill: none; stroke-width: 18; stroke-linecap: round; } .znu .mrv { transition: stroke-dasharray 1.2s cubic-bezier(.3,.7,.2,1); }
-  .znu .mrbig { position: absolute; left: 0; right: 0; top: 20%; text-align: center; pointer-events: none; }
-  .znu .mrbig b { display: block; font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; } .znu .mrbig b small { font-size: 18px; color: var(--muted); font-weight: 600; margin-left: 3px; letter-spacing: 0; }
-  .znu .mrbig span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
-  .znu .mimg { position: absolute; left: 50%; top: 40%; width: 58%; transform: translateX(-50%); cursor: pointer; z-index: 1; }
-  .znu .mimg img { display: block; width: 100%; filter: drop-shadow(0 14px 22px rgba(0,0,0,.5)); }
-  .znu .mchip { position: absolute; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 10px; min-width: 128px; padding: 10px 18px 10px 12px; border-radius: 99px; cursor: pointer;
-    background: rgba(24,36,58,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.08); }
-  .znu .mchip.mcl { left: 0; } .znu .mchip.mcr { right: 0; } .znu .mchip > svg { width: 32px; height: 32px; flex: none; } .znu .mchip.off > svg { filter: grayscale(1); opacity: .5; }
-  .znu .mchip b { display: block; font-size: 18px; font-weight: 700; line-height: 1.1; } .znu .mchip b small { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 2px; }
-  .znu .mchip span { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); } .znu .mchip span em { font-style: normal; }
-  .znu .mchip span i { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7385); } .znu #mnSun { --c: var(--sun); } .znu #mnGrid { --c: var(--grid-in); } .znu #mnGrid.exp { --c: var(--exp); } .znu #mnGrid.off { --c: #6b7385; }
+  /* mijn huis: zon — huis — net op één lijn, kleuren zoals op de pagina Energie */
+  .znu .mfrow { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; min-height: 150px; margin-top: -8px; }
+  .znu .mfs { position: relative; z-index: 2; display: flex; justify-content: center; cursor: pointer; }
+  .znu .mnode { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #18243a; border: 1.5px solid color-mix(in srgb, var(--nc, #6b7385) 55%, transparent); }
+  .znu .mnode svg { width: 26px; height: 26px; } .znu .mnode.off { --nc: #6b7385; } .znu .mnode.off svg { filter: grayscale(1); opacity: .5; }
+  .znu #mnSun { --nc: var(--sun); } .znu #mnGrid { --nc: var(--grid-in); } .znu #mnGrid.exp { --nc: var(--exp); } .znu #mnSun.off, .znu #mnGrid.off { --nc: #6b7385; }
+  .znu .mval { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; }
+  .znu .mval b, .znu .mhv b { display: block; font-size: 16px; font-weight: 700; } .znu .mval b small, .znu .mhv b small { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+  .znu .mval span, .znu .mhv span { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .znu .mval b.exp { color: var(--exp); } .znu .mval b.imp { color: var(--grid-in); }
+  .znu .mimg { position: relative; z-index: 1; cursor: pointer; } .znu .mimg img { display: block; width: calc(80% - 22px); max-height: 170px; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .znu .mhv { text-align: center; margin-top: 12px; } .znu .mhv b { font-size: 22px; line-height: 1.05; color: var(--hc, var(--text)); } .znu .mhv span { margin-top: -1px; }
+  /* stroomlijnen: vast spoor met stromende bolletjes (meer vermogen = sneller); naar links als er stroom van het net komt */
+  .znu .mln { position: absolute; z-index: 0; top: 50%; height: 3px; margin-top: -1.5px; left: 47px; width: calc((100% - 88px) * .3 + 7px); border-radius: 99px;
+    background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) 0 center / 9px 3px repeat-x, rgba(255,255,255,.07); background-size: 0 0, auto; }
+  .znu .mln.mlr { left: auto; right: 47px; }
+  .znu .mln.on { background-size: 9px 3px, auto; animation: mflow 1s linear infinite; }
+  .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: var(--grid-in); } .znu .mln.rev { animation-direction: reverse; }
+  @keyframes mflow { to { background-position: 9px center, 0 0; } }
   .znu .mgauges { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .znu .mgt { cursor: pointer; } .znu .mgh { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; } .znu .mgh svg { width: 20px; height: 20px; }
   .znu .mgs { display: block; width: 100%; max-width: 150px; margin: 6px auto 0; overflow: visible; }
@@ -615,10 +619,6 @@ const fcPeriods = (hours) => {
   }
   return out.sort((a, b) => a.t - b.t);
 };
-
-// telefoon, Mijn huis: boog van 288° om het huis (onderkant open voor de labels)
-const ringArc = (r) => { const P = (a) => [150 + r * Math.cos(a * Math.PI / 180), 150 + r * Math.sin(a * Math.PI / 180)], [x0, y0] = P(126), [x1, y1] = P(414);
-  return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 1 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
 
 class ZonnepanelenCard extends HTMLElement {
   setConfig(config) {
@@ -713,26 +713,15 @@ class ZonnepanelenCard extends HTMLElement {
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
-            <!-- ring rond het huis: amber = aandeel zon in het verbruik, paars = net, groene buitenrand = teruglevering -->
-            <div class="mring">
-              <svg class="mrs" viewBox="0 0 300 300"><defs>
-                <linearGradient id="mrA" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ff9a2e"/><stop offset="1" stop-color="#ffd37a"/></linearGradient>
-                <linearGradient id="mrP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c79bff"/><stop offset="1" stop-color="#8b3df0"/></linearGradient>
-                <linearGradient id="mrG" gradientUnits="userSpaceOnUse" x1="40" y1="30" x2="190" y2="210"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-                <filter id="mrB" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter></defs>
-                <circle id="mrGlow" cx="150" cy="168" r="96" fill="rgba(168,85,247,.09)" filter="url(#mrB)"/>
-                <path class="mra" d="${ringArc(136)}" stroke="rgba(255,255,255,.06)" pathLength="100"/>
-                <path class="mra" id="mrHalo" d="${ringArc(136)}" stroke="#a855f7" pathLength="100" opacity=".18" filter="url(#mrB)"/>
-                <path class="mra" id="mrPu" d="${ringArc(136)}" stroke="url(#mrP)" pathLength="100"/>
-                <path class="mra mrv" id="mrAm" d="${ringArc(136)}" stroke="url(#mrA)" pathLength="100" stroke-dasharray="0 100"/>
-                <path class="mra" d="${ringArc(136)}" stroke="url(#mrG)" pathLength="100" stroke-width="10"/>
-                <path class="mra mrv" id="mrEx" d="${ringArc(150)}" stroke="#22d37f" pathLength="100" stroke-width="4" stroke-dasharray="0 100"/>
-              </svg>
-              <div class="mrbig"><b class="num" id="mHomeW">—</b><span>Huisverbruik</span></div>
+            <!-- zon — huis — net: de rondjes staan op het midden van het huis, de stroomlijnen lopen het huis in -->
+            <div class="mfrow">
+              <div class="mfs" data-e="${c.solar_power}"><div class="mnode" id="mnSun"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg></div><div class="mval"><b class="num" id="mSun">—</b><span>Zon</span></div></div>
+              <i class="mln" id="mc1"></i>
               <div class="mimg" id="mImg"><img src="${c.photo.image}" alt=""></div>
-              <div class="mchip mcl" id="mnSun" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span><i></i>Zon</span></div></div>
-              <div class="mchip mcr" id="mnGrid"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><svg viewBox="0 0 100 100"><use href="#gPylon"/></svg><div><b class="num" id="mGrid">—</b><span><i></i><em id="mGridL">Net</em></span></div></div>
+              <i class="mln mlr" id="mc2"></i>
+              <div class="mfs"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><div class="mnode" id="mnGrid"><svg viewBox="0 0 100 100"><use id="mGridIc" href="#gPylon"/></svg></div><div class="mval"><b class="num" id="mGrid">—</b><span id="mGridL">Net</span></div></div>
             </div>
+            <div class="mhv"><b class="num" id="mHomeW">—</b><span>Verbruik</span></div>
           </div>
           <div class="mob mgauges">
             ${[['1', 'Opwekking nu', 'gSun', c.solar_power, 'mgo'], ['2', 'Opgewekt vandaag', 'gSolarP', c.solar_today, 'mgg']].map(([k, t, ic, e, g]) => `
@@ -1067,24 +1056,26 @@ class ZonnepanelenCard extends HTMLElement {
     }
     set('panelsNote', `${count || n * 2} panelen · ${n} omvormers${temps.length ? ` · ${fmt(Math.min(...temps))}–${fmt(Math.max(...temps))} °C` : ''}`);
     set('peakCap', `${n * 2} panelen`);
-    this._updMob(pv, grid, home, today, fc, best);
+    this._updMob(pv, grid, home, today, fc, best, speed);
   }
 
   // telefoon: mijn huis (zon, huis, net met stromende bolletjes) en de meters Opwekking nu / Opgewekt vandaag
-  _updMob(pv, grid, home, today, fc, best) {
+  _updMob(pv, grid, home, today, fc, best, speed) {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML);
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
     set('mGridL', exporting ? 'Terug' : importing ? 'Van net' : 'Net');
+    this.$('mGrid').className = `num${exporting ? ' exp' : importing ? ' imp' : ''}`;
     this.$('mnSun').classList.toggle('off', !(pv > 5)); this.$('mnGrid').classList.toggle('exp', exporting); this.$('mnGrid').classList.toggle('off', !(exporting || importing));
-    // ring: amber = aandeel zon in het verbruik, paars = rest van het net, groene buitenrand = deel van de opwek dat naar het net gaat
-    const sh = exporting ? 1 : home > 0 ? clamp((pv || 0) / home, 0, 1) : pv > 5 ? 1 : 0, ex = exporting && pv > 0 ? clamp(-grid / pv, 0, 1) : 0;
-    this.$('mrAm').setAttribute('stroke-dasharray', `${(sh * 100).toFixed(1)} 100`);
-    this.$('mrEx').setAttribute('stroke-dasharray', `${(ex * 100).toFixed(1)} 100`);
-    this.$('mrPu').style.opacity = sh < 0.995 ? 1 : 0; this.$('mrAm').style.opacity = sh > 0.005 ? 1 : 0; this.$('mrEx').style.opacity = ex > 0.005 ? 1 : 0;
-    const warm = sh >= 0.5; this.$('mrHalo').setAttribute('stroke', warm ? '#ffb547' : '#a855f7'); this.$('mrGlow').setAttribute('fill', warm ? 'rgba(255,181,71,.07)' : 'rgba(168,85,247,.09)');
+    // verbruik in de kleur van de bron: groen alles zon, blauw zon + net, paars alles net
+    const selfS = home > 0 ? clamp((pv || 0) / home, 0, 1) : pv > 0 ? 1 : 0;
+    this.$('mHomeW').parentElement.style.setProperty('--hc', home == null ? 'var(--text)' : exporting || selfS >= 0.995 ? 'var(--exp)' : pv > 5 ? 'var(--home)' : 'var(--grid-in)');
+    const m1 = this.$('mc1'), m2 = this.$('mc2');
+    m1.classList.toggle('on', pv > 5); m1.style.animationDuration = speed(pv || 0);
+    m2.classList.toggle('on', exporting || importing); m2.classList.toggle('rev', importing); m2.classList.toggle('imp', importing);
+    m2.style.animationDuration = speed(Math.abs(grid || 0));
     const gauge = (k, r, v, max) => {
       r = clamp(r || 0, 0, 1);
       this.$(`mg${k}`).setAttribute('stroke-dasharray', `${(r * 100).toFixed(2)} 100`);
@@ -1535,7 +1526,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '234';
+const CARD_VERSION = '235';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
