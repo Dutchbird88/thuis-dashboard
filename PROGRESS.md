@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v233**.*
+*Bijgewerkt: 5 november 2026, versie **v234**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v233** (telefoon: Mijn huis strakker uitgelijnd). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v234** (telefoon: Mijn huis als ring om het huis). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v233.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v234.
 
 ## Gerealiseerde functies (per tab)
 
@@ -102,6 +102,7 @@
 | v231 | Telefoon, Mijn huis: stroomlijnen weer achter de foto, maar beginnen direct (3 px) bij de rondjes en zijn langer, zodat ze zichtbaar het huis in lopen. |
 | v232 | Telefoon, Mijn huis: het verbruik staat dichter op het label "Verbruik" (kleinere regelhoogte). |
 | v233 | Telefoon, Mijn huis: rondjes van zon en net op dezelfde afstand van de rand als titel en status; huis en stromen 8 px hoger, meer ruimte boven het verbruik. Huis even groot. |
+| v234 | Telefoon, Mijn huis: ring van 288° om het huis met glans. Amber = aandeel zon in het verbruik, paars = net, dunne groene buitenrand = deel van de opwek dat naar het net gaat; zachte gloed in de kleur van de bron. Verbruik groot boven in de ring, zon en net als glazen labels in de onderhoeken. Stromende lijnen vervallen. Computer pixelgelijk. |
 
 ## Volgende stappen
 
