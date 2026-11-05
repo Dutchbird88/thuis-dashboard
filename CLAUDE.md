@@ -202,7 +202,7 @@ Verdere regels:
 
 ## Ontwerpafspraken (UI)
 
-- **Donker en rustig**, in Apple-stijl, zonder kleuren of gloed die er "AI-achtig" uitzien.
+- **Rustig**, in Apple-stijl (telefoon standaard licht sinds v237, computer altijd donker), zonder kleuren of gloed die er "AI-achtig" uitzien.
   - Kleur alleen met betekenis: rood = alarm, oranje = waarschuwing/open, teal = laden, blauw = wacht/gepland.
 - **Telefoon (`CALM`, alleen ≤ 600px, Thuis en Kamers):**
   - effen vensters (`#111827`) en apparaatkaarten zonder gekleurde rand of gloed;
@@ -217,7 +217,7 @@ Verdere regels:
   - bij laden "Laden", "Gepauzeerd", "Laden start", "Aangesloten", "Niet aangesloten";
   - knoppen "Laden", "Pauze", "Stop" in een neutrale stijl (de stijl van de thermostaat-stepper), zonder kleur.
 - **Stekkerpil:** bij Aan licht alleen het stekkericoon op. Er staat geen tekst "Aan" en er is geen gele gloed. Bij Uit is de pil grijs.
-- **Lichte weergave (v236, alleen telefoon):** `theme: donker | licht | automatisch`. `applyTheme(el, config)` in elke `setConfig` zet `data-th="l"` op de host; `automatisch` volgt `prefers-color-scheme`. Alle stijl staat in de constante `LIGHT` (onder `:host([data-th=l])` en `@media (max-width: 600px)`), achteraan in elke `<style>`. Algemene tekstkleuren gelden alleen binnen `.znu`/`.twrap`, zodat Energie en Auto hun gekleurde cijfers houden (donkerdere varianten via de variabelen). Thermostaatvenster: `isLight(this)` tekent een eigen boog (zelfde geometrie, dus slepen werkt gelijk) en toont `#thPow` (aan/uit via `set_hvac_mode`, alleen als `hvac_modes` `off` bevat). Uit-iconen: `#g-gray`/`#g-grayL`/`#g-grayD` licht blauwgrijs.
+- **Lichte weergave (v236, alleen telefoon):** `theme: licht (standaard sinds v237) | donker | automatisch`. `applyTheme(el, config)` in elke `setConfig` zet `data-th="l"` op de host; `automatisch` volgt `prefers-color-scheme`. Alle stijl staat in de constante `LIGHT` (onder `:host([data-th=l])` en `@media (max-width: 600px)`), achteraan in elke `<style>`. Algemene tekstkleuren gelden alleen binnen `.znu`/`.twrap`, zodat Energie en Auto hun gekleurde cijfers houden (donkerdere varianten via de variabelen). Thermostaatvenster: `isLight(this)` tekent een eigen boog (zelfde geometrie, dus slepen werkt gelijk) en toont `#thPow` (aan/uit via `set_hvac_mode`, alleen als `hvac_modes` `off` bevat). Uit-iconen: `#g-gray`/`#g-grayL`/`#g-grayD` licht blauwgrijs.
 
 ## Ontwikkelen, testen en publiceren
 

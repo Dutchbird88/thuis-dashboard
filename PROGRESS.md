@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v236**.*
+*Bijgewerkt: 5 november 2026, versie **v237**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v236** (telefoon: lichte weergave met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v237** (telefoon: standaard de lichte weergave; `theme: donker` of `automatisch` kan ook). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v236.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v237.
 
 ## Gerealiseerde functies (per tab)
 
@@ -105,6 +105,7 @@
 | v234 | Telefoon, Mijn huis: ring van 288° om het huis met glans. Amber = aandeel zon in het verbruik, paars = net, dunne groene buitenrand = deel van de opwek dat naar het net gaat; zachte gloed in de kleur van de bron. Verbruik groot boven in de ring, zon en net als glazen labels in de onderhoeken. Stromende lijnen vervallen. Computer pixelgelijk. |
 | v235 | Terug naar v233 voor Mijn huis (huis met stroomlijnen zon — huis — net, ronde meters eronder). De ring van v234 paste niet: te druk met de ronde meters eronder. Alternatieven (statusregel, gloed, platte meters) bekeken en niet gekozen. |
 | v236 | Lichte weergave voor de telefoon (`theme`: donker/licht/automatisch, onthouden in `thuis-thema`). Zachte pastelachtergrond, doorschijnende tegels (74%), glazen menubalk en vensters, teal voor aan, blauw actief tabblad, ronde witte knoppen, licht blauwgrijze iconen bij uit. Thermostaatvenster: dunne boog blauw → warm, °C en "doel", min/max onder de boog, aan/uit-knop (alleen licht). Energie en Auto houden hun kleuren, donkerder voor leesbaarheid. Computer en donkere telefoon pixelgelijk aan v235. |
+| v237 | Lichte weergave is de standaard op de telefoon (zonder `theme` en zonder onthouden keuze). Computer blijft donker. |
 
 ## Volgende stappen
 

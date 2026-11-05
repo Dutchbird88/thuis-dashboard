@@ -624,9 +624,9 @@ const fcPeriods = (hours) => {
 const THEME_CARDS = new Set();
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
-  if (cfg) { let t = cfg.theme; try { if (t) localStorage.setItem('thuis-thema', t); else t = localStorage.getItem('thuis-thema'); } catch (e) { /* geen opslag */ } el._theme = String(t || 'donker').toLowerCase(); }
+  if (cfg) { let t = cfg.theme; try { if (t) localStorage.setItem('thuis-thema', t); else t = localStorage.getItem('thuis-thema'); } catch (e) { /* geen opslag */ } el._theme = String(t || 'licht').toLowerCase(); }
   THEME_CARDS.add(el);
-  const t = el._theme || 'donker', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
+  const t = el._theme || 'licht', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
 };
 try { window.matchMedia(LIGHT_Q).addEventListener('change', () => THEME_CARDS.forEach((c) => { if (!c.isConnected) THEME_CARDS.delete(c); else { applyTheme(c); c._updSheet?.(); } })); } catch (e) { /* oude browser */ }
@@ -1662,7 +1662,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '236';
+const CARD_VERSION = '237';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
