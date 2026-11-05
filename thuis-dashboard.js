@@ -1669,7 +1669,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '241';
+const CARD_VERSION = '242';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3916,6 +3916,7 @@ const CALM = `@media (max-width: 600px) {
   /* Picnic: informatief, geen waarschuwing — gedempt Picnic-rood (v241) */
   .was.pic, .mstack > .was.pic { background: linear-gradient(135deg, rgba(255,77,77,.06), rgba(255,77,77,0)), #141c2b !important; border: 1px solid rgba(255,120,120,.14) !important; box-shadow: none !important; }
   .was.pic .rt b { color: #ffc2c2 !important; } .was.pic .bar i { background: linear-gradient(90deg, #ffd0d0, #ff9a9a) !important; box-shadow: none !important; }
+  .was.pic .r { gap: 22px !important; } .was.pic .pici { width: 58px !important; margin-left: 2px; } /* v242: meer ruimte voor het busje */
   .sheet .mstack > .was.xchg.evon { background: #172030 !important; border-color: rgba(255,255,255,.06) !important; }
   .wsr { background: #172030 !important; border-color: rgba(255,255,255,.05) !important; box-shadow: none !important; } .wsr.first { border-color: rgba(255,255,255,.08) !important; }
   .wsr em { color: #cfd5e0 !important; background: rgba(255,255,255,.08) !important; } .wsr.wdone em { color: #3ddc97 !important; }
