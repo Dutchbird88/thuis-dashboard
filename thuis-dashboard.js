@@ -791,7 +791,7 @@ class ZonnepanelenCard extends HTMLElement {
 
           <div class="tile s4 tdays">
             <div class="th"><span class="label"><span class="dl">Laatste ${c.days} dagen</span><span class="ml">Opbrengst</span></span><span class="aside dl" id="sum"></span>
-              <span class="seg ml" id="dseg"><button data-r="week">Week</button><button data-r="maand" class="on">Maand</button><button data-r="jaar">Jaar</button></span></div>
+              <span class="seg ml" id="dseg"><button data-r="week" class="on">Week</button><button data-r="maand">Maand</button><button data-r="jaar">Jaar</button></span></div>
             <div class="msum ml" id="msum"></div>
             <div class="chart" id="chartDays"></div>
           </div>
@@ -1424,7 +1424,7 @@ class ZonnepanelenCard extends HTMLElement {
     const W = el.clientWidth;
     if (!W) return;
     const H = 220, pad = { l: 34, r: 6, t: 12, b: 26 };
-    const rng = window.matchMedia('(max-width: 600px)').matches ? this._rng || 'maand' : 'maand';
+    const rng = window.matchMedia('(max-width: 600px)').matches ? this._rng || 'week' : 'maand';
     const days = rng === 'week' ? this._dayValues().slice(-7) : rng === 'jaar' ? this._monthValues() : this._dayValues();
     if (!days.length) { el.innerHTML = ''; return; }
     const N = days.length;
@@ -1497,7 +1497,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '225';
+const CARD_VERSION = '226';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

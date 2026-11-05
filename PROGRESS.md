@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v225**.*
+*Bijgewerkt: 5 november 2026, versie **v226**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v225** (herstel: verwachting in de grafiek Vandaag weer op de goede tijd). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v226** (telefoon: Opbrengst opent standaard op Week). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v225.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v226.
 
 ## Gerealiseerde functies (per tab)
 
@@ -94,6 +94,7 @@
 | v223 | Telefoon, pagina Nu: regel Omvormers toont rechts het aantal online in plaats van het pijltje, met bolletje: groen alles, oranje een deel, rood geen (overdag), grijs "In rust" als de zon onder is. Tik klapt nog steeds de details open. Computer pixelgelijk. |
 | v224 | Telefoon, pagina Nu: grafiek Vandaag alleen over het deel van de dag met zon (tot nu en tot het einde van de verwachting); verwachting per uur in het midden van het uur en zonder platte staart na zonsondergang; Opbrengst met strakkere schaal (vier ronde stappen boven de hoogste waarde). Computer pixelgelijk. |
 | v225 | Herstel van v224: de verwachtingspunten stonden al in het midden van het uur (`_fetchStats`), v224 schoof ze nog een half uur op, waardoor de stippellijn een uur te laat liep. Nu niet meer verschoven; de lijn begint en eindigt op 0 aan het begin en eind van de uren met zon. |
+| v226 | Telefoon, pagina Nu: de grafiek Opbrengst opent standaard op Week in plaats van Maand. |
 
 ## Volgende stappen
 
