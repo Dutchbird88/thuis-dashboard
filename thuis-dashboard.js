@@ -622,12 +622,14 @@ const fcPeriods = (hours) => {
 
 // ---------- lichte weergave (alleen telefoon): theme donker / licht / automatisch ----------
 const THEME_CARDS = new Set();
+let chromeApply = null; // zet de statusbalk in de kleur van het thema (zie hieronder)
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
   if (cfg) { el._theme = String(cfg.theme || 'licht').toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
   THEME_CARDS.add(el);
   const t = el._theme || 'licht', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
+  chromeApply?.();
 };
 try { window.matchMedia(LIGHT_Q).addEventListener('change', () => THEME_CARDS.forEach((c) => { if (!c.isConnected) THEME_CARDS.delete(c); else { applyTheme(c); c._updSheet?.(); } })); } catch (e) { /* oude browser */ }
 const isLight = (el) => el.hasAttribute('data-th') && window.matchMedia?.('(max-width: 600px)').matches;
@@ -752,6 +754,11 @@ const LIGHT = `
   :host([data-th=l]) { --water:#0a84d6 !important; --car:#13a091 !important; --gas:#e0244f !important; --imp:#8a3ffc !important; --faint:#8e8e93 !important; }
   :host([data-th=l]) .csub b, :host([data-th=l]) .cline b, :host([data-th=l]) .chealth b, :host([data-th=l]) .was.ready .rt b { color:#3a3a3c !important; }
   :host([data-th=l]) .bidir, :host([data-th=l]) .ctrack { background:rgba(60,60,67,.10) !important; } :host([data-th=l]) .bidir::after { background:rgba(60,60,67,.3) !important; }
+  :host([data-th=l]) #bedTile, :host([data-th=l]) #agTile, :host([data-th=l]) #camTile, :host([data-th=l]) .sheet #tTile { background:none !important; border:0 !important; box-shadow:none !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  :host([data-th=l]) #bedTile .label, :host([data-th=l]) #agTile .label { color:#111318 !important; }
+  :host([data-th=l]) .was .t .tm { color:#111318 !important; }
+  :host([data-th=l]) .was .rt b { color:#2f6fdb !important; } :host([data-th=l]) .was.done .rt b { color:#1f9d55 !important; } :host([data-th=l]) .was.bad .rt b, :host([data-th=l]) .was.pic .rt b { color:#d93636 !important; }
+  :host([data-th=l]) .wsub, :host([data-th=l]) .maf .wsub, :host([data-th=l]) #afTile .wsub { color:#6e6e78 !important; }
   :host([data-th=l]) { display:block; background:#f6f7fb; } :host([data-th=l]) .wrap { min-height:100vh; min-height:100dvh; box-sizing:border-box; }
 }
 `;
@@ -1662,30 +1669,35 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '238';
+const CARD_VERSION = '239';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
-  const mq = window.matchMedia('(max-width: 600px)'), BG = '#0a111d', root = document.documentElement;
+  const mq = window.matchMedia('(max-width: 600px)'), root = document.documentElement;
+  let BG = '#f6f7fb';
   const VARS = ['--app-header-background-color', '--primary-background-color', '--lovelace-background'];
   let busy = false;
   const apply = () => {
     if (busy) return; busy = true;
     try {
+      const cards = [...THEME_CARDS].filter((c) => c.isConnected);
+      if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
+      const bgRgb = BG === '#0a111d' ? 'rgb(10, 17, 29)' : 'rgb(246, 247, 251)';
       let meta = document.querySelector('meta[name="theme-color"]');
       if (mq.matches) {
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
         VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
-        if (root.style.backgroundColor !== 'rgb(10, 17, 29)') root.style.backgroundColor = BG;
-        if (document.body && document.body.style.backgroundColor !== 'rgb(10, 17, 29)') document.body.style.backgroundColor = BG;
-      } else if (root.style.getPropertyValue('--app-header-background-color').trim() === BG) {
+        if (root.style.backgroundColor !== bgRgb) root.style.backgroundColor = BG;
+        if (document.body && document.body.style.backgroundColor !== bgRgb) document.body.style.backgroundColor = BG;
+      } else if (['#0a111d', '#f6f7fb'].includes(root.style.getPropertyValue('--app-header-background-color').trim())) {
         VARS.forEach((v) => root.style.removeProperty(v)); root.style.backgroundColor = '';
         if (document.body) document.body.style.backgroundColor = '';
         if (meta?.dataset.thuisOld) meta.content = meta.dataset.thuisOld;
       }
     } finally { busy = false; }
   };
+  chromeApply = apply;
   mq.addEventListener?.('change', apply); apply();
   new MutationObserver(apply).observe(root, { attributes: true, attributeFilter: ['style'] });
   new MutationObserver(apply).observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });

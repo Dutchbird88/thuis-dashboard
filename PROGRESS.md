@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v238**.*
+*Bijgewerkt: 5 november 2026, versie **v239**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v238** (telefoon: standaard de lichte weergave; `theme: donker` of `automatisch` kan ook). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v239** (telefoon: standaard de lichte weergave; `theme: donker` of `automatisch` kan ook). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v238.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v239.
 
 ## Gerealiseerde functies (per tab)
 
@@ -107,6 +107,7 @@
 | v236 | Lichte weergave voor de telefoon (`theme`: donker/licht/automatisch, onthouden in `thuis-thema`). Zachte pastelachtergrond, doorschijnende tegels (74%), glazen menubalk en vensters, teal voor aan, blauw actief tabblad, ronde witte knoppen, licht blauwgrijze iconen bij uit. Thermostaatvenster: dunne boog blauw → warm, °C en "doel", min/max onder de boog, aan/uit-knop (alleen licht). Energie en Auto houden hun kleuren, donkerder voor leesbaarheid. Computer en donkere telefoon pixelgelijk aan v235. |
 | v237 | Lichte weergave is de standaard op de telefoon (zonder `theme` en zonder onthouden keuze). Computer blijft donker. |
 | v238 | Geen onthouden thema meer (`thuis-thema` wordt gewist): een oude keuze `automatisch`/`donker` hield de app donker. Elke kaart volgt alleen zijn eigen `theme`, standaard licht. |
+| v239 | Licht verbeterd: Picnic-tijd en resttijd apparaten waren wit op wit (inline `color:#fff`), koppen Bediening/Rolluiken/Agenda zwart, geen extra wit vlak achter Bediening, Agenda en camera, statuslabels donkerder (Bezig blauw, Vandaag rood). Bovenste rand (statusbalk, `theme-color` en HA-kleuren) volgt het thema: licht `#f6f7fb`, donker `#0a111d`. |
 
 ## Volgende stappen
 
