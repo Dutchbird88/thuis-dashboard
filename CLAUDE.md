@@ -22,7 +22,7 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
 - **Geef eerst een reactie of analyse als de gebruiker daarom vraagt** ("pas nog niks aan"), en verander dan nog niets.
 - **Telefoon en computer:** de telefoon (≤ 600px) heeft een eigen indeling. Laat de computerweergave ongewijzigd, tenzij de gebruiker daar expliciet om vraagt.
 - **Geef advies als de gebruiker erom vraagt.** Kies zelf, met een korte motivatie.
-- **Na publiceren:** noem het versienummer. De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
+- **Na publiceren:** noem het versienummer én het commitnummer (korte hash, bijvoorbeeld `v217 · c0ffee1`). De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
 
 ## Privacy en veiligheid (strikt)
 
@@ -235,6 +235,7 @@ Verdere regels:
    - Er wordt direct op `main` gewerkt: dat is de afspraak in dit project. Maak geen PR, tenzij de gebruiker erom vraagt.
 6. Voeg een regel toe aan PROGRESS.md (versiegeschiedenis).
 7. Zeg tegen de gebruiker: "Werk bij via HACS (opnieuw downloaden) en herlaad."
+   - Noem daarbij het versienummer en het commitnummer (`git rev-parse --short HEAD`).
 
 ## Bekende aandachtspunten
 
