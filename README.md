@@ -35,6 +35,21 @@ Er zitten geen persoonlijke gegevens in de code. Je eigen entiteiten, personen e
 
 Gebruik voor `custom:kamers-card` dezelfde instellingen als voor `thuis-card`.
 
+### Lichte weergave (telefoon)
+
+Op de telefoon kun je kiezen voor een lichte weergave met `theme`:
+
+```yaml
+- type: custom:thuis-card
+  theme: automatisch   # donker (standaard), licht of automatisch
+```
+
+- `donker`: de gewone donkere weergave.
+- `licht`: lichte achtergrond, doorschijnende tegels en een glazen menubalk. Het thermostaatvenster krijgt een aan/uit-knop.
+- `automatisch`: volgt de lichte of donkere stand van je telefoon.
+
+De keuze wordt onthouden en geldt ook voor de andere kaarten (Kamers, Nu, Energie, Auto) die geen eigen `theme` hebben. Op de computer blijft de app altijd donker.
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

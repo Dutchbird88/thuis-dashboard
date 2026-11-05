@@ -620,9 +620,145 @@ const fcPeriods = (hours) => {
   return out.sort((a, b) => a.t - b.t);
 };
 
+// ---------- lichte weergave (alleen telefoon): theme donker / licht / automatisch ----------
+const THEME_CARDS = new Set();
+const LIGHT_Q = '(prefers-color-scheme: light)';
+const applyTheme = (el, cfg) => {
+  if (cfg) { let t = cfg.theme; try { if (t) localStorage.setItem('thuis-thema', t); else t = localStorage.getItem('thuis-thema'); } catch (e) { /* geen opslag */ } el._theme = String(t || 'donker').toLowerCase(); }
+  THEME_CARDS.add(el);
+  const t = el._theme || 'donker', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
+  if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
+};
+try { window.matchMedia(LIGHT_Q).addEventListener('change', () => THEME_CARDS.forEach((c) => { if (!c.isConnected) THEME_CARDS.delete(c); else { applyTheme(c); c._updSheet?.(); } })); } catch (e) { /* oude browser */ }
+const isLight = (el) => el.hasAttribute('data-th') && window.matchMedia?.('(max-width: 600px)').matches;
+const LIGHT = `
+@media (max-width: 600px) {
+  :host([data-th=l]) { --bg:#f2f2f7 !important; --tile:#ffffff; --tile2:#ffffff; --line:rgba(60,60,67,.12); --text:#111318 !important; --muted:#6e6e78 !important; --faint:#a1a1aa; --exp:#1f9d55 !important; --sun:#e8890c !important; --grid-in:#8a3ffc !important; --home:#2f6fdb !important; color:#111318; }
+  :host([data-th=l]) .wrap, :host([data-th=l]) .twrap, :host([data-th=l]) .znu, :host([data-th=l]) .vwrap, :host([data-th=l]) .awrap { background: #f2f2f7 !important; color:#111318; }
+  :host([data-th=l]) .wrap::after { background: linear-gradient(180deg, rgba(242,242,247,0), rgba(242,242,247,.85)) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  :host([data-th=l]) .tile, :host([data-th=l]) .kglass, :host([data-th=l]) .mstack > .was, :host([data-th=l]) .was, :host([data-th=l]) .wsr, :host([data-th=l]) .maf, :host([data-th=l]) .mrow > .tile, :host([data-th=l]) .kr, :host([data-th=l]) .kr:not(.lit), :host([data-th=l]) .lt, :host([data-th=l]) .lt:not(.on), :host([data-th=l]) .cv, :host([data-th=l]) .cv:not(.on) { background: #fff !important; border: .5px solid rgba(60,60,67,.12) !important; box-shadow: 0 1px 2px rgba(0,0,0,.04) !important; color:#111318; }
+  :host([data-th=l]) .mp, :host([data-th=l]) .kspills .mp, :host([data-th=l]) #kview .mp { background: #fff !important; border: .5px solid rgba(60,60,67,.12) !important; box-shadow: none !important; color:#111318; }
+  :host([data-th=l]) .mp.hot, :host([data-th=l]) #kview .mp.hot, :host([data-th=l]) .kspills .mp.hot { background: #fff !important; }
+  :host([data-th=l]) .kspills .mp.hot span { color: #b8650a !important; }
+  :host([data-th=l]) :is(.znu, .twrap) .tile span, :host([data-th=l]) :is(.znu, .twrap) .mp span, :host([data-th=l]) :is(.znu, .twrap) .aside, :host([data-th=l]) :is(.znu, .twrap) .label, :host([data-th=l]) :is(.znu, .twrap) .kr span, :host([data-th=l]) :is(.znu, .twrap) .lt .s, :host([data-th=l]) :is(.znu, .twrap) .mlab, :host([data-th=l]) :is(.znu, .twrap) .mdate, :host([data-th=l]) :is(.znu, .twrap) .clock div, :host([data-th=l]) :is(.znu, .twrap) .sub, :host([data-th=l]) :is(.znu, .twrap) .d { color: #6e6e78 !important; }
+  :host([data-th=l]) :is(.znu, .twrap) .tile b, :host([data-th=l]) :is(.znu, .twrap) .mp b, :host([data-th=l]) :is(.znu, .twrap) .kr b, :host([data-th=l]) :is(.znu, .twrap) h1, :host([data-th=l]) :is(.znu, .twrap) h2, :host([data-th=l]) :is(.znu, .twrap) h3, :host([data-th=l]) :is(.znu, .twrap) .aside b, :host([data-th=l]) :is(.znu, .twrap) .clock div span, :host([data-th=l]) :is(.znu, .twrap) .mhead h1, :host([data-th=l]) :is(.znu, .twrap) .kth, :host([data-th=l]) :is(.znu, .twrap) .lt .n, :host([data-th=l]) :is(.znu, .twrap) .lt.on .n { color: #111318 !important; }
+  :host([data-th=l]) .kr.lit { background:#fff !important; border-color: rgba(60,60,67,.12) !important; }
+  :host([data-th=l]) .kr .ri, :host([data-th=l]) .kr:not(.lit) .ri { background: #f2f2f7 !important; color:#8e8e93 !important; }
+  :host([data-th=l]) .kr.lit .ri { background: #fff3dc !important; color:#e8890c !important; }
+  :host([data-th=l]) .lt.on { background: color-mix(in srgb, var(--lc) 16%, #fff) !important; border: .5px solid color-mix(in srgb, var(--lc) 45%, #fff) !important; box-shadow:none !important; }
+  :host([data-th=l]) .xtabs { background: rgba(255,255,255,.88) !important; -webkit-backdrop-filter: blur(20px) saturate(1.8) !important; backdrop-filter: blur(20px) saturate(1.8) !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.15), 0 8px 24px rgba(0,0,0,.08) !important; border: 0 !important; }
+  :host([data-th=l]) .xtabs button { color: #8e8e93 !important; }
+  :host([data-th=l]) .xtabs button.on { background: rgba(0,122,255,.10) !important; color: #007aff !important; }
+  :host([data-th=l]) .xtabs button svg { filter: none; }
+  :host([data-th=l]) .mstp button, :host([data-th=l]) .nrow button, :host([data-th=l]) .seg { background: #f2f2f7 !important; color:#111318 !important; border: 0 !important; }
+  :host([data-th=l]) .seg button { color:#6e6e78 !important; }
+  :host([data-th=l]) .seg button.on { background:#fff !important; color:#111318 !important; box-shadow: 0 1px 3px rgba(0,0,0,.12) !important; }
+  :host([data-th=l]) .av .face { border-color: #fff !important; background-color: #d9dbe1 !important; color:#3a3a3c; }
+  :host([data-th=l]) .av .ring { box-shadow: none !important; }
+  :host([data-th=l]) .track, :host([data-th=l]) .mgs .track { stroke: #e5e5ea !important; }
+  :host([data-th=l]) .gl, :host([data-th=l]) line.gl { stroke: #ececf0 !important; }
+  :host([data-th=l]) .ax, :host([data-th=l]) text.ax { fill: #8e8e93 !important; }
+  :host([data-th=l]) .mgs .mgv, :host([data-th=l]) .mgv { fill:#111318 !important; }
+  :host([data-th=l]) .gtick { fill:#8e8e93 !important; }
+  :host([data-th=l]) .knob, :host([data-th=l]) .mknob { filter:none !important; }
+  :host([data-th=l]) .panel { background: #e9ecf2 !important; border-color: rgba(60,60,67,.12) !important; box-shadow: none !important; }
+  :host([data-th=l]) .panel::before { background-image: linear-gradient(rgba(60,60,67,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(60,60,67,.08) 1px, transparent 1px) !important; }
+  :host([data-th=l]) .pw, :host([data-th=l]) .pn { color:#111318 !important; text-shadow:none !important; }
+  :host([data-th=l]) .inv { background: #f7f7fa !important; border-color: rgba(60,60,67,.08) !important; }
+  :host([data-th=l]) .mnode { background:#fff !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.12); }
+  :host([data-th=l]) .mln { background-color: #e5e5ea !important; }
+  :host([data-th=l]) .alert { background: #fff6e8 !important; border-color: #f6d9a8 !important; color:#7a4a08 !important; }
+  :host([data-th=l]) .alert b { color:#5a3606 !important; }
+  :host([data-th=l]) .minv, :host([data-th=l]) .nrow { border-color: rgba(60,60,67,.12) !important; }
+  :host([data-th=l]) .mimg img, :host([data-th=l]) .house { filter: drop-shadow(0 10px 14px rgba(0,0,0,.16)) !important; }
+  :host([data-th=l]) .sheet { background: #f2f2f7 !important; color:#111318; box-shadow: 0 -10px 30px rgba(0,0,0,.12) !important; }
+  :host([data-th=l]) .shv { background: rgba(0,0,0,.25) !important; }
+  :host([data-th=l]) .grab { background:#c7c7cc !important; }
+  :host([data-th=l]) .sheet .tile, :host([data-th=l]) .sheet .kglass, :host([data-th=l]) .sheet .lk, :host([data-th=l]) .sheet .klk { background:#fff !important; }
+  :host([data-th=l]) .sheet, :host([data-th=l]) .sheet.full, :host([data-th=l]) .sheet.full.lamp, :host([data-th=l]) .sheet.full.therm, :host([data-th=l]) .sheet.full.therm.hot { background: #f2f2f7 !important; color:#111318 !important; }
+  :host([data-th=l]) .sheet h2, :host([data-th=l]) .sheet .st, :host([data-th=l]) .sheet .shh, :host([data-th=l]) .sheet .kth, :host([data-th=l]) .sheet b { color:#111318 !important; }
+  :host([data-th=l]) .sheet .sub, :host([data-th=l]) .sheet .shs { color:#6e6e78 !important; }
+  :host([data-th=l]) .sheet .xbtn, :host([data-th=l]) .sheet .hbtn, :host([data-th=l]) .sheet button:not(.on) { color:#3a3a3c; }
+  :host([data-th=l]) .thd text { fill:#111318 !important; }
+  :host([data-th=l]) .thd .tv, :host([data-th=l]) .thd .big { fill:#111318 !important; color:#111318 !important; }
+  :host([data-th=l]) .sheet .mstp button, :host([data-th=l]) .thb button, :host([data-th=l]) .tstp button { background:#fff !important; color:#111318 !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.15) !important; }
+  :host([data-th=l]) .sheet .tpre, :host([data-th=l]) .tpre, :host([data-th=l]) .tmode { background:#fff !important; color:#111318 !important; }
+  :host([data-th=l]) .lt.on .s, :host([data-th=l]) .lt .s { color:#9a5a00 !important; }
+  :host([data-th=l]) .lt:not(.on) .s { color:#8e8e93 !important; }
+  :host([data-th=l]) .maf em.mtag { color:#b8650a !important; }
+  :host([data-th=l]) .maf em.mtag .dot { background:#f0a020 !important; box-shadow:none !important; }
+  :host([data-th=l]) .maf em.mtag.d1 { color:#2f6fdb !important; }
+  :host([data-th=l]) .maf em.mtag.d1 .dot { background:#2f6fdb !important; }
+  :host([data-th=l]) .kr .ln .y { color:#b8650a !important; }
+  :host([data-th=l]) .kr .ln .b, :host([data-th=l]) .kr .ln .ap { color:#2f6fdb !important; }
+  :host([data-th=l]) .cv .s, :host([data-th=l]) .cv span { color:#2f6fdb !important; }
+  :host([data-th=l]) .cd, :host([data-th=l]) .dot, :host([data-th=l]) .ist i, :host([data-th=l]) .th i { box-shadow:none !important; }
+  :host([data-th=l]) .av .ring { background: #e5e5ea !important; padding: 2px !important; }
+  :host([data-th=l]) .av .face { color:#3a3a3c !important; }
+  :host([data-th=l]) .lt.on .ms { color:#9a5a00 !important; }
+  :host([data-th=l]) .lt .ms { color:#8e8e93 !important; }
+  :host([data-th=l]) .cv .ms { color:#2f6fdb !important; }
+  :host([data-th=l]) .thd path[stroke^="rgba(255"], :host([data-th=l]) .thd circle[stroke^="rgba(255"] { stroke:#e5e5ea !important; }
+  :host([data-th=l]) .thn { color:#111318 !important; -webkit-text-fill-color:#111318 !important; background:none !important; text-shadow:none !important; }
+  :host([data-th=l]) .thl { color:#6e6e78 !important; }
+  :host([data-th=l]) .tht { color:#111318 !important; }
+  :host([data-th=l]) .sheet .grab { background:#c7c7cc !important; }
+  :host([data-th=l]) .cvb button, :host([data-th=l]) .thb button { background:#fff !important; color:#111318 !important; border:0 !important; border-radius:50% !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.18), 0 2px 6px rgba(0,0,0,.06) !important; }
+  :host([data-th=l]) .cvb button svg, :host([data-th=l]) .thb button svg { stroke:#111318 !important; fill:#111318 !important; color:#111318 !important; }
+  :host([data-th=l]) .tht, :host([data-th=l]) .tht b, :host([data-th=l]) .tht * { color:#111318 !important; -webkit-text-fill-color:#111318 !important; }
+  :host([data-th=l]) .thp { background:#fff !important; color:#111318 !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.18) !important; }
+  :host([data-th=l]) .thm { background:#fff !important; color:#111318 !important; }
+  :host([data-th=l]) .wrap, :host([data-th=l]) .twrap, :host([data-th=l]) .znu, :host([data-th=l]) .vwrap, :host([data-th=l]) .awrap { background: radial-gradient(520px 380px at 0% 0%, #dcecff, transparent 62%), radial-gradient(460px 360px at 100% 6%, #fff1cf, transparent 60%), radial-gradient(560px 480px at 85% 100%, #efe0ff, transparent 62%), radial-gradient(460px 380px at 0% 100%, #ffe3f1, transparent 60%), #f6f7fb !important; background-attachment: fixed !important; }
+  :host([data-th=l]) .tile, :host([data-th=l]) .kglass, :host([data-th=l]) .mstack > .was, :host([data-th=l]) .was, :host([data-th=l]) .wsr, :host([data-th=l]) .maf, :host([data-th=l]) .mrow > .tile, :host([data-th=l]) .kr, :host([data-th=l]) .kr:not(.lit), :host([data-th=l]) .cv, :host([data-th=l]) .cv:not(.on), :host([data-th=l]) .mp, :host([data-th=l]) .kspills .mp, :host([data-th=l]) #kview .mp { background: rgba(255,255,255,.74) !important; -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); border: .5px solid rgba(255,255,255,.9) !important; box-shadow: 0 4px 16px rgba(80,90,140,.08) !important; }
+  :host([data-th=l]) .xtabs { background: linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.42)) !important; -webkit-backdrop-filter: blur(24px) saturate(1.9) !important; backdrop-filter: blur(24px) saturate(1.9) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.35), 0 0 0 .5px rgba(60,60,67,.10), 0 10px 30px rgba(70,80,130,.16) !important; }
+  :host([data-th=l]) .xtabs button.on { background: rgba(255,255,255,.7) !important; box-shadow: inset 0 1px 0 #fff, 0 2px 8px rgba(70,80,130,.12) !important; color:#007aff !important; }
+  :host([data-th=l]) .wrap::after { background: linear-gradient(180deg, rgba(246,247,251,0), rgba(246,247,251,.35)) !important; -webkit-backdrop-filter: blur(10px) !important; backdrop-filter: blur(10px) !important; }
+  :host([data-th=l]) .sheet, :host([data-th=l]) .sheet.full, :host([data-th=l]) .sheet.full.lamp, :host([data-th=l]) .sheet.full.therm, :host([data-th=l]) .sheet.full.therm.hot { background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(246,247,251,.94) 40%) !important; -webkit-backdrop-filter: blur(28px) saturate(1.6) !important; backdrop-filter: blur(28px) saturate(1.6) !important; box-shadow: inset 0 1px 0 #fff, 0 -10px 30px rgba(70,80,130,.14) !important; }
+  :host([data-th=l]) .shv { background: rgba(40,50,80,.18) !important; }
+  :host([data-th=l]) .ksw { background: #e5e5ea !important; }
+  :host([data-th=l]) .ksw.on { background: #2bb8b0 !important; }
+  :host([data-th=l]) .mstp { display:flex !important; justify-content:flex-start; gap:10px; background:none !important; box-shadow:none !important; overflow:visible !important; }
+  :host([data-th=l]) .mstp button { width:46px; height:36px !important; border-radius:99px !important; background: rgba(255,255,255,.9) !important; color:#111318 !important; border:0 !important; box-shadow: inset 0 1px 0 #fff, 0 0 0 .5px rgba(60,60,67,.14), 0 2px 8px rgba(70,80,130,.10) !important; }
+  :host([data-th=l]) .mstp button + button { border-left:0 !important; }
+  :host([data-th=l]) .xtabs button.on { color:#007aff !important; }
+  :host([data-th=l]) .mst .mic, :host([data-th=l]) .mst span b { color:#e8890c; }
+  :host([data-th=l]) .thb button.tpow { background:#2bb8b0 !important; color:#fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 16px rgba(43,184,176,.35) !important; }
+  :host([data-th=l]) #g-gray stop:nth-child(1) { stop-color:#dbe4f2!important }
+  :host([data-th=l]) #g-gray stop:nth-child(2) { stop-color:#c3cfe2!important }
+  :host([data-th=l]) #g-gray stop:nth-child(3) { stop-color:#aebcd3!important }
+  :host([data-th=l]) #g-grayL stop:nth-child(1) { stop-color:#edf2f9!important }
+  :host([data-th=l]) #g-grayL stop:nth-child(2) { stop-color:#d9e2ef!important }
+  :host([data-th=l]) #g-grayL stop:nth-child(3) { stop-color:#c6d1e2!important }
+  :host([data-th=l]) #g-grayD stop:nth-child(1) { stop-color:#cdd7e6!important }
+  :host([data-th=l]) #g-grayD stop:nth-child(2) { stop-color:#b7c3d6!important }
+  :host([data-th=l]) #g-grayD stop:nth-child(3) { stop-color:#a2b0c7!important }
+  :host([data-th=l]) .thb button.tpow { display:grid !important; background:#fff !important; color:#8e8e93 !important; box-shadow: inset 0 1px 0 #fff, 0 0 0 .5px rgba(60,60,67,.18), 0 2px 6px rgba(0,0,0,.06) !important; }
+  :host([data-th=l]) .thb button.tpow.on { background:#2bb8b0 !important; color:#fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 16px rgba(43,184,176,.35) !important; }
+  :host([data-th=l]) .thb { display:flex !important; justify-content:center; gap:22px !important; }
+  :host([data-th=l]) .therm.hot #thArc { filter:none !important; }
+  :host([data-th=l]) .thb button { width:64px; height:64px; display:grid !important; place-items:center; }
+  :host([data-th=l]) .thb button svg { width:64px !important; height:64px !important; padding:20px !important; background:none !important; border:0 !important; box-shadow:none !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; fill:none !important; }
+  :host([data-th=l]) .thb button.tpow svg { stroke:currentColor !important; color:inherit !important; padding:19px !important; }
+  :host([data-th=l]) .thb button.tpow.on svg { stroke:#fff !important; }
+  :host([data-th=l]) .thb button.tpow[hidden] { display:none !important; }
+  :host([data-th=l]) .thb button:active { transform:scale(.94); }
+  :host([data-th=l]) .thl8 .tht { display:none !important; }
+  :host([data-th=l]) .thl8 .thn { font-size:62px; letter-spacing:-.04em; } :host([data-th=l]) .thl8 .thn small { font-size:24px; color:#111318 !important; -webkit-text-fill-color:#111318 !important; margin-left:2px; }
+  :host([data-th=l]) .thl8 .thl { font-size:16px; margin-top:10px; }
+  :host([data-th=l]) .nst, :host([data-th=l]) .range, :host([data-th=l]) .st, :host([data-th=l]) .status, :host([data-th=l]) .sunl b, :host([data-th=l]) .fbar .k, :host([data-th=l]) .side h3, :host([data-th=l]) .invfoot b, :host([data-th=l]) .invfoot .t, :host([data-th=l]) .col .e { color:#3a3a3c !important; }
+  :host([data-th=l]) .znu .bv { fill:#3a3a3c !important; } :host([data-th=l]) .ctitle.txt { color:#6e6e78 !important; } :host([data-th=l]) .foot { color:#8e8e93 !important; }
+  :host([data-th=l]) .cbtn { color:#111318 !important; background:rgba(255,255,255,.9) !important; border-color:rgba(60,60,67,.14) !important; }
+  :host([data-th=l]) .awrap .tile, :host([data-th=l]) .vwrap .tile { color:#111318; }
+  :host([data-th=l]) { --water:#0a84d6 !important; --car:#13a091 !important; --gas:#e0244f !important; --imp:#8a3ffc !important; --faint:#8e8e93 !important; }
+  :host([data-th=l]) .csub b, :host([data-th=l]) .cline b, :host([data-th=l]) .chealth b, :host([data-th=l]) .was.ready .rt b { color:#3a3a3c !important; }
+  :host([data-th=l]) .bidir, :host([data-th=l]) .ctrack { background:rgba(60,60,67,.10) !important; } :host([data-th=l]) .bidir::after { background:rgba(60,60,67,.3) !important; }
+  :host([data-th=l]) { display:block; background:#f6f7fb; } :host([data-th=l]) .wrap { min-height:100vh; min-height:100dvh; box-sizing:border-box; }
+}
+`;
+
 class ZonnepanelenCard extends HTMLElement {
   setConfig(config) {
-    this._config = { ...DEFAULTS, ...config };
+    this._config = { ...DEFAULTS, ...config }; applyTheme(this, config);
     // paneelnummers: 'n' (sommige YAML-lezers maken van de sleutel n een false), of 'nr'; ontbreekt het, dan doornummeren
     let pn = 0;
     this._config.inverters = (this._config.inverters || []).map((inv) => ({ ...inv, panels: (inv.panels || []).map((p) => {
@@ -704,7 +840,7 @@ class ZonnepanelenCard extends HTMLElement {
     const arc = 'M30.72 140 A80 80 0 1 1 169.28 140';
 
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}</style>
+      <style>${STYLE}${LIGHT}</style>
       ${GLOSSY}
       <div class="wrap znu"><div class="inner">
         ${headerHtml('nu')}
@@ -1526,7 +1662,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '235';
+const CARD_VERSION = '236';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1679,6 +1815,7 @@ h1.v svg:not(.hi) { stroke: var(--home); filter: drop-shadow(0 0 10px rgba(120,1
 
 class VerbruikCard extends HTMLElement {
   setConfig(config) {
+    applyTheme(this, config);
     this._config = { ...VDEFAULTS, ...config,
       prices: { ...VDEFAULTS.prices, ...(config.prices || {}) },
       fixed: { ...VDEFAULTS.fixed, ...(config.fixed || {}) } };
@@ -1727,7 +1864,7 @@ class VerbruikCard extends HTMLElement {
                 <div class="fc" id="fc${k}"></div>
               </div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${VSTYLE}</style>
+      <style>${STYLE}${VSTYLE}${LIGHT}</style>
       ${GLOSSY}
       <div class="wrap vwrap"><div class="inner">
         ${headerHtml('verbruik')}
@@ -2453,7 +2590,7 @@ const AICONS = {
 
 class AutoCard extends HTMLElement {
   setConfig(config) {
-    this._config = { ...ADEFAULTS, ...config };
+    this._config = { ...ADEFAULTS, ...config }; applyTheme(this, config);
     this._build();
     if (this._hass) this._update();
   }
@@ -2474,7 +2611,7 @@ class AutoCard extends HTMLElement {
     const c = this._config, e = (d, k) => this._e(d, k);
     const tyre = (k, label) => `<div class="tyre" id="t_${k}" data-e="${e('sensor', 'bandenspanning_' + k)}"><b>—</b><div>${label}</div></div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${ASTYLE}</style>
+      <style>${STYLE}${ASTYLE}${LIGHT}</style>
       <div class="wrap awrap"><div class="inner">
         ${headerHtml('auto')}
         <div class="grid">
@@ -3514,7 +3651,7 @@ const TSTYLE = `
   .thl { font-size: 15px; color: rgba(255,255,255,.75); margin-top: 8px; }
   .tht { display: flex; align-items: center; gap: 6px; font-size: 24px; font-weight: 600; color: #3ddc97; margin-top: 2px; } .therm.hot .tht { color: #ffb067; }
   .tht .gf { width: 24px; height: 24px; overflow: visible; } .tht .okc { display: grid; } .tht .okc svg { width: 20px; height: 20px; }
-  .thb { gap: 40px; margin: 0; }
+  .thb { gap: 40px; margin: 0; } .thb .tpow { display: none; }
   .thsel { position: relative; display: flex; justify-content: center; margin-top: 38px; }
   .thp { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 240px; height: 54px; border-radius: 27px; background: rgba(0,0,0,.25); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font-size: 17px; font-weight: 600; color: #fff; }
   .thp .fi { width: 20px; height: 20px; fill: currentColor; } .thp .chev { width: 16px; height: 16px; margin-left: 18px; opacity: .7; }
@@ -3876,7 +4013,7 @@ const KSTYLE = `
 
 class ThuisCard extends HTMLElement {
   setConfig(config) {
-    this._config = { ...TDEFAULTS, ...config };
+    this._config = { ...TDEFAULTS, ...config }; applyTheme(this, config);
     this._build();
     if (this._hass) this._update();
   }
@@ -3948,7 +4085,7 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
       <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
@@ -5276,12 +5413,19 @@ class ThuisCard extends HTMLElement {
       this._cvHist = false;
       const MI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>';
       const PL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+      const PW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3.5v8"/><path d="M7.2 6.6a7 7 0 1 0 9.6 0"/></svg>';
       body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Thermostaat</b><span id="thS"></span></div>
         <div class="thd" id="thD"><svg id="thArc" viewBox="0 0 290 262"></svg><div class="thc"><div class="thn" id="thN"></div><div class="thl" id="thL"></div><div class="tht" id="thT"></div></div></div>
-        <div class="cvb thb"><button id="thMin" aria-label="Lager">${MI}</button><button id="thPlus" aria-label="Hoger">${PL}</button></div>
+        <div class="cvb thb"><button id="thMin" aria-label="Lager">${MI}</button><button class="tpow" id="thPow" aria-label="Aan/uit">${PW}</button><button id="thPlus" aria-label="Hoger">${PL}</button></div>
         <div class="thsel" id="thSel"><button class="thp" id="thP"></button><div class="thm" id="thM"></div></div>`;
       this.$('thMin').addEventListener('click', () => this._tStep(-1));
       this.$('thPlus').addEventListener('click', () => this._tStep(1));
+      this.$('thPow').addEventListener('click', () => {
+        const { cl, a } = this._tGeo(); if (!cl) return;
+        const modes = (a.hvac_modes || []).filter((m) => m !== 'off'), on = modes.includes('heat') ? 'heat' : modes[0];
+        if (cl.state === 'off') { if (on) this._hass.callService('climate', 'set_hvac_mode', { entity_id: cl.entity_id, hvac_mode: on }); else this._hass.callService('climate', 'turn_on', { entity_id: cl.entity_id }); }
+        else this._hass.callService('climate', 'set_hvac_mode', { entity_id: cl.entity_id, hvac_mode: 'off' });
+      });
       this.$('thP').addEventListener('click', (e) => { e.stopPropagation(); this.$('thSel').classList.toggle('open'); });
       body.addEventListener('click', (e) => { if (!e.target.closest('#thSel')) this.$('thSel')?.classList.remove('open'); });
       this.$('cvHb').addEventListener('click', () => this._thHistory());
@@ -5595,6 +5739,21 @@ class ThuisCard extends HTMLElement {
       svg += `<path d="${path(a0, Math.max(a0 + .5, ang(tgt)))}" stroke="url(#thgM)" stroke-width="26" fill="none" stroke-linecap="round"/>`;
       if (cur != null) { const [nx, ny] = pt(ang(cur)); svg += `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="3.5" fill="rgba(255,255,255,.85)"/>`; }
       svg += `<circle cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}" r="${kr}" fill="#fff" style="filter:drop-shadow(0 3px 8px rgba(0,0,0,.4))"/>`;
+      const lt = isLight(this), pw = this.$('thPow');
+      if (pw) { pw.hidden = !(a.hvac_modes || []).includes('off'); pw.classList.toggle('on', !off); }
+      sh.classList.toggle('thl8', lt);
+      if (lt) {
+        // lichte weergave: dunne boog blauw → warm, wit knopje met gekleurde stip, grote temperatuur met °C
+        const [sx, sy] = pt(a0), [ex, ey] = pt(a1), fr = (ang(tgt) - a0) / (a1 - a0) * 100, dot = hot ? '#ff8a3d' : '#4a9df0';
+        svg = `<defs><linearGradient id="thgL" gradientUnits="userSpaceOnUse" x1="35" y1="0" x2="255" y2="0"><stop offset="0" stop-color="#4a9df0"/><stop offset=".55" stop-color="#f5b431"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs>`;
+        svg += `<path d="${path(a0, a1)}" stroke="#e8e9f0" stroke-width="18" fill="none" stroke-linecap="round"/>`;
+        if (!off) svg += `<path d="${path(a0, a1)}" pathLength="100" stroke-dasharray="${Math.max(.3, fr).toFixed(2)} 200" stroke="url(#thgL)" stroke-width="18" fill="none" stroke-linecap="round"/>`;
+        if (cur != null) { const [nx, ny] = pt(ang(cur)); svg += `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="3.5" fill="#111318" opacity=".5"/>`; }
+        svg += `<circle cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}" r="${this._tDragging ? 15 : 13}" fill="#fff" style="filter:drop-shadow(0 2px 5px rgba(40,50,80,.22))"/><circle cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}" r="5" fill="${off ? '#aebcd3' : dot}"/>`;
+        svg += `<text x="${(sx + 4).toFixed(1)}" y="${(sy + 30).toFixed(1)}" text-anchor="middle" font-size="12" fill="#a1a1aa">${fmt(min, min % 1 ? 1 : 0)}°</text><text x="${(ex - 4).toFixed(1)}" y="${(ey + 30).toFixed(1)}" text-anchor="middle" font-size="12" fill="#a1a1aa">${fmt(max, max % 1 ? 1 : 0)}°</text>`;
+        set('thN', cur != null ? `${fmt(cur, 1)}<small>°C</small>` : '—');
+        set('thL', off ? 'uit' : `doel ${fmt(tgt, tgt % 1 ? 1 : 0)}°`);
+      }
       if (this._thArc !== svg || !this.$('thArc').firstChild) { this.$('thArc').innerHTML = svg; this._thArc = svg; }
       // programma
       const modes = Object.keys(PRESETS).filter((m) => (a.preset_modes || []).includes(m)), now = this._preWait || a.preset_mode;
