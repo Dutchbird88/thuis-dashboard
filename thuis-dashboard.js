@@ -539,10 +539,19 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .big { font-size: 54px; }
 }
 /* Nu-pagina op de telefoon: mijn huis, twee meters, grafiek en panelen (computer ongewijzigd) */
-.znu .mob { display: none; }
+.znu .mob, .znu .ml { display: none; }
 @media (max-width: 600px) {
   .znu .grid { display: flex; flex-direction: column; gap: 10px; }
-  .znu .tile.photo, .znu .tile.hero, .znu .tile.flow, .znu .tile.tdays { display: none; }
+  .znu .tile.photo, .znu .tile.hero, .znu .tile.flow { display: none; }
+  .znu .dl { display: none !important; } .znu .ml { display: inline; } .znu .seg.ml { display: inline-flex; } .znu .msum.ml { display: block; }
+  .znu .seg { gap: 2px; padding: 2px; border-radius: 99px; background: rgba(255,255,255,.04); border: 1px solid rgba(130,170,255,.12); margin-left: auto; }
+  .znu .seg button { all: unset; cursor: pointer; font-size: 12px; padding: 4px 11px; border-radius: 99px; color: var(--muted); } .znu .seg button.on { background: rgba(255,255,255,.08); color: var(--text); }
+  .znu .msum { font-size: 12px; color: var(--muted); margin: -2px 0 6px; } .znu .msum b { color: var(--text); font-weight: 600; }
+  .znu .sides { display: none; } .znu.mdet .sides { display: grid; margin-top: 14px; }
+  .znu .mpanels.mob { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .znu .mpanels .panel { aspect-ratio: auto; height: 50px; border-radius: 9px; }
+  .znu .minv.mob { display: flex; justify-content: space-between; align-items: center; margin: 12px -14px -12px; padding: 11px 14px; border-top: 1px solid rgba(130,170,255,.12); font-size: 13px; color: var(--muted); cursor: pointer; }
+  .znu .minv .chev { font-size: 17px; transition: transform .2s; } .znu.mdet .minv .chev { transform: rotate(90deg); }
   .znu .mob { display: block; }
   .znu .tile { padding: 12px 14px; }
   .znu .th { margin-bottom: 8px; flex-wrap: nowrap; align-items: center; }
@@ -575,7 +584,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .inv { padding: 5px; border-radius: 12px; } .znu .pair { gap: 5px; }
   .znu .pw { font-size: 13px; bottom: 6px; } .znu .pn { font-size: 10px; top: 4px; left: 6px; } .znu .dev { font-size: 9px; padding: 1px 5px; top: 4px; right: 4px; }
   .znu .invfoot { font-size: 9.5px; margin-top: 6px; gap: 3px; padding: 0 1px; }
-  .znu .alert { padding: 9px 11px; font-size: 12px; margin-bottom: 12px; }
+  .znu .alert { padding: 9px 11px; font-size: 12px; margin-bottom: 10px; }
   /* tik op het huis: de foto met de panelen als venster over de pagina */
   .znu.mphoto .tile.photo { display: flex; position: fixed; left: 10px; right: 10px; top: 70px; z-index: 40; max-height: calc(100vh - 160px); overflow: auto;
     box-shadow: 0 0 0 100vmax rgba(4,7,12,.72), 0 30px 60px rgba(0,0,0,.6); }
@@ -777,13 +786,17 @@ class ZonnepanelenCard extends HTMLElement {
           </div>
 
           <div class="tile s4 tdays">
-            <div class="th"><span class="label">Laatste ${c.days} dagen</span><span class="aside" id="sum"></span></div>
+            <div class="th"><span class="label"><span class="dl">Laatste ${c.days} dagen</span><span class="ml">Opbrengst</span></span><span class="aside dl" id="sum"></span>
+              <span class="seg ml" id="dseg"><button data-r="week">Week</button><button data-r="maand" class="on">Maand</button><button data-r="jaar">Jaar</button></span></div>
+            <div class="msum ml" id="msum"></div>
             <div class="chart" id="chartDays"></div>
           </div>
 
           <div class="tile s12 tpan">
-            <div class="th"><span class="label">Panelen &amp; omvormers</span><span class="aside" id="panelsNote"></span></div>
+            <div class="th"><span class="label"><span class="dl">Panelen &amp; omvormers</span><span class="ml">Panelen</span></span><span class="aside dl" id="panelsNote"></span><span class="aside ml" id="mPanSum"></span></div>
             <div class="alert" id="alert" hidden></div>
+            <div class="mpanels mob">${c.inverters.flatMap((inv) => inv.panels).sort((a, b) => a.n - b.n).map((p) => `<div class="panel" data-mp="${p.entity}" data-e="${p.entity}"><div class="pn">${p.n}</div><div class="pw num">—</div></div>`).join('')}</div>
+            <div class="minv mob" id="mInv"><span>Omvormers<span id="mInvT"></span></span><span class="chev">›</span></div>
             <div class="sides">${sidesHtml}</div>
           </div>
 
@@ -815,6 +828,11 @@ class ZonnepanelenCard extends HTMLElement {
     // telefoon: tik op het huis = foto met de panelen als venster; tik ernaast = sluiten
     const wrap = this.shadowRoot.querySelector('.wrap');
     this.$('mImg').addEventListener('click', () => wrap.classList.add('mphoto'));
+    this.$('mInv').addEventListener('click', () => wrap.classList.toggle('mdet'));
+    this.shadowRoot.querySelectorAll('#dseg button').forEach((b) => b.addEventListener('click', () => {
+      this._rng = b.dataset.r; this.shadowRoot.querySelectorAll('#dseg button').forEach((x) => x.classList.toggle('on', x === b));
+      if (this._rng === 'jaar') this._fetchYear(); this._drawDays();
+    }));
     this.shadowRoot.querySelector('.tile.photo').addEventListener('click', (e) => { if (wrap.classList.contains('mphoto') && !e.target.closest('[data-e], [data-n]')) wrap.classList.remove('mphoto'); });
   }
 
@@ -1036,8 +1054,18 @@ class ZonnepanelenCard extends HTMLElement {
       set(`mv${k}`, v); set(`mm${k}`, max);
     };
     gauge('1', (pv || 0) / c.max_power, pv == null ? '—' : `${fmt(pv)}<tspan class="mgu" dx="5">W</tspan>`, fmt(c.max_power));
-    const dmax = fc.today > 0 ? fc.today : best?.v > 0 ? best.v : null;
-    gauge('2', dmax ? (today || 0) / dmax : 0, today == null ? '—' : `${fmt(today, 1)}<tspan class="mgu" dx="5">kWh</tspan>`, dmax ? fmt(dmax, 1) : '');
+    gauge('2', (today || 0) / 20, today == null ? '—' : `${fmt(today, 1)}<tspan class="mgu" dx="5">kWh</tspan>`, '20');
+    // panelen: het compacte raster volgt de panelen van de computerweergave (kleur, waarde, afwijking)
+    let tot = 0; const temps = [];
+    this.shadowRoot.querySelectorAll('[data-mp]').forEach((m) => {
+      const d = this.shadowRoot.querySelector(`[data-panel="${m.dataset.mp}"]`); if (!d) return;
+      if (m.innerHTML !== d.innerHTML) m.innerHTML = d.innerHTML;
+      m.className = d.className; m.style.setProperty('--p', d.style.getPropertyValue('--p'));
+      tot += this._power(m.dataset.mp) || 0;
+    });
+    for (const inv of c.inverters) { const t = this._num(inv.temp); if (t != null) temps.push(t); }
+    set('mPanSum', `<b class="num">${fmt(tot)} W</b>`);
+    set('mInvT', temps.length ? ` · ${fmt(Math.min(...temps))}–${fmt(Math.max(...temps))} °C` : '');
   }
 
   /* ---------- advies ---------- */
@@ -1240,6 +1268,32 @@ class ZonnepanelenCard extends HTMLElement {
     return out;
   }
 
+  // telefoon, grafiek Jaar: opbrengst per maand (12 maanden, de huidige maand tot nu)
+  _monthValues() {
+    if (!this._yearDays) { this._fetchYear(); return []; }
+    const now = new Date(), out = [], today = this._num(this._config.solar_today), day0 = startOfDay(Date.now());
+    for (let i = 11; i >= 0; i--) {
+      const m0 = new Date(now.getFullYear(), now.getMonth() - i, 1).getTime(), m1 = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime();
+      let v = this._yearDays.filter((d) => d.t >= m0 && d.t < m1 && d.t !== day0).reduce((s, d) => s + d.v, 0);
+      if (i === 0) v += today ?? this._yearDays.find((d) => d.t === day0)?.v ?? 0;
+      out.push({ t: m0, v });
+    }
+    return out;
+  }
+  async _fetchYear() {
+    if (!this._hass || this._yearBusy || (this._yearAt && Date.now() - this._yearAt < HOUR)) return;
+    this._yearBusy = true;
+    const c = this._config, now = new Date(), start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    try {
+      const r = await this._hass.callWS({ type: 'recorder/statistics_during_period', start_time: start.toISOString(), end_time: now.toISOString(),
+        statistic_ids: [c.solar_today], period: 'day', types: ['state', 'max'] });
+      this._yearDays = (r?.[c.solar_today] || []).map((x) => ({ t: startOfDay(ts(x.start)), v: x.max ?? x.state ?? 0 }));
+      this._yearAt = Date.now();
+    } catch (e) { this._yearDays = this._yearDays || []; }
+    this._yearBusy = false;
+    if (this._rng === 'jaar') this._drawDays();
+  }
+
   /* ---------- charts ---------- */
 
   _drawCharts() {
@@ -1352,7 +1406,9 @@ class ZonnepanelenCard extends HTMLElement {
     const W = el.clientWidth;
     if (!W) return;
     const H = 220, pad = { l: 34, r: 6, t: 12, b: 26 };
-    const days = this._dayValues();
+    const rng = window.matchMedia('(max-width: 600px)').matches ? this._rng || 'maand' : 'maand';
+    const days = rng === 'week' ? this._dayValues().slice(-7) : rng === 'jaar' ? this._monthValues() : this._dayValues();
+    if (!days.length) { el.innerHTML = ''; return; }
     const N = days.length;
     const ymax = niceMax(Math.max(2, ...days.map((d) => d.v)));
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
@@ -1375,8 +1431,10 @@ class ZonnepanelenCard extends HTMLElement {
       const isToday = i === N - 1;
       const fill = isToday ? 'url(#gbt)' : d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
       bars += `<rect class="bar" data-i="${i}" x="${x.toFixed(1)}" y="${(Y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, bw / 2)}" fill="${fill}"/>`;
-      if ((N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5)) {
-        const lbl = isToday ? 'Vandaag' : new Date(d.t).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+      if (rng === 'week' || (rng === 'jaar' && ((N - 1 - i) % 3 === 0)) || (rng === 'maand' && (N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5))) {
+        const lbl = rng === 'jaar' ? (isToday ? 'Nu' : new Date(d.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', ''))
+          : rng === 'week' && !isToday ? new Date(d.t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')
+          : isToday ? 'Vandaag' : new Date(d.t).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
         bars += `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="${isToday ? 'end' : 'middle'}">${lbl}</text>`;
       }
     });
@@ -1392,6 +1450,8 @@ class ZonnepanelenCard extends HTMLElement {
         <rect x="${pad.l}" y="0" width="${iw}" height="${H}" fill="transparent"/>
       </svg>
       <div class="tip"></div>`;
+    const msum = this.$('msum');
+    if (msum) msum.innerHTML = `Totaal <b class="num">${fmt(days.reduce((s, d) => s + d.v, 0))} kWh</b> · gem. ${fmt(avg, 1)}${rng === 'jaar' ? ' per maand' : ' per dag'} · beste ${fmt(best, 1)}`;
 
     const svg = el.querySelector('svg'), tip = el.querySelector('.tip');
     const rects = [...el.querySelectorAll('.bar')];
@@ -1401,7 +1461,7 @@ class ZonnepanelenCard extends HTMLElement {
       const d = days[i];
       rects.forEach((r, j) => (r.style.opacity = j === i ? 1 : 0.45));
       tip.classList.add('on');
-      tip.innerHTML = `<b>${fmt(d.v, 1)} kWh</b>${new Date(d.t).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}`;
+      tip.innerHTML = `<b>${fmt(d.v, 1)} kWh</b>${new Date(d.t).toLocaleDateString('nl-NL', rng === 'jaar' ? { month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'short' })}`;
       tip.style.left = `${clamp(pad.l + i * band + band / 2, 70, W - 70)}px`;
       tip.style.top = `${Y(d.v)}px`;
     };
@@ -1417,7 +1477,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '220';
+const CARD_VERSION = '221';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

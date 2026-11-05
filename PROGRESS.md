@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v220**.*
+*Bijgewerkt: 5 november 2026, versie **v221**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v220** (telefoon: nieuwe indeling van de pagina Nu). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v221** (telefoon, pagina Nu: opbrengstgrafiek Week/Maand/Jaar, meter tot 20 kWh, compact panelenraster). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v220.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v221.
 
 ## Gerealiseerde functies (per tab)
 
@@ -89,6 +89,7 @@
 | v218 | Nieuw recycle-icoon in de gevouwen vorm van het officiële symbool (brede banden, ronde vouwen, donkerder groene vouw). Bolletje Vandaag/Morgen met zachte gloed in de eigen kleur, zoals het online-bolletje van de laadpaal; de onbedoelde groene gloed van `.dot` is weg. |
 | v219 | Telefoon: horizontaal vegen = vorig/volgend tabblad (linkerrand 30 px blijft voor het HA-menu; op Thuis naar rechts doet niets; op Auto naar rechts = Thuis). Vegen over pillenrijen, camera, wegveegbare kaarten, schuiven, grafieken en vensters telt niet. Tik op het actieve tabblad = terug naar boven. |
 | v220 | Telefoon, pagina Nu: tegel Mijn huis (eigen huisfoto, zon/huis/net met stromende bolletjes: amber zon→huis, groen huis→net, blauw net→huis), twee meters Opwekking nu (W, tot `max_power`) en Opgewekt vandaag (kWh, tot de verwachting), dezelfde grafiek en panelen als op de computer (alle panelen even groot). Tik op het huis = foto met panelen als venster. Oude tegels (foto, grote meter, energiestroom, 30 dagen) verborgen op de telefoon. Computer pixelgelijk. |
+| v221 | Telefoon, pagina Nu: groene grafiek Opbrengst met keuze Week/Maand/Jaar (jaar = 12 maanden uit een jaar dagcijfers, 1x per uur opgehaald); meter Opgewekt vandaag tot 20 kWh; panelen als raster 5×2 in de kleuring van de computer, met Omvormers › om de indeling per dakkant open te klappen. Computer pixelgelijk. |
 
 ## Volgende stappen
 

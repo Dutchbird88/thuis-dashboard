@@ -172,7 +172,10 @@ Verdere regels:
 
 - Bovenaan de bestaande kop en het bestaande menu. Daarna de tegels `.mob`: Mijn huis (`photo.image`, met zon/huis/net en de stromende bolletjes `.mcon`) en twee meters (`.mgauges`: Opwekking nu tot `max_power`, Opgewekt vandaag tot de verwachting of anders de beste dag). Bijgewerkt in `_updMob`.
 - De grafiek Vermogen vandaag (`.tday`) en de panelen (`.tpan`) zijn de computerversies; de panelen krijgen op de telefoon gelijke kolommen (`--gc` = meeste omvormers per dakkant).
-- Verborgen op de telefoon: de foto-, meter-, energiestroom- en 30-dagentegel. Tik op het huis zet `.mphoto` op `.wrap`: de fototegel verschijnt als venster.
+- Verborgen op de telefoon: de foto-, meter- en energiestroomtegel. Tik op het huis zet `.mphoto` op `.wrap`: de fototegel verschijnt als venster.
+- v221: de 30-dagentegel (`.tdays`) heet op de telefoon "Opbrengst" en heeft de keuze Week/Maand/Jaar (`#dseg`, `this._rng`; jaar via `_monthValues`/`_fetchYear`). Op de computer blijft het altijd 30 dagen. Opgewekt vandaag loopt tot 20 kWh.
+- v221: panelen op de telefoon als raster 5×2 (`.mpanels`, `[data-mp]`), dat in `_updMob` de computerpanelen kopieert (kleur, waarde, −%-label). `Omvormers ›` (`#mInv`) zet `.mdet` op `.wrap` en toont dan `.sides`.
+- Tekst die alleen op de telefoon of alleen op de computer hoort: `.ml` (telefoon) en `.dl` (computer).
 
 **localStorage-sleutels** (allemaal met try/catch):
 
