@@ -1330,7 +1330,7 @@ class ZonnepanelenCard extends HTMLElement {
     if (phone && on.length) {
       // telefoon: alleen het stuk van de dag met zon (een uur marge), en altijd tot nu
       t0 = day0 + Math.floor((on[0].t - day0) / HOUR - 1) * HOUR;
-      const lastPv = pts.filter((p) => p.v > 1).map((p) => p.t).pop() || 0, lastFc = fcPts.filter((p) => p.v > 1).map((p) => p.t + HOUR * 1.5).pop() || 0;
+      const lastPv = pts.filter((p) => p.v > 1).map((p) => p.t).pop() || 0, lastFc = fcPts.filter((p) => p.v > 1).map((p) => p.t + HOUR / 2).pop() || 0;
       t1 = day0 + Math.ceil((Math.max(lastPv, lastFc, now) - day0) / HOUR) * HOUR;
     } else if (on.length) {
       t0 = Math.min(t0, day0 + Math.floor((on[0].t - day0) / HOUR) * HOUR);
@@ -1365,9 +1365,9 @@ class ZonnepanelenCard extends HTMLElement {
     }
     let fcLine = '';
     if (fcVis.length > 1) {
-      // telefoon: de verwachting per uur in het midden van dat uur, en alleen zolang er zon verwacht wordt
+      // telefoon: alleen zolang er zon verwacht wordt (de punten staan al in het midden van het uur), van begin tot eind van die uren
       const fon = fcVis.filter((p) => p.v > 1);
-      const fp = phone && fon.length ? [{ t: fon[0].t - HOUR / 2, v: 0 }, ...fon.map((p) => ({ t: p.t + HOUR / 2, v: p.v })), { t: fon[fon.length - 1].t + HOUR * 1.5, v: 0 }]
+      const fp = phone && fon.length ? [{ t: fon[0].t - HOUR / 2, v: 0 }, ...fon, { t: fon[fon.length - 1].t + HOUR / 2, v: 0 }]
         : [{ t: t0, v: 0 }, ...fcVis, { t: t1, v: 0 }];
       fcLine = `<path d="${fp.map((p, i) => `${i ? 'L' : 'M'}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join('')}" fill="none" stroke="rgba(255,226,160,.75)" stroke-width="1.6" stroke-dasharray="5 5" stroke-linejoin="round"/>`;
     }
@@ -1497,7 +1497,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '224';
+const CARD_VERSION = '225';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
