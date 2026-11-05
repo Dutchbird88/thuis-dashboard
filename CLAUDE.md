@@ -18,6 +18,7 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
 - **Antwoord in het Nederlands**, eenvoudig en duidelijk, zonder jargon.
 - **Altijd eerst een mockup bij visuele wijzigingen.** Bouw pas na akkoord.
   - Een mockup is een HTML-pagina of screenshot met de echte stijl. Bied bij twijfel 2 tot 4 opties aan (A/B/C).
+- **Na akkoord op de mockup: bouwen en daarna meteen publiceren.** Er is geen apart akkoord nodig voor het publiceren (afspraak van november 2026). De controles uit "Publiceren" gelden wel altijd.
 - **Geef eerst een reactie of analyse als de gebruiker daarom vraagt** ("pas nog niks aan"), en verander dan nog niets.
 - **Telefoon en computer:** de telefoon (≤ 600px) heeft een eigen indeling. Laat de computerweergave ongewijzigd, tenzij de gebruiker daar expliciet om vraagt.
 - **Geef advies als de gebruiker erom vraagt.** Kies zelf, met een korte motivatie.
@@ -136,6 +137,7 @@ Verdere regels:
   - op de dag zelf met VANDAAG, tot 15:00;
   - na 15:00 komt de volgende bak.
   - Is er geen bak aan de beurt, dan staat er "Geen afval · tot en met <dag>".
+- Telefoon (v217): onder de naam van de bak staat een bolletje met "Vandaag" (zacht amber `#ffcf7a`) of "Morgen" (zacht blauw `#a9c8ff`), in gewone letters, zonder label. Het kopje "Afval" heeft het groene `RIC`-icoon `recycle`.
 - Het afvalvenster toont 2 weken vooruit:
   - uit de afvalkalender als die er is, en anders de eerstvolgende datum per bak;
   - plus de groepen "Vandaag opgehaald" en "Zonder datum".
