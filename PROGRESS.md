@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v218**.*
+*Bijgewerkt: 5 november 2026, versie **v219**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v218** (afvalkaart op de telefoon: Vandaag/Morgen met gloeiend bolletje, gevouwen recycle-icoon). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v219** (telefoon: vegen tussen de tabbladen, tik op het actieve tabblad = naar boven). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v218.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v219.
 
 ## Gerealiseerde functies (per tab)
 
@@ -87,6 +87,7 @@
 | v216 | Telefoon, kamerpaneel: lux als eigen pil na Beweging ("340 lux" / Donker, Schemerig, Helder, Zonnig; maan onder 10 lux). Computer ongewijzigd. |
 | v217 | Telefoon, afvalkaart: label VANDAAG/MORGEN vervangen door bolletje + "Vandaag" (zacht amber) / "Morgen" (zacht blauw). Kopje Afval met het groene recycle-icoon uit `RIC`. Computer ongewijzigd. |
 | v218 | Nieuw recycle-icoon in de gevouwen vorm van het officiële symbool (brede banden, ronde vouwen, donkerder groene vouw). Bolletje Vandaag/Morgen met zachte gloed in de eigen kleur, zoals het online-bolletje van de laadpaal; de onbedoelde groene gloed van `.dot` is weg. |
+| v219 | Telefoon: horizontaal vegen = vorig/volgend tabblad (linkerrand 30 px blijft voor het HA-menu; op Thuis naar rechts doet niets; op Auto naar rechts = Thuis). Vegen over pillenrijen, camera, wegveegbare kaarten, schuiven, grafieken en vensters telt niet. Tik op het actieve tabblad = terug naar boven. |
 
 ## Volgende stappen
 

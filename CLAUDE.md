@@ -70,6 +70,8 @@ Verdere regels:
   - `ThuisCard`, `KamersCard`.
 - **Versie:** `const CARD_VERSION = 'NNN'`. Die wordt in de console gelogd als `THUIS-ENERGIE-KAART vNNN`. **Verhoog het nummer bij elke publicatie.**
 - **Navigatie:** `NAV` koppelt tabs aan dashboard-paden (`thuis`, `kamers`, `pv-installatie`, `verbruik`, `auto`). Op de telefoon staat onderin een tabbalk.
+  - Telefoon (v219, `bindSwipe` in `bindNav`): horizontaal vegen gaat naar het vorige of volgende zichtbare tabblad, via een klik op die knop. Een veeg die binnen 30 px van de linkerrand begint, blijft voor het menu van HA (de gebruiker opent dat zo op Thuis). Overgeslagen: `.sheet`, `#camHit`, pillenrijen, `.thumbs`, elementen met `touch-action: none/pan-y` of die zelf horizontaal scrollen, en een touchmove met `preventDefault` (wegvegen). Op Auto (geen eigen knop) gaat naar rechts vegen naar Thuis.
+  - Tik op het actieve tabblad = terug naar boven (`toTop`).
 - **Rendering:** `_build()` bouwt de DOM één keer. Daarna past `set hass()` gericht aan via `_upd*`-methodes, zoals `_updWeather`, `_updRooms`, `_updCharge`, `_updWaste` en `_updAlarm`. Bouw niet bij elke update de hele DOM opnieuw op.
 
 ### Gebruikte Home Assistant-API's

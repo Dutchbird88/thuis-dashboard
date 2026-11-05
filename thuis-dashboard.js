@@ -254,14 +254,42 @@ const tabsHtml = (active, nav = NAV) => `
     <button class="ta${active === 'auto' ? ' on' : ''}" style="--tc:#5ee1d0" data-nav="${nav.auto}">${fi('car')}Auto</button>
   </div>`;
 // naar een ander tabblad van hetzelfde dashboard
-const bindNav = (root) => root.querySelectorAll('[data-nav]').forEach((b) => b.addEventListener('click', () => {
-  if (b.classList.contains('on')) return;
+const bindNav = (root) => { bindSwipe(root); root.querySelectorAll('[data-nav]').forEach((b) => b.addEventListener('click', () => {
+  if (b.classList.contains('on')) { toTop(root); return; }
   const bar = b.closest('.xtabs'), from = bar?.querySelector('button.on');
   glassLens(bar, from, b);
   from?.classList.remove('on'); b.classList.add('on');
   // HA bewaart elk tabblad; zet de selectie daarna terug, anders staat bij terugkomst het verkeerde tabblad aan
   setTimeout(() => { go(b); setTimeout(() => { b.classList.remove('on'); from?.classList.add('on'); }, 80); }, 260);
-}));
+})); };
+// tik op het actieve tabblad: terug naar boven (zoals in iPhone-apps)
+const toTop = (root) => {
+  for (let el = root.host; el; el = el.parentNode || el.host) if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+// telefoon: horizontaal vegen = vorig of volgend tabblad. De linkerrand (30 px) blijft voor het menu van HA,
+// en vegen over iets wat zelf veegt of schuift (kaarten, camera, pillenrijen, schuiven, grafieken, vensters; touch-action none/pan-y) telt niet.
+const bindSwipe = (root) => {
+  const mq = window.matchMedia('(max-width: 600px)'); let st = null;
+  const skip = (e) => e.composedPath().some((el) => el instanceof Element && (el.matches('.sheet, .shv, #camHit, .mpills, .kspills, .kpills, .thumbs, input, [role="slider"]')
+    || /^(none|pan-y)$/.test(getComputedStyle(el).touchAction) || (el.scrollWidth > el.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(el).overflowX))));
+  root.addEventListener('touchstart', (e) => {
+    st = null; const t = e.touches[0];
+    if (!mq.matches || e.touches.length > 1 || t.clientX < 30 || root.querySelector('.sheet:not([hidden])') || skip(e)) return;
+    st = { x: t.clientX, y: t.clientY, t: Date.now(), lock: false };
+  }, { passive: true });
+  root.addEventListener('touchmove', (e) => { if (st && e.defaultPrevented) st.lock = true; }, { passive: true });
+  root.addEventListener('touchend', (e) => {
+    const s0 = st; st = null; if (!s0 || s0.lock) return;
+    const t = e.changedTouches[0], dx = t.clientX - s0.x, dy = t.clientY - s0.y;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < 2 * Math.abs(dy) || Date.now() - s0.t > 700) return;
+    const all = [...root.querySelectorAll('.xtabs [data-nav]')], tabs = all.filter((b) => b.offsetParent !== null);
+    const i = tabs.findIndex((b) => b.classList.contains('on'));
+    // tabblad zonder eigen knop op de telefoon (Auto): naar rechts vegen = terug naar Thuis
+    const nb = i >= 0 ? tabs[i + (dx < 0 ? 1 : -1)] : dx > 0 && all.some((b) => b.classList.contains('on')) ? tabs[0] : null;
+    nb?.click();
+  }, { passive: true });
+};
 const go = (b) => {
   const parts = location.pathname.replace(/\/$/, '').split('/');
   if (Object.values(NAV).includes(parts[parts.length - 1])) parts[parts.length - 1] = b.dataset.nav; else parts.push(b.dataset.nav);
@@ -1289,7 +1317,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '218';
+const CARD_VERSION = '219';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
