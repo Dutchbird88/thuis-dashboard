@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v222**.*
+*Bijgewerkt: 5 november 2026, versie **v223**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v222** (telefoon, pagina Nu: grafieken rustiger, opbrengst boven de staven bij Week). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v223** (telefoon, pagina Nu: omvormers online met gekleurd bolletje). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v222.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v223.
 
 ## Gerealiseerde functies (per tab)
 
@@ -91,6 +91,7 @@
 | v220 | Telefoon, pagina Nu: tegel Mijn huis (eigen huisfoto, zon/huis/net met stromende bolletjes: amber zon→huis, groen huis→net, blauw net→huis), twee meters Opwekking nu (W, tot `max_power`) en Opgewekt vandaag (kWh, tot de verwachting), dezelfde grafiek en panelen als op de computer (alle panelen even groot). Tik op het huis = foto met panelen als venster. Oude tegels (foto, grote meter, energiestroom, 30 dagen) verborgen op de telefoon. Computer pixelgelijk. |
 | v221 | Telefoon, pagina Nu: groene grafiek Opbrengst met keuze Week/Maand/Jaar (jaar = 12 maanden uit een jaar dagcijfers, 1x per uur opgehaald); meter Opgewekt vandaag tot 20 kWh; panelen als raster 5×2 in de kleuring van de computer, met Omvormers › om de indeling per dakkant open te klappen. Computer pixelgelijk. |
 | v222 | Telefoon, pagina Nu: gele grafiek heet "Vandaag" zonder piekregel (verwacht blijft); Opbrengst zonder gemiddeldelijn; bij Week de opbrengst boven elke staaf en alle dagen als weekdag (geen overlap meer van "Vandaag"). Computer pixelgelijk. |
+| v223 | Telefoon, pagina Nu: regel Omvormers toont rechts het aantal online in plaats van het pijltje, met bolletje: groen alles, oranje een deel, rood geen (overdag), grijs "In rust" als de zon onder is. Tik klapt nog steeds de details open. Computer pixelgelijk. |
 
 ## Volgende stappen
 
