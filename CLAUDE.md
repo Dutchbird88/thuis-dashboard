@@ -168,6 +168,12 @@ Verdere regels:
   - de kaart is teal met een gloed en een balk over de hele breedte;
   - bovenaan "72% | Laden / vol om …", daaronder "3,7 kW · nog …".
 
+**Nu (zonnepanelen) op de telefoon** (v220, alleen ≤ 600px, opmaak onder `.znu` zodat de gedeelde `STYLE` de andere kaarten niet raakt)
+
+- Bovenaan de bestaande kop en het bestaande menu. Daarna de tegels `.mob`: Mijn huis (`photo.image`, met zon/huis/net en de stromende bolletjes `.mcon`) en twee meters (`.mgauges`: Opwekking nu tot `max_power`, Opgewekt vandaag tot de verwachting of anders de beste dag). Bijgewerkt in `_updMob`.
+- De grafiek Vermogen vandaag (`.tday`) en de panelen (`.tpan`) zijn de computerversies; de panelen krijgen op de telefoon gelijke kolommen (`--gc` = meeste omvormers per dakkant).
+- Verborgen op de telefoon: de foto-, meter-, energiestroom- en 30-dagentegel. Tik op het huis zet `.mphoto` op `.wrap`: de fototegel verschijnt als venster.
+
 **localStorage-sleutels** (allemaal met try/catch):
 
 | Sleutel | Waarvoor |

@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v219**.*
+*Bijgewerkt: 5 november 2026, versie **v220**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v219** (telefoon: vegen tussen de tabbladen, tik op het actieve tabblad = naar boven). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v220** (telefoon: nieuwe indeling van de pagina Nu). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v219.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v220.
 
 ## Gerealiseerde functies (per tab)
 
@@ -88,6 +88,7 @@
 | v217 | Telefoon, afvalkaart: label VANDAAG/MORGEN vervangen door bolletje + "Vandaag" (zacht amber) / "Morgen" (zacht blauw). Kopje Afval met het groene recycle-icoon uit `RIC`. Computer ongewijzigd. |
 | v218 | Nieuw recycle-icoon in de gevouwen vorm van het officiële symbool (brede banden, ronde vouwen, donkerder groene vouw). Bolletje Vandaag/Morgen met zachte gloed in de eigen kleur, zoals het online-bolletje van de laadpaal; de onbedoelde groene gloed van `.dot` is weg. |
 | v219 | Telefoon: horizontaal vegen = vorig/volgend tabblad (linkerrand 30 px blijft voor het HA-menu; op Thuis naar rechts doet niets; op Auto naar rechts = Thuis). Vegen over pillenrijen, camera, wegveegbare kaarten, schuiven, grafieken en vensters telt niet. Tik op het actieve tabblad = terug naar boven. |
+| v220 | Telefoon, pagina Nu: tegel Mijn huis (eigen huisfoto, zon/huis/net met stromende bolletjes: amber zon→huis, groen huis→net, blauw net→huis), twee meters Opwekking nu (W, tot `max_power`) en Opgewekt vandaag (kWh, tot de verwachting), dezelfde grafiek en panelen als op de computer (alle panelen even groot). Tik op het huis = foto met panelen als venster. Oude tegels (foto, grote meter, energiestroom, 30 dagen) verborgen op de telefoon. Computer pixelgelijk. |
 
 ## Volgende stappen
 
@@ -96,7 +97,7 @@
 ## Open ideeën (uitgesteld, alleen na een mockup en akkoord)
 
 - **Energie-pagina vernieuwen.** Het laatste concept: een keuze Dag/Week/Maand/Jaar met chips Stroom/Gas/Water en een gasgrafiek.
-- **Rustige stijl ook voor Nu, Energie en Auto** op de telefoon.
+- **Rustige stijl ook voor Energie en Auto** op de telefoon (Nu is vernieuwd in v220).
 - **Lichte weergave.** De mockup is gemaakt. Het advies is donker te blijven, eventueel automatisch wisselend.
 - Een balk "Geen verbinding" als HA niet bereikbaar is.
 - Minder beweging, voor `prefers-reduced-motion` en iOS.

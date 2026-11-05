@@ -184,7 +184,7 @@ return {
 })();
 const RIC_SYMS = RIC.grads + [
   ['gDrop', 'drop'], ['gFlame', 'flame'], ['gBolt', 'bolt'], ['gSun', 'sun'], ['gPlug', 'plug'], ['gGauge', 'gauge'], ['gHouse', 'house'], ['gPylon', 'pylon'], ['gPylonX', 'pylon', 'green'],
-  ['gWash', 'washer', 'on', 0], ['gCal', 'cal'], ['gRooms', 'sofaP'], ['gLeaf', 'leaf'], ['gClock', 'clock'], ['gMoon', 'moon'], ['gBulbOn', 'bulb'], ['gBulbOff', 'bulb', 'off'], ['gTherm', 'therm', 'green'],
+  ['gWash', 'washer', 'on', 0], ['gCal', 'cal'], ['gRooms', 'sofaP'], ['gLeaf', 'leaf'], ['gClock', 'clock'], ['gMoon', 'moon'], ['gBulbOn', 'bulb'], ['gBulbOff', 'bulb', 'off'], ['gTherm', 'therm', 'green'], ['gSolarP', 'solar'],
   ['wSunny', 'sun'], ['wPartly', 'partly'], ['wCloud', 'cloud'], ['wRain', 'rain'], ['wSnow', 'snow'], ['wHail', 'hail'], ['wWind', 'wind'], ['wStorm', 'storm'], ['wStormW', 'storm'], ['wFog', 'fog'], ['wNight', 'moon'],
   ['binGft', 'bin', 'green'], ['binPap', 'bin', 'blue'], ['binPmd', 'bin', 'orange'], ['binRst', 'bin', 'gray'],
 ].map(([id, n, t = 'on', ...a]) => RIC.sym(id, n, t, ...a)).join('');
@@ -538,6 +538,48 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .invfoot { font-size: 11px; } .invfoot b, .invfoot .t { white-space: nowrap; } .invfoot .tb { display: none; }
   .big { font-size: 54px; }
 }
+/* Nu-pagina op de telefoon: mijn huis, twee meters, grafiek en panelen (computer ongewijzigd) */
+.znu .mob { display: none; }
+@media (max-width: 600px) {
+  .znu .grid { display: flex; flex-direction: column; gap: 10px; }
+  .znu .tile.photo, .znu .tile.hero, .znu .tile.flow, .znu .tile.tdays { display: none; }
+  .znu .mob { display: block; }
+  .znu .tile { padding: 12px 14px; }
+  .znu .th { margin-bottom: 8px; flex-wrap: nowrap; align-items: center; }
+  .znu .th .label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
+  .znu .th .aside { font-size: 12px; text-align: right; }
+  .znu .mhg { display: grid; grid-template-columns: minmax(0, 1fr) 1px 132px; gap: 12px; align-items: center; }
+  .znu .mimg { cursor: pointer; } .znu .mimg img { display: block; width: 100%; max-height: 190px; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .znu .msep { align-self: stretch; background: rgba(130,170,255,.12); margin: 6px 0; }
+  .znu .mvals { display: flex; flex-direction: column; }
+  .znu .mv { display: flex; align-items: center; gap: 10px; cursor: pointer; } .znu .mv > svg { width: 28px; height: 28px; flex: none; }
+  .znu .mv b { display: block; font-size: 18px; font-weight: 700; line-height: 1.15; } .znu .mv b small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+  .znu .mv span { display: block; font-size: 11.5px; color: var(--muted); }
+  /* stromende bolletjes tussen de iconen; omhoog als er stroom van het net komt */
+  .znu .mcon { display: block; width: 28px; height: 22px; margin: 2px 0;
+    background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) center 0 / 6px 7px repeat-y; opacity: .25; }
+  .znu .mcon.on { opacity: 1; animation: mflow 1s linear infinite; }
+  .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: #7aa7ff; } .znu .mcon.rev { animation-direction: reverse; }
+  @keyframes mflow { to { background-position: center 7px; } }
+  .znu .mgauges { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .znu .mgt { cursor: pointer; } .znu .mgh { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; } .znu .mgh svg { width: 20px; height: 20px; }
+  .znu .mgs { display: block; width: 100%; max-width: 150px; margin: 6px auto 0; overflow: visible; }
+  .znu .mgs .track { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 16; stroke-linecap: round; }
+  .znu .mgs .val { fill: none; stroke-width: 16; stroke-linecap: round; transition: stroke-dasharray .8s; } .znu #mg1 { stroke: url(#mgo); } .znu #mg2 { stroke: url(#mgg); }
+  .znu .mknob { fill: #fff; stroke: #ff7a2e; stroke-width: 3; } .znu .mk2 { stroke: #3ddc97; }
+  .znu .mgv { fill: var(--text); font-size: 34px; font-weight: 700; letter-spacing: -1px; } .znu .mgu { fill: var(--muted); font-size: 16px; font-weight: 500; letter-spacing: 0; }
+  .znu .mgs .gtick { fill: #6f7888; font-size: 15px; }
+  .znu .sides { gap: 14px; }
+  .znu .side h3 { margin-bottom: 8px; font-size: 13px; }
+  .znu .groups { grid-template-columns: repeat(var(--gc), minmax(0, 1fr)) !important; gap: 6px; }
+  .znu .inv { padding: 5px; border-radius: 12px; } .znu .pair { gap: 5px; }
+  .znu .pw { font-size: 13px; bottom: 6px; } .znu .pn { font-size: 10px; top: 4px; left: 6px; } .znu .dev { font-size: 9px; padding: 1px 5px; top: 4px; right: 4px; }
+  .znu .invfoot { font-size: 9.5px; margin-top: 6px; gap: 3px; padding: 0 1px; }
+  .znu .alert { padding: 9px 11px; font-size: 12px; margin-bottom: 12px; }
+  /* tik op het huis: de foto met de panelen als venster over de pagina */
+  .znu.mphoto .tile.photo { display: flex; position: fixed; left: 10px; right: 10px; top: 70px; z-index: 40; max-height: calc(100vh - 160px); overflow: auto;
+    box-shadow: 0 0 0 100vmax rgba(4,7,12,.72), 0 30px 60px rgba(0,0,0,.6); }
+}
 `;
 
 class ZonnepanelenCard extends HTMLElement {
@@ -626,10 +668,37 @@ class ZonnepanelenCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${STYLE}</style>
       ${GLOSSY}
-      <div class="wrap"><div class="inner">
+      <div class="wrap znu"><div class="inner">
         ${headerHtml('nu')}
 
-        <div class="grid">
+        <div class="grid" style="--gc:${Math.max(1, ...Object.values(sides).map((x) => x.length))}">
+          <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
+          <div class="tile mob mhome">
+            <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
+            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.image}" alt=""></div><div class="msep"></div>
+              <div class="mvals">
+                <div class="mv" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span>Zonnepanelen</span></div></div>
+                <i class="mcon" id="mc1"></i>
+                <div class="mv"><svg viewBox="0 0 100 100"><use href="#gHouse"/></svg><div><b class="num" id="mHomeW">—</b><span>Huisverbruik</span></div></div>
+                <i class="mcon" id="mc2"></i>
+                <div class="mv"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><svg viewBox="0 0 100 100"><use id="mGridIc" href="#gPylon"/></svg><div><b class="num" id="mGrid">—</b><span id="mGridL">Net</span></div></div>
+              </div></div>
+          </div>
+          <div class="mob mgauges">
+            ${[['1', 'Opwekking nu', 'gSun', c.solar_power, 'mgo'], ['2', 'Opgewekt vandaag', 'gSolarP', c.solar_today, 'mgg']].map(([k, t, ic, e, g]) => `
+            <div class="tile mgt" data-e="${e}"><div class="mgh"><svg viewBox="0 0 100 100"><use href="#${ic}"/></svg>${t}</div>
+              <svg class="mgs" viewBox="0 0 200 172">
+                <path class="track" d="${arc}" pathLength="100"/>
+                <path class="val" id="mg${k}" d="${arc}" pathLength="100" stroke="url(#${g})" stroke-dasharray="0 100"/>
+                <circle class="mknob mk${k}" id="mk${k}" r="5.5" cx="30.72" cy="140"/>
+                <text class="mgv num" x="100" y="110" text-anchor="middle" id="mv${k}">—</text>
+                <text class="gtick" x="30" y="166" text-anchor="middle">0</text><text class="gtick" x="170" y="166" text-anchor="middle" id="mm${k}"></text>
+              </svg></div>`).join('')}
+            <svg width="0" height="0" style="position:absolute"><defs>
+              <linearGradient id="mgo" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="180" y2="0"><stop offset="0" stop-color="#ff5a2a"/><stop offset=".55" stop-color="#ffb547"/><stop offset="1" stop-color="#ffe27a"/></linearGradient>
+              <linearGradient id="mgg" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="180" y2="0"><stop offset="0" stop-color="#169c55"/><stop offset=".55" stop-color="#2fcf75"/><stop offset="1" stop-color="#7cf0a8"/></linearGradient></defs></svg>
+          </div>
+
           <div class="tile photo s4">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="frontSum"></span></div>
             <div class="scene" id="scene">
@@ -702,17 +771,17 @@ class ZonnepanelenCard extends HTMLElement {
             </div>
           </div>
 
-          <div class="tile s8">
+          <div class="tile s8 tday">
             <div class="th"><span class="label">Vermogen vandaag</span><span class="aside" id="peak"></span></div>
             <div class="chart" id="chartToday"></div>
           </div>
 
-          <div class="tile s4">
+          <div class="tile s4 tdays">
             <div class="th"><span class="label">Laatste ${c.days} dagen</span><span class="aside" id="sum"></span></div>
             <div class="chart" id="chartDays"></div>
           </div>
 
-          <div class="tile s12">
+          <div class="tile s12 tpan">
             <div class="th"><span class="label">Panelen &amp; omvormers</span><span class="aside" id="panelsNote"></span></div>
             <div class="alert" id="alert" hidden></div>
             <div class="sides">${sidesHtml}</div>
@@ -743,6 +812,10 @@ class ZonnepanelenCard extends HTMLElement {
       ptip.classList.add('on');
     });
     psvg.addEventListener('pointerleave', () => ptip.classList.remove('on'));
+    // telefoon: tik op het huis = foto met de panelen als venster; tik ernaast = sluiten
+    const wrap = this.shadowRoot.querySelector('.wrap');
+    this.$('mImg').addEventListener('click', () => wrap.classList.add('mphoto'));
+    this.shadowRoot.querySelector('.tile.photo').addEventListener('click', (e) => { if (wrap.classList.contains('mphoto') && !e.target.closest('[data-e], [data-n]')) wrap.classList.remove('mphoto'); });
   }
 
   /* ---------- live values ---------- */
@@ -938,6 +1011,33 @@ class ZonnepanelenCard extends HTMLElement {
     }
     set('panelsNote', `${count || n * 2} panelen · ${n} omvormers${temps.length ? ` · ${fmt(Math.min(...temps))}–${fmt(Math.max(...temps))} °C` : ''}`);
     set('peakCap', `${n * 2} panelen`);
+    this._updMob(pv, grid, home, today, fc, best, speed);
+  }
+
+  // telefoon: mijn huis (zon, huis, net met stromende bolletjes) en de meters Opwekking nu / Opgewekt vandaag
+  _updMob(pv, grid, home, today, fc, best, speed) {
+    const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
+    const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
+    set('mSt', this.$('frontSum').innerHTML);
+    set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
+    const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
+    set('mGridL', exporting ? 'Teruglevering' : importing ? 'Van het net' : 'Net');
+    this.$('mGridIc').setAttribute('href', exporting ? '#gPylonX' : '#gPylon');
+    const m1 = this.$('mc1'), m2 = this.$('mc2');
+    m1.classList.toggle('on', pv > 5); m1.style.animationDuration = speed(pv || 0);
+    m2.classList.toggle('on', exporting || importing); m2.classList.toggle('rev', importing); m2.classList.toggle('imp', importing);
+    m2.style.animationDuration = speed(Math.abs(grid || 0));
+    const gauge = (k, r, v, max) => {
+      r = clamp(r || 0, 0, 1);
+      this.$(`mg${k}`).setAttribute('stroke-dasharray', `${(r * 100).toFixed(2)} 100`);
+      const a = ((150 + 240 * r) * Math.PI) / 180;
+      this.$(`mk${k}`).setAttribute('cx', (100 + 80 * Math.cos(a)).toFixed(2));
+      this.$(`mk${k}`).setAttribute('cy', (100 + 80 * Math.sin(a)).toFixed(2));
+      set(`mv${k}`, v); set(`mm${k}`, max);
+    };
+    gauge('1', (pv || 0) / c.max_power, pv == null ? '—' : `${fmt(pv)}<tspan class="mgu" dx="5">W</tspan>`, fmt(c.max_power));
+    const dmax = fc.today > 0 ? fc.today : best?.v > 0 ? best.v : null;
+    gauge('2', dmax ? (today || 0) / dmax : 0, today == null ? '—' : `${fmt(today, 1)}<tspan class="mgu" dx="5">kWh</tspan>`, dmax ? fmt(dmax, 1) : '');
   }
 
   /* ---------- advies ---------- */
@@ -1317,7 +1417,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '219';
+const CARD_VERSION = '220';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
