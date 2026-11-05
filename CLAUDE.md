@@ -176,6 +176,7 @@ Verdere regels:
 - v221: de 30-dagentegel (`.tdays`) heet op de telefoon "Opbrengst" en heeft de keuze Week/Maand/Jaar (`#dseg`, `this._rng`; jaar via `_monthValues`/`_fetchYear`). Op de computer blijft het altijd 30 dagen. Opgewekt vandaag loopt tot 20 kWh.
 - v221: panelen op de telefoon als raster 5×2 (`.mpanels`, `[data-mp]`), dat in `_updMob` de computerpanelen kopieert (kleur, waarde, −%-label). `Omvormers ›` (`#mInv`) zet `.mdet` op `.wrap` en toont dan `.sides`.
 - Tekst die alleen op de telefoon of alleen op de computer hoort: `.ml` (telefoon) en `.dl` (computer).
+- v224 (telefoon): `_drawToday` toont alleen het deel van de dag met zon (eerste opbrengst/verwachting − 1 uur tot laatste, nu of einde verwachting); de verwachting per uur staat in het midden van het uur en stopt een half uur na het laatste uur met zon. `_drawDays` gebruikt een strakkere schaal (4 × een ronde stap). Op de computer niets veranderd.
 - v223 (telefoon): `Omvormers` toont rechts `#mIst` met het aantal online (`inverters_online`): groen alles, oranje een deel, rood geen, grijs "In rust" als `sun` onder is. Zonder die sensor blijft het pijltje staan.
 - v222 (telefoon): gele grafiek heet "Vandaag" en toont geen piek (`.pkinfo` verborgen); Opbrengst zonder gemiddeldelijn; bij Week staat de opbrengst boven elke staaf (`.bv`).
 
