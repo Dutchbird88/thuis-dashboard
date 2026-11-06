@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v259**.*
+*Bijgewerkt: 5 november 2026, versie **v260**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v259** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v260** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v259.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v260.
 
 ## Gerealiseerde functies (per tab)
 
@@ -128,6 +128,7 @@
 | v257 | Picnic: live aankomst (`sensor.picnic_estimated_arrival_of_next_delivery`, of een Picnic-sensor met "estimated_arrival"/"arrival", of `picnic: { live: … }`). Tijdstip of minuten; toont "Onderweg · nog X min" (binnen 30 min), "elk moment" als hij er bijna/al is. Zonder die sensor zoals v256. |
 | v258 | Picnic: na bezorgen (`last_order_delivery_time` hoort bij dit tijdvak) "Picnic is bezorgd · 18:52 · Bezorgd x min geleden", na 15 min weg. Eerst bleef de kaart staan tot het einde van het tijdvak. |
 | v259 | Picnic "bezorgd" robuuster: Picnic-sensoren ook op entiteitnaam (als de vertaalsleutel ontbreekt), en bezorgd ook als `last_order_status` afgerond is en `last_order_slot_start` gelijk aan het tijdslot van vandaag. Na bezorgen springt het live tijdvak terug naar het tijdslot; dat gaf weer "Onderweg". |
+| v260 | Kamers: opzij vegen over een hele verlichte kaart regelt de helderheid (vanaf de huidige stand, zoals Hue/Woning); op de balk beginnen = absolute stand. Op en neer = scrollen, tikken = kamer. Verlichte kaart heeft `touch-action: pan-y`, dus de tabbladwissel slaat hem over (de dunne balk was te lastig te raken en gaf een tabbladwissel). |
 
 ## Volgende stappen
 

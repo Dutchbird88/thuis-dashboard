@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '259';
+const CARD_VERSION = '260';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4049,7 +4049,7 @@ const HPSTYLE = `
   .kspills .ksp.hpp { display: flex; }
   /* helderheid per kamer (v254): schuif in de kaart, alleen als het licht aan is */
   /* v256 (variant B): schuif als dunne lichtbalk langs de onderrand; de kaart blijft even hoog (76 px) */
-  .kr.sl { overflow: hidden; }
+  .kr.sl { overflow: hidden; touch-action: pan-y; }
   .kr .ksl { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; touch-action: none; cursor: pointer; }
   .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(0,0,0,.28); transition: height .15s; }
   .kr .ksl i { position: absolute; left: 0; bottom: 0; height: 5px; border-radius: 0 3px 3px 0; background: linear-gradient(90deg, rgba(255,214,150,.15), rgba(255,226,180,.75)); transition: height .15s; }
@@ -6243,23 +6243,51 @@ class ThuisCard extends HTMLElement {
   }
   // helderheid van een hele kamer: slepen toont direct, bij loslaten één opdracht (helemaal links = uit)
   _bindRoomSlider(sl) {
-    const i = +sl.dataset.i, put = (v) => { sl.firstChild.style.width = `${v}%`; sl.lastChild.style.left = `${Math.max(v, 2)}%`; sl.setAttribute('aria-valuenow', v); };
-    const at = (e) => { const r = sl.getBoundingClientRect(); return Math.round(clamp((e.clientX - r.left) / (r.width || 1), 0, 1) * 100); };
-    let v = null;
-    sl.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); sl.setPointerCapture(e.pointerId); this._kslDrag = true; sl.classList.add('drag'); v = at(e); put(v); });
-    sl.addEventListener('pointermove', (e) => { if (v == null) return; v = at(e); put(v); });
-    const end = (e) => {
-      if (v == null) return; e?.stopPropagation(); sl.classList.remove('drag'); this._kslDrag = false;
-      const rm = this._rooms()[i], val = v; v = null; if (!rm) return;
+    const i = +sl.dataset.i, card = sl.closest('.kr');
+    const put = (v) => { sl.firstChild.style.width = `${v}%`; sl.lastChild.style.left = `${Math.max(v, 2)}%`; sl.setAttribute('aria-valuenow', v); };
+    const send = (val) => {
+      const rm = this._rooms()[i]; if (!rm) return;
       const ids = rm.lights.map((x) => x.entity_id), on = rm.lights.filter((x) => x.state === 'on').map((x) => x.entity_id);
       if (val <= 1) { this._kOpt = { ...(this._kOpt || {}), [i]: false }; this._hass.callService('light', 'turn_off', { entity_id: ids }); }
       else { this._kBri = { ...(this._kBri || {}), [i]: { v: val, t: Date.now() } }; this._hass.callService('light', 'turn_on', { entity_id: on.length ? on : ids, brightness_pct: val }); }
       clearTimeout(this._kOptT); this._kOptT = setTimeout(() => { this._kOpt = null; this._rmListKey = null; this._updRooms(); }, 6000);
       this._rmListKey = null; this._updRooms();
     };
+    // 1. direct op de balk: de plek van je vinger is de helderheid
+    const at = (e) => { const r = sl.getBoundingClientRect(); return Math.round(clamp((e.clientX - r.left) / (r.width || 1), 0, 1) * 100); };
+    let v = null;
+    sl.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') return; e.preventDefault(); e.stopPropagation(); sl.setPointerCapture(e.pointerId); this._kslDrag = true; sl.classList.add('drag'); v = at(e); put(v); });
+    sl.addEventListener('pointermove', (e) => { if (v == null || e.pointerType === 'touch') return; v = at(e); put(v); });
+    const end = (e) => { if (v == null) return; e?.stopPropagation(); sl.classList.remove('drag'); this._kslDrag = false; const val = v; v = null; send(val); };
     sl.addEventListener('pointerup', end); sl.addEventListener('pointercancel', end);
     sl.addEventListener('click', (e) => e.stopPropagation());
-    sl.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    // 2. telefoon (v260): opzij vegen over de hele verlichte kaart = helderheid, vanaf de huidige stand (zoals Hue en Woning);
+    //    op en neer = scrollen, tikken = kamer openen. De kaart heeft touch-action pan-y, dus het wisselen van tabblad slaat hem over.
+    if (!card || card._kslTouch) return; card._kslTouch = true;
+    let t0 = null;
+    card.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1 || e.target.closest('.ksw')) { t0 = null; return; }
+      const fromBar = !!e.target.closest('.ksl'), w = card.getBoundingClientRect().width || 1;
+      t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, v0: +sl.getAttribute('aria-valuenow') || 0, w, on: false, bar: fromBar };
+      if (fromBar) { t0.on = true; this._kslDrag = true; sl.classList.add('drag'); t0.v = at(e.touches[0]); put(t0.v); }
+    }, { passive: true });
+    card.addEventListener('touchmove', (e) => {
+      if (!t0) return; const dx = e.touches[0].clientX - t0.x, dy = e.touches[0].clientY - t0.y;
+      if (!t0.on) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { t0 = null; return; } // scrollen
+        if (Math.abs(dx) < 8) return;
+        t0.on = true; t0.x = e.touches[0].clientX; this._kslDrag = true; sl.classList.add('drag');
+      }
+      if (e.cancelable) e.preventDefault();
+      t0.v = t0.bar ? at(e.touches[0]) : Math.round(clamp(t0.v0 + (e.touches[0].clientX - t0.x) / t0.w * 100, 0, 100)); put(t0.v);
+    }, { passive: false });
+    const tEnd = (e) => {
+      const g = t0; t0 = null; if (!g || !g.on) return;
+      sl.classList.remove('drag'); this._kslDrag = false; card._kslNoClick = Date.now(); if (e.cancelable) e.preventDefault();
+      send(g.v ?? g.v0);
+    };
+    card.addEventListener('touchend', tEnd); card.addEventListener('touchcancel', () => { t0 = null; sl.classList.remove('drag'); this._kslDrag = false; });
+    card.addEventListener('click', (e) => { if (Date.now() - (card._kslNoClick || 0) < 500) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
   }
   _roomToggle(i) {
     const rm = this._rooms()[i]; if (!rm || !rm.lights.length) return;
