@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '257';
+const CARD_VERSION = '258';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5350,7 +5350,7 @@ class ThuisCard extends HTMLElement {
   _picnicIds() {
     if (this._picIds) return this._picIds;
     const ents = this._hass?.entities || {}, ids = {};
-    const want = { eta_s: 'next_delivery_eta_start', eta_e: 'next_delivery_eta_end', slot_s: 'next_delivery_slot_start', slot_e: 'next_delivery_slot_end' };
+    const want = { eta_s: 'next_delivery_eta_start', eta_e: 'next_delivery_eta_end', slot_s: 'next_delivery_slot_start', slot_e: 'next_delivery_slot_end', done: 'last_order_delivery_time' };
     for (const [k, tk] of Object.entries(want)) {
       const hit = Object.values(ents).find((e) => e.platform === 'picnic' && e.translation_key === tk);
       ids[k] = (this._config.picnic || {})[k] || hit?.entity_id || null;
@@ -5488,9 +5488,14 @@ class ThuisCard extends HTMLElement {
         .filter((x) => x.e > now && startOfDay(x.s) === day0).sort((a, b) => a.s - b.s)[0];
       if (ev) ({ s, e } = ev);
     }
-    const show = s != null && e != null && startOfDay(s) === day0 && now < e;
+    // al bezorgd (v258): moment van bezorgen van de laatste bestelling hoort bij dit tijdvak → "Bezorgd · 18:56", na 15 min weg
+    const dt = ts(ids.done), done = dt != null && s != null && dt >= s - 2 * HOUR && dt <= now + 60000 && startOfDay(dt) === day0;
+    const show = s != null && e != null && startOfDay(s) === day0 && (done ? now - dt < 15 * 60000 : now < e);
     let html = '';
-    if (show) {
+    if (show && done) {
+      const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
+      html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`;
+    } else if (show) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`);
       const busy = now >= s, pct = busy ? Math.min(100, Math.round((now - s) / (e - s) * 100)) : null;

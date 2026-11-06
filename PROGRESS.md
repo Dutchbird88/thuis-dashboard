@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v257**.*
+*Bijgewerkt: 5 november 2026, versie **v258**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v257** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v258** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v257.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v258.
 
 ## Gerealiseerde functies (per tab)
 
@@ -126,6 +126,7 @@
 | v255 | Kamerschuif in Hue-stijl (variant 1): dunne donkere balk, vulling van doorzichtig naar licht, kleine witte knop met schaduw. Kaartkleuren blijven zoals ze waren (gebruiker: rustiger dan Hue-kleuren). |
 | v256 | Kamerschuif als dunne lichtbalk langs de onderrand (variant B): kaart blijft 76 px, geen knop, balk wordt dikker tijdens slepen; aanraakvlak 22 px. Picnic: binnen het tijdvak "Onderweg · elk moment" in plaats van aftellen tot het einde van het tijdvak (HA krijgt geen live ETA van Picnic). |
 | v257 | Picnic: live aankomst (`sensor.picnic_estimated_arrival_of_next_delivery`, of een Picnic-sensor met "estimated_arrival"/"arrival", of `picnic: { live: … }`). Tijdstip of minuten; toont "Onderweg · nog X min" (binnen 30 min), "elk moment" als hij er bijna/al is. Zonder die sensor zoals v256. |
+| v258 | Picnic: na bezorgen (`last_order_delivery_time` hoort bij dit tijdvak) "Picnic is bezorgd · 18:52 · Bezorgd x min geleden", na 15 min weg. Eerst bleef de kaart staan tot het einde van het tijdvak. |
 
 ## Volgende stappen
 
