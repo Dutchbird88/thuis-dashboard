@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '260';
+const CARD_VERSION = '261';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4047,6 +4047,7 @@ const HPSTYLE = `
 #hpc, .ksp.hpp, .kr .ksl { display: none; }
 @media (max-width: 600px) {
   .kspills .ksp.hpp { display: flex; }
+  #kDate { display: none; } /* v261: geen datum onder Kamers op de telefoon */
   /* helderheid per kamer (v254): schuif in de kaart, alleen als het licht aan is */
   /* v256 (variant B): schuif als dunne lichtbalk langs de onderrand; de kaart blijft even hoog (76 px) */
   .kr.sl { overflow: hidden; touch-action: pan-y; }
