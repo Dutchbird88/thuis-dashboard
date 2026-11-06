@@ -78,6 +78,8 @@ Verdere regels:
 
 ### Gebruikte Home Assistant-API's
 
+- Hulpfuncties (v264): `dayAdd(t, n)` voor kalenderdagen (nooit `± DAY` voor daggrenzen, vanwege zomer-/wintertijd); `reEsc()` voor tekst in een `RegExp`; Energie vraagt statistieken op met `units: STAT_UNITS` en rekent live standen om met `toStatUnit`; `_devEnts(device_id)` voor entiteiten van een apparaat.
+
 - `hass.states`, en de registers `hass.areas`, `hass.floors`, `hass.entities` en `hass.devices` voor kamers en verdiepingen.
 - `hass.callService(domain, service, data, target, false)`. Het vijfde argument `false` onderdrukt de foutmeldingen van HA. Dat wordt bewust gebruikt bij de BYD-start.
 - WebSocket:

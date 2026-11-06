@@ -82,6 +82,7 @@ const relTime = (t) => { const m = (Date.now() - t) / 6e4; if (m < 1) return 'zo
   const d = new Date(t), now = new Date(), day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), dd = (day(now) - day(d)) / 864e5;
   return dd === 0 ? fmtTime(t) : dd === 1 ? `gisteren ${fmtTime(t)}` : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }); };
 const startOfDay = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const dayAdd = (t, n) => { const d = new Date(t); d.setDate(d.getDate() + n); return d.getTime(); }; // t + n kalenderdagen (23/25 uur rond zomer-/wintertijd)
 const ts = (v) => (typeof v === 'number' ? v : Date.parse(v));
 const niceMax = (v) => {
   v = v * 1.08;
@@ -1394,7 +1395,7 @@ class ZonnepanelenCard extends HTMLElement {
         }),
         this._hass.callWS({
           type: 'recorder/statistics_during_period',
-          start_time: new Date(day0 - (c.days - 1) * DAY).toISOString(),
+          start_time: new Date(dayAdd(day0, -(c.days - 1))).toISOString(),
           end_time: new Date(now).toISOString(),
           statistic_ids: [c.solar_today],
           period: 'day',
@@ -1501,7 +1502,7 @@ class ZonnepanelenCard extends HTMLElement {
     const live = this._power(this._config.solar_power);
     if (live != null) pts.push({ t: now, v: live, pk: live });
 
-    const fcPts = (this._fcPts || []).filter((p) => p.t >= day0 && p.t < day0 + DAY);
+    const fcPts = (this._fcPts || []).filter((p) => p.t >= day0 && p.t < dayAdd(day0, 1));
     const on = pts.concat(fcPts).filter((p) => p.v > 1).sort((a, b) => a.t - b.t);
     const phone = window.matchMedia('(max-width: 600px)').matches;
     let t0 = day0 + 6 * HOUR, t1 = day0 + 21 * HOUR;
@@ -1515,7 +1516,7 @@ class ZonnepanelenCard extends HTMLElement {
       t1 = Math.max(t1, day0 + Math.ceil((on[on.length - 1].t - day0) / HOUR) * HOUR);
     }
     t0 = Math.max(t0, day0);
-    t1 = Math.min(t1, day0 + DAY);
+    t1 = Math.min(t1, dayAdd(day0, 1));
     const vis = pts.filter((p) => p.t >= t0 && p.t <= t1);
     const fcVis = fcPts.filter((p) => p.t >= t0 && p.t <= t1);
     const ymax = niceMax(Math.max(200, ...vis.map((p) => p.v), ...fcVis.map((p) => p.v)));
@@ -1675,7 +1676,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '263';
+const CARD_VERSION = '264';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1746,6 +1747,9 @@ const VDEFAULTS = {
   fixed: { electricity_day: -0.121406, gas_day: 1.014447, export_year: 231 },
 };
 
+// Energie rekent in kWh, m³ en W: vraag de statistieken van HA in die eenheden op (ook als een meter Wh of liters geeft)
+const STAT_UNITS = { energy: 'kWh', volume: 'm³', power: 'W' };
+const toStatUnit = (v, u) => (v == null ? v : u === 'Wh' ? v / 1000 : u === 'MWh' ? v * 1000 : u === 'L' ? v / 1000 : u === 'kW' ? v * 1000 : v);
 const VSTYLE = `
 :host { --imp: #a855f7; --exp: #22d37f; --gas: #f0245a; --water: #38bdf8; }
 .vwrap { background: radial-gradient(900px 420px at 12% -8%, rgba(168,85,247,.08), transparent 65%), var(--bg); }
@@ -1864,7 +1868,7 @@ class VerbruikCard extends HTMLElement {
   _num(id) { const v = parseFloat(this._state(id)?.state); return isNaN(v) ? null : v; }
   // meterstand; valt de meter heel even weg, dan de laatst bekende stand gebruiken
   _meter(id) {
-    const v = this._num(id);
+    const v = toStatUnit(this._num(id), this._state(id)?.attributes?.unit_of_measurement);
     if (v != null) (this._lastCur ||= {})[id] = v;
     return v ?? this._lastCur?.[id] ?? null;
   }
@@ -1996,7 +2000,7 @@ class VerbruikCard extends HTMLElement {
       const res = await ws({
         type: 'recorder/statistics_during_period',
         start_time: new Date(start).toISOString(), end_time: new Date(now).toISOString(),
-        statistic_ids: ids, period: 'hour', types: ['change', 'state', 'mean', 'min', 'max'],
+        statistic_ids: ids, period: 'hour', types: ['change', 'state', 'mean', 'min', 'max'], units: STAT_UNITS,
       }, 20000);
       const h = {};
       // maximaal plausibel verbruik per uur; grotere sprongen zijn meterresets of herverbindingen
@@ -2013,7 +2017,7 @@ class VerbruikCard extends HTMLElement {
       const r5 = await ws({
         type: 'recorder/statistics_during_period',
         start_time: new Date(day0).toISOString(), end_time: new Date(now).toISOString(),
-        statistic_ids: ids5, period: '5minute', types: ['mean', 'change'],
+        statistic_ids: ids5, period: '5minute', types: ['mean', 'change'], units: STAT_UNITS,
       }, 20000);
       const cap5 = { [c.gas]: 0.5, [c.water]: 0.2 };
       this._m5 = Object.fromEntries(ids5.map((id) => [id, (r5[id] || []).map((r) => ({
@@ -2027,7 +2031,7 @@ class VerbruikCard extends HTMLElement {
       const rM = await ws({
         type: 'recorder/statistics_during_period',
         start_time: new Date(y0).toISOString(), end_time: new Date(now).toISOString(),
-        statistic_ids: idsM, period: 'month', types: ['change'],
+        statistic_ids: idsM, period: 'month', types: ['change'], units: STAT_UNITS,
       }, 20000);
       this._mon = Object.fromEntries(idsM.map((id) => [id, (rM[id] || []).map((r) => ({ t: ts(r.start), change: r.change }))]));
 
@@ -2112,7 +2116,7 @@ class VerbruikCard extends HTMLElement {
   _baseload() {
     const rows = this._h[this._config.power] || [], nights = [], day0 = startOfDay(Date.now());
     for (let d = 13; d >= 0; d--) {
-      const n0 = day0 - d * DAY;
+      const n0 = dayAdd(day0, -d);
       const v = rows.filter((r) => r.t >= n0 + HOUR && r.t < n0 + 5 * HOUR && r.min != null).map((r) => r.min);
       if (v.length) nights.push(Math.max(0, Math.min(...v)));
     }
@@ -2146,11 +2150,11 @@ class VerbruikCard extends HTMLElement {
     set('tNet', `${ar('var(--imp)', dImp, 1)}<span class="ar" style="color:var(--exp)">↑</span><span style="color:var(--exp)">${fmt(dExp, 1)}</span><small>kWh</small>`);
     set('tNetE', `${eur(eNet)}<span>netto ${fmt(Math.abs(dNet), 1)} kWh ${dNet < 0 ? 'teruggeleverd' : 'afgenomen'}</span>`);
     const eGas = pg != null ? dGas * pg : null;
-    const yGas = this._sum(c.gas, day0 - DAY, now - DAY, now);
+    const yGas = this._sum(c.gas, dayAdd(day0, -1), dayAdd(day0, -1) + (now - day0), now);
     set('tGas', `${ar('var(--gas)', dGas, 2)}<small>m³</small>`);
     set('tGasE', `${eur(eGas)}<span>gisteren ${fmt(yGas, 2)} m³</span>`);
     const eWat = pw != null ? dWat * pw : null;
-    const wd = this._dayStarts(14).slice(0, -1).map((t) => this._sum(c.water, t, t + DAY)).filter((v) => v > 0);
+    const wd = this._dayStarts(14).slice(0, -1).map((t) => this._sum(c.water, t, dayAdd(t, 1))).filter((v) => v > 0);
     set('tWat', `${ar('var(--water)', dWat * 1000, 0)}<small>L</small>`);
     set('tWatE', `${eur(eWat)}${wd.length ? `<span>gemiddeld ${fmt(wd.reduce((a, b) => a + b, 0) / wd.length * 1000)} L per dag</span>` : ''}`);
     set('upto', `t/m ${fmtTime(now)}`);
@@ -4896,7 +4900,7 @@ class ThuisCard extends HTMLElement {
     const pd = (d) => (d.dateTime ? Date.parse(d.dateTime) : new Date(...d.date.split('-').map((x, i) => (i === 1 ? x - 1 : +x))).getTime());
     const days = [];
     for (let i = 0; i < (this._mq?.matches ? 3 : 7); i++) { // telefoon: vandaag t/m overmorgen
-      const a = day0 + i * DAY, b = a + DAY;
+      const a = dayAdd(day0, i), b = dayAdd(day0, i + 1);
       const evs = this._events.map((e) => ({ e, s: pd(e.start), t: pd(e.end), all: !e.start.dateTime }))
         // meerdaagse afspraken alleen op de eerste dag die we tonen
         .filter((x) => x.s < b && x.t > a && (x.s >= a || i === 0))
@@ -4908,7 +4912,7 @@ class ThuisCard extends HTMLElement {
     const icons = this._config.agenda_icons || [], evIcon = (t) => { const tl = String(t || '').toLowerCase(), m = icons.find((x) => [].concat(x.match).some((w) => tl.includes(String(w).toLowerCase()))); return m ? `<img class="eimg" src="${m.image}" alt="">` : ''; };
     const esc = (t) => String(t || '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
     const html = '<div class="th"><span class="label">Agenda</span></div><div class="agl">' + (days.length ? days.map(({ i, a, evs }) => `<div class="sec">${name(i, a)}</div>` + evs.map(({ e, s, t, all }) =>
-      `<div class="ev" data-e="${e.cal.entity}" style="--c:${e.cal.color}"><i></i><div><b>${esc(e.summary)}</b>${all ? (t - s > DAY ? `<span>t/m ${new Date(t - 1).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '')}</span>` : '') : `<span>${fmtTime(s)} – ${fmtTime(t)}${e.location ? ` · ${esc(e.location.split(',')[0])}` : ''}</span>`}</div>${evIcon(e.summary)}</div>`).join('')).join('')
+      `<div class="ev" data-e="${e.cal.entity}" style="--c:${e.cal.color}"><i></i><div><b>${esc(e.summary)}</b>${all ? (Math.round((startOfDay(t) - startOfDay(s)) / DAY) > 1 ? `<span>t/m ${new Date(t - 1).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '')}</span>` : '') : `<span>${fmtTime(s)} – ${fmtTime(t)}${e.location ? ` · ${esc(e.location.split(',')[0])}` : ''}</span>`}</div>${evIcon(e.summary)}</div>`).join('')).join('')
       : '<div class="none">Geen afspraken de komende week</div>') + '</div>';
     if (html === this._agKey) return;
     this._agKey = html;
@@ -5814,7 +5818,7 @@ class ThuisCard extends HTMLElement {
     const [hist, whist, alog] = await Promise.all([
       this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${id}&${endQ}`).catch(() => []),
       wx ? this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${wx}&${endQ}&significant_changes_only=0`).catch(() => []) : [],
-      autos.length ? this._hass.callApi('GET', `logbook/${new Date(now - 3 * DAY).toISOString()}?entity=${autos.join(',')}&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []) : [],
+      Promise.all(Array.from({ length: Math.ceil(autos.length / 40) }, (_, i) => autos.slice(i * 40, i * 40 + 40)).map((part) => this._hass.callApi('GET', `logbook/${new Date(now - 3 * DAY).toISOString()}?entity=${part.join(',')}&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []))).then((r) => r.flat()),
     ]);
     if (this._sheet !== 'th' || !this._cvHist) return;
     const first = (h) => (Array.isArray(h) && Array.isArray(h[0]) ? h[0] : []);
@@ -6103,7 +6107,9 @@ class ThuisCard extends HTMLElement {
     const box = this.$('shWx');
     if (!box || html === this._shKey) return;
     const radOpen = this.$('shRad') && !this.$('shRad').hidden;
+    const keep = radOpen && this.$('shRad').querySelector('iframe')?.src ? this.$('shRad') : null; if (keep) keep.remove();
     this._shKey = html; box.innerHTML = html;
+    if (keep) this.$('shRad').replaceWith(keep);
     box.querySelector('.shx').addEventListener('click', () => this._closeSheet());
     const openRad = () => {
       const r = this.$('shRad'), f = r.querySelector('iframe'), k = r.offsetWidth / 550;
@@ -6219,7 +6225,7 @@ class ThuisCard extends HTMLElement {
         const kind = isS ? 'smoke' : SENS_KIND[dc] || 'motion', K = SENS_TXT[kind], dev = E[x.entity_id]?.device_id;
         // rookmelder: één regel per apparaat (rook + koolmonoxide samen)
         if (kind === 'smoke' && dev) { if (seenDev.has(dev)) return null; seenDev.add(dev); }
-        const sibs = dev ? Object.keys(E).filter((k) => k !== x.entity_id && E[k].device_id === dev && S[k]) : [];
+        const sibs = dev ? this._devEnts(dev).filter((k) => k !== x.entity_id && S[k]) : [];
         const sibK = (cls, re) => sibs.find((k) => k.startsWith('sensor.') && (S[k].attributes.device_class === cls || (re && re.test(k))));
         const sib = (cls, re) => { const k = sibK(cls, re); const v = k ? parseFloat(S[k].state) : NaN; return isNaN(v) ? null : v; };
         const bat = sib('battery', /_(batterij|batterijniveau|battery|battery_level)$/), lux = sib('illuminance'), luxId = sibK('illuminance'), tmp = sib('temperature'), t = Date.parse(x.last_changed) || 0;
@@ -6242,7 +6248,7 @@ class ThuisCard extends HTMLElement {
       const NM = { was: ['Wasmachine', 'washer', cf.washer], dish: ['Vaatwasser', 'dish', `sensor.${cf.dishwasher}_status`], oven: ['Oven', 'ovenX', `sensor.${cf.oven}_status`], evc: ['Laadpaal', 'car', cf.car_charging] };
       const offApps = (r.apps || []).filter((k) => !apps.some((a) => a.k === k) && NM[k] && S[NM[k][2]]).map((k) => ({ k, id: NM[k][2], nm: NM[k][0], ic: NM[k][1], txt: 'Stand-by' }));
       const plugs = (r.plugs || []).map(st).filter((x) => x && x.state !== 'unavailable').map((x) => {
-        const d = E[x.entity_id]?.device_id, dv = this._hass.devices?.[d] || {}, pid = d && Object.keys(E).find((k) => E[k].device_id === d && S[k]?.attributes.device_class === 'power');
+        const d = E[x.entity_id]?.device_id, dv = this._hass.devices?.[d] || {}, pid = d && this._devEnts(d).find((k) => S[k]?.attributes.device_class === 'power');
         const w = pid ? parseFloat(S[pid].state) : NaN;
         return { id: x.entity_id, on: x.state === 'on', w: isNaN(w) ? null : w, nm: dv.name_by_user || this._nm(x) || dv.name || x.entity_id };
       });
@@ -6250,7 +6256,7 @@ class ThuisCard extends HTMLElement {
       const KIND = [[/persoon|person/, 'Persoon'], [/voertuig|vehicle/, 'Auto'], [/animal|dier/, 'Dier'], [/_deurbel$|doorbell|_ring$/, 'Aangebeld'], [/beweging|motion/, 'Beweging']];
       const cams = (r.cams || []).filter((id) => S[id]).map((id) => {
         const d = E[id]?.device_id, dv = this._hass.devices?.[d] || {};
-        const det = Object.keys(E).filter((k) => k.startsWith('binary_sensor.') && E[k].device_id === d && S[k] && !['unavailable', 'unknown'].includes(S[k].state))
+        const det = this._devEnts(d).filter((k) => k.startsWith('binary_sensor.') && S[k] && !['unavailable', 'unknown'].includes(S[k].state))
           .map((k) => { const m = KIND.find(([re]) => re.test(k)); return m ? { k, lb: m[1], on: S[k].state === 'on', t: Date.parse(S[k].last_changed) || 0, pr: KIND.indexOf(m) } : null; }).filter(Boolean);
         const cur = det.filter((x) => x.on).sort((p, q) => p.pr - q.pr)[0];
         const last = det.sort((p, q) => (q.t - p.t) || (p.pr - q.pr))[0];
@@ -6307,6 +6313,12 @@ class ThuisCard extends HTMLElement {
     };
     card.addEventListener('touchend', tEnd); card.addEventListener('touchcancel', () => { t0 = null; sl.classList.remove('drag'); this._kslDrag = false; });
     card.addEventListener('click', (e) => { if (Date.now() - (card._kslNoClick || 0) < 500) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  }
+  // entiteiten per apparaat, één keer opgebouwd per versie van het register
+  _devEnts(dev) {
+    const E = this._hass?.entities || {};
+    if (this._devIdxRef !== E) { this._devIdxRef = E; const ix = this._devIdx = {}; for (const k in E) { const d = E[k].device_id; if (d) (ix[d] ||= []).push(k); } }
+    return (dev && this._devIdx[dev]) || [];
   }
   _roomToggle(i) {
     const rm = this._rooms()[i]; if (!rm || !rm.lights.length) return;
