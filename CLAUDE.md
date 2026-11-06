@@ -103,7 +103,7 @@ Verdere regels:
 - `room_order` bepaalt de volgorde binnen een verdieping. `room_merge` voegt ruimtes samen.
 - Verdiepingen staan op naam gesorteerd: begane grond → eerste → tweede → zolder, en Buiten als laatste.
 - Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.
-- Helderheidsschuif (v254, telefoon): kamers met licht aan krijgen `.kr.sl` met `.ksl` (`role="slider"`, `touch-action: none`, dus geen tabbladwissel). `_bindRoomSlider`: slepen toont direct, loslaten stuurt `brightness_pct` naar de lampen die aan zijn (geen aan: alle), ≤ 1% = uit. `_kBri` houdt de ingestelde waarde 8 s vast; `_kslDrag` voorkomt opnieuw opbouwen tijdens slepen.
+- Helderheidsschuif (v254, telefoon): kamers met licht aan krijgen `.kr.sl` met `.ksl` (`role="slider"`, `touch-action: none`, dus geen tabbladwissel). `_bindRoomSlider`: slepen toont direct, loslaten stuurt `brightness_pct` naar de lampen die aan zijn (geen aan: alle), ≤ 1% = uit. `_kBri` houdt de ingestelde waarde 8 s vast; `_kslDrag` voorkomt opnieuw opbouwen tijdens slepen. Stijl (v255): zoals Hue (dunne donkere balk, verloop tot de knop, kleine witte knop). De kaartkleuren in Hue-stijl (goud of lampkleur) zijn getoond en afgewezen: de huidige kleuren zijn rustiger.
 
 **Kamerpaneel**
 

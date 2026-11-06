@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '254';
+const CARD_VERSION = '255';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4049,11 +4049,12 @@ const HPSTYLE = `
   .kspills .ksp.hpp { display: flex; }
   /* helderheid per kamer (v254): schuif in de kaart, alleen als het licht aan is */
   .kr.sl { height: auto; flex-wrap: wrap; padding: 13px 15px 14px; row-gap: 12px; }
-  .kr .ksl { display: block; flex-basis: 100%; height: 26px; margin: -2px 0 -4px; position: relative; touch-action: none; cursor: pointer; }
-  .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); }
-  .kr .ksl i { position: absolute; left: 0; top: 10px; height: 6px; border-radius: 99px; background: linear-gradient(90deg, rgba(255,207,122,.55), #ffcf7a); }
-  .kr .ksl b { position: absolute; top: 13px; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.45); transition: transform .15s; }
-  .kr .ksl.drag b { transform: scale(1.12); }
+  .kr .ksl { display: block; flex-basis: 100%; height: 26px; margin: -2px 0 -2px; position: relative; touch-action: none; cursor: pointer; }
+  /* v255: schuif in Hue-stijl — dunne donkere balk, vulling van doorzichtig naar licht, kleine witte knop */
+  .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; top: 9px; height: 8px; border-radius: 99px; background: rgba(0,0,0,.28); }
+  .kr .ksl i { position: absolute; left: 0; top: 9px; height: 8px; border-radius: 99px 0 0 99px; background: linear-gradient(90deg, rgba(255,214,150,.08), rgba(255,226,180,.6)); }
+  .kr .ksl b { position: absolute; top: 13px; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); transition: transform .15s; }
+  .kr .ksl.drag b { transform: scale(1.2); }
   :host([data-th=l]) .kr .ksl::before { background: rgba(60,60,67,.14); } :host([data-th=l]) .kr .ksl i { background: linear-gradient(90deg, #f5c26b, #e8890c); }
   /* muziektegel (v251, ontwerp A): op de plek van de afvaltegel, vage hoes als achtergrond */
   .mrow > #hpc:not([hidden]) { display: flex; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
