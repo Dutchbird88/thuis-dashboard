@@ -122,7 +122,7 @@ Verdere regels:
 **HomePod (mini)** (v248, alleen telefoon; stijl in `HPSTYLE`, achteraan in de `<style>` van Thuis)
 
 - `_isSpeaker(id)`: `speakers` uit de YAML, anders elke `media_player` met "homepod" in model, apparaatnaam of id (integratie Apple TV). `_speakers()` en `_hpInfo(id)` (titel, artiest, hoes via `entity_picture`/`hassUrl`, voortgang, volume, optimistische afspeelstand `_hpOpt`).
-- Thuis: `#hpc` (`.was.hp`, in `MOVE` na `pic`, wegvegen zoals Picnic met `dataset.sig` = titel). Alleen zichtbaar bij afspelen; na pauzeren met de kaartknop nog 2 min (`_hpKeep`, v250).
+- Thuis (v251): `#hpc` is een tegel (`.tile.mus`, ontwerp A met vage hoes) direct na `#mAf` in de `.mrow`; zolang hij zichtbaar is, krijgt `#mAf` de klasse `hpon` (verborgen, in `_applyHidden`). Luistersessie `_hpSes` (localStorage `thuis-muziek`): nieuwe sessie na > 2 min stilte. Zichtbaar bij afspelen en tot 2 min na pauze/stilte. Wegvegen (`_swipe`/`_hide`) met `dataset.sig` = start van de sessie: weg voor de hele sessie. De afvaltegel heeft bewust geen voorrang (gebruiker).
 - Kamers: `speakers` per ruimte in `_areaRooms`/`_rooms`; pil `.ksp.hpp` met `HPICON`, tik opent venster `hp` met `_roomBack`.
 - Venster `hp`: `_updHpSheet` (elke seconde via `_hpTimer`), knoppen `media_previous_track`/`media_play_pause`/`media_next_track`, volumeschuif `.hpsl` (uitgezonderd van vegen-sluiten).
 - Een HomePod komt vaak als twee mediaspelers binnen. `_spkDedupe` (v249) houdt per apparaatnaam één: die speelt, anders die de meeste mediagegevens heeft. Is het apparaat naar de kamer genoemd, dan toont de pil het model ("HomePod mini").
@@ -202,6 +202,7 @@ Verdere regels:
 | `thuis-laadstroom` | stroom vóór de pauze |
 | `thuis-auto-ververst` | wanneer de auto voor het laatst is ververst |
 | `thuis-vaat-klaar` | vaatwasser klaar |
+| `thuis-muziek` | luistersessie van de HomePod (start, einde, speler) |
 
 ### Iconen: `RIC` (stijl "Rounded")
 

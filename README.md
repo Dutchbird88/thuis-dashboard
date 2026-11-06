@@ -54,7 +54,7 @@ Zonder `theme` is de kaart donker. Wil je licht of automatisch, zet `theme` dan 
 
 Heb je een HomePod of HomePod mini in Home Assistant (via de integratie **Apple TV**), dan toont de app die vanzelf:
 
-- op Thuis een kaart "Nu speelt" zolang er muziek speelt (of kort gepauzeerd is), met albumhoes, titel en een pauzeknop;
+- op Thuis een muziektegel op de plek van de afvaltegel zolang er muziek speelt, met albumhoes, titel en een pauzeknop. Na 2 minuten pauze of stilte komt de afvaltegel terug. Veeg je de muziektegel weg, dan blijft hij weg tot je na een pauze opnieuw gaat luisteren;
 - in het kamervenster een pil voor de HomePod in die ruimte;
 - met een tik een venster met vorige, afspelen/pauzeren, volgende en het volume.
 

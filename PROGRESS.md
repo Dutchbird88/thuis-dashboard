@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v250**.*
+*Bijgewerkt: 5 november 2026, versie **v251**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v250** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v251** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v250.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v251.
 
 ## Gerealiseerde functies (per tab)
 
@@ -119,6 +119,7 @@
 | v248 | Telefoon: HomePod (mini). Automatisch herkend (`_isSpeaker`: model/naam "homepod", of `speakers:` in de YAML). Thuis: kaart "Nu speelt" (`#hpc`, `_updMedia`; ook kort gepauzeerd tot 30 min, wegvegen met handtekening id+titel). Kamervenster: pil `.ksp.hpp` (eerste pil, grijs bij niets). Venster `hp` (`_updHpSheet`, elke seconde): hoes, titel/artiest, voortgang, vorige/afspelen/volgende, volume (`volume_set` bij loslaten). Nieuw icoon `HPICON` (HomePod mini). Computer ongewijzigd. |
 | v249 | HomePod: elke HomePod kwam twee keer voor (twee mediaspelers per apparaat). `_spkDedupe` houdt per apparaatnaam één speler (die speelt, anders de meeste mediagegevens). Is de HomePod naar de kamer genoemd, dan heet de pil "HomePod mini" (het model). |
 | v250 | HomePod-kaart op Thuis alleen bij afspelen (gepauzeerd bleef hij staan); na pauzeren met de kaartknop nog 2 min (`_hpKeep`). Wegvegen onthoudt de titel, niet welke speler. Vensters: eerst de richting bepalen; opzij vegen (pillen, scènes) sluit het venster niet meer, sluiten pas bij een duidelijke beweging omlaag (>10 px en 1,5× meer omlaag dan opzij). |
+| v251 | Telefoon: muziek als tegel op de plek van de afvaltegel (ontwerp A: vage hoes als achtergrond, hoes, pauzeknop, titel, artiest · kamer, voortgang). Luistersessie (`_hpSes`, localStorage `thuis-muziek`): loopt door zolang de muziek niet langer dan 2 min stilstaat. Tegel zichtbaar bij afspelen en tot 2 min na pauze/stilte; wegvegen verbergt hem voor de hele sessie (handtekening = start van de sessie). Afvaltegel komt terug zodra de muziektegel weg of weggeveegd is (`#mAf.hpon`). Brede kaart "Nu speelt" vervalt. |
 
 ## Volgende stappen
 

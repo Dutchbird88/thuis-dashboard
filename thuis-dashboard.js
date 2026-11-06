@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '250';
+const CARD_VERSION = '251';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4046,16 +4046,21 @@ const HPI = {
 const HPSTYLE = `
 #hpc, .ksp.hpp { display: none; }
 @media (max-width: 600px) {
-  .mstack > #hpc:not([hidden]) { display: block; } .kspills .ksp.hpp { display: flex; }
-  .was.hp { background: #141c2b !important; border: 1px solid rgba(255,255,255,.07) !important; box-shadow: none !important; cursor: pointer; }
-  .was.hp .r { gap: 14px; } .hpart { width: 52px; height: 52px; border-radius: 12px; flex: none; object-fit: cover; box-shadow: 0 4px 14px rgba(0,0,0,.45); background: #1c2536; }
-  .hpart.ic { display: grid; place-items: center; } .hpart.ic svg { width: 34px; height: 34px; }
-  .was.hp .t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .was.hp .t .sub { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hpbtn { all: unset; width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; cursor: pointer;
-    background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); border: 1px solid rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); -webkit-tap-highlight-color: transparent; }
-  .was .hpbtn svg, .hpbtn svg { width: 20px !important; height: 20px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; }
-  .hpbtn:active { transform: scale(.92); }
-  .was.hp .bar { height: 4px !important; margin-top: 12px !important; background: rgba(255,255,255,.08) !important; } .was.hp .bar i { background: rgba(255,255,255,.75) !important; box-shadow: none !important; }
+  .kspills .ksp.hpp { display: flex; }
+  /* muziektegel (v251, ontwerp A): op de plek van de afvaltegel, vage hoes als achtergrond */
+  .mrow > #hpc:not([hidden]) { display: flex; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
+  .tile.mus { position: relative; overflow: hidden; padding: 14px !important; flex-direction: column; cursor: pointer; min-width: 0; box-sizing: border-box;
+    background: linear-gradient(160deg, #3a2a5e, #1a2340) !important; border: 1px solid rgba(255,255,255,.1) !important; box-shadow: none !important; }
+  .mus .mbg { position: absolute; inset: -24px; background: center/cover no-repeat; filter: blur(26px) saturate(1.3); opacity: .55; }
+  .mus::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,16,28,.25), rgba(10,16,28,.75)); pointer-events: none; }
+  .mus > * { position: relative; z-index: 1; }
+  .mus .mart { width: 52px; height: 52px; border-radius: 11px; margin: 0 0 10px; box-shadow: 0 8px 18px rgba(0,0,0,.45); object-fit: cover; background: rgba(255,255,255,.08); flex: none; }
+  .mus .mart.ic { display: grid; place-items: center; } .mus .mart.ic svg { width: 34px; height: 34px; }
+  .mus b { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mus .msub { font-size: 13px; color: rgba(255,255,255,.72); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mus .hpbtn { position: absolute; right: 14px; top: 18px; width: 38px !important; height: 38px !important; padding: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center; color: #fff !important; background: rgba(255,255,255,.18) !important; border: 1px solid rgba(255,255,255,.22) !important; box-shadow: none !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .mus .hpbtn svg { width: 17px !important; height: 17px !important; }
+  .mus .mpg { margin-top: auto; height: 3px; border-radius: 99px; background: rgba(255,255,255,.18); } .mus .mpg i { display: block; height: 100%; border-radius: 99px; background: #fff; transition: width 1s linear; }
   .ksp.hpp i.g svg { width: 100%; height: 100%; }
   .hpsh { display: flex; flex-direction: column; align-items: center; padding: 6px 8px 10px; }
   .hpsh .big { width: 232px; height: 232px; border-radius: 22px; object-fit: cover; margin: 18px 0 22px; box-shadow: 0 18px 40px rgba(0,0,0,.55); background: #1c2536; }
@@ -4070,10 +4075,10 @@ const HPSTYLE = `
   .hpsh .vol { width: 100%; display: flex; align-items: center; gap: 12px; color: var(--muted); } .hpsh .vol svg { width: 22px; height: 22px; flex: none; }
   .hpsl { flex: 1; height: 28px; position: relative; touch-action: none; cursor: pointer; } .hpsl::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 8px; border-radius: 99px; background: rgba(255,255,255,.1); }
   .hpsl i { position: absolute; left: 0; top: 10px; height: 8px; border-radius: 99px; background: #fff; } .hpsl b { position: absolute; top: 14px; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
-  :host([data-th=l]) .was.hp { background: rgba(255,255,255,.74) !important; border: .5px solid rgba(255,255,255,.9) !important; }
+  :host([data-th=l]) .tile.mus { border: .5px solid rgba(255,255,255,.6) !important; } :host([data-th=l]) .mus .hpbtn { background: rgba(255,255,255,.3) !important; color: #fff !important; }
   :host([data-th=l]) .hpbtn, :host([data-th=l]) .hpsh .ctl button { background: #fff !important; color: #111318 !important; border: 0 !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.18), 0 2px 6px rgba(0,0,0,.06) !important; }
-  :host([data-th=l]) .was.hp .bar, :host([data-th=l]) .hpsh .prog, :host([data-th=l]) .hpsl::before { background: rgba(60,60,67,.12) !important; }
-  :host([data-th=l]) .was.hp .bar i, :host([data-th=l]) .hpsh .prog i, :host([data-th=l]) .hpsl i { background: #111318 !important; }
+  :host([data-th=l]) .hpsh .prog, :host([data-th=l]) .hpsl::before { background: rgba(60,60,67,.12) !important; }
+  :host([data-th=l]) .hpsh .prog i, :host([data-th=l]) .hpsl i { background: #111318 !important; }
   :host([data-th=l]) .hpsh .tt { color: #111318; }
 }
 `;
@@ -4200,7 +4205,6 @@ class ThuisCard extends HTMLElement {
           <div class="tcol">
             <div class="alrt" id="alrt" hidden></div>
             <div class="was pic" id="pic" hidden></div>
-            <div class="was hp" id="hpc" hidden></div>
             <div class="was xchg" id="evc" hidden></div>
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
@@ -4231,7 +4235,7 @@ class ThuisCard extends HTMLElement {
             <div class="tile mth" id="mTh"><div class="mtop"><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
               <div class="mst"><span class="mic" id="mIc"></span><span id="mSt"></span></div>
               <div class="mstp"><button id="mMin" aria-label="Lager">−</button><button id="mPlus" aria-label="Hoger">+</button></div></div>
-            <div class="tile maf" id="mAf"></div>
+            <div class="tile maf" id="mAf"></div><div class="tile mus" id="hpc" hidden></div>
           </div>
           <div class="mstack" id="mB"></div>
         </div>
@@ -4243,7 +4247,7 @@ class ThuisCard extends HTMLElement {
     // telefoon: eigen indeling (kop, statuspillen, camera, apparaten, thermostaat + afval, bediening, agenda);
     // de bestaande vakken worden verplaatst en op de computer weer teruggezet
     this._mq = this._mq || window.matchMedia('(max-width: 600px)');
-    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['hpc', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
+    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
     const marks = MOVE.map(([id]) => { const el = this.$(id), m = document.createComment(id); el.before(m); return m; });
     const placeBins = () => {
       const m = this._mq.matches;
@@ -5384,25 +5388,35 @@ class ThuisCard extends HTMLElement {
     const txt = off ? 'Niet bereikbaar' : play ? `Speelt${title ? ` · ${title}` : ''}` : paused ? 'Gepauzeerd' : 'Speelt niets af';
     return { id, x, play, paused, off, title, artist, pic, area, dev, dur, pos, vol: a.volume_level, txt };
   }
-  // Thuis: kaart "Nu speelt" zolang een HomePod muziek afspeelt (de laatst gestarte eerst)
+  // Thuis: muziektegel op de plek van de afvaltegel (v251)
+  // - zichtbaar zolang een HomePod speelt, en nog 2 min na pauze of stilte (dan kun je vanaf de tegel hervatten)
+  // - een luistersessie loopt door zolang de muziek niet langer dan 2 min stilstaat; wegvegen verbergt de tegel voor de hele sessie
   _updMedia() {
     const box = this.$('hpc'); if (!box || !this._hass) return;
-    // alleen zolang er muziek speelt; pauzeer je met de knop op de kaart, dan blijft hij 2 minuten staan om te hervatten
-    if (this._hpKeep && Date.now() - this._hpKeep.t > 2 * 60000) this._hpKeep = null;
-    const list = this._spkDedupe(this._speakers()).map((id) => this._hpInfo(id)).filter((m) => m.play || (this._hpKeep?.id === m.id && !m.off));
-    const m = list.sort((p, q) => (Date.parse(q.x?.last_changed) || 0) - (Date.parse(p.x?.last_changed) || 0))[0];
+    const GAP = 2 * 60000, now = Date.now();
+    let ses = this._hpSes; if (ses === undefined) { try { ses = JSON.parse(localStorage.getItem('thuis-muziek') || 'null'); } catch (e) { ses = null; } }
+    const all = this._spkDedupe(this._speakers()).map((id) => this._hpInfo(id));
+    const playing = all.filter((m) => m.play).sort((p, q) => (Date.parse(q.x?.last_changed) || 0) - (Date.parse(p.x?.last_changed) || 0))[0];
+    const before = JSON.stringify(ses);
+    if (playing) {
+      if (!ses || (ses.end && now - ses.end > GAP)) ses = { start: now, end: null, id: playing.id };
+      else { ses.end = null; ses.id = playing.id; }
+    } else if (ses && !ses.end) ses.end = now;
+    this._hpSes = ses;
+    if (JSON.stringify(ses) !== before) try { localStorage.setItem('thuis-muziek', JSON.stringify(ses)); } catch (e) { /* geen opslag */ }
+    const m = playing || (ses && ses.end && now - ses.end < GAP ? all.find((x) => x.id === ses.id && !x.off) : null);
     let html = '';
     if (m) {
-      const art = m.pic ? `<img class="hpart" src="${m.pic}" alt="">` : `<div class="hpart ic">${HPICON(true)}</div>`;
+      const art = m.pic ? `<img class="mart" src="${m.pic}" alt="">` : `<div class="mart ic">${HPICON(true)}</div>`;
       const sub = [m.artist, m.area || m.dev].filter(Boolean).join(' · ');
-      html = `<div class="r">${art}<div class="t"><b>${m.title || 'Muziek'}</b><span class="sub">${sub}</span></div><button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button></div>`
-        + (m.dur ? `<div class="bar"><i style="width:${(m.pos / m.dur * 100).toFixed(1)}%"></i></div>` : '');
+      html = `<div class="mbg"${m.pic ? ` style="background-image:url('${m.pic}')"` : ''}></div>${art}<button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button>`
+        + `<b>${m.title || 'Muziek'}</b><span class="msub">${sub}</span><div class="mpg">${m.dur ? `<i style="width:${(m.pos / m.dur * 100).toFixed(1)}%"></i>` : ''}</div>`;
     }
     box.hidden = !m;
-    box.dataset.sig = m ? `${m.title || 'muziek'}` : '';
+    box.dataset.sig = ses ? String(ses.start) : '';
     if (box.innerHTML !== html) {
       box.innerHTML = html;
-      box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._hpKeep = m.play ? { id: m.id, t: Date.now() } : null; this._updMedia(); });
+      box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
     }
     box.dataset.id = m ? m.id : '';
     box.onclick = () => box.dataset.id && this._openSheet('hp', box.dataset.id);
@@ -5475,6 +5489,7 @@ class ThuisCard extends HTMLElement {
       el.classList.toggle('gone', h[id] != null);
     });
     if (dirty) try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
+    const hc = this.$('hpc'); if (hc) this.$('mAf')?.classList.toggle('hpon', !hc.hidden && !hc.classList.contains('gone'));
   }
   _swipe(el, onGone) {
     if (!el || el._swOn) return;
