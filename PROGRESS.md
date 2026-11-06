@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v252**.*
+*Bijgewerkt: 5 november 2026, versie **v253**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v252** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v253** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v252.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v253.
 
 ## Gerealiseerde functies (per tab)
 
@@ -121,6 +121,7 @@
 | v250 | HomePod-kaart op Thuis alleen bij afspelen (gepauzeerd bleef hij staan); na pauzeren met de kaartknop nog 2 min (`_hpKeep`). Wegvegen onthoudt de titel, niet welke speler. Vensters: eerst de richting bepalen; opzij vegen (pillen, scènes) sluit het venster niet meer, sluiten pas bij een duidelijke beweging omlaag (>10 px en 1,5× meer omlaag dan opzij). |
 | v251 | Telefoon: muziek als tegel op de plek van de afvaltegel (ontwerp A: vage hoes als achtergrond, hoes, pauzeknop, titel, artiest · kamer, voortgang). Luistersessie (`_hpSes`, localStorage `thuis-muziek`): loopt door zolang de muziek niet langer dan 2 min stilstaat. Tegel zichtbaar bij afspelen en tot 2 min na pauze/stilte; wegvegen verbergt hem voor de hele sessie (handtekening = start van de sessie). Afvaltegel komt terug zodra de muziektegel weg of weggeveegd is (`#mAf.hpon`). Brede kaart "Nu speelt" vervalt. |
 | v252 | HomePod-hoes: eerst op de achtergrond laden (`_hpArt`), pas tonen als het lukt (anders het HomePod-icoon, geen kapot plaatje); bij een fout tot 4x opnieuw met oplopende wachttijd. Heeft de spelende speler geen hoes, dan die van de tweede speler van dezelfde HomePod. |
+| v253 | HomePod-hoes nog robuuster: alle bronnen (beide spelers van dezelfde HomePod), om en om gewoon laden en ophalen met de eigen inlog (`hass.fetchWithAuth` → blob), tot 20 pogingen (oplopend, hooguit elke 15 s). Bij AirPlay vanaf de iPhone levert HA soms helemaal geen hoes; dan blijft het icoon. |
 
 ## Volgende stappen
 
