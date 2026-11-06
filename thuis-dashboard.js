@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '251';
+const CARD_VERSION = '252';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5373,13 +5373,30 @@ class ThuisCard extends HTMLElement {
     ids.forEach((id) => { const k = key(id); if (!best[k] || score(id) > score(best[k])) best[k] = id; });
     return ids.filter((id) => best[key(id)] === id);
   }
+  // albumhoes: eerst op de achtergrond laden; pas tonen als dat lukt (anders het HomePod-icoon), bij een fout tot 4x opnieuw
+  _hpArt(url) {
+    if (!url) return '';
+    const C = this._hpArtC ||= {}, c = C[url] ||= { st: 'new', n: 0 };
+    if (c.st === 'ok') return c.src;
+    if (c.st === 'new' || (c.st === 'err' && c.n < 4 && Date.now() - c.t > 4000 * c.n)) {
+      c.st = 'loading'; c.n++; c.t = Date.now();
+      const src = c.n > 1 ? `${url}${url.includes('?') ? '&' : '?'}r=${c.n}` : url, img = new Image();
+      img.onload = () => { c.st = img.naturalWidth > 1 ? 'ok' : 'err'; c.src = src; c.t = Date.now(); this._updMedia(); this._updHpSheet(); };
+      img.onerror = () => { c.st = 'err'; c.t = Date.now(); if (c.n < 4) setTimeout(() => { this._updMedia(); this._updHpSheet(); }, 4000 * c.n + 50); };
+      img.src = src;
+    }
+    return '';
+  }
   _hpInfo(id) {
     const x = this._state(id), a = x?.attributes || {}, E = this._hass?.entities || {}, dv = this._hass?.devices?.[E[id]?.device_id] || {};
     let play = x?.state === 'playing'; const opt = this._hpOpt?.id === id && Date.now() - this._hpOpt.t < 8000;
     if (opt) play = this._hpOpt.play; else if (this._hpOpt?.id === id) this._hpOpt = null;
     const off = !x || ['unavailable', 'unknown'].includes(x.state), paused = !play && (x?.state === 'paused' || opt);
     const title = a.media_title || '', artist = a.media_artist || a.media_album_artist || '';
-    const pic = a.entity_picture ? (this._hass.hassUrl ? this._hass.hassUrl(a.entity_picture) : a.entity_picture) : '';
+    // geen hoes bij deze speler: dan die van de tweede speler van dezelfde HomePod
+    const sib = a.entity_picture ? null : this._speakers().find((k) => k !== id && this._state(k)?.attributes.entity_picture && (this._hass.devices?.[E[k]?.device_id]?.name || this._nm(k)) === (dv.name || this._nm(id)));
+    const raw = a.entity_picture || (sib && this._state(sib).attributes.entity_picture) || '';
+    const pic = this._hpArt(raw ? (this._hass.hassUrl ? this._hass.hassUrl(raw) : raw) : '');
     const area = this._hass?.areas?.[E[id]?.area_id || dv.area_id]?.name || '';
     const model = /homepod\s*mini/i.test(dv.model || '') ? 'HomePod mini' : 'HomePod', dev0 = dv.name_by_user || dv.name || this._nm(x || id) || model;
     const dev = /homepod/i.test(dev0) || dev0.trim().toLowerCase() !== area.trim().toLowerCase() ? dev0 : model; // naar de kamer genoemd: toon het model
