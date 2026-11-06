@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '255';
+const CARD_VERSION = '256';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4048,13 +4048,13 @@ const HPSTYLE = `
 @media (max-width: 600px) {
   .kspills .ksp.hpp { display: flex; }
   /* helderheid per kamer (v254): schuif in de kaart, alleen als het licht aan is */
-  .kr.sl { height: auto; flex-wrap: wrap; padding: 13px 15px 14px; row-gap: 12px; }
-  .kr .ksl { display: block; flex-basis: 100%; height: 26px; margin: -2px 0 -2px; position: relative; touch-action: none; cursor: pointer; }
-  /* v255: schuif in Hue-stijl — dunne donkere balk, vulling van doorzichtig naar licht, kleine witte knop */
-  .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; top: 9px; height: 8px; border-radius: 99px; background: rgba(0,0,0,.28); }
-  .kr .ksl i { position: absolute; left: 0; top: 9px; height: 8px; border-radius: 99px 0 0 99px; background: linear-gradient(90deg, rgba(255,214,150,.08), rgba(255,226,180,.6)); }
-  .kr .ksl b { position: absolute; top: 13px; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); transition: transform .15s; }
-  .kr .ksl.drag b { transform: scale(1.2); }
+  /* v256 (variant B): schuif als dunne lichtbalk langs de onderrand; de kaart blijft even hoog (76 px) */
+  .kr.sl { overflow: hidden; }
+  .kr .ksl { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; touch-action: none; cursor: pointer; }
+  .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(0,0,0,.28); transition: height .15s; }
+  .kr .ksl i { position: absolute; left: 0; bottom: 0; height: 5px; border-radius: 0 3px 3px 0; background: linear-gradient(90deg, rgba(255,214,150,.15), rgba(255,226,180,.75)); transition: height .15s; }
+  .kr .ksl b { display: none; }
+  .kr .ksl.drag::before, .kr .ksl.drag i { height: 9px; }
   :host([data-th=l]) .kr .ksl::before { background: rgba(60,60,67,.14); } :host([data-th=l]) .kr .ksl i { background: linear-gradient(90deg, #f5c26b, #e8890c); }
   /* muziektegel (v251, ontwerp A): op de plek van de afvaltegel, vage hoes als achtergrond */
   .mrow > #hpc:not([hidden]) { display: flex; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
@@ -5489,7 +5489,7 @@ class ThuisCard extends HTMLElement {
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`);
       const busy = now >= s, pct = busy ? Math.min(100, Math.round((now - s) / (e - s) * 100)) : null;
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic komt bezorgen</b><span class="tm" style="color:#fff">${fmtTime(s)} – ${fmtTime(e)}</span></div>`
-        + `<div class="rt"><b>${busy ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag'}</b>${busy ? `nog ${mins((e - now) / 60000)}` : `over ${mins((s - now) / 60000)}`}</div></div>`
+        + `<div class="rt"><b>${busy ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag'}</b>${busy ? 'elk moment' : `over ${mins((s - now) / 60000)}`}</div></div>`
         + (busy ? `<div class="bar"><i style="width:${pct}%"></i></div>` : '');
     }
     box.hidden = !show;

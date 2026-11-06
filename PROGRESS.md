@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v255**.*
+*Bijgewerkt: 5 november 2026, versie **v256**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v255** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v256** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v255.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v256.
 
 ## Gerealiseerde functies (per tab)
 
@@ -124,6 +124,7 @@
 | v253 | HomePod-hoes nog robuuster: alle bronnen (beide spelers van dezelfde HomePod), om en om gewoon laden en ophalen met de eigen inlog (`hass.fetchWithAuth` → blob), tot 20 pogingen (oplopend, hooguit elke 15 s). Bij AirPlay vanaf de iPhone levert HA soms helemaal geen hoes; dan blijft het icoon. |
 | v254 | Telefoon (Kamers): helderheidsschuif in de kamerkaart, alleen als het licht aan is (variant B). Toont het gemiddelde van de lampen die aan zijn; bij loslaten `light.turn_on` met `brightness_pct` voor die lampen, helemaal links = alles uit. Geen nieuwe opbouw tijdens slepen (`_kslDrag`), tik op de schuif opent de kamer niet. |
 | v255 | Kamerschuif in Hue-stijl (variant 1): dunne donkere balk, vulling van doorzichtig naar licht, kleine witte knop met schaduw. Kaartkleuren blijven zoals ze waren (gebruiker: rustiger dan Hue-kleuren). |
+| v256 | Kamerschuif als dunne lichtbalk langs de onderrand (variant B): kaart blijft 76 px, geen knop, balk wordt dikker tijdens slepen; aanraakvlak 22 px. Picnic: binnen het tijdvak "Onderweg · elk moment" in plaats van aftellen tot het einde van het tijdvak (HA krijgt geen live ETA van Picnic). |
 
 ## Volgende stappen
 

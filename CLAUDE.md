@@ -103,7 +103,7 @@ Verdere regels:
 - `room_order` bepaalt de volgorde binnen een verdieping. `room_merge` voegt ruimtes samen.
 - Verdiepingen staan op naam gesorteerd: begane grond → eerste → tweede → zolder, en Buiten als laatste.
 - Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.
-- Helderheidsschuif (v254, telefoon): kamers met licht aan krijgen `.kr.sl` met `.ksl` (`role="slider"`, `touch-action: none`, dus geen tabbladwissel). `_bindRoomSlider`: slepen toont direct, loslaten stuurt `brightness_pct` naar de lampen die aan zijn (geen aan: alle), ≤ 1% = uit. `_kBri` houdt de ingestelde waarde 8 s vast; `_kslDrag` voorkomt opnieuw opbouwen tijdens slepen. Stijl (v255): zoals Hue (dunne donkere balk, verloop tot de knop, kleine witte knop). De kaartkleuren in Hue-stijl (goud of lampkleur) zijn getoond en afgewezen: de huidige kleuren zijn rustiger.
+- Helderheidsschuif (v254, telefoon): kamers met licht aan krijgen `.kr.sl` met `.ksl` (`role="slider"`, `touch-action: none`, dus geen tabbladwissel). `_bindRoomSlider`: slepen toont direct, loslaten stuurt `brightness_pct` naar de lampen die aan zijn (geen aan: alle), ≤ 1% = uit. `_kBri` houdt de ingestelde waarde 8 s vast; `_kslDrag` voorkomt opnieuw opbouwen tijdens slepen. Stijl (v256, variant B): dunne lichtbalk (5 px) langs de onderrand van de kaart, geen knop, 9 px tijdens slepen, aanraakvlak 22 px; de kaart blijft 76 px hoog. De kaartkleuren in Hue-stijl (goud of lampkleur) zijn getoond en afgewezen: de huidige kleuren zijn rustiger.
 
 **Kamerpaneel**
 
@@ -225,6 +225,7 @@ Verdere regels:
   - Het pulserende rode bolletje bij de camera op de telefoon is weg.
   - Het camerabeeld op Thuis is 196 px hoog (v246, was 220 px).
 - **Bewust zo gelaten (november 2026):** de gekleurde chips (Lampen, Rolluiken, Klimaat), de gloedrand van de tegels en de gloed om de profielfoto's blijven. Vlakke tegels en grijze chips zijn als mockup getoond en afgewezen: de gebruiker wil zien wanneer iets actief is. Niet opnieuw voorstellen.
+- **Picnic-tekst (v256):** vóór het tijdvak "Verwacht/Vandaag · over X min" (tot het begin), binnen het tijdvak "Onderweg · elk moment". HA krijgt van Picnic alleen het tijdvak, geen live aftelling.
 - **Picnic-kaart (telefoon, v241):** gedempt Picnic-rood (zachte tint, dunne rand, `#ffc2c2` voor Vandaag/Onderweg, balk zonder gloed). Een bezorging is informatie, geen waarschuwing. Sinds v242 icoon 58 px met 22 px afstand tot de tekst.
 - **Kamerkaart:** de temperatuur staat klein en grijs in de statusregel, met een effen thermometer. Bij apparaten staat alleen "Nog xx min". Het aantal lampen staat niet achter de verdiepingen.
 - **Teksten:**
