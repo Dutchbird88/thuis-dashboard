@@ -40,6 +40,7 @@ Verdere regels:
 - **Controleer vóór elke commit en push** met een grep op persoonlijke termen. De uitkomst moet 0 zijn.
   - De lijst met termen staat níet in deze repo, want die is zelf persoonlijk. Vraag de gebruiker ernaar als je de lijst niet hebt.
   - Controleer in elk geval op: namen, straat, plaats, postcode, serienummers, de laadpaal-ID en eigen entity-ids van apparaten.
+  - Controleer ook op **coördinaten** (bijvoorbeeld `grep -nE '[0-9]{2}\.[0-9]{3,}'` in de buurt van lat/lng). Gebruik voor een locatie altijd `zone.home` of `hass.config`, nooit een vaste waarde als reserve (v262).
 - Vraag de gebruiker **nooit** om tokens of wachtwoorden in de chat te plakken.
 - Camerastatussen bevatten `access_token` en `entity_picture`. Die zijn privé: niet loggen en niet delen.
 - Deel geen attributen van de laadpaal zoals pincode en adres.

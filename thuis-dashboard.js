@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '261';
+const CARD_VERSION = '262';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4785,10 +4785,9 @@ class ThuisCard extends HTMLElement {
     const box = this.$('radar'), f = this.$('rFrame'), k = box.offsetWidth / 550;
     f.style.transform = `translateY(${(box.offsetHeight - 512 * k) / 2}px) scale(${k})`;
     if (Date.now() - (this._rAt || 0) < 15 * 60000) return;
-    const z = this._state('zone.home')?.attributes || {};
-    const lat = (z.latitude ?? 52.1).toFixed(4), lng = (z.longitude ?? 5.18).toFixed(4);
+    const ll = this._homeLL(); if (!ll) return; // geen thuislocatie bekend: geen radar (nooit een vaste plek in de code)
     this._rAt = Date.now();
-    f.src = `https://gadgets.buienradar.nl/gadget/zoommap/?lat=${lat}&lng=${lng}&overname=2&zoom=${this._config.radar_zoom}&naam=Thuis&size=3&voor=1`;
+    f.src = `https://gadgets.buienradar.nl/gadget/zoommap/?lat=${ll[0]}&lng=${ll[1]}&overname=2&zoom=${this._config.radar_zoom}&naam=Thuis&size=3&voor=1`;
   }
 
   _thumbs() {
@@ -5476,6 +5475,12 @@ class ThuisCard extends HTMLElement {
     const v = this._hpVol ?? this._hpVolSent?.v ?? m.vol ?? 0, sl = this.$('hpV');
     sl.firstChild.style.width = `${(v * 100).toFixed(1)}%`; sl.lastChild.style.left = `${(v * 100).toFixed(1)}%`; sl.setAttribute('aria-valuenow', Math.round(v * 100));
   }
+  // thuislocatie voor de buienradar: zone.home, anders de locatie uit de HA-instellingen
+  _homeLL() {
+    const z = this._state('zone.home')?.attributes || {}, c = this._hass?.config || {};
+    const lat = z.latitude ?? c.latitude, lng = z.longitude ?? c.longitude;
+    return lat == null || lng == null ? null : [(+lat).toFixed(4), (+lng).toFixed(4)];
+  }
   _updPicnic() {
     const box = this.$('pic');
     if (!box || !this._hass) return;
@@ -6088,10 +6093,10 @@ class ThuisCard extends HTMLElement {
     this._shKey = html; box.innerHTML = html;
     box.querySelector('.shx').addEventListener('click', () => this._closeSheet());
     const openRad = () => {
-      const r = this.$('shRad'), f = r.querySelector('iframe'), k = r.offsetWidth / 550, z = this._state('zone.home')?.attributes || {};
+      const r = this.$('shRad'), f = r.querySelector('iframe'), k = r.offsetWidth / 550;
       r.hidden = false; this.$('shRb').hidden = true;
       const kk = r.offsetWidth / 550; r.style.height = `${Math.round(512 * kk)}px`; f.style.transform = `scale(${kk})`;
-      if (!f.src) f.src = `https://gadgets.buienradar.nl/gadget/zoommap/?lat=${(z.latitude ?? 52.1).toFixed(4)}&lng=${(z.longitude ?? 5.18).toFixed(4)}&overname=2&zoom=${this._config.radar_zoom}&naam=Thuis&size=3&voor=1`;
+      const ll = this._homeLL(); if (!f.src && ll) f.src = `https://gadgets.buienradar.nl/gadget/zoommap/?lat=${ll[0]}&lng=${ll[1]}&overname=2&zoom=${this._config.radar_zoom}&naam=Thuis&size=3&voor=1`;
       return k;
     };
     this.$('shRb').addEventListener('click', openRad);
