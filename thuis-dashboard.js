@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '247';
+const CARD_VERSION = '248';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3324,6 +3324,7 @@ window.customCards.push({ type: 'auto-card', name: 'Auto', description: 'BYD-aut
  * ===================================================================== */
 
 const TDEFAULTS = {
+  speakers: null,                      // HomePod (mini): leeg = automatisch alle HomePods (media_player van de Apple TV-integratie)
   climate: null,                       // leeg = de eerste climate.* (Toon)
   weather: null,                       // leeg = automatisch: Buienradar, anders de eerste weer-entiteit
   weather_place: null,               // plaatsnaam naast het weer
@@ -4029,6 +4030,54 @@ const KSTYLE = `
 .mp i.g { width: 30px; height: 30px; } .mp i.g svg { width: 30px; height: 30px; overflow: visible; } .mp:has(i.g) { padding-left: 9px; }
 `;
 
+// ---------- HomePod (mini): icoon, knoppen en stijl (v248, alleen telefoon) ----------
+// HomePod mini in de Rounded-stijl: bol met platte bovenkant; het lichtje bovenop kleurt als Siri als hij speelt
+const HPICON = (on) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="hpb${on ? 1 : 0}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${on ? '#f6f8fb' : '#cfd6e2'}"/><stop offset=".6" stop-color="${on ? '#dde2ea' : '#aab4c4'}"/><stop offset="1" stop-color="${on ? '#b4bdcc' : '#8792a6'}"/></linearGradient><radialGradient id="hpt${on ? 1 : 0}" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="${on ? '#ffffff' : '#9aa5b8'}"/><stop offset=".35" stop-color="${on ? '#8fe3ff' : '#8a95a8'}"/><stop offset=".7" stop-color="${on ? '#a77bff' : '#7c879b'}"/><stop offset="1" stop-color="${on ? '#ff6ad5' : '#6f7a8e'}"/></radialGradient></defs>`
+  + `<path d="M31.4 24H68.6A37 37 0 0 1 64.6 90Q50 92.5 35.4 90A37 37 0 0 1 31.4 24Z" fill="url(#hpb${on ? 1 : 0})"/><ellipse cx="50" cy="24" rx="18.6" ry="4.4" fill="${on ? '#eef1f6' : '#bcc5d2'}"/><ellipse cx="50" cy="24" rx="12.5" ry="2.9" fill="url(#hpt${on ? 1 : 0})"/>`
+  + [36, 46, 56, 66, 76].map((y) => [22, 30, 38, 46, 54, 62, 70, 78].map((x) => { const cx = x + (y % 20 ? 4 : 0); return Math.hypot(cx - 50, y - 56) < 32 ? `<circle cx="${cx}" cy="${y}" r="1.3" fill="rgba(40,50,70,.12)"/>` : ''; }).join('')).join('') + '</svg>';
+const HPI = {
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.2" height="14" rx="1.4"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.4"/></svg>',
+  prev: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 12l8.5-6v12zM3 12l8.5-6v12z"/></svg>',
+  next: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 12L4.5 6v12zM21 12l-8.5-6v12z"/></svg>',
+  vol0: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/></svg>',
+  vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+};
+const HPSTYLE = `
+#hpc, .ksp.hpp { display: none; }
+@media (max-width: 600px) {
+  .mstack > #hpc:not([hidden]) { display: block; } .kspills .ksp.hpp { display: flex; }
+  .was.hp { background: #141c2b !important; border: 1px solid rgba(255,255,255,.07) !important; box-shadow: none !important; cursor: pointer; }
+  .was.hp .r { gap: 14px; } .hpart { width: 52px; height: 52px; border-radius: 12px; flex: none; object-fit: cover; box-shadow: 0 4px 14px rgba(0,0,0,.45); background: #1c2536; }
+  .hpart.ic { display: grid; place-items: center; } .hpart.ic svg { width: 34px; height: 34px; }
+  .was.hp .t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .was.hp .t .sub { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hpbtn { all: unset; width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; cursor: pointer;
+    background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); border: 1px solid rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); -webkit-tap-highlight-color: transparent; }
+  .was .hpbtn svg, .hpbtn svg { width: 20px !important; height: 20px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+  .hpbtn:active { transform: scale(.92); }
+  .was.hp .bar { height: 4px !important; margin-top: 12px !important; background: rgba(255,255,255,.08) !important; } .was.hp .bar i { background: rgba(255,255,255,.75) !important; box-shadow: none !important; }
+  .ksp.hpp i.g svg { width: 100%; height: 100%; }
+  .hpsh { display: flex; flex-direction: column; align-items: center; padding: 6px 8px 10px; }
+  .hpsh .big { width: 232px; height: 232px; border-radius: 22px; object-fit: cover; margin: 18px 0 22px; box-shadow: 0 18px 40px rgba(0,0,0,.55); background: #1c2536; }
+  .hpsh .big.ic { display: grid; place-items: center; } .hpsh .big.ic svg { width: 120px; height: 120px; }
+  .hpsh .tt { font-size: 22px; font-weight: 700; text-align: center; } .hpsh .ar { font-size: 16px; color: var(--muted); margin-top: 4px; text-align: center; min-height: 20px; }
+  .hpsh .prog { width: 100%; margin: 20px 0 4px; height: 5px; border-radius: 99px; background: rgba(255,255,255,.1); position: relative; overflow: hidden; } .hpsh .prog i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: rgba(255,255,255,.8); }
+  .hpsh .tm2 { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hpsh .ctl { display: flex; align-items: center; justify-content: center; gap: 26px; margin: 18px 0 22px; }
+  .hpsh .ctl button { all: unset; display: grid; place-items: center; border-radius: 50%; color: #fff; cursor: pointer; width: 60px; height: 60px; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); border: 1px solid rgba(255,255,255,.18); box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 10px 24px -12px rgba(0,0,0,.6); }
+  .hpsh .ctl button:active { transform: scale(.92); } .hpsh .ctl button.main { width: 76px; height: 76px; } .hpsh .ctl svg { width: 24px; height: 24px; } .hpsh .ctl button.main svg { width: 30px; height: 30px; }
+  .hpsh .vol { width: 100%; display: flex; align-items: center; gap: 12px; color: var(--muted); } .hpsh .vol svg { width: 22px; height: 22px; flex: none; }
+  .hpsl { flex: 1; height: 28px; position: relative; touch-action: none; cursor: pointer; } .hpsl::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 8px; border-radius: 99px; background: rgba(255,255,255,.1); }
+  .hpsl i { position: absolute; left: 0; top: 10px; height: 8px; border-radius: 99px; background: #fff; } .hpsl b { position: absolute; top: 14px; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  :host([data-th=l]) .was.hp { background: rgba(255,255,255,.74) !important; border: .5px solid rgba(255,255,255,.9) !important; }
+  :host([data-th=l]) .hpbtn, :host([data-th=l]) .hpsh .ctl button { background: #fff !important; color: #111318 !important; border: 0 !important; box-shadow: 0 0 0 .5px rgba(60,60,67,.18), 0 2px 6px rgba(0,0,0,.06) !important; }
+  :host([data-th=l]) .was.hp .bar, :host([data-th=l]) .hpsh .prog, :host([data-th=l]) .hpsl::before { background: rgba(60,60,67,.12) !important; }
+  :host([data-th=l]) .was.hp .bar i, :host([data-th=l]) .hpsh .prog i, :host([data-th=l]) .hpsl i { background: #111318 !important; }
+  :host([data-th=l]) .hpsh .tt { color: #111318; }
+}
+`;
+
 class ThuisCard extends HTMLElement {
   setConfig(config) {
     this._config = { ...TDEFAULTS, ...config }; applyTheme(this, config);
@@ -4048,7 +4097,7 @@ class ThuisCard extends HTMLElement {
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
   connectedCallback() {
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._carRefresh(); }, 10000);
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); }, 10000);
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') setTimeout(() => this._carRefresh(true), 800); }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
@@ -4103,7 +4152,7 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
       <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
@@ -4151,6 +4200,7 @@ class ThuisCard extends HTMLElement {
           <div class="tcol">
             <div class="alrt" id="alrt" hidden></div>
             <div class="was pic" id="pic" hidden></div>
+            <div class="was hp" id="hpc" hidden></div>
             <div class="was xchg" id="evc" hidden></div>
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
@@ -4193,7 +4243,7 @@ class ThuisCard extends HTMLElement {
     // telefoon: eigen indeling (kop, statuspillen, camera, apparaten, thermostaat + afval, bediening, agenda);
     // de bestaande vakken worden verplaatst en op de computer weer teruggezet
     this._mq = this._mq || window.matchMedia('(max-width: 600px)');
-    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
+    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['hpc', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
     const marks = MOVE.map(([id]) => { const el = this.$(id), m = document.createComment(id); el.before(m); return m; });
     const placeBins = () => {
       const m = this._mq.matches;
@@ -4204,7 +4254,7 @@ class ThuisCard extends HTMLElement {
     placeBins();
     this.$('tMin').addEventListener('click', () => this._tStep(-1));
     // telefoon: meldingen en apparaten naar links wegvegen (zoals Apple Mail)
-    ['pic', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
+    ['pic', 'hpc', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
     this.$('evc').addEventListener('click', () => {
       // naar het paneel van de kamer met de laadpaal (bediening); anders het tabblad Auto
       const ri = this._rooms().findIndex((r) => (r.r.apps || []).includes('evc'));
@@ -4228,7 +4278,7 @@ class ThuisCard extends HTMLElement {
     let drag = null;
     const shReset = () => { shEl.style.transition = ''; shEl.style.transform = ''; shBg.style.transition = ''; shBg.style.opacity = ''; };
     shEl.addEventListener('touchstart', (e) => {
-      drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap')
+      drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap, .hpsl')
         ? { y: e.touches[0].clientY, d: 0, on: false, v: 0, ly: e.touches[0].clientY, lt: e.timeStamp } : null;
     }, { passive: true });
     shEl.addEventListener('touchmove', (e) => {
@@ -4324,6 +4374,7 @@ class ThuisCard extends HTMLElement {
     this._updWaste();
     this._updPills();
     this._updPicnic();
+    this._updMedia();
     if (this._kmode) this._updRooms();
     this._updSheet();
   }
@@ -4839,6 +4890,7 @@ class ThuisCard extends HTMLElement {
     box.innerHTML = html;
     box.querySelectorAll('.ev').forEach((el) => el.addEventListener('click', () => this._moreInfo(el.dataset.e)));
     this._updPicnic();
+    this._updMedia();
   }
 
   /* ---------- vaatwasser, oven en meldingen ---------- */
@@ -5291,6 +5343,71 @@ class ThuisCard extends HTMLElement {
     if (Object.values(ents).some((e) => e.platform === 'picnic')) this._picIds = ids;
     return ids;
   }
+  /* ---------- HomePod (mini) ---------- */
+  // welke mediaspelers HomePods zijn: uit de YAML (speakers), anders automatisch op model of naam
+  _isSpeaker(id) {
+    if (!id || !id.startsWith('media_player.')) return false;
+    const own = this._config.speakers;
+    if (Array.isArray(own) && own.length) return own.includes(id);
+    const E = this._hass?.entities || {}, dv = this._hass?.devices?.[E[id]?.device_id] || {};
+    return /homepod/i.test(`${dv.model || ''} ${dv.name || ''} ${dv.name_by_user || ''} ${id}`);
+  }
+  _speakers() {
+    const S = this._hass?.states || {};
+    if (this._spkRef !== this._hass?.entities || this._spkCfg !== this._config) { this._spkRef = this._hass?.entities; this._spkCfg = this._config; this._spk = Object.keys(S).filter((id) => this._isSpeaker(id)); }
+    return this._spk.filter((id) => S[id]);
+  }
+  _hpInfo(id) {
+    const x = this._state(id), a = x?.attributes || {}, E = this._hass?.entities || {}, dv = this._hass?.devices?.[E[id]?.device_id] || {};
+    let play = x?.state === 'playing'; const opt = this._hpOpt?.id === id && Date.now() - this._hpOpt.t < 8000;
+    if (opt) play = this._hpOpt.play; else if (this._hpOpt?.id === id) this._hpOpt = null;
+    const off = !x || ['unavailable', 'unknown'].includes(x.state), paused = !play && (x?.state === 'paused' || opt);
+    const title = a.media_title || '', artist = a.media_artist || a.media_album_artist || '';
+    const pic = a.entity_picture ? (this._hass.hassUrl ? this._hass.hassUrl(a.entity_picture) : a.entity_picture) : '';
+    const area = this._hass?.areas?.[E[id]?.area_id || dv.area_id]?.name || '';
+    const dev = dv.name_by_user || dv.name || this._nm(x || id) || 'HomePod';
+    const dur = +a.media_duration || 0, pos0 = +a.media_position || 0, upd = Date.parse(a.media_position_updated_at) || 0;
+    const pos = dur ? clamp(pos0 + (play && upd ? (Date.now() - upd) / 1000 : 0), 0, dur) : 0;
+    const txt = off ? 'Niet bereikbaar' : play ? `Speelt${title ? ` · ${title}` : ''}` : paused ? 'Gepauzeerd' : 'Speelt niets af';
+    return { id, x, play, paused, off, title, artist, pic, area, dev, dur, pos, vol: a.volume_level, txt };
+  }
+  // Thuis: kaart "Nu speelt" zolang een HomePod muziek afspeelt (de laatst gestarte eerst)
+  _updMedia() {
+    const box = this.$('hpc'); if (!box || !this._hass) return;
+    // speelt, of kort gepauzeerd (tot 30 min), zodat je vanaf de kaart kunt hervatten
+    const list = this._speakers().map((id) => this._hpInfo(id)).filter((m) => m.play || (m.paused && (this._hpOpt?.id === m.id || Date.now() - (Date.parse(m.x?.last_changed) || 0) < 30 * 60000)));
+    const m = list.sort((p, q) => (Date.parse(q.x?.last_changed) || 0) - (Date.parse(p.x?.last_changed) || 0))[0];
+    let html = '';
+    if (m) {
+      const art = m.pic ? `<img class="hpart" src="${m.pic}" alt="">` : `<div class="hpart ic">${HPICON(true)}</div>`;
+      const sub = [m.artist, m.area || m.dev].filter(Boolean).join(' · ');
+      html = `<div class="r">${art}<div class="t"><b>${m.title || 'Muziek'}</b><span class="sub">${sub}</span></div><button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button></div>`
+        + (m.dur ? `<div class="bar"><i style="width:${(m.pos / m.dur * 100).toFixed(1)}%"></i></div>` : '');
+    }
+    box.hidden = !m;
+    box.dataset.sig = m ? `${m.id}|${m.title}` : '';
+    if (box.innerHTML !== html) {
+      box.innerHTML = html;
+      box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
+    }
+    box.dataset.id = m ? m.id : '';
+    box.onclick = () => box.dataset.id && this._openSheet('hp', box.dataset.id);
+    this._applyHidden();
+  }
+  _updHpSheet() {
+    if (this._sheet !== 'hp' || !this.$('hpN')) return;
+    const m = this._hpInfo(this._cvId), set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('hpN', m.area || m.dev); set('hpS', `${m.area && m.dev !== m.area ? `${m.dev} · ` : ''}${m.off ? 'Niet bereikbaar' : m.play ? 'Speelt' : m.paused ? 'Gepauzeerd' : 'Speelt niets af'}`);
+    const artKey = m.pic || 'ic'; if (this._hpArtKey !== artKey || !this.$('hpArt').firstChild) { this._hpArtKey = artKey; this.$('hpArt').innerHTML = m.pic ? `<img class="big" src="${m.pic}" alt="">` : `<div class="big ic">${HPICON(m.play)}</div>`; }
+    set('hpT', m.title || (m.play ? 'Muziek' : 'Niets aan het afspelen')); set('hpA', m.artist);
+    const mmss = (v) => `${Math.floor(v / 60)}:${String(Math.floor(v % 60)).padStart(2, '0')}`;
+    this.$('hpP').style.visibility = this.$('hpTm').style.visibility = m.dur ? '' : 'hidden';
+    if (m.dur) { this.$('hpP').firstChild.style.width = `${(m.pos / m.dur * 100).toFixed(1)}%`; const sp = this.$('hpTm').children; sp[0].textContent = mmss(m.pos); sp[1].textContent = `−${mmss(m.dur - m.pos)}`; }
+    set('hpPP', m.play ? HPI.pause : HPI.play);
+    if (this._hpVolSent && (Math.abs((m.vol ?? -1) - this._hpVolSent.v) < .015 || Date.now() - this._hpVolSent.t > 6000)) this._hpVolSent = null;
+    const v = this._hpVol ?? this._hpVolSent?.v ?? m.vol ?? 0, sl = this.$('hpV');
+    sl.firstChild.style.width = `${(v * 100).toFixed(1)}%`; sl.lastChild.style.left = `${(v * 100).toFixed(1)}%`; sl.setAttribute('aria-valuenow', Math.round(v * 100));
+  }
   _updPicnic() {
     const box = this.$('pic');
     if (!box || !this._hass) return;
@@ -5322,7 +5439,7 @@ class ThuisCard extends HTMLElement {
 
   /* ---------- verbergen door te vegen (telefoon) ---------- */
   // een verborgen blok komt terug zodra de toestand verandert (bijv. van draaien naar klaar, of een nieuwe bezorging)
-  _sig(el) { return el.id === 'pic' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
+  _sig(el) { return el.id === 'pic' || el.id === 'hpc' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
   _hidden() {
     try {
       // eenmalig: oude verborgen blokken van vóór versie 120 vergeten (die bleven ten onrechte verborgen)
@@ -5337,7 +5454,7 @@ class ThuisCard extends HTMLElement {
   }
   _applyHidden() {
     const h = this._hidden(); let dirty = false;
-    ['pic', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
+    ['pic', 'hpc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
       const el = this.$(id); if (!el) return;
       // toestand veranderd (of apparaat uit): het verbergen vergeten, zodat het blok bij de volgende keer weer verschijnt
       if (h[id] != null && (h[id] !== this._sig(el) || el.hidden)) { delete h[id]; dirty = true; }
@@ -5491,6 +5608,25 @@ class ThuisCard extends HTMLElement {
       const up = () => { if (!this._tDragging) return; this._tDragging = false; this._tSend(); };
       arc.addEventListener('pointerup', up); arc.addEventListener('pointercancel', up);
       arc.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    } else if (kind === 'hp') {
+      this._cvHist = false;
+      body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="hpN"></b><span id="hpS"></span></div>
+        <div class="hpsh"><div id="hpArt"></div><div class="tt" id="hpT"></div><div class="ar" id="hpA"></div>
+        <div class="prog" id="hpP"><i></i></div><div class="tm2" id="hpTm"><span></span><span></span></div>
+        <div class="ctl"><button data-a="media_previous_track" aria-label="Vorige">${HPI.prev}</button><button class="main" data-a="media_play_pause" id="hpPP" aria-label="Afspelen of pauzeren"></button><button data-a="media_next_track" aria-label="Volgende">${HPI.next}</button></div>
+        <div class="vol">${HPI.vol0}<div class="hpsl" id="hpV" role="slider" aria-label="Volume"><i></i><b></b></div>${HPI.vol1}</div></div>`;
+      body.querySelectorAll('.ctl button').forEach((b) => b.addEventListener('click', () => {
+        this._hass.callService('media_player', b.dataset.a, { entity_id: this._cvId });
+        if (b.dataset.a === 'media_play_pause') { this._hpOpt = { id: this._cvId, play: !this._hpInfo(this._cvId).play, t: Date.now() }; this._updHpSheet(); this._updMedia(); }
+      }));
+      const sl = this.$('hpV'), at = (e) => { const r = sl.getBoundingClientRect(); return clamp((e.clientX - r.left) / (r.width || 1), 0, 1); };
+      sl.addEventListener('pointerdown', (e) => { e.preventDefault(); sl.setPointerCapture(e.pointerId); this._hpVol = at(e); this._updHpSheet(); });
+      sl.addEventListener('pointermove', (e) => { if (this._hpVol == null) return; this._hpVol = at(e); this._updHpSheet(); });
+      const vEnd = () => { if (this._hpVol == null) return; const v = Math.round(this._hpVol * 100) / 100; this._hpVol = null; this._hpVolSent = { v, t: Date.now() };
+        this._hass.callService('media_player', 'volume_set', { entity_id: this._cvId, volume_level: v }); this._updHpSheet(); };
+      sl.addEventListener('pointerup', vEnd); sl.addEventListener('pointercancel', vEnd);
+      sl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+      clearInterval(this._hpTimer); this._hpTimer = setInterval(() => { if (this._sheet === 'hp') this._updHpSheet(); else { clearInterval(this._hpTimer); this._hpTimer = null; } }, 1000);
     } else if (kind === 'waste') {
       this._cvHist = false;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Afval</b><span>Komende twee weken</span></div><div id="wsB"><div class="hnone">Laden…</div></div>`;
@@ -5741,6 +5877,7 @@ class ThuisCard extends HTMLElement {
   _updSheet() {
     if (!this._sheet || !this._hass) return;
     if (this._sheet === 'room') { this._updRoomSheet(); return; }
+    if (this._sheet === 'hp') { this._updHpSheet(); return; }
     if (this._sheet === 'ppl') { this._updPplSheet(); return; }
     const sh = this.$('sheet');
     if (this._sheet === 'lt') {
@@ -5925,10 +6062,11 @@ class ThuisCard extends HTMLElement {
       const plugs = dom('switch').filter((x) => { const d = devOf(x); if (!d || appDev.has(d) || d === evDev) return false;
         if (/automation|alarm|detection|detectie|overlay|privacy|adguard|statuslampje|hoge_fps|cloud|_motion|_illuminance|ingeschakeld|nachtwacht|lichtpad|stoomcontrole|let_op/i.test(x)) return false;
         return Object.keys(E).some((k) => E[k].device_id === d && h.states[k]?.attributes.device_class === 'power') || /plug|stopcontact|grillplats|tretakt|inspelning/i.test(x); });
-      if (!lights.length && !covers.length && !climate && !sensors.length && !plugs.length && !cams.length) return null;
+      const speakers = dom('media_player').filter((x) => this._isSpeaker(x));
+      if (!lights.length && !covers.length && !climate && !sensors.length && !plugs.length && !cams.length && !speakers.length) return null;
       const t = sens('temperature'), hu = sens('humidity');
       return { name: a.name, floor: flr(a.floor_id).name || '', level: flr(a.floor_id).level ?? 99, icon: icon(a.name), climate, lights, covers, apps, scenes: aid,
-        temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors, plugs, cams };
+        temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors, plugs, cams, speakers };
     }).filter(Boolean);
     // verdiepingen op volgorde (laag naar hoog, buiten als laatste); binnen een verdieping de volgorde van Home Assistant
     // verdieping: herken de naam (kelder, begane grond, eerste, tweede, zolder, buiten), anders het niveau uit Home Assistant
@@ -6019,7 +6157,8 @@ class ThuisCard extends HTMLElement {
         const last = det.sort((p, q) => (q.t - p.t) || (p.pr - q.pr))[0];
         return { id, nm: dv.name_by_user || dv.name || this._nm(id) || 'Camera', on: !!cur, txt: cur ? `${cur.lb} nu` : last ? `${last.lb} · ${relTime(last.t)}` : 'Geen detectie' };
       });
-      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams };
+      const speakers = (r.speakers || []).filter((id) => S[id]);
+      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams, speakers };
     });
   }
   _roomToggle(i) {
@@ -6122,8 +6261,9 @@ class ThuisCard extends HTMLElement {
       return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${rm.name}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
+    const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span>${m.txt}</span></div></div>`; }).join('');
     const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc'), scenes: [] }; } // oprit: geen scènes
-    const html = (plugPills + camPills + pills ? `<div class="kspills">${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
+    const html = (hpPills + plugPills + camPills + pills ? `<div class="kspills">${hpPills}${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
       + this._evSection(rm)
@@ -6141,6 +6281,7 @@ class ThuisCard extends HTMLElement {
     B.querySelectorAll('.mstack .was').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._appHistory(this._roomIdx, el.dataset.k)));
     B.querySelectorAll('.evb button, .evseg button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
     B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
+    B.querySelectorAll('.kspills .mp[data-hp]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('hp', el.dataset.hp); this._roomBack = ri; }, true));
     B.querySelectorAll('.kspills .mp[data-plug]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._hass.callService('switch', 'toggle', { entity_id: el.dataset.plug }); }, true));
     B.querySelectorAll('.klk.koff .lk').forEach((el) => el.addEventListener('click', (e) => { if (el.dataset.k && el.dataset.k !== 'evc') { e.stopImmediatePropagation(); this._appHistory(this._roomIdx, el.dataset.k); } }, true));
     B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));

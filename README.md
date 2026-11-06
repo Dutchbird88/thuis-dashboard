@@ -50,6 +50,21 @@ Op de telefoon kun je kiezen voor een lichte weergave met `theme`:
 
 Zonder `theme` is de kaart donker. Wil je licht of automatisch, zet `theme` dan op elke kaart (Thuis, Kamers, Nu, Energie, Auto). Op de computer blijft de app altijd donker.
 
+### HomePod (telefoon)
+
+Heb je een HomePod of HomePod mini in Home Assistant (via de integratie **Apple TV**), dan toont de app die vanzelf:
+
+- op Thuis een kaart "Nu speelt" zolang er muziek speelt (of kort gepauzeerd is), met albumhoes, titel en een pauzeknop;
+- in het kamervenster een pil voor de HomePod in die ruimte;
+- met een tik een venster met vorige, afspelen/pauzeren, volgende en het volume.
+
+De HomePods worden herkend aan het model of de naam. Wil je zelf kiezen welke mediaspelers meedoen:
+
+```yaml
+speakers:
+  - media_player.homepod
+```
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

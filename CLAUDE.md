@@ -119,6 +119,14 @@ Verdere regels:
 - Wasmachine (Miele) en vaatwasser/oven (Home Connect) met programma, fase en resterende tijd.
 - Magnetronstand: het actieve of geselecteerde programma `microwave_*` toont "Magnetron" met een eigen icoon en het vermogen.
 
+**HomePod (mini)** (v248, alleen telefoon; stijl in `HPSTYLE`, achteraan in de `<style>` van Thuis)
+
+- `_isSpeaker(id)`: `speakers` uit de YAML, anders elke `media_player` met "homepod" in model, apparaatnaam of id (integratie Apple TV). `_speakers()` en `_hpInfo(id)` (titel, artiest, hoes via `entity_picture`/`hassUrl`, voortgang, volume, optimistische afspeelstand `_hpOpt`).
+- Thuis: `#hpc` (`.was.hp`, in `MOVE` na `pic`, wegvegen zoals Picnic met `dataset.sig`). Zichtbaar bij afspelen of tot 30 min na pauzeren.
+- Kamers: `speakers` per ruimte in `_areaRooms`/`_rooms`; pil `.ksp.hpp` met `HPICON`, tik opent venster `hp` met `_roomBack`.
+- Venster `hp`: `_updHpSheet` (elke seconde via `_hpTimer`), knoppen `media_previous_track`/`media_play_pause`/`media_next_track`, volumeschuif `.hpsl` (uitgezonderd van vegen-sluiten).
+- `entity_picture` van een mediaspeler bevat een token: niet loggen of delen.
+
 **Meldingen**
 
 - `_safety` en `_updAlarm` tonen rook, CO en water als rode kaart onder de camera's op Thuis. De melding is weg te vegen en komt terug bij een nieuwe verandering.
