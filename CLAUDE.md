@@ -204,7 +204,7 @@ Verdere regels:
 - **Donker en rustig**, in Apple-stijl (de gebruiker koos in v240 voor donker; licht kan via `theme: licht`, alleen op de telefoon), zonder kleuren of gloed die er "AI-achtig" uitzien.
   - Kleur alleen met betekenis: rood = alarm, oranje = waarschuwing/open, teal = laden, blauw = wacht/gepland.
 - **Telefoon (`CALM`, alleen ≤ 600px, Thuis en Kamers):**
-  - effen vensters (`#111827`) en apparaatkaarten zonder gekleurde rand of gloed;
+  - effen vensters (`#111827`) en apparaatkaarten zonder gekleurde rand of gloed; uitzondering sinds v243: het thermostaatvenster (oranje bij verwarmen, anders blauw) en het lampvenster (lampkleur) houden hun eigen kleur;
   - grijze chips en grijze afvallabels;
   - venstertitels en ondertitels **gecentreerd**, de ondertitel grijs;
   - alarmen houden hun rode gloed.

@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v242**.*
+*Bijgewerkt: 5 november 2026, versie **v243**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v242** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v243** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v242.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v243.
 
 ## Gerealiseerde functies (per tab)
 
@@ -111,6 +111,7 @@
 | v240 | Op verzoek weer standaard donker (de gebruiker kiest voor donker). Lichte weergave blijft beschikbaar met `theme: licht`/`automatisch`. Telefoon zonder `theme` pixelgelijk aan v235. |
 | v241 | Telefoon: Picnic-kaart subtieler (optie C): gedempt Picnic-rood, rand `rgba(255,120,120,.14)`, "Vandaag"/"Onderweg" zacht rood `#ffc2c2`, balk zonder gloed. Rood blijft voor alarmen. |
 | v242 | Telefoon: Picnic-kaart meer ruimte voor het icoon (optie C): afstand 22 px, icoon 58 px. |
+| v243 | Telefoon: thermostaat- en lampvenster weer in eigen kleur (oranje bij verwarmen, blauw anders, lampkleur bij een lamp); de effen `#111827` van v213 geldt nu alleen voor de andere vensters. Ondertitel "Verwarmen" wit op oranje. |
 
 ## Volgende stappen
 
