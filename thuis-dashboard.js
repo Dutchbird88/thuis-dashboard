@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '253';
+const CARD_VERSION = '254';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4044,9 +4044,17 @@ const HPI = {
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
 const HPSTYLE = `
-#hpc, .ksp.hpp { display: none; }
+#hpc, .ksp.hpp, .kr .ksl { display: none; }
 @media (max-width: 600px) {
   .kspills .ksp.hpp { display: flex; }
+  /* helderheid per kamer (v254): schuif in de kaart, alleen als het licht aan is */
+  .kr.sl { height: auto; flex-wrap: wrap; padding: 13px 15px 14px; row-gap: 12px; }
+  .kr .ksl { display: block; flex-basis: 100%; height: 26px; margin: -2px 0 -4px; position: relative; touch-action: none; cursor: pointer; }
+  .kr .ksl::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); }
+  .kr .ksl i { position: absolute; left: 0; top: 10px; height: 6px; border-radius: 99px; background: linear-gradient(90deg, rgba(255,207,122,.55), #ffcf7a); }
+  .kr .ksl b { position: absolute; top: 13px; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.45); transition: transform .15s; }
+  .kr .ksl.drag b { transform: scale(1.12); }
+  :host([data-th=l]) .kr .ksl::before { background: rgba(60,60,67,.14); } :host([data-th=l]) .kr .ksl i { background: linear-gradient(90deg, #f5c26b, #e8890c); }
   /* muziektegel (v251, ontwerp A): op de plek van de afvaltegel, vage hoes als achtergrond */
   .mrow > #hpc:not([hidden]) { display: flex; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
   .tile.mus { position: relative; overflow: hidden; padding: 14px !important; flex-direction: column; cursor: pointer; min-width: 0; box-sizing: border-box;
@@ -6215,6 +6223,26 @@ class ThuisCard extends HTMLElement {
       return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams, speakers };
     });
   }
+  // helderheid van een hele kamer: slepen toont direct, bij loslaten één opdracht (helemaal links = uit)
+  _bindRoomSlider(sl) {
+    const i = +sl.dataset.i, put = (v) => { sl.firstChild.style.width = `${v}%`; sl.lastChild.style.left = `${Math.max(v, 2)}%`; sl.setAttribute('aria-valuenow', v); };
+    const at = (e) => { const r = sl.getBoundingClientRect(); return Math.round(clamp((e.clientX - r.left) / (r.width || 1), 0, 1) * 100); };
+    let v = null;
+    sl.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); sl.setPointerCapture(e.pointerId); this._kslDrag = true; sl.classList.add('drag'); v = at(e); put(v); });
+    sl.addEventListener('pointermove', (e) => { if (v == null) return; v = at(e); put(v); });
+    const end = (e) => {
+      if (v == null) return; e?.stopPropagation(); sl.classList.remove('drag'); this._kslDrag = false;
+      const rm = this._rooms()[i], val = v; v = null; if (!rm) return;
+      const ids = rm.lights.map((x) => x.entity_id), on = rm.lights.filter((x) => x.state === 'on').map((x) => x.entity_id);
+      if (val <= 1) { this._kOpt = { ...(this._kOpt || {}), [i]: false }; this._hass.callService('light', 'turn_off', { entity_id: ids }); }
+      else { this._kBri = { ...(this._kBri || {}), [i]: { v: val, t: Date.now() } }; this._hass.callService('light', 'turn_on', { entity_id: on.length ? on : ids, brightness_pct: val }); }
+      clearTimeout(this._kOptT); this._kOptT = setTimeout(() => { this._kOpt = null; this._rmListKey = null; this._updRooms(); }, 6000);
+      this._rmListKey = null; this._updRooms();
+    };
+    sl.addEventListener('pointerup', end); sl.addEventListener('pointercancel', end);
+    sl.addEventListener('click', (e) => e.stopPropagation());
+    sl.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  }
   _roomToggle(i) {
     const rm = this._rooms()[i]; if (!rm || !rm.lights.length) return;
     const on = !(this._kOpt?.[i] ?? rm.on > 0);
@@ -6241,7 +6269,11 @@ class ThuisCard extends HTMLElement {
         l2.push(`<span class="ap"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw(ic, 'on', md)}</svg>${txt}</span>`); });
       // temperatuur klein in de statusregel
       if (rm.temp != null) l2.push(`<span class="tq">${MTHERM}${fmtT(rm.temp)}°</span>`);
-      return `<div class="kr${lit ? ' lit' : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}</div>`;
+      // helderheid: gemiddelde van de lampen die aan zijn (of wat je net hebt ingesteld)
+      const onL = rm.lights.filter((x) => x.state === 'on'), bo = this._kBri?.[rm.i];
+      const bri = bo && Date.now() - bo.t < 8000 ? bo.v : onL.length ? Math.round(onL.reduce((a, x) => a + (x.attributes.brightness ?? 255), 0) / onL.length / 2.55) : 100;
+      const sl = lit ? `<div class="ksl" data-i="${rm.i}" role="slider" aria-label="Helderheid ${rm.name}" aria-valuenow="${bri}"><i style="width:${bri}%"></i><b style="left:${Math.max(bri, 2)}%"></b></div>` : '';
+      return `<div class="kr${lit ? ' lit sl' : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}${sl}</div>`;
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
     const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f);
@@ -6255,9 +6287,11 @@ class ThuisCard extends HTMLElement {
     const pills = P('', '#ffc83d', gBulb(lOn > 0), 'Lampen', lOn ? `${lOn} aan` : 'alles uit', lOn > 0) + (cv.length ? P('', '#5aa2ff', gBlind(cDn ? 0 : 100), 'Rolluiken', cDn ? `${cDn} dicht` : 'alles open', cDn > 0) : '')
       + (ct != null ? P('th', '#ff9a4d', `<svg viewBox="0 0 100 100"><use href="#${isHeating(cl.attributes) ? 'gFlame' : 'gTherm'}"/></svg>`, 'Klimaat', trange, isHeating(cl.attributes)) : '');
     if (this.$('kPills').innerHTML !== pills) { this.$('kPills').innerHTML = pills; this.$('kPills').querySelector('[data-k="th"]')?.addEventListener('click', () => this._openSheet('th')); }
-    if (html === this._rmListKey) return;
+    if (html === this._rmListKey || this._kslDrag) return;
     this._rmListKey = html; box.innerHTML = html;
+    box.querySelectorAll('.ksl').forEach((sl) => this._bindRoomSlider(sl));
     box.querySelectorAll('.kr').forEach((el) => el.addEventListener('click', (e) => {
+      if (e.target.closest('.ksl')) return;
       if (e.target.closest('.ksw')) { e.stopPropagation(); this._roomToggle(+e.target.closest('.ksw').dataset.i); return; }
       this._openSheet('room', +el.dataset.i);
     }));
