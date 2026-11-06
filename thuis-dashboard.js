@@ -1677,7 +1677,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '265';
+const CARD_VERSION = '266';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1692,7 +1692,7 @@ const CARD_VERSION = '265';
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       const bgRgb = BG === '#0a111d' ? 'rgb(10, 17, 29)' : 'rgb(246, 247, 251)';
       let meta = document.querySelector('meta[name="theme-color"]');
-      if (mq.matches && cards.length) {
+      if (mq.matches) { // v266: weer zoals tot v262 — op de telefoon altijd direct donker (ook voordat een kaart verschijnt)
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
         VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
