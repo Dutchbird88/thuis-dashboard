@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '256';
+const CARD_VERSION = '257';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5355,6 +5355,9 @@ class ThuisCard extends HTMLElement {
       const hit = Object.values(ents).find((e) => e.platform === 'picnic' && e.translation_key === tk);
       ids[k] = (this._config.picnic || {})[k] || hit?.entity_id || null;
     }
+    // live aankomst (v257): de geschatte aankomst van de bezorger, als tijdstip of als minuten
+    const live = Object.values(ents).find((e) => e.platform === 'picnic' && /estimated_arrival|eta_live|arrival/i.test(`${e.translation_key || ''} ${e.entity_id}`) && !Object.values(want).includes(e.translation_key));
+    ids.live = (this._config.picnic || {}).live || live?.entity_id || (this._hass?.states['sensor.picnic_estimated_arrival_of_next_delivery'] ? 'sensor.picnic_estimated_arrival_of_next_delivery' : null);
     if (Object.values(ents).some((e) => e.platform === 'picnic')) this._picIds = ids;
     return ids;
   }
@@ -5475,6 +5478,9 @@ class ThuisCard extends HTMLElement {
     if (!box || !this._hass) return;
     const now = Date.now(), day0 = startOfDay(now), ids = this._picnicIds();
     const ts = (id) => { const t = Date.parse(this._state(id)?.state); return isNaN(t) ? null : t; };
+    // live aankomst: tijdstip → dat tijdstip; getal → zoveel minuten vanaf de laatste update van de sensor
+    const lv = this._state(ids.live), lvN = lv && /^\d+(\.\d+)?$/.test(String(lv.state).trim()) ? +lv.state : null;
+    const arr = lv ? (lvN != null ? (Date.parse(lv.last_updated || lv.last_changed) || now) + lvN * 60000 : ts(ids.live)) : null;
     let s = ts(ids.eta_s), e = ts(ids.eta_e), eta = s != null && e != null;
     if (!eta) { s = ts(ids.slot_s); e = ts(ids.slot_e); }
     if ((s == null || e == null) && this._events) {
@@ -5489,7 +5495,7 @@ class ThuisCard extends HTMLElement {
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`);
       const busy = now >= s, pct = busy ? Math.min(100, Math.round((now - s) / (e - s) * 100)) : null;
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic komt bezorgen</b><span class="tm" style="color:#fff">${fmtTime(s)} – ${fmtTime(e)}</span></div>`
-        + `<div class="rt"><b>${busy ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag'}</b>${busy ? 'elk moment' : `over ${mins((s - now) / 60000)}`}</div></div>`
+        + `<div class="rt"><b>${busy || (arr && arr - now < 30 * 60000) ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag'}</b>${arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'elk moment' : `nog ${mins((arr - now) / 60000)}`) : busy ? 'elk moment' : `over ${mins((s - now) / 60000)}`}</div></div>`
         + (busy ? `<div class="bar"><i style="width:${pct}%"></i></div>` : '');
     }
     box.hidden = !show;
