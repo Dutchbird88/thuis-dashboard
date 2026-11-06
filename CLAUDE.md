@@ -210,6 +210,7 @@ Verdere regels:
   - venstertitels en ondertitels **gecentreerd**, de ondertitel grijs;
   - alarmen houden hun rode gloed.
   - Het pulserende rode bolletje bij de camera op de telefoon is weg.
+  - Het camerabeeld op Thuis is 196 px hoog (v246, was 220 px).
 - **Bewust zo gelaten (november 2026):** de gekleurde chips (Lampen, Rolluiken, Klimaat), de gloedrand van de tegels en de gloed om de profielfoto's blijven. Vlakke tegels en grijze chips zijn als mockup getoond en afgewezen: de gebruiker wil zien wanneer iets actief is. Niet opnieuw voorstellen.
 - **Picnic-kaart (telefoon, v241):** gedempt Picnic-rood (zachte tint, dunne rand, `#ffc2c2` voor Vandaag/Onderweg, balk zonder gloed). Een bezorging is informatie, geen waarschuwing. Sinds v242 icoon 58 px met 22 px afstand tot de tekst.
 - **Kamerkaart:** de temperatuur staat klein en grijs in de statusregel, met een effen thermometer. Bij apparaten staat alleen "Nog xx min". Het aantal lampen staat niet achter de verdiepingen.
