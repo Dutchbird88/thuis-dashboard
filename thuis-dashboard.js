@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '258';
+const CARD_VERSION = '259';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5350,10 +5350,12 @@ class ThuisCard extends HTMLElement {
   _picnicIds() {
     if (this._picIds) return this._picIds;
     const ents = this._hass?.entities || {}, ids = {};
-    const want = { eta_s: 'next_delivery_eta_start', eta_e: 'next_delivery_eta_end', slot_s: 'next_delivery_slot_start', slot_e: 'next_delivery_slot_end', done: 'last_order_delivery_time' };
+    const want = { eta_s: 'next_delivery_eta_start', eta_e: 'next_delivery_eta_end', slot_s: 'next_delivery_slot_start', slot_e: 'next_delivery_slot_end', done: 'last_order_delivery_time', status: 'last_order_status', lslot: 'last_order_slot_start' };
     for (const [k, tk] of Object.entries(want)) {
       const hit = Object.values(ents).find((e) => e.platform === 'picnic' && e.translation_key === tk);
-      ids[k] = (this._config.picnic || {})[k] || hit?.entity_id || null;
+      // ook op de naam van de entiteit, voor als de vertaalsleutel ontbreekt
+      const byId = Object.values(ents).find((e) => e.platform === 'picnic' && e.entity_id.endsWith(tk));
+      ids[k] = (this._config.picnic || {})[k] || hit?.entity_id || byId?.entity_id || null;
     }
     // live aankomst (v257): de geschatte aankomst van de bezorger, als tijdstip of als minuten
     const live = Object.values(ents).find((e) => e.platform === 'picnic' && /estimated_arrival|eta_live|arrival/i.test(`${e.translation_key || ''} ${e.entity_id}`) && !Object.values(want).includes(e.translation_key));
@@ -5489,7 +5491,11 @@ class ThuisCard extends HTMLElement {
       if (ev) ({ s, e } = ev);
     }
     // al bezorgd (v258): moment van bezorgen van de laatste bestelling hoort bij dit tijdvak → "Bezorgd · 18:56", na 15 min weg
-    const dt = ts(ids.done), done = dt != null && s != null && dt >= s - 2 * HOUR && dt <= now + 60000 && startOfDay(dt) === day0;
+    // of: de laatste bestelling is afgerond en hoort bij dit tijdslot (dan het moment dat de status veranderde)
+    const st = this._state(ids.status), ls = ts(ids.lslot), slot0 = ts(ids.slot_s) ?? s;
+    const stDone = st && /complet|deliver|bezorg|afgerond|done/i.test(st.state) && ls != null && slot0 != null && Math.abs(ls - slot0) < 5 * 60000;
+    let dt = ts(ids.done); if ((dt == null || startOfDay(dt) !== day0) && stDone) dt = Date.parse(st.last_changed) || null;
+    const done = dt != null && s != null && dt >= s - 2 * HOUR && dt <= now + 60000 && startOfDay(dt) === day0;
     const show = s != null && e != null && startOfDay(s) === day0 && (done ? now - dt < 15 * 60000 : now < e);
     let html = '';
     if (show && done) {
