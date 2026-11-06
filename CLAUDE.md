@@ -92,7 +92,7 @@ Verdere regels:
 
 - `_openSheet(kind, id)`, met de soorten `th` (thermostaat), `wx` (weer), `cv` (rolluik), `lt` (lamp), `room`, `ppl` (aanwezigheid) en `waste`.
 - Geschiedenis wordt in het kamervenster getoond met de vlag `this._cvHist`, via `_cvHistory`, `_thHistory`, `_roomHistory` en `_appHistory`.
-- Omlaag vegen sluit een venster (v247, in `_build`: `shEl`/`shBg`, `drag`, `shEnd`). De touchmove is **niet passief** en roept `preventDefault` aan zodra omlaag wordt geveegd vanaf de bovenkant; anders ververst de HA-app (pull-to-refresh). Tijdens slepen staat de transitie uit. Sluiten bij > 110 px of > 24 px met > 0,45 px/ms. Uitgezonderd: `.cvsl`, `#thArc`, `.tqch`, `.pmap`.
+- Omlaag vegen sluit een venster (v247, in `_build`: `shEl`/`shBg`, `drag`, `shEnd`). De touchmove is **niet passief** en roept `preventDefault` aan zodra omlaag wordt geveegd vanaf de bovenkant; anders ververst de HA-app (pull-to-refresh). Tijdens slepen staat de transitie uit. Eerst de richting (v250): opzij (> 6 px en meer dan 0,8× omlaag) laat los, slepen pas bij > 10 px en 1,5× meer omlaag dan opzij. Sluiten bij > 110 px of > 24 px met > 0,45 px/ms. Uitgezonderd: `.cvsl`, `#thArc`, `.tqch`, `.pmap`.
 
 **Kamers**
 
@@ -122,7 +122,7 @@ Verdere regels:
 **HomePod (mini)** (v248, alleen telefoon; stijl in `HPSTYLE`, achteraan in de `<style>` van Thuis)
 
 - `_isSpeaker(id)`: `speakers` uit de YAML, anders elke `media_player` met "homepod" in model, apparaatnaam of id (integratie Apple TV). `_speakers()` en `_hpInfo(id)` (titel, artiest, hoes via `entity_picture`/`hassUrl`, voortgang, volume, optimistische afspeelstand `_hpOpt`).
-- Thuis: `#hpc` (`.was.hp`, in `MOVE` na `pic`, wegvegen zoals Picnic met `dataset.sig`). Zichtbaar bij afspelen of tot 30 min na pauzeren.
+- Thuis: `#hpc` (`.was.hp`, in `MOVE` na `pic`, wegvegen zoals Picnic met `dataset.sig` = titel). Alleen zichtbaar bij afspelen; na pauzeren met de kaartknop nog 2 min (`_hpKeep`, v250).
 - Kamers: `speakers` per ruimte in `_areaRooms`/`_rooms`; pil `.ksp.hpp` met `HPICON`, tik opent venster `hp` met `_roomBack`.
 - Venster `hp`: `_updHpSheet` (elke seconde via `_hpTimer`), knoppen `media_previous_track`/`media_play_pause`/`media_next_track`, volumeschuif `.hpsl` (uitgezonderd van vegen-sluiten).
 - Een HomePod komt vaak als twee mediaspelers binnen. `_spkDedupe` (v249) houdt per apparaatnaam één: die speelt, anders die de meeste mediagegevens heeft. Is het apparaat naar de kamer genoemd, dan toont de pil het model ("HomePod mini").

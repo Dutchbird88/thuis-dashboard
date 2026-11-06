@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '249';
+const CARD_VERSION = '250';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4279,16 +4279,18 @@ class ThuisCard extends HTMLElement {
     const shReset = () => { shEl.style.transition = ''; shEl.style.transform = ''; shBg.style.transition = ''; shBg.style.opacity = ''; };
     shEl.addEventListener('touchstart', (e) => {
       drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap, .hpsl')
-        ? { y: e.touches[0].clientY, d: 0, on: false, v: 0, ly: e.touches[0].clientY, lt: e.timeStamp } : null;
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY, d: 0, on: false, v: 0, ly: e.touches[0].clientY, lt: e.timeStamp } : null;
     }, { passive: true });
     shEl.addEventListener('touchmove', (e) => {
       if (!drag) return;
       const y = e.touches[0].clientY, d = y - drag.y;
       if (!drag.on) {
+        const dx = Math.abs(e.touches[0].clientX - drag.x);
         if (d < 0 || shEl.scrollTop > 0) { if (d < -4 || shEl.scrollTop > 0) drag = null; return; } // omhoog: de inhoud scrollt gewoon
-        if (e.cancelable) e.preventDefault();
-        if (d < 4) return;
-        drag.on = true; shEl.style.transition = 'none'; shBg.style.transition = 'none';
+        if (dx > 6 && dx > d * 0.8) { drag = null; return; } // opzij (pillen, scènes): niet sluiten
+        if (d > dx && e.cancelable) e.preventDefault(); // duidelijk omlaag: de HA-app niet laten verversen
+        if (d < 10 || d < dx * 1.5) return; // pas sluiten-slepen bij een duidelijke beweging omlaag
+        drag.on = true; drag.y = y; shEl.style.transition = 'none'; shBg.style.transition = 'none';
       }
       if (e.cancelable) e.preventDefault();
       const dt = Math.max(1, e.timeStamp - drag.lt);
@@ -5385,8 +5387,9 @@ class ThuisCard extends HTMLElement {
   // Thuis: kaart "Nu speelt" zolang een HomePod muziek afspeelt (de laatst gestarte eerst)
   _updMedia() {
     const box = this.$('hpc'); if (!box || !this._hass) return;
-    // speelt, of kort gepauzeerd (tot 30 min), zodat je vanaf de kaart kunt hervatten
-    const list = this._spkDedupe(this._speakers()).map((id) => this._hpInfo(id)).filter((m) => m.play || (m.paused && (this._hpOpt?.id === m.id || Date.now() - (Date.parse(m.x?.last_changed) || 0) < 30 * 60000)));
+    // alleen zolang er muziek speelt; pauzeer je met de knop op de kaart, dan blijft hij 2 minuten staan om te hervatten
+    if (this._hpKeep && Date.now() - this._hpKeep.t > 2 * 60000) this._hpKeep = null;
+    const list = this._spkDedupe(this._speakers()).map((id) => this._hpInfo(id)).filter((m) => m.play || (this._hpKeep?.id === m.id && !m.off));
     const m = list.sort((p, q) => (Date.parse(q.x?.last_changed) || 0) - (Date.parse(p.x?.last_changed) || 0))[0];
     let html = '';
     if (m) {
@@ -5396,10 +5399,10 @@ class ThuisCard extends HTMLElement {
         + (m.dur ? `<div class="bar"><i style="width:${(m.pos / m.dur * 100).toFixed(1)}%"></i></div>` : '');
     }
     box.hidden = !m;
-    box.dataset.sig = m ? `${m.id}|${m.title}` : '';
+    box.dataset.sig = m ? `${m.title || 'muziek'}` : '';
     if (box.innerHTML !== html) {
       box.innerHTML = html;
-      box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
+      box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._hpKeep = m.play ? { id: m.id, t: Date.now() } : null; this._updMedia(); });
     }
     box.dataset.id = m ? m.id : '';
     box.onclick = () => box.dataset.id && this._openSheet('hp', box.dataset.id);
