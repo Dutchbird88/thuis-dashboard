@@ -92,6 +92,7 @@ Verdere regels:
 
 - `_openSheet(kind, id)`, met de soorten `th` (thermostaat), `wx` (weer), `cv` (rolluik), `lt` (lamp), `room`, `ppl` (aanwezigheid) en `waste`.
 - Geschiedenis wordt in het kamervenster getoond met de vlag `this._cvHist`, via `_cvHistory`, `_thHistory`, `_roomHistory` en `_appHistory`.
+- Omlaag vegen sluit een venster (v247, in `_build`: `shEl`/`shBg`, `drag`, `shEnd`). De touchmove is **niet passief** en roept `preventDefault` aan zodra omlaag wordt geveegd vanaf de bovenkant; anders ververst de HA-app (pull-to-refresh). Tijdens slepen staat de transitie uit. Sluiten bij > 110 px of > 24 px met > 0,45 px/ms. Uitgezonderd: `.cvsl`, `#thArc`, `.tqch`, `.pmap`.
 
 **Kamers**
 

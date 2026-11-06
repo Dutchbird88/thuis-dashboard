@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '246';
+const CARD_VERSION = '247';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4221,12 +4221,42 @@ class ThuisCard extends HTMLElement {
     // telefoon: tik ergens op de thermostaattegel = thermostaatscherm (behalve de − en + knoppen)
     this.$('mTh').addEventListener('click', (e) => { if (!e.target.closest('.mstp')) this._openSheet('th'); });
     this.$('shV').addEventListener('click', () => this._closeSheet());
-    // omlaag vegen vanaf de bovenkant sluit het paneel
-    let sy = null;
+    // omlaag vegen vanaf de bovenkant sluit het paneel (v247: volgt de vinger direct, met snelheid,
+    // en eist de veeg op zodat de app van HA niet gaat verversen of de pagina eronder meeschuift)
     // niet bij de schuifregelaar: daar is vegen voor de stand, niet om het paneel te sluiten
-    this.$('sheet').addEventListener('touchstart', (e) => { sy = this.$('sheet').scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap') ? e.touches[0].clientY : null; }, { passive: true });
-    this.$('sheet').addEventListener('touchmove', (e) => { if (sy == null) return; const d = e.touches[0].clientY - sy; this.$('sheet').style.transform = d > 0 ? `translateY(${d}px)` : ''; }, { passive: true });
-    this.$('sheet').addEventListener('touchend', (e) => { if (sy == null) return; const d = e.changedTouches[0].clientY - sy; sy = null; if (d > 90) this._closeSheet(); else this.$('sheet').style.transform = ''; });
+    const shEl = this.$('sheet'), shBg = this.$('shV');
+    let drag = null;
+    const shReset = () => { shEl.style.transition = ''; shEl.style.transform = ''; shBg.style.transition = ''; shBg.style.opacity = ''; };
+    shEl.addEventListener('touchstart', (e) => {
+      drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap')
+        ? { y: e.touches[0].clientY, d: 0, on: false, v: 0, ly: e.touches[0].clientY, lt: e.timeStamp } : null;
+    }, { passive: true });
+    shEl.addEventListener('touchmove', (e) => {
+      if (!drag) return;
+      const y = e.touches[0].clientY, d = y - drag.y;
+      if (!drag.on) {
+        if (d < 0 || shEl.scrollTop > 0) { if (d < -4 || shEl.scrollTop > 0) drag = null; return; } // omhoog: de inhoud scrollt gewoon
+        if (e.cancelable) e.preventDefault();
+        if (d < 4) return;
+        drag.on = true; shEl.style.transition = 'none'; shBg.style.transition = 'none';
+      }
+      if (e.cancelable) e.preventDefault();
+      const dt = Math.max(1, e.timeStamp - drag.lt);
+      drag.v = drag.v * 0.4 + ((y - drag.ly) / dt) * 0.6; drag.ly = y; drag.lt = e.timeStamp; drag.d = Math.max(0, d);
+      shEl.style.transform = `translateY(${drag.d}px)`;
+      shBg.style.opacity = String(Math.max(0.15, 1 - drag.d / ((shEl.offsetHeight || 600) * 1.1)));
+    }, { passive: false });
+    const shEnd = () => {
+      const g = drag; drag = null;
+      if (!g || !g.on) return;
+      const close = g.d > 110 || (g.d > 24 && g.v > 0.45);
+      shEl.style.transition = 'transform .24s cubic-bezier(.3,.7,.2,1)'; shBg.style.transition = 'opacity .24s';
+      if (close) { shEl.style.transform = 'translateY(100%)'; shBg.style.opacity = '0'; setTimeout(() => { this._closeSheet(); shReset(); }, 220); }
+      else { shEl.style.transform = ''; shBg.style.opacity = ''; setTimeout(shReset, 260); }
+    };
+    shEl.addEventListener('touchend', shEnd); shEl.addEventListener('touchcancel', shEnd);
+    // vegen op de donkere achtergrond: de pagina eronder niet laten schuiven of verversen
+    shBg.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
     this.$('tPlus').addEventListener('click', () => this._tStep(1));
     this.$('tT').addEventListener('click', () => this._moreInfo(this._climateId()));
     const dial = this.$('tDial');

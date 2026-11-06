@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v246**.*
+*Bijgewerkt: 5 november 2026, versie **v247**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v246** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v247** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v246.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v247.
 
 ## Gerealiseerde functies (per tab)
 
@@ -115,6 +115,7 @@
 | v244 | Telefoon: tabbalk zonder kleur per tabblad (optie A): actief wit, de andere tabbladen grijzer (`rgba(235,240,248,.55)`). |
 | v245 | Telefoon (Nu): meter Opgewekt vandaag kreeg de oranje gloed van de computermeter (`.val`); nu een groene gloed (`#mg2`). |
 | v246 | Telefoon (Thuis): camerabeeld 196 px hoog in plaats van 220 px (optie A); een breedbeeld past vrijwel precies. |
+| v247 | Vensters omlaag vegen: volgt de vinger direct (geen transitie tijdens het slepen), sluit bij >110 px of een snelle veeg (>24 px en >0,45 px/ms), achtergrond vervaagt mee, glijdt weg bij sluiten. De veeg wordt opgeëist (`preventDefault`, niet-passieve touchmove), zodat de HA-app niet ververst en de pagina eronder niet meeschuift; ook op de donkere achtergrond. |
 
 ## Volgende stappen
 
