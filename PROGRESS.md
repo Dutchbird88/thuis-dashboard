@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v262**.*
+*Bijgewerkt: 5 november 2026, versie **v263**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v262** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v263** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v262.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v263.
 
 ## Gerealiseerde functies (per tab)
 
@@ -131,8 +131,11 @@
 | v260 | Kamers: opzij vegen over een hele verlichte kaart regelt de helderheid (vanaf de huidige stand, zoals Hue/Woning); op de balk beginnen = absolute stand. Op en neer = scrollen, tikken = kamer. Verlichte kaart heeft `touch-action: pan-y`, dus de tabbladwissel slaat hem over (de dunne balk was te lastig te raken en gaf een tabbladwissel). |
 | v261 | Telefoon: geen datum meer onder de titel Kamers (`#kDate` verborgen), meer ruimte. |
 | v262 | Privacy: vaste reservecoördinaten voor de buienradar verwijderd. Nu `_homeLL()`: `zone.home`, anders `hass.config`; zonder locatie geen radar. |
+| v263 | Codecontrole, fouten opgelost (geen zichtbare wijzigingen behalve foutmeldingen die wegvallen): Auto-Pauze annuleert de herstartpoging; tabblad-vegen en enkele klik-luisteraars maar één keer koppelen (stapelden bij setConfig); caches leeg bij `_build`; timers (HomePod, kaart, camera) stoppen bij verlaten; weersverwachting alsnog aanmelden als de weer-entiteit later komt; vergelijkingen met `innerHTML` (svg/&) vervangen door eigen sleutel (meldingen, alarm, muziektegel, Kamers-chips); geschiedenis: laat antwoord overschrijft geen ander venster, geen volledig logboek bij lege lijst; kamernamen veilig in reguliere expressies (`reEsc`); hoescache begrensd en blob-URL's vrijgegeven; Picnic-ids ook zonder Picnic onthouden; Energie: geen valse waterlekmelding zonder watermeter; Nu: geen "NaN online", paneelaantal uit de echte panelen, zon-chip komt terug, grafieken direct na setConfig; geen "null" naar het HA-venster; themakleur alleen als een kaart van de app zichtbaar is; Auto-ring crasht niet zonder klimaat; camera-miniaturen alleen herladen bij nieuwe URL. |
 
 ## Volgende stappen
+
+- Uit de codecontrole van v263, nog niet gedaan (groter of met risico): statistieken in vaste eenheden opvragen (`units` in `recorder/statistics_during_period`); `_update` van Nu/Energie overslaan als niets relevants veranderde; apparaat-index in `_roomsBuild` in plaats van `Object.keys(E).filter` per sensor; dag-grenzen met kalenderdagen (zomertijd); weervenster herbouwt de radar; logboek-URL met alle automatiseringen bij de thermostaatgeschiedenis.
 
 1. **Gebruiker helpen bij de overgang naar de Marketplace** (HA 2026.11): GitHub koppelen en de repository opnieuw toevoegen als dat nodig is.
 

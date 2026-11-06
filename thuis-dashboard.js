@@ -77,6 +77,7 @@ const SENS_TXT = {
 const SENS_ICON = (x) => x.off ? RIC.svg({ leak: 'leak', smoke: 'smoke', motion: 'motionS', door: 'contact', window: 'windowS' }[x.kind], 'off')
   : x.kind === 'leak' ? RIC.svg('leak', x.on ? 'red' : 'on') : x.kind === 'smoke' ? RIC.svg('smoke', x.on ? 'red' : x.warn ? 'orange' : 'on') : x.kind === 'motion' ? RIC.svg('motionS', x.on ? 'yellow' : 'on')
   : RIC.svg(x.kind === 'door' ? 'contact' : 'windowS', x.on ? 'orange' : 'on');
+const reEsc = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const relTime = (t) => { const m = (Date.now() - t) / 6e4; if (m < 1) return 'zojuist'; if (m < 60) return `${Math.round(m)} min geleden`;
   const d = new Date(t), now = new Date(), day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), dd = (day(now) - day(d)) / 864e5;
   return dd === 0 ? fmtTime(t) : dd === 1 ? `gisteren ${fmtTime(t)}` : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }); };
@@ -270,6 +271,7 @@ const toTop = (root) => {
 // telefoon: horizontaal vegen = vorig of volgend tabblad. De linkerrand (30 px) blijft voor het menu van HA,
 // en vegen over iets wat zelf veegt of schuift (kaarten, camera, pillenrijen, schuiven, grafieken, vensters; touch-action none/pan-y) telt niet.
 const bindSwipe = (root) => {
+  if (root._swipeBound) return; root._swipeBound = true;
   const mq = window.matchMedia('(max-width: 600px)'); let st = null;
   const skip = (e) => e.composedPath().some((el) => el instanceof Element && (el.matches('.sheet, .shv, #camHit, .mpills, .kspills, .kpills, .thumbs, input, [role="slider"]')
     || /^(none|pan-y)$/.test(getComputedStyle(el).touchAction) || (el.scrollWidth > el.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(el).overflowX))));
@@ -774,7 +776,7 @@ class ZonnepanelenCard extends HTMLElement {
       const v = Number(p.n ?? p.nr ?? p.number ?? p.false ?? p['false']); pn = Number.isFinite(v) && v > 0 ? v : pn + 1; return { ...p, n: pn }; }) }));
     this._config.photo = { ...DEFAULTS.photo, ...(config.photo || {}) };
     this._config.forecast = { ...DEFAULTS.forecast, ...(config.forecast || {}) };
-    this._photoKey = null;
+    this._photoKey = null; this._fetchedAt = 0;
     this._todayPts = [];
     this._fcPts = [];
     this._days = [];
@@ -813,6 +815,7 @@ class ZonnepanelenCard extends HTMLElement {
     return this._state(id).attributes?.unit_of_measurement === 'kW' ? v * 1000 : v;
   }
   _moreInfo(entityId) {
+    if (!entityId || entityId === 'null' || entityId === 'undefined') return;
     this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true }));
   }
 
@@ -1029,6 +1032,7 @@ class ZonnepanelenCard extends HTMLElement {
       const t = up ? sun.attributes.next_setting : sun.attributes.next_rising;
       set('sunchip', `<svg viewBox="0 0 24 24">${up ? '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v3M4.9 8.9l1.4 1.4M19.1 8.9l-1.4 1.4M12 13v-2M10 11l2 2 2-2"/>' : '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v3M4.9 8.9l1.4 1.4M19.1 8.9l-1.4 1.4M12 11v2M10 13l2-2 2 2"/>'}</svg>${up ? 'Zon onder' : 'Zon op'} <b>${t ? fmtTime(t) : '—'}</b>`);
     } else this.$('sunchip').style.display = 'none';
+    if (sun) this.$('sunchip').style.display = '';
 
     // hero gauge
     const pv = this._power(c.solar_power);
@@ -1130,7 +1134,7 @@ class ZonnepanelenCard extends HTMLElement {
         const invOnline = this._num(c.inverters_online);
         let on;
         if (invOnline != null) {
-          on = Math.round(clamp(invOnline, 0, c.inverters.length) * (all.length / c.inverters.length));
+          on = c.inverters.length ? Math.round(clamp(invOnline, 0, c.inverters.length) * (all.length / c.inverters.length)) : 0;
         } else {
           // geen ECU-status beschikbaar: terugvallen op de paneelsensoren zelf
           on = all.filter((p) => { const st = this._state(p.entity)?.state; return st != null && st !== 'unavailable' && st !== 'unknown'; }).length;
@@ -1200,7 +1204,7 @@ class ZonnepanelenCard extends HTMLElement {
       if (t != null) temps.push(t);
     }
     set('panelsNote', `${count || n * 2} panelen · ${n} omvormers${temps.length ? ` · ${fmt(Math.min(...temps))}–${fmt(Math.max(...temps))} °C` : ''}`);
-    set('peakCap', `${n * 2} panelen`);
+    set('peakCap', `${count || n * 2} panelen`);
     this._updMob(pv, grid, home, today, fc, best, speed);
   }
 
@@ -1671,7 +1675,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '262';
+const CARD_VERSION = '263';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1686,7 +1690,7 @@ const CARD_VERSION = '262';
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       const bgRgb = BG === '#0a111d' ? 'rgb(10, 17, 29)' : 'rgb(246, 247, 251)';
       let meta = document.querySelector('meta[name="theme-color"]');
-      if (mq.matches) {
+      if (mq.matches && cards.length) {
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
         VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
@@ -1865,7 +1869,7 @@ class VerbruikCard extends HTMLElement {
     return v ?? this._lastCur?.[id] ?? null;
   }
   _price(k) { return this._config.prices[k] ?? this._prefPrices[k] ?? null; }
-  _moreInfo(entityId) { this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
+  _moreInfo(entityId) { if (entityId && entityId !== 'null' && entityId !== 'undefined') this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
 
   /* ---------- markup ---------- */
 
@@ -2191,9 +2195,9 @@ class VerbruikCard extends HTMLElement {
     const night = this._hourly(c.water, 'change', day0, Math.min(6, Math.max(0, Math.floor((now - day0) / HOUR))));
     let run = 0, best = 0;
     for (const v of night) { if (v != null && v < 0.001) { run++; best = Math.max(best, run); } else run = 0; }
-    const leak = night.length >= 3 && best === 0;
-    set('leakR', night.length < 3 ? '—' : leak ? '<span style="color:var(--sun)">Let op</span>' : '<span style="color:var(--exp)">Geen</span>');
-    set('leakS', night.length < 3 ? 'controle na 03:00' : leak ? 'vannacht liep er elk uur water' : `vannacht ${best} uur zonder water`);
+    const known = c.water ? night.filter((v) => v != null) : [], leak = known.length >= 3 && best === 0;
+    set('leakR', known.length < 3 ? '—' : leak ? '<span style="color:var(--sun)">Let op</span>' : '<span style="color:var(--exp)">Geen</span>');
+    set('leakS', !c.water ? 'geen watermeter' : known.length < 3 ? 'controle na 03:00' : leak ? 'vannacht liep er elk uur water' : `vannacht ${best} uur zonder water`);
     const pk = (this._h[c.power] || []).filter((r) => r.t >= day0 && r.max != null).reduce((m, r) => (Math.abs(r.max) > Math.abs(m?.max ?? 0) ? r : m), null);
     const pkA = pk ? Math.abs(pk.max) / c.voltage / c.phases : null, pkPct = pkA != null ? pkA / c.fuse : null;
     set('peakR', pkPct == null ? '—' : `<span style="color:${ampCol(pkPct)}">${fmt(pkPct * 100)}%</span>`);
@@ -2618,7 +2622,7 @@ class AutoCard extends HTMLElement {
   _state(id) { return this._hass?.states[id]; }
   _num(id) { const v = parseFloat(this._state(id)?.state); return isNaN(v) ? null : v; }
   _on(id) { return this._state(id)?.state === 'on'; }
-  _moreInfo(entityId) { this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
+  _moreInfo(entityId) { if (entityId && entityId !== 'null' && entityId !== 'undefined') this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -2783,6 +2787,7 @@ class AutoCard extends HTMLElement {
     const cur = this._state(c.charger_current), canZero = cur && Number(cur.attributes.min) === 0;
     const setA = (v) => this._hass.callService('number', 'set_value', { entity_id: c.charger_current, value: v });
     if (st.charging && !st.paused) {
+      clearTimeout(this._cRetry); this._cRetry = null;
       // echte pauze: laadstroom naar 0 A; de sessie blijft open en de auto gaat vanzelf verder als de stroom terugkomt
       if (canZero) { const v = parseFloat(cur.state); try { localStorage.setItem('thuis-laadstroom', String(v > 0 ? v : c.charger_max_a || 16)); } catch (e) { /* geen opslag */ } setA(0); }
       else if (useSw) this._hass.callService('switch', 'turn_off', { entity_id: c.charger_switch }); else this._press(c.charger_stop);
@@ -3028,7 +3033,8 @@ class AutoCard extends HTMLElement {
 
   // slepen over de ring (zelfde geometrie als de tekening in _updateClimate)
   _klFromEvent(ev, onlyRing) {
-    const kl = this._kl(), a = kl.attributes, min = a.min_temp ?? 17, max = a.max_temp ?? 33, step = a.target_temp_step || 1;
+    const kl = this._kl(); if (!kl) return null;
+    const a = kl.attributes, min = a.min_temp ?? 17, max = a.max_temp ?? 33, step = a.target_temp_step || 1;
     const r = this.$('kDial').getBoundingClientRect();
     const x = (ev.clientX - r.left) / r.width * 320 - KD.cx, y = (ev.clientY - r.top) / r.height * 300 - KD.cy;
     const dist = Math.hypot(x, y);
@@ -4103,7 +4109,8 @@ class ThuisCard extends HTMLElement {
     const first = !this._hass;
     this._hass = hass;
     this._update();
-    if (first) { this._subForecast(); this._fetchAgenda(); }
+    if (first) this._fetchAgenda();
+    if (!this._unsubs && this.isConnected) this._subForecast();
     if (this._camEl) this._camEl.hass = hass;
     // camerascherm: alleen bijwerken als de camera zelf verandert (elke update laat beeld en geluid haperen)
     if (this._cfEl) { const so = hass.states[this._cfEl._entity]; if (so && so !== this._cfEl.stateObj) { this._cfEl.stateObj = so; this._cfEl.hass = hass; } }
@@ -4122,6 +4129,7 @@ class ThuisCard extends HTMLElement {
     clearInterval(this._tick); clearInterval(this._htimer); if (this._carVis) { document.removeEventListener('visibilitychange', this._carVis); this._carVis = null; }
     (this._unsubs || []).forEach((p) => p.then((u) => u && u()).catch(() => {}));
     this._unsubs = null;
+    clearInterval(this._hpTimer); this._hpTimer = null; clearTimeout(this._pplPicT); clearInterval(this._pplPicT); clearTimeout(this._cfTimer); clearInterval(this._cfPoll);
   }
 
   $(id) { return this.shadowRoot.getElementById(id); }
@@ -4360,8 +4368,10 @@ class ThuisCard extends HTMLElement {
     this.$('dish').addEventListener('click', () => this._appOpen('dish'));
     this.$('oven').addEventListener('click', () => this._appOpen('oven'));
     this.$('cFull').addEventListener('click', (e) => { if (e.target === this.$('cFull')) this._closeCam(); });
-    this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open'));
+    if (!this._rootClick) { this._rootClick = true; this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open')); }
     this._camEl = null; this._camId = null; this._lightKey = null; this._pplKey = null; this._binKey = null; this._thumbKey = null;
+    this._tDialHtml = null; this._preKey = null; this._cvKey = null; this._wKey = null; this._rmListKey = null; this._rmKey = null; this._picIds = null;
+    clearTimeout(this._cfTimer); clearInterval(this._cfPoll); this._cfEl = null;
     this._clock();
   }
 
@@ -4511,7 +4521,7 @@ class ThuisCard extends HTMLElement {
         e.stopPropagation(); pre.classList.remove('open');
         this._preWait = el.dataset.m;
         this._hass.callService('climate', 'set_preset_mode', { entity_id: this._climateId(), preset_mode: el.dataset.m });
-        setTimeout(() => { this._preWait = null; this._updThermo(); }, 8000);
+        clearTimeout(this._preT); this._preT = setTimeout(() => { this._preWait = null; this._updThermo(); }, 8000);
         this._updThermo();
       }));
     }
@@ -4806,7 +4816,7 @@ class ThuisCard extends HTMLElement {
       const st = this._state(el.dataset.id), ok = st && !['unavailable', 'unknown'].includes(st.state);
       el.style.setProperty('--c', ok ? 'var(--exp)' : 'var(--sun)');
       const pic = st?.attributes.entity_picture;
-      if (pic) el.querySelector('img').src = `${pic}${pic.includes('?') ? '&' : '?'}t=${Math.floor(Date.now() / 10000)}`;
+      if (pic) { const u = `${pic}${pic.includes('?') ? '&' : '?'}t=${Math.floor(Date.now() / 10000)}`, im = el.querySelector('img'); if (im.dataset.u !== u) { im.dataset.u = u; im.src = u; } }
     });
   }
 
@@ -4990,8 +5000,8 @@ class ThuisCard extends HTMLElement {
     const html = items.map((n) => `<div class="nrow" style="--c:${n.c}"><span class="mi">${n.svg || NI[n.ic]}</span><div><b>${n.t}</b><span>${n.desc}</span></div><button data-id="${n.id}" data-since="${n.since}">Gedaan</button></div>`).join('');
     box.hidden = !items.length;
     this.$('notN').textContent = items.length || '';
-    if (list.innerHTML === html) return;
-    list.innerHTML = html;
+    if (list._k === html) return;
+    list._k = html; list.innerHTML = html;
     list.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
       try { const h = JSON.parse(localStorage.getItem('thuis-meldingen') || '{}'); h[b.dataset.id] = b.dataset.since; localStorage.setItem('thuis-meldingen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
       this._updNotices();
@@ -5156,8 +5166,8 @@ class ThuisCard extends HTMLElement {
     const list = all.filter((x) => hid[x.id] !== key(x));
     const html = list.map((x) => `<div class="alr${x.alarm ? '' : ' warn'}" data-ri="${x.ri}" data-id="${x.id}" data-k="${key(x)}"><i>${SENS_ICON(x)}</i><div><b>${x.txt.split(' · ')[0]}</b><span>${x.room}${x.txt.includes(' · ') ? ` · ${x.txt.split(' · ')[1]}` : ''}</span></div><em>›</em></div>`).join('');
     box.hidden = !list.length;
-    if (box.innerHTML === html) return;
-    box.innerHTML = html;
+    if (box._k === html) return;
+    box._k = html; box.innerHTML = html;
     box.querySelectorAll('.alr').forEach((el) => {
       el.addEventListener('click', () => this._openSheet('room', +el.dataset.ri));
       this._swipe(el, () => { try { const h = JSON.parse(localStorage.getItem('thuis-alarm') || '{}'); h[el.dataset.id] = el.dataset.k; localStorage.setItem('thuis-alarm', JSON.stringify(h)); } catch (e) { /* geen opslag */ } this._updNotices(); });
@@ -5348,7 +5358,8 @@ class ThuisCard extends HTMLElement {
   /* ---------- Picnic-bezorging (alleen telefoon, alleen op de dag zelf) ---------- */
   // tijden uit de Picnic-integratie (verwachte aankomst, anders het tijdslot); zonder integratie uit de agenda
   _picnicIds() {
-    if (this._picIds) return this._picIds;
+    if (this._picIds && this._picRef === this._hass?.entities) return this._picIds;
+    this._picRef = this._hass?.entities;
     const ents = this._hass?.entities || {}, ids = {};
     const want = { eta_s: 'next_delivery_eta_start', eta_e: 'next_delivery_eta_end', slot_s: 'next_delivery_slot_start', slot_e: 'next_delivery_slot_end', done: 'last_order_delivery_time', status: 'last_order_status', lslot: 'last_order_slot_start' };
     for (const [k, tk] of Object.entries(want)) {
@@ -5360,7 +5371,7 @@ class ThuisCard extends HTMLElement {
     // live aankomst (v257): de geschatte aankomst van de bezorger, als tijdstip of als minuten
     const live = Object.values(ents).find((e) => e.platform === 'picnic' && /estimated_arrival|eta_live|arrival/i.test(`${e.translation_key || ''} ${e.entity_id}`) && !Object.values(want).includes(e.translation_key));
     ids.live = (this._config.picnic || {}).live || live?.entity_id || (this._hass?.states['sensor.picnic_estimated_arrival_of_next_delivery'] ? 'sensor.picnic_estimated_arrival_of_next_delivery' : null);
-    if (Object.values(ents).some((e) => e.platform === 'picnic')) this._picIds = ids;
+    this._picIds = ids;
     return ids;
   }
   /* ---------- HomePod (mini) ---------- */
@@ -5392,6 +5403,7 @@ class ThuisCard extends HTMLElement {
   // en blijven proberen zolang er muziek speelt (steeds iets later, hooguit elke 15 s, tot 20 keer)
   _hpArt(raws) {
     const C = this._hpArtC ||= {}, now = Date.now(); let hit = '';
+    const keys = Object.keys(C); if (keys.length > 12) keys.slice(0, keys.length - 12).forEach((k) => { if (C[k].src?.startsWith('blob:')) URL.revokeObjectURL(C[k].src); delete C[k]; });
     for (const raw of raws.filter(Boolean)) {
       const url = this._hass.hassUrl ? this._hass.hassUrl(raw) : raw, c = C[raw] ||= { st: 'new', n: 0, t: 0 };
       if (c.st === 'ok') { hit ||= c.src; continue; }
@@ -5449,14 +5461,15 @@ class ThuisCard extends HTMLElement {
       const art = m.pic ? `<img class="mart" src="${m.pic}" alt="">` : `<div class="mart ic">${HPICON(true)}</div>`;
       const sub = [m.artist, m.area || m.dev].filter(Boolean).join(' · ');
       html = `<div class="mbg"${m.pic ? ` style="background-image:url('${m.pic}')"` : ''}></div>${art}<button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button>`
-        + `<b>${m.title || 'Muziek'}</b><span class="msub">${sub}</span><div class="mpg">${m.dur ? `<i style="width:${(m.pos / m.dur * 100).toFixed(1)}%"></i>` : ''}</div>`;
+        + `<b>${m.title || 'Muziek'}</b><span class="msub">${sub}</span><div class="mpg">${m.dur ? '<i></i>' : ''}</div>`;
     }
     box.hidden = !m;
     box.dataset.sig = ses ? String(ses.start) : '';
-    if (box.innerHTML !== html) {
-      box.innerHTML = html;
+    if (box._k !== html) {
+      box._k = html; box.innerHTML = html;
       box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
     }
+    const pg = box.querySelector('.mpg i'); if (pg && m?.dur) pg.style.width = `${(m.pos / m.dur * 100).toFixed(1)}%`;
     box.dataset.id = m ? m.id : '';
     box.onclick = () => box.dataset.id && this._openSheet('hp', box.dataset.id);
     this._applyHidden();
@@ -5678,7 +5691,7 @@ class ThuisCard extends HTMLElement {
         else this._hass.callService('climate', 'set_hvac_mode', { entity_id: cl.entity_id, hvac_mode: 'off' });
       });
       this.$('thP').addEventListener('click', (e) => { e.stopPropagation(); this.$('thSel').classList.toggle('open'); });
-      body.addEventListener('click', (e) => { if (!e.target.closest('#thSel')) this.$('thSel')?.classList.remove('open'); });
+      if (!body._thClick) { body._thClick = true; body.addEventListener('click', (e) => { if (!e.target.closest('#thSel')) this.$('thSel')?.classList.remove('open'); }); }
       this.$('cvHb').addEventListener('click', () => this._thHistory());
       // boog: slepen = temperatuur kiezen, bij loslaten instellen
       const arc = this.$('thArc'), A0 = 135, A1 = 405;
@@ -6038,7 +6051,7 @@ class ThuisCard extends HTMLElement {
           e.stopPropagation(); this.$('thSel').classList.remove('open');
           this._preWait = x.dataset.m;
           this._hass.callService('climate', 'set_preset_mode', { entity_id: this._climateId(), preset_mode: x.dataset.m });
-          setTimeout(() => { this._preWait = null; this._updThermo(); }, 8000);
+          clearTimeout(this._preT); this._preT = setTimeout(() => { this._preWait = null; this._updThermo(); }, 8000);
           this._updThermo();
         }));
       }
@@ -6195,7 +6208,7 @@ class ThuisCard extends HTMLElement {
       if (r.humidity) { const v = parseFloat(st(r.humidity)?.state); if (!isNaN(v)) hum = v; }
       const apps = (r.apps || []).map((k) => { const box = this.$(k); if (!box || box.hidden) return null; return { k, box, txt: k === 'evc' ? (box.querySelector('.xbig')?.textContent || '') : box.querySelector('.tm')?.textContent || box.querySelector('.rt b')?.textContent || '' }; }).filter(Boolean);
       const slug = r.scenes || r.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      const strip = (n) => { const re = new RegExp(`^${r.name}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
+      const strip = (n) => { const re = new RegExp(`^${reEsc(r.name)}\\s+`, 'i'); let t = n.replace(re, ''); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); t = t || r.name; return t.charAt(0).toUpperCase() + t.slice(1); };
       const scenes = sceneIds.filter((k) => k.startsWith(`scene.${slug}_`)).map((k) => { const x = st(k); return { id: k, name: strip(this._nm(x) || k), t: Date.parse(x.state) || 0 }; })
         .map((x) => ({ ...x, own: !HUE_SCENES.includes(x.name.toLowerCase()) && !/^nieuw/i.test(x.name) && !/^\d+$/.test(x.name) }));
       const E = this._hass.entities || {}, S = this._hass.states;
@@ -6338,7 +6351,7 @@ class ThuisCard extends HTMLElement {
     const P = (k, col, ic, t, v, hot) => `<div class="mp${hot ? ' hot' : ''}" data-k="${k}" style="--c:${col}"><i class="g">${ic}</i><div><b>${t}</b><span>${v}</span></div></div>`;
     const pills = P('', '#ffc83d', gBulb(lOn > 0), 'Lampen', lOn ? `${lOn} aan` : 'alles uit', lOn > 0) + (cv.length ? P('', '#5aa2ff', gBlind(cDn ? 0 : 100), 'Rolluiken', cDn ? `${cDn} dicht` : 'alles open', cDn > 0) : '')
       + (ct != null ? P('th', '#ff9a4d', `<svg viewBox="0 0 100 100"><use href="#${isHeating(cl.attributes) ? 'gFlame' : 'gTherm'}"/></svg>`, 'Klimaat', trange, isHeating(cl.attributes)) : '');
-    if (this.$('kPills').innerHTML !== pills) { this.$('kPills').innerHTML = pills; this.$('kPills').querySelector('[data-k="th"]')?.addEventListener('click', () => this._openSheet('th')); }
+    if (this.$('kPills')._k !== pills) { this.$('kPills')._k = pills; this.$('kPills').innerHTML = pills; this.$('kPills').querySelector('[data-k="th"]')?.addEventListener('click', () => this._openSheet('th')); }
     if (html === this._rmListKey || this._kslDrag) return;
     this._rmListKey = html; box.innerHTML = html;
     box.querySelectorAll('.ksl').forEach((sl) => this._bindRoomSlider(sl));
@@ -6354,7 +6367,7 @@ class ThuisCard extends HTMLElement {
     return `<div class="lt${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : 'Uit'}</div></div>`;
   }
   _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
-  _shortName(n) { const rm = ((this._config.rooms || []).length ? this._config.rooms : this._areaRooms())[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${rm.name}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
+  _shortName(n) { const rm = ((this._config.rooms || []).length ? this._config.rooms : this._areaRooms())[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${reEsc(rm.name)}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
   _bindTiles(box, ri) {
     box.querySelectorAll('.lt, .cv').forEach((el) => {
       const id = el.dataset.id, lamp = el.classList.contains('lt');
@@ -6400,7 +6413,7 @@ class ThuisCard extends HTMLElement {
       const v2 = extra ? `${v} · ${extra}` : v;
       return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
-    const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${rm.name}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
+    const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span>${m.txt}</span></div></div>`; }).join('');
     const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc'), scenes: [] }; } // oprit: geen scènes
     const html = (hpPills + plugPills + camPills + pills ? `<div class="kspills">${hpPills}${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
@@ -6451,9 +6464,10 @@ class ThuisCard extends HTMLElement {
     body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${rm.name}</button></div>
       <div class="hti"><b>Geschiedenis</b><span>Afgelopen 3 dagen</span></div><div id="hBody"><div class="hnone">Laden…</div></div>`;
     this.$('hBack').addEventListener('click', () => this._openSheet('room', i));
+    const tok = this._histTok = {};
     const ids = [...rm.lights.map((x) => x.entity_id), ...rm.covers.map((x) => x.id)];
     const log = ids.length ? await this._hass.callApi('GET', `logbook/${new Date(Date.now() - 3 * DAY).toISOString()}?entity=${ids.join(',')}&end_time=${encodeURIComponent(new Date().toISOString())}`).catch(() => []) : [];
-    if (this._sheet !== 'room' || !this._cvHist) return;
+    if (this._sheet !== 'room' || !this._cvHist || this._histTok !== tok) return;
     const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
     const DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
     const day0 = startOfDay(Date.now()), dname = (t) => { const k = Math.round((day0 - startOfDay(t)) / DAY); return k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }); };
@@ -6492,9 +6506,10 @@ class ThuisCard extends HTMLElement {
       <div class="hti"><b>${NM}</b><span>Afgelopen 7 dagen</span></div><div id="hBody"><div class="hnone">Laden…</div></div>`;
     this.$('hBack').addEventListener('click', () => { this._cvHist = false; this._rmKey = null; this._openSheet('room', i); });
     const from = new Date(Date.now() - 7 * DAY).toISOString(), end = encodeURIComponent(new Date().toISOString());
-    const ids = [sid, pid, tid].filter((x) => x && this._state(x));
-    const log = await this._hass.callApi('GET', `logbook/${from}?entity=${ids.join(',')}&end_time=${end}`).catch(() => []);
-    if (this._sheet !== 'room' || !this._cvHist) return;
+    const ids = [sid, pid, tid].filter((x) => x && this._state(x)), tok = this._histTok = {};
+    // geen bekende entiteiten: niet het hele logboek ophalen
+    const log = ids.length ? await this._hass.callApi('GET', `logbook/${from}?entity=${ids.join(',')}&end_time=${end}`).catch(() => []) : [];
+    if (this._sheet !== 'room' || !this._cvHist || this._histTok !== tok) return;
     const L = (Array.isArray(log) ? log : []).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => a.t - b.t);
     const RUN = /^(in_use|run|running|pause|rinse_hold)$/, OK = /^(finished|program_ended|end)$/, BAD = /^(aborting|program_interrupted|failure|error)$/;
     const progAt = (t) => { const p = [...L].reverse().find((x) => x.entity_id === pid && x.t <= t + 3 * 60000 && !/^(no_program|unknown|unavailable)$/.test(x.state)); if (!p) return '';
