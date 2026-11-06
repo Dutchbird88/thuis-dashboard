@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v248**.*
+*Bijgewerkt: 5 november 2026, versie **v249**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v248** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v249** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v248.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v249.
 
 ## Gerealiseerde functies (per tab)
 
@@ -117,6 +117,7 @@
 | v246 | Telefoon (Thuis): camerabeeld 196 px hoog in plaats van 220 px (optie A); een breedbeeld past vrijwel precies. |
 | v247 | Vensters omlaag vegen: volgt de vinger direct (geen transitie tijdens het slepen), sluit bij >110 px of een snelle veeg (>24 px en >0,45 px/ms), achtergrond vervaagt mee, glijdt weg bij sluiten. De veeg wordt opgeëist (`preventDefault`, niet-passieve touchmove), zodat de HA-app niet ververst en de pagina eronder niet meeschuift; ook op de donkere achtergrond. |
 | v248 | Telefoon: HomePod (mini). Automatisch herkend (`_isSpeaker`: model/naam "homepod", of `speakers:` in de YAML). Thuis: kaart "Nu speelt" (`#hpc`, `_updMedia`; ook kort gepauzeerd tot 30 min, wegvegen met handtekening id+titel). Kamervenster: pil `.ksp.hpp` (eerste pil, grijs bij niets). Venster `hp` (`_updHpSheet`, elke seconde): hoes, titel/artiest, voortgang, vorige/afspelen/volgende, volume (`volume_set` bij loslaten). Nieuw icoon `HPICON` (HomePod mini). Computer ongewijzigd. |
+| v249 | HomePod: elke HomePod kwam twee keer voor (twee mediaspelers per apparaat). `_spkDedupe` houdt per apparaatnaam één speler (die speelt, anders de meeste mediagegevens). Is de HomePod naar de kamer genoemd, dan heet de pil "HomePod mini" (het model). |
 
 ## Volgende stappen
 

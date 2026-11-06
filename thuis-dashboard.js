@@ -1671,7 +1671,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '248';
+const CARD_VERSION = '249';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5357,6 +5357,16 @@ class ThuisCard extends HTMLElement {
     if (this._spkRef !== this._hass?.entities || this._spkCfg !== this._config) { this._spkRef = this._hass?.entities; this._spkCfg = this._config; this._spk = Object.keys(S).filter((id) => this._isSpeaker(id)); }
     return this._spk.filter((id) => S[id]);
   }
+  // één HomePod kan als twee mediaspelers binnenkomen (twee koppelingen of twee spelers per apparaat):
+  // per HomePod één houden — die speelt, anders die de meeste mediagegevens geeft
+  _spkDedupe(ids) {
+    const S = this._hass?.states || {}, E = this._hass?.entities || {}, D = this._hass?.devices || {};
+    const key = (id) => { const dv = D[E[id]?.device_id] || {}; return String(dv.name_by_user || dv.name || this._nm(id) || id).trim().toLowerCase(); };
+    const score = (id) => { const x = S[id], a = x?.attributes || {}; return (x?.state === 'playing' ? 1000 : x?.state === 'paused' ? 500 : 0) + (a.media_title ? 100 : 0) + (a.entity_picture ? 20 : 0) + (a.volume_level != null ? 10 : 0) + (['unavailable', 'unknown'].includes(x?.state) ? -2000 : 0) + Object.keys(a).length / 100; };
+    const best = {};
+    ids.forEach((id) => { const k = key(id); if (!best[k] || score(id) > score(best[k])) best[k] = id; });
+    return ids.filter((id) => best[key(id)] === id);
+  }
   _hpInfo(id) {
     const x = this._state(id), a = x?.attributes || {}, E = this._hass?.entities || {}, dv = this._hass?.devices?.[E[id]?.device_id] || {};
     let play = x?.state === 'playing'; const opt = this._hpOpt?.id === id && Date.now() - this._hpOpt.t < 8000;
@@ -5365,7 +5375,8 @@ class ThuisCard extends HTMLElement {
     const title = a.media_title || '', artist = a.media_artist || a.media_album_artist || '';
     const pic = a.entity_picture ? (this._hass.hassUrl ? this._hass.hassUrl(a.entity_picture) : a.entity_picture) : '';
     const area = this._hass?.areas?.[E[id]?.area_id || dv.area_id]?.name || '';
-    const dev = dv.name_by_user || dv.name || this._nm(x || id) || 'HomePod';
+    const model = /homepod\s*mini/i.test(dv.model || '') ? 'HomePod mini' : 'HomePod', dev0 = dv.name_by_user || dv.name || this._nm(x || id) || model;
+    const dev = /homepod/i.test(dev0) || dev0.trim().toLowerCase() !== area.trim().toLowerCase() ? dev0 : model; // naar de kamer genoemd: toon het model
     const dur = +a.media_duration || 0, pos0 = +a.media_position || 0, upd = Date.parse(a.media_position_updated_at) || 0;
     const pos = dur ? clamp(pos0 + (play && upd ? (Date.now() - upd) / 1000 : 0), 0, dur) : 0;
     const txt = off ? 'Niet bereikbaar' : play ? `Speelt${title ? ` · ${title}` : ''}` : paused ? 'Gepauzeerd' : 'Speelt niets af';
@@ -5375,7 +5386,7 @@ class ThuisCard extends HTMLElement {
   _updMedia() {
     const box = this.$('hpc'); if (!box || !this._hass) return;
     // speelt, of kort gepauzeerd (tot 30 min), zodat je vanaf de kaart kunt hervatten
-    const list = this._speakers().map((id) => this._hpInfo(id)).filter((m) => m.play || (m.paused && (this._hpOpt?.id === m.id || Date.now() - (Date.parse(m.x?.last_changed) || 0) < 30 * 60000)));
+    const list = this._spkDedupe(this._speakers()).map((id) => this._hpInfo(id)).filter((m) => m.play || (m.paused && (this._hpOpt?.id === m.id || Date.now() - (Date.parse(m.x?.last_changed) || 0) < 30 * 60000)));
     const m = list.sort((p, q) => (Date.parse(q.x?.last_changed) || 0) - (Date.parse(p.x?.last_changed) || 0))[0];
     let html = '';
     if (m) {
@@ -6157,7 +6168,7 @@ class ThuisCard extends HTMLElement {
         const last = det.sort((p, q) => (q.t - p.t) || (p.pr - q.pr))[0];
         return { id, nm: dv.name_by_user || dv.name || this._nm(id) || 'Camera', on: !!cur, txt: cur ? `${cur.lb} nu` : last ? `${last.lb} · ${relTime(last.t)}` : 'Geen detectie' };
       });
-      const speakers = (r.speakers || []).filter((id) => S[id]);
+      const speakers = this._spkDedupe((r.speakers || []).filter((id) => S[id]));
       return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams, speakers };
     });
   }

@@ -125,6 +125,7 @@ Verdere regels:
 - Thuis: `#hpc` (`.was.hp`, in `MOVE` na `pic`, wegvegen zoals Picnic met `dataset.sig`). Zichtbaar bij afspelen of tot 30 min na pauzeren.
 - Kamers: `speakers` per ruimte in `_areaRooms`/`_rooms`; pil `.ksp.hpp` met `HPICON`, tik opent venster `hp` met `_roomBack`.
 - Venster `hp`: `_updHpSheet` (elke seconde via `_hpTimer`), knoppen `media_previous_track`/`media_play_pause`/`media_next_track`, volumeschuif `.hpsl` (uitgezonderd van vegen-sluiten).
+- Een HomePod komt vaak als twee mediaspelers binnen. `_spkDedupe` (v249) houdt per apparaatnaam één: die speelt, anders die de meeste mediagegevens heeft. Is het apparaat naar de kamer genoemd, dan toont de pil het model ("HomePod mini").
 - `entity_picture` van een mediaspeler bevat een token: niet loggen of delen.
 
 **Meldingen**
