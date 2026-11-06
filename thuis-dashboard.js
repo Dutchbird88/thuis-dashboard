@@ -797,6 +797,7 @@ class ZonnepanelenCard extends HTMLElement {
   static getStubConfig() { return {}; }
 
   connectedCallback() {
+    THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     this._timer = setInterval(() => this._fetchStats(true), 5 * 60000);
   }
   disconnectedCallback() {
@@ -1676,7 +1677,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '264';
+const CARD_VERSION = '265';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1860,7 +1861,7 @@ class VerbruikCard extends HTMLElement {
   getCardSize() { return 12; }
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
-  connectedCallback() { this._timer = setInterval(() => this._fetch(), 60000); }
+  connectedCallback() { THEME_CARDS.add(this); chromeApply?.(); this._timer = setInterval(() => this._fetch(), 60000); }
   disconnectedCallback() { clearInterval(this._timer); }
 
   $(id) { return this.shadowRoot.getElementById(id); }
@@ -2755,6 +2756,7 @@ class AutoCard extends HTMLElement {
   }
 
   connectedCallback() {
+    THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     this._ctimer = setInterval(() => { this._fetchCharge(); this._update(); this._maybeRefresh(); }, 60000);
     this._onVis = () => this._maybeRefresh();
     document.addEventListener('visibilitychange', this._onVis);
@@ -4123,6 +4125,7 @@ class ThuisCard extends HTMLElement {
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
   connectedCallback() {
+    THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); }, 10000);
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') setTimeout(() => this._carRefresh(true), 800); }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);

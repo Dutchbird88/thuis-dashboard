@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v264**.*
+*Bijgewerkt: 5 november 2026, versie **v265**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v264** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v265** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v264.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v265.
 
 ## Gerealiseerde functies (per tab)
 
@@ -133,6 +133,7 @@
 | v262 | Privacy: vaste reservecoördinaten voor de buienradar verwijderd. Nu `_homeLL()`: `zone.home`, anders `hass.config`; zonder locatie geen radar. |
 | v263 | Codecontrole, fouten opgelost (geen zichtbare wijzigingen behalve foutmeldingen die wegvallen): Auto-Pauze annuleert de herstartpoging; tabblad-vegen en enkele klik-luisteraars maar één keer koppelen (stapelden bij setConfig); caches leeg bij `_build`; timers (HomePod, kaart, camera) stoppen bij verlaten; weersverwachting alsnog aanmelden als de weer-entiteit later komt; vergelijkingen met `innerHTML` (svg/&) vervangen door eigen sleutel (meldingen, alarm, muziektegel, Kamers-chips); geschiedenis: laat antwoord overschrijft geen ander venster, geen volledig logboek bij lege lijst; kamernamen veilig in reguliere expressies (`reEsc`); hoescache begrensd en blob-URL's vrijgegeven; Picnic-ids ook zonder Picnic onthouden; Energie: geen valse waterlekmelding zonder watermeter; Nu: geen "NaN online", paneelaantal uit de echte panelen, zon-chip komt terug, grafieken direct na setConfig; geen "null" naar het HA-venster; themakleur alleen als een kaart van de app zichtbaar is; Auto-ring crasht niet zonder klimaat; camera-miniaturen alleen herladen bij nieuwe URL. |
 | v264 | Vervolg codecontrole: Energie vraagt statistieken op in kWh/m³/W (`STAT_UNITS`) en rekent live meterstanden om (`toStatUnit`: Wh, MWh, L, kW); daggrenzen met kalenderdagen (`dayAdd`) rond zomer-/wintertijd (Nu, Energie, agenda; meerdaagse afspraak op kalenderdagen); Kamers: entiteiten per apparaat via een index (`_devEnts`) in plaats van het hele register per sensor; weervenster houdt een geopende radar vast bij verversen; thermostaatgeschiedenis haalt automatiseringen in porties van 40 op (te lange URL). |
+| v265 | Bovenbalk (statusbalk) kleurt direct zodra een kaart verschijnt (`chromeApply` in elke `connectedCallback`). Sinds v263 wachtte hij op de vaste controles (0,5–10 s) en bleef zo lang licht. |
 
 ## Volgende stappen
 
