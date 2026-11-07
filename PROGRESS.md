@@ -1,6 +1,6 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v269**.*
+*Bijgewerkt: 7 november 2026, versie **v269**.*
 
 ## Huidige stand
 
@@ -11,6 +11,7 @@
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
+- **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
 - De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v269.
 
 ## Gerealiseerde functies (per tab)
