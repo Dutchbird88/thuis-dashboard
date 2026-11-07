@@ -25,7 +25,8 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
 - **Snel werken (afspraak 7 november 2026):**
   - **Geen lichte opmaak meer** maken, testen of controleren: de gebruiker gebruikt het donkere thema. Wat er al in `LIGHT` staat, blijft staan. Alleen als de gebruiker erom vraagt.
   - Tijdens het bouwen alleen testen wat verandert: `node test/test.js --alleen <naam>` (seconden).
-  - De volledige vergelijking (`--vergelijk HEAD`) één keer vlak voor het publiceren; lint (`--lint`) alleen bij grotere codewijzigingen.
+  - Kleine wijziging of fix: alleen `node --check`, de view die verandert en één computerview (`--alleen`). De volledige vergelijking (`--vergelijk HEAD`) alleen bij grote of visuele wijzigingen; lint (`--lint`) alleen bij grotere codewijzigingen.
+  - Geen losse testscripts; antwoorden kort houden (gebruiker vindt het werk te traag, 7 november 2026).
   - Zo min mogelijk losse testscripts: wat vaker nodig is, gaat in `test/mock.html` en `test/test.js`.
   - Mockups blijven verplicht, maar eenvoudig en snel.
 - **Na publiceren:** noem het versienummer én het commitnummer (korte hash, bijvoorbeeld `v217 · c0ffee1`). De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
