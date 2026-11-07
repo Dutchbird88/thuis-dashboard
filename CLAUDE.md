@@ -22,6 +22,12 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
 - **Geef eerst een reactie of analyse als de gebruiker daarom vraagt** ("pas nog niks aan"), en verander dan nog niets.
 - **Telefoon en computer:** de telefoon (≤ 600px) heeft een eigen indeling. Laat de computerweergave ongewijzigd, tenzij de gebruiker daar expliciet om vraagt.
 - **Geef advies als de gebruiker erom vraagt.** Kies zelf, met een korte motivatie.
+- **Snel werken (afspraak 7 november 2026):**
+  - **Geen lichte opmaak meer** maken, testen of controleren: de gebruiker gebruikt het donkere thema. Wat er al in `LIGHT` staat, blijft staan. Alleen als de gebruiker erom vraagt.
+  - Tijdens het bouwen alleen testen wat verandert: `node test/test.js --alleen <naam>` (seconden).
+  - De volledige vergelijking (`--vergelijk HEAD`) één keer vlak voor het publiceren; lint (`--lint`) alleen bij grotere codewijzigingen.
+  - Zo min mogelijk losse testscripts: wat vaker nodig is, gaat in `test/mock.html` en `test/test.js`.
+  - Mockups blijven verplicht, maar eenvoudig en snel.
 - **Na publiceren:** noem het versienummer én het commitnummer (korte hash, bijvoorbeeld `v217 · c0ffee1`). De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
 
 ## Privacy en veiligheid (strikt)
@@ -263,9 +269,9 @@ Verdere regels:
 - **Syntax:** `node --check thuis-dashboard.js`.
 - **Lint:** `npx --yes eslint@8.57.0 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-undef":"error","no-redeclare":"error","no-dupe-keys":"error"}' thuis-dashboard.js`. Dit moet 0 fouten geven en is getest bij v214. Gebruik eventueel ook `no-unused-vars` als waarschuwing.
 - **Testpagina en testscript (in de repo, map `test/`):**
-  - `node test/test.js` doet alles in één keer: `node --check`, lint, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 24 views (alle tabbladen op 390 en 1280, licht thema, muziek, alarm en de vensters thermostaat, afval, kamer en HomePod) in `test/out/`. Een fout in de console telt als fout.
+  - `node test/test.js` doet alles in één keer: `node --check`, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 23 views (alle tabbladen op 390 en 1280, muziek, alarm, oven, Wake on LAN en de vensters thermostaat, afval, kamer, HomePod en computer) in `test/out/`. Lint alleen met `--lint`. Een fout in de console telt als fout.
   - `node test/test.js --vergelijk HEAD~1` (git-ref of pad naar een .js) vergelijkt elke view pixel voor pixel met die versie. Bij verschil komen er `<naam>.oud.png` en `<naam>.verschil.png` bij (verschil in rood). Een view die in de oude versie nog niet bestaat (fout bij de actie), heet "nieuw". Gebruik dit vóór elke publicatie: de computerviews moeten "gelijk" zijn bij wijzigingen voor de telefoon.
-  - Extra: `--alleen <deel van de naam>` en `--geen-lint`. De klok staat vast op 5 november 2026 12:30, dus screenshots zijn steeds gelijk.
+  - Extra: `--alleen <deel van de naam>` en `--lint`. De klok staat vast op 5 november 2026 12:30, dus screenshots zijn steeds gelijk.
   - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur), `wol=1` (computer uit en server aan, met Ping-sensoren en historie), `hide=` (hide_lights). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
   - Persoonlijke termen: zet ze in `test/prive.txt` (één per regel). Dat bestand staat in `.gitignore` en is er in een nieuwe sessie niet: vraag de gebruiker dan om de lijst. Zonder dat bestand meldt het script "niet gecontroleerd".
   - Zet nooit eigen entity-ids, namen of foto's in `test/`. De foto's van huis en auto zijn getekende SVG's.
@@ -273,7 +279,7 @@ Verdere regels:
 ### Publiceren (na akkoord van de gebruiker)
 
 1. Verhoog `CARD_VERSION`.
-2. Voer `node --check` en lint uit.
+2. Voer `node test/test.js --vergelijk HEAD` uit (syntax, privacy en de pixelvergelijking); bij grotere codewijzigingen met `--lint`.
 3. Doe de persoonlijke-gegevens-grep. De uitkomst moet 0 zijn.
 4. Werk de README bij als er instellingen bij zijn gekomen.
 5. `git fetch origin main`, dan een commit met de titel `vNNN: <korte Nederlandse omschrijving>` en daarna `git push -u origin main`.

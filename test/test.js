@@ -4,7 +4,7 @@
 //   node test/test.js                      controles + screenshots van alle kaarten (telefoon en computer)
 //   node test/test.js --vergelijk HEAD~1   ook vergelijken met een eerdere versie (git-ref of pad naar een .js)
 //   node test/test.js --alleen thuis       alleen de views waarvan de naam dit bevat
-//   node test/test.js --geen-lint          ESLint overslaan (die wordt via npx opgehaald)
+//   node test/test.js --lint               ook ESLint (via npx; alleen bij grotere codewijzigingen)
 //
 // Uitkomst: test/out/ (screenshots, bij verschil ook <naam>.oud.png en <naam>.verschil.png).
 // Privacy: zet persoonlijke zoektermen (één per regel) in test/prive.txt. Dat bestand staat in .gitignore.
@@ -15,12 +15,12 @@ let chromium; try { ({ chromium } = require('playwright')); } catch (e) { consol
 
 const ROOT = path.resolve(__dirname, '..'), OUT = path.join(__dirname, 'out'), APP = 'thuis-dashboard.js';
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
-const VERGELIJK = arg('--vergelijk'), ALLEEN = arg('--alleen'), LINT = !process.argv.includes('--geen-lint');
+const VERGELIJK = arg('--vergelijk'), ALLEEN = arg('--alleen'), LINT = process.argv.includes('--lint');
 const KLOK = '2026-11-05T12:30:00+01:00'; // vaste tijd, zodat screenshots gelijk blijven
 
 // naam, parameters voor mock.html, breedte, en eventueel een actie vóór de screenshot
 const VIEWS = [
-  ['thuis-telefoon', 'card=thuis&wt=pmd1', 390], ['thuis-computer', 'card=thuis&wt=pmd1', 1280], ['thuis-telefoon-licht', 'card=thuis&wt=pmd1&th=licht', 390],
+  ['thuis-telefoon', 'card=thuis&wt=pmd1', 390], ['thuis-computer', 'card=thuis&wt=pmd1', 1280],
   ['thuis-telefoon-muziek', 'card=thuis&hp=playing&art=1', 390], ['thuis-telefoon-alarm', 'card=thuis&alarm=water', 390],
   ['thuis-telefoon-oven', 'card=thuis&oven=koel&tok=1', 390], ['thuis-computer-oven', 'card=thuis&oven=koel&tok=1', 1280],
   ['thuis-telefoon-wol', 'card=thuis&wol=1', 390], ['thuis-computer-wol', 'card=thuis&wol=1', 1280],
