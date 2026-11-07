@@ -33,7 +33,7 @@ const VIEWS = [
   ['venster-kamer', 'card=kamers', 390, (c) => c._openSheet('room', 0)],
   ['venster-homepod', 'card=kamers&hp=playing&art=1', 390, (c) => c._openSheet('hp', 'media_player.homepod')],
   ['venster-computer', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.computer_wekken')],
-  ['venster-computer-week', 'card=thuis&wol=1', 390, (c) => { c._openSheet('pc', 'button.computer_wekken'); c.shadowRoot.querySelector('#cvHb').click(); }],
+  ['venster-computer-historie', 'card=thuis&wol=1', 390, (c) => { c._openSheet('pc', 'button.computer_wekken'); c.shadowRoot.querySelector('#cvHb').click(); }],
   ['venster-server', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.server_wekken')],
 ].filter((v) => !ALLEEN || v[0].includes(ALLEEN));
 

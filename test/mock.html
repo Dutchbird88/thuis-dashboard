@@ -68,7 +68,7 @@ ent('sensor.lekdetector_batterij', '3', { device_class: 'battery', unit_of_measu
 dev('d_sm', 'Rookmelder', 'slaap'); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
 dev('d_cam', 'Voordeur', 'woon'); ent('camera.voordeur', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam', hen: true, name: 'Camera' });
 ent('scene.woonkamer_avond', '2026-11-01T18:00:00Z', {}, { name: 'Woonkamer Avond', area: 'woon' });
-ent('person.bewoner', 'home', {}, { name: 'Bewoner', reg: false, fn: 'Bewoner' });
+ent('person.bewoner', 'home', { user_id: 'u1' }, { name: 'Bewoner', reg: false, fn: 'Bewoner' });
 ent('person.bewoner2', 'werk', {}, { name: 'Bewoner 2', reg: false, fn: 'Bewoner 2' });
 ent('zone.werk', '0', {}, { reg: false, fn: 'Werk' });
 const WT = q.get('wt') || 'rest0', dstr = (n) => { const d = new Date(day0); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
@@ -182,6 +182,8 @@ async function callApi(method, path) {
     return [srv ? [{ state: 'off', last_changed: H(30) }, { state: 'on', last_changed: H(0.83) }]
       : [{ state: 'off', last_changed: H(40) }, { state: 'on', last_changed: H(26) }, { state: 'off', last_changed: H(22.9) }, { state: 'on', last_changed: H(4.3) }, { state: 'off', last_changed: H(1.8) }]];
   }
+  // logboek van de Wake on LAN-knop: computer vanochtend door een bewoner aangezet
+  if (path.startsWith('logbook/') && path.includes('computer_wekken')) return [{ when: at(Date.now() - 4.3 * 36e5 - 50e3), entity_id: 'button.computer_wekken', context_user_id: 'u1' }];
   if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }];
   return [];
 }
@@ -193,7 +195,7 @@ const hass = {
   hassUrl: (p) => p, fetchWithAuth: (p) => fetch(p),
 };
 const CONFIG = {
-  'thuis-card': { persons: ['person.bewoner', 'person.bewoner2'], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'], ...(q.get('hide') ? { hide_lights: q.get('hide').split(',') } : {}) },
+  'thuis-card': { persons: [{ entity: 'person.bewoner', name: 'Bewoner' }, { entity: 'person.bewoner2', name: 'Bewoner 2' }], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'], ...(q.get('hide') ? { hide_lights: q.get('hide').split(',') } : {}) },
   'kamers-card': {},
   'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: { image: HUIS, width: 400, height: 300, panels: {} } },
   'verbruik-card': { power: 'sensor.p1_vermogen', import: 'sensor.stroom_afname', export: 'sensor.stroom_teruglevering', gas: 'sensor.gas_stand', water: 'sensor.water_stand' },

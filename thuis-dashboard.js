@@ -1699,7 +1699,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '272';
+const CARD_VERSION = '273';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4095,15 +4095,14 @@ const HPSTYLE = `
   .pstrip { position: relative; height: 12px; border-radius: 6px; background: rgba(255,255,255,.07); overflow: hidden; }
   .pstrip i { position: absolute; top: 0; bottom: 0; background: #4fd07f; border-radius: 3px; }
   .pstrip i.now { background: linear-gradient(90deg, #4fd07f 70%, rgba(79,208,127,.4)); }
-  .pticks { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); opacity: .8; margin-top: 5px; } .pticks.pwk { margin: 6px 74px 0 80px; }
+  .pticks { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); opacity: .8; margin-top: 5px; }
   .pses { margin-top: 10px; } .pses div { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--text); padding: 7px 0; border-top: 1px solid rgba(255,255,255,.06); } .pses span { color: var(--muted); }
-  .pdrow { display: grid; grid-template-columns: 70px 1fr 64px; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; } .pdrow:first-child { border-top: 0; }
-  .pdrow b { font-weight: 600; color: var(--text); } .pdrow em { font-style: normal; text-align: right; color: var(--muted); }
   .pbig svg { width: 118px; height: 118px; margin: 18px auto 4px; display: block; }
   .pcs .lpw { margin-top: 16px; } .pnote { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
   #pcPw.busy span { color: #a9c8ff; } #pcPw.on span { color: #8fe3ad; }
+  .hico.pcq { background: rgba(98,189,245,.2); color: #a9c8ff; } .hico.pcon { background: rgba(79,208,127,.2); } .hico .ri2 { width: 22px; height: 22px; }
   :host([data-th=l]) .pcard { background: rgba(0,0,0,.04); } :host([data-th=l]) .pstrip { background: rgba(0,0,0,.08); }
-  :host([data-th=l]) .pses div, :host([data-th=l]) .pdrow { border-color: rgba(0,0,0,.07); }
+  :host([data-th=l]) .pses div { border-color: rgba(0,0,0,.07); }
   :host([data-th=l]) #pcPw.busy span { color: #2a6fb0; } :host([data-th=l]) #pcPw.on span { color: #1f8a4c; }
   :host([data-th=l]) .pcs .lpw button { color: #3a3a3c; } :host([data-th=l]) .pcs .lpw svg { color: #3a3a3c; background: linear-gradient(180deg, #fff, #eef1f5); border-color: rgba(0,0,0,.1); box-shadow: 0 8px 20px -12px rgba(0,0,0,.35); }
   /* v270: oven koelt af compact (ontwerp C): rustig oranje, titel met "Uit · koel rond …", temperatuur rechts */
@@ -4958,18 +4957,16 @@ class ThuisCard extends HTMLElement {
     const last = (segs || []).filter((x) => !x[2]).slice(-1)[0], live = (segs || []).find((x) => x[2]), since = w.st === 'on' && w.ping ? (live ? live[0] : Date.parse(this._state(w.ping)?.last_changed)) : null;
     const sub = w.st === 'on' ? `Aan${since ? ` · sinds ${fmtTime(since)}` : ''}` : w.st === 'busy' ? 'Wordt opgestart…' : `Uit${last ? ` · laatst aan ${dname(last[1]).toLowerCase()} tot ${fmtTime(last[1])}` : ''}`;
     const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
-    set('pcN', w.name); set('pcS', this._pcWeek ? 'Geschiedenis · 7 dagen' : sub);
+    set('pcN', w.name); set('pcS', sub);
     let hist = '';
     if (!w.ping) hist = '<div class="pcard pnone">Voeg een Ping-sensor toe in dezelfde ruimte om te zien wanneer hij aan was.</div>';
     else if (!segs) hist = '<div class="pcard pnone">Laden…</div>';
-    else if (this._pcWeek) {
-      hist = `<div class="pcard">${Array.from({ length: 7 }, (_, i) => dayAdd(startOfDay(now), -i)).map((d0) => { const d = day(d0); return `<div class="pdrow"><b>${dname(d0)}</b>${d.bar}<em>${d.tot ? du(d.tot).replace(' min', '') : '—'}</em></div>`; }).join('')}${ticks.replace('pticks', 'pticks pwk')}</div>`;
-    } else {
+    else {
       const d = day(startOfDay(now)), ses = (segs || []).slice(-3).reverse();
       hist = `<div class="pcard"><div class="phh">Vandaag<b>${d.tot ? `${du(d.tot)} aan` : 'niet aan geweest'}</b></div>${d.bar}${ticks}${ses.length ? `<div class="pses">${ses.map(([a, b, live]) => `<div>${live ? `Nu aan, sinds ${fmtTime(a)}` : `${dname(a)} ${fmtTime(a)} – ${fmtTime(b)}`}<span>${du(b - a)}</span></div>`).join('')}</div>` : ''}</div>`;
     }
     const note = w.st === 'busy' ? 'Dit duurt meestal 30 tot 60 seconden' : w.st === 'on' ? `Uitzetten kan alleen op de ${w.name.toLowerCase()} zelf` : !w.ping ? 'Na het aanzetten kan de app niet zien of hij aan is' : '';
-    const html = `${hist}${this._pcWeek ? '' : `<div class="pbig">${RIC.svg(w.icon, w.st)}</div><div class="lpw"><button id="pcPw" class="${w.st}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span>${w.st === 'on' ? 'Aan' : w.st === 'busy' ? 'Wordt opgestart…' : 'Aanzetten'}</span></button></div>${note ? `<div class="pnote">${note}</div>` : ''}`}`;
+    const html = `${hist}<div class="pbig">${RIC.svg(w.icon, w.st)}</div><div class="lpw"><button id="pcPw" class="${w.st}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span>${w.st === 'on' ? 'Aan' : w.st === 'busy' ? 'Wordt opgestart…' : 'Aanzetten'}</span></button></div>${note ? `<div class="pnote">${note}</div>` : ''}`;
     if (box._k === html) return; box._k = html; box.innerHTML = html;
     this.$('pcPw')?.addEventListener('click', () => this._wolWake(this._wolList().find((x) => x.id === this._cvId)));
   }
@@ -5909,9 +5906,9 @@ class ThuisCard extends HTMLElement {
       sl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
       clearInterval(this._hpTimer); this._hpTimer = setInterval(() => { if (this._sheet === 'hp') this._updHpSheet(); else { clearInterval(this._hpTimer); this._hpTimer = null; } }, 1000);
     } else if (kind === 'pc') {
-      this._cvHist = false; this._pcWeek = false;
+      this._cvHist = false;
       body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="pcN"></b><span id="pcS"></span></div><div class="pcs" id="pcB"></div>`;
-      this.$('cvHb').addEventListener('click', () => { this._pcWeek = !this._pcWeek; this._updPcSheet(); });
+      this.$('cvHb').addEventListener('click', () => this._pcLog());
       this._updPcSheet();
     } else if (kind === 'waste') {
       this._cvHist = false;
@@ -5984,6 +5981,51 @@ class ThuisCard extends HTMLElement {
       rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt}</b>${w}</div><div class="htm">${fmtTime(e.t)}</div></div>`;
     }
     this.$('hBody').innerHTML = chart + (rows || '<div class="hnone">Geen wijzigingen in de afgelopen 7 dagen</div>');
+  }
+
+  /* geschiedenis computer/server (v273): grafiek 24 uur (aan/uit, Ping-sensor) en tijdlijn met wie hem heeft opgestart (logboek van de Wake on LAN-knop) */
+  async _pcLog() {
+    const id = this._cvId, w = this._wolList().find((x) => x.id === id), body = this.$('shBody'); if (!w) return;
+    this._cvHist = true;
+    body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${w.name}</button></div>
+      <div class="hti"><b>Geschiedenis</b><span>Afgelopen 7 dagen</span></div><div id="hBody"><div class="hnone">Laden…</div></div>`;
+    this.$('hBack').addEventListener('click', () => this._openSheet('pc', id));
+    const now = Date.now(), from = new Date(now - 7 * DAY).toISOString(), endQ = `end_time=${encodeURIComponent(new Date(now).toISOString())}`;
+    const [hist, log] = await Promise.all([
+      w.ping ? this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${w.ping}&minimal_response&no_attributes&${endQ}`).catch(() => []) : [],
+      this._hass.callApi('GET', `logbook/${from}?entity=${id}&${endQ}`).catch(() => []),
+    ]);
+    if (this._sheet !== 'pc' || !this._cvHist || this._cvId !== id) return;
+    const ev = [];
+    for (const x of (Array.isArray(hist) && Array.isArray(hist[0]) ? hist[0] : [])) {
+      if (!['on', 'off'].includes(x.state)) continue;
+      const on = x.state === 'on', t = Date.parse(x.last_changed); if (isNaN(t) || (ev.length && ev[ev.length - 1].on === on)) continue;
+      ev.push({ t, on, k: 'st' });
+    }
+    const press = (Array.isArray(log) ? log : []).map((l) => ({ t: Date.parse(l.when), k: 'press', l })).filter((x) => !isNaN(x.t));
+    // grafiek afgelopen 24 uur: aan (boven) of uit (onder)
+    const t0 = now - DAY, W = 340, H = 80, X = (t) => (Math.max(t, t0) - t0) / DAY * W, Y = (on) => (on ? 8 : H - 2);
+    let p0 = false; for (const e of ev) if (e.t <= t0) p0 = e.on;
+    let d = `M0 ${Y(p0)}`;
+    for (const e of ev.filter((e) => e.t > t0)) d += ` L${X(e.t).toFixed(1)} ${Y(p0)} L${X(e.t).toFixed(1)} ${Y(e.on)}`, p0 = e.on;
+    d += ` L${W} ${Y(p0)}`;
+    const ax = [0, 6, 12, 18].map((h) => fmtTime(t0 + h * HOUR)).concat('nu');
+    const chart = w.ping ? `<div class="shcard"><div class="shlab">Afgelopen 24 uur <span>aan of uit</span></div><svg class="hg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="hgf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fd07f" stop-opacity=".5"/><stop offset="1" stop-color="#4fd07f" stop-opacity=".05"/></linearGradient></defs><path d="${d} L${W} ${H} L0 ${H}Z" fill="url(#hgf)"/><path d="${d}" fill="none" stroke="#8fe3ad" stroke-width="2"/></svg><div class="hax">${ax.map((a) => `<span>${a}</span>`).join('')}</div></div>` : '';
+    // tijdlijn: opstartopdrachten (met wie) en aan/uit van de Ping-sensor, nieuwste eerst
+    const POW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>';
+    const day0 = startOfDay(now), dname = (t) => { const k = Math.round((day0 - startOfDay(t)) / DAY); return k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }); };
+    const all = [...ev.slice(ev.length && ev[0].t <= now - 7 * DAY + 60000 ? 1 : 0), ...press].sort((a, b) => b.t - a.t).slice(0, 40);
+    const du = (ms) => { const sec = Math.round(ms / 1000); return sec < 90 ? `${sec} s` : `${Math.round(sec / 60)} min`; };
+    let lastDay = '', rows = '';
+    for (const e of all) {
+      const dn = dname(e.t); if (dn !== lastDay) { rows += `<div class="hday">${dn}</div>`; lastDay = dn; }
+      let txt, ico, sub = '';
+      if (e.k === 'press') { txt = 'Opstarten gevraagd'; ico = `<i class="hico pcq">${POW}</i>`; sub = this._who(e.l); }
+      else if (e.on) { const p = press.filter((x) => x.t <= e.t && x.t >= e.t - 5 * 60000).sort((a, b) => b.t - a.t)[0]; txt = 'Aan'; ico = `<i class="hico pcon">${RIC.svg(w.icon, 'on')}</i>`; sub = p ? `<span class="hwho">Opgestart in ${du(e.t - p.t)}</span>` : ''; }
+      else { txt = 'Uit'; ico = `<i class="hico">${RIC.svg(w.icon, 'off')}</i>`; }
+      rows += `<div class="hrow"><div class="hline">${ico}</div><div class="htx"><b>${txt}</b>${sub}</div><div class="htm">${fmtTime(e.t)}</div></div>`;
+    }
+    this.$('hBody').innerHTML = chart + (rows || '<div class="hnone">Geen gebeurtenissen in de afgelopen 7 dagen</div>');
   }
 
   /* geschiedenis thermostaat: binnen- en ingestelde temperatuur, verwarmde periodes, programmawissels */
