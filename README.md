@@ -70,10 +70,12 @@ speakers:
 Heb je de integratie **Wake on LAN** ingesteld, dan staat er op Thuis onder Bediening een tegel per computer of server, tussen de lampen:
 
 - **Uit** (grijs): tik om te wekken;
-- **Wordt gewekt…** (blauw): de opdracht is verstuurd, tot hij reageert (maximaal 3 minuten);
+- **Wordt opgestart…** (blauw): de opdracht is verstuurd, tot hij reageert (maximaal 3 minuten);
 - **Aan** (groen): de computer is bereikbaar.
 
-Of een apparaat aanstaat, ziet de app aan een **Ping**-sensor. Voeg die toe via Instellingen → Apparaten en diensten → Integratie toevoegen → Ping (ICMP) en zet hem in dezelfde ruimte als de wekknop. Zonder Ping-sensor staat er "Wekken". Lang indrukken opent het venster van Home Assistant.
+Tik op het rondje om meteen aan te zetten. Tik op de tegel voor het detailvenster: bovenin de historie van vandaag (wanneer hij aan was), daaronder de aan-knop. Met het klokje linksboven zie je de afgelopen 7 dagen.
+
+Of een apparaat aanstaat, ziet de app aan een **Ping**-sensor. Voeg die toe via Instellingen → Apparaten en diensten → Integratie toevoegen → Ping (ICMP) en zet hem in dezelfde ruimte als de wekknop. Zonder Ping-sensor staat er "Aanzetten" en is er geen historie. Lang indrukken opent het venster van Home Assistant.
 
 De knoppen worden vanzelf gevonden. Zelf kiezen of koppelen kan ook (`[]` zet de tegels uit):
 
@@ -83,6 +85,16 @@ wake_on_lan:
     ping: binary_sensor.computer_ping   # optioneel
     name: PC                            # optioneel
     icon: pc                            # pc of server
+```
+
+### Lampen verbergen onder Bediening
+
+Wil je sommige lampen niet onder Bediening op Thuis zien (bijvoorbeeld buitenlampen), zet ze dan bij `hide_lights`. Een naam of een entity-id mag allebei:
+
+```yaml
+hide_lights:
+  - Tuin
+  - light.schuur
 ```
 
 ### Kamers

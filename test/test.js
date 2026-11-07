@@ -32,6 +32,9 @@ const VIEWS = [
   ['venster-afval', 'card=thuis', 390, (c) => c._openSheet('waste')],
   ['venster-kamer', 'card=kamers', 390, (c) => c._openSheet('room', 0)],
   ['venster-homepod', 'card=kamers&hp=playing&art=1', 390, (c) => c._openSheet('hp', 'media_player.homepod')],
+  ['venster-computer', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.computer_wekken')],
+  ['venster-computer-week', 'card=thuis&wol=1', 390, (c) => { c._openSheet('pc', 'button.computer_wekken'); c.shadowRoot.querySelector('#cvHb').click(); }],
+  ['venster-server', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.server_wekken')],
 ].filter((v) => !ALLEEN || v[0].includes(ALLEEN));
 
 const res = []; let fout = 0;
@@ -76,7 +79,7 @@ async function shot(b, base, [naam, qs, w, actie], src) {
   await p.goto(`${base}/test/mock.html?${qs}&src=${encodeURIComponent(src)}`); await p.clock.runFor(3000); await p.waitForTimeout(800);
   await p.evaluate(() => { const st = document.createElement('style'); st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important}'; window.card.shadowRoot.appendChild(st);
     window.card.shadowRoot.querySelectorAll('svg').forEach((s) => { try { s.pauseAnimations(); s.setCurrentTime(0); } catch (e) { /* geen animatie */ } }); });
-  if (actie) { await p.evaluate(`(${actie})(window.card)`); await p.clock.runFor(1000); await p.waitForTimeout(500); }
+  if (actie) { try { await p.evaluate(`(${actie})(window.card)`); } catch (e) { errs.push('actie: ' + e.message.split('\n')[0]); } await p.clock.runFor(1000); await p.waitForTimeout(500); }
   await p.waitForTimeout(200); const png = await p.screenshot({ fullPage: true }); await p.close(); return { png, errs };
 }
 // pixels vergelijken in de browser; geeft het aantal verschillende pixels en een verschilbeeld
@@ -111,6 +114,7 @@ async function diff(b, a, c) {
     if (nu.errs.length) { bad(v[0], 'fout in de console: ' + nu.errs[0].slice(0, 160)); continue; }
     if (!ref) { ok(v[0]); continue; }
     const oud = await shot(b, base, v, '/test/out/oud.js');
+    if (oud.errs.length) { info(v[0], 'nieuw: bestaat nog niet in de oude versie'); continue; }
     if (Buffer.compare(oud.png, nu.png) === 0) { ok(v[0], 'gelijk'); continue; }
     const d = await diff(b, oud.png, nu.png);
     if (!d.n && d.size) { ok(v[0], 'gelijk'); continue; }

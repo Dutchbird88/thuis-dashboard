@@ -1699,7 +1699,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '271';
+const CARD_VERSION = '272';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3375,6 +3375,7 @@ const TDEFAULTS = {
   cameras: [],                         // leeg = alle camera.*
   // lampen op naam (zoals in de Hue-app) of als entiteit; leeg = de eerste 8 Hue-kamers
   lights: [],
+  hide_lights: [],                 // v272: lampen niet tonen onder Bediening (naam of entity-id), bv. [Tuin, Schuur]
   calendars: [],
   // plaatje bij afspraken waarvan de titel een van deze woorden bevat
   agenda_icons: [{ match: 'picnic', image: '/local/picnic.png' }, { match: ['jarig', 'verjaardag'], image: '/local/taart.png' }],
@@ -4086,6 +4087,25 @@ const HPSTYLE = `
   /* v271: Wake on LAN-tegels tussen de lampen: aan = lichtgroen, wordt gewekt = blauw, uit = grijs */
   .lt.wol.on { --tk: color-mix(in srgb, var(--lc) 65%, #fff); } .lt.wol.on .ms { color: var(--tk) !important; }
   :host([data-th=l]) .lt.wol.on .ms { color: color-mix(in srgb, var(--lc) 70%, #000) !important; }
+  /* v272: venster computer/server */
+  .pcs { text-align: center; }
+  .pcard { text-align: left; background: rgba(255,255,255,.045); border-radius: 16px; padding: 12px 14px; margin: 14px 0 0; }
+  .pcard.pnone { font-size: 13px; color: var(--muted); text-align: center; }
+  .phh { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 9px; } .phh b { color: var(--text); font-weight: 600; }
+  .pstrip { position: relative; height: 12px; border-radius: 6px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .pstrip i { position: absolute; top: 0; bottom: 0; background: #4fd07f; border-radius: 3px; }
+  .pstrip i.now { background: linear-gradient(90deg, #4fd07f 70%, rgba(79,208,127,.4)); }
+  .pticks { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); opacity: .8; margin-top: 5px; } .pticks.pwk { margin: 6px 74px 0 80px; }
+  .pses { margin-top: 10px; } .pses div { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--text); padding: 7px 0; border-top: 1px solid rgba(255,255,255,.06); } .pses span { color: var(--muted); }
+  .pdrow { display: grid; grid-template-columns: 70px 1fr 64px; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; } .pdrow:first-child { border-top: 0; }
+  .pdrow b { font-weight: 600; color: var(--text); } .pdrow em { font-style: normal; text-align: right; color: var(--muted); }
+  .pbig svg { width: 118px; height: 118px; margin: 18px auto 4px; display: block; }
+  .pcs .lpw { margin-top: 16px; } .pnote { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+  #pcPw.busy span { color: #a9c8ff; } #pcPw.on span { color: #8fe3ad; }
+  :host([data-th=l]) .pcard { background: rgba(0,0,0,.04); } :host([data-th=l]) .pstrip { background: rgba(0,0,0,.08); }
+  :host([data-th=l]) .pses div, :host([data-th=l]) .pdrow { border-color: rgba(0,0,0,.07); }
+  :host([data-th=l]) #pcPw.busy span { color: #2a6fb0; } :host([data-th=l]) #pcPw.on span { color: #1f8a4c; }
+  :host([data-th=l]) .pcs .lpw button { color: #3a3a3c; } :host([data-th=l]) .pcs .lpw svg { color: #3a3a3c; background: linear-gradient(180deg, #fff, #eef1f5); border-color: rgba(0,0,0,.1); box-shadow: 0 8px 20px -12px rgba(0,0,0,.35); }
   /* v270: oven koelt af compact (ontwerp C): rustig oranje, titel met "Uit · koel rond …", temperatuur rechts */
   #oven.was.cool { background: rgba(255,159,10,.08) !important; border-color: rgba(255,159,10,.25) !important; padding-top: 10px !important; padding-bottom: 10px !important; }
   #oven.cool .r { align-items: center; } #oven.cool .r > svg { width: 44px !important; height: 44px !important; }
@@ -4193,6 +4213,12 @@ class ThuisCard extends HTMLElement {
   _moreInfo(entityId) { if (entityId) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
   _climateId() { return this._config.climate || Object.keys(this._hass?.states || {}).find((k) => k.startsWith('climate.')); }
   _lightIds() {
+    const norm = (x) => String(x || '').toLowerCase().replace(/^hue\s+/, '').replace(/[^a-z0-9]+/g, ' ').replace(/([a-z])\1+/g, '$1').trim();
+    const hide = (this._config.hide_lights || []).map(norm).filter(Boolean);
+    if (!hide.length) return this._lightIds0();
+    return this._lightIds0().filter((id) => { const n = norm(this._nm(id)), e = norm(id); return !hide.some((h) => h === e || h === n || n.startsWith(`${h} `)); });
+  }
+  _lightIds0() {
     const all0 = Object.values(this._hass?.states || {}).filter((s) => s.entity_id.startsWith('light.'));
     if (this._config.lights.length) {
       // naam → entiteit: eerst exact (zonder "Hue "), dan begint-met, dan bevat;
@@ -4895,8 +4921,57 @@ class ThuisCard extends HTMLElement {
       const on = ping && S[ping]?.state === 'on', busy = !on && Date.now() - (this._wolBusy?.[id] || 0) < 3 * 60000;
       const st = on ? 'on' : busy ? 'busy' : 'off';
       const icon = x.icon || (/server|nas|synology|qnap|unraid/i.test(`${id} ${name}`) ? 'server' : 'pc');
-      return { id, ping, name, icon, st, txt: on ? 'Aan' : busy ? 'Wordt gewekt…' : ping ? 'Uit' : 'Wekken' };
+      return { id, ping, name, icon, st, txt: on ? 'Aan' : busy ? 'Wordt opgestart…' : ping ? 'Uit' : 'Aanzetten' };
     });
+  }
+  // Wake on LAN: aanzetten (alleen als hij uit is); 3 minuten "Wordt opgestart…" tot de Ping-sensor aan meldt
+  _wolWake(w) {
+    if (!w || w.st !== 'off') return;
+    (this._wolBusy ||= {})[w.id] = Date.now();
+    this._hass.callService('button', 'press', { entity_id: w.id });
+    const re = () => { this._lightKey = null; this._updLights(); if (this._sheet === 'pc') this._updPcSheet(); };
+    re(); clearTimeout(this._wolT); this._wolT = setTimeout(re, 3 * 60000 + 500);
+  }
+  /* ---------- venster computer/server (v272): historie bovenin (Ping-sensor), daaronder icoon en aan-knop ---------- */
+  _pcHistory(ping) {
+    const now = Date.now(), H = this._pcH;
+    const lc = this._state(ping)?.last_changed;
+    if (H?.ping === ping && (H.busy || (H.lc === lc && now - H.t < 5 * 60000))) return H.segs;
+    this._pcH = { ping, lc, t: now, busy: true, segs: H?.ping === ping ? H.segs : null };
+    const from = dayAdd(startOfDay(now), -6);
+    this._hass.callApi('GET', `history/period/${new Date(from).toISOString()}?filter_entity_id=${ping}&minimal_response&no_attributes&end_time=${encodeURIComponent(new Date(now).toISOString())}`).then((r) => {
+      const L = (r?.[0] || []).map((x) => ({ t: Math.max(from, Date.parse(x.last_changed)), on: x.state === 'on' })).filter((x) => !isNaN(x.t)), segs = [];
+      L.forEach((x, i) => { if (x.on) segs.push([x.t, i + 1 < L.length ? L[i + 1].t : Date.now(), i + 1 >= L.length]); });
+      this._pcH = { ping, lc, t: Date.now(), busy: false, segs };
+      if (this._sheet === 'pc') this._updPcSheet();
+    }).catch(() => { this._pcH = { ping, lc, t: Date.now(), busy: false, segs: [] }; if (this._sheet === 'pc') this._updPcSheet(); });
+    return this._pcH.segs;
+  }
+  _updPcSheet() {
+    const w = this._wolList().find((x) => x.id === this._cvId), box = this.$('pcB'); if (!w || !box) return;
+    const now = Date.now(), M = 60000, segs = w.ping ? this._pcHistory(w.ping) : null;
+    const du = (ms) => { const m = Math.round(ms / M); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} u${m % 60 ? ` ${m % 60} min` : ''}`; };
+    const dname = (t) => { const d = Math.round((startOfDay(now) - startOfDay(t)) / DAY); return d === 0 ? 'Vandaag' : d === 1 ? 'Gisteren' : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long' }).replace(/^./, (c) => c.toUpperCase()); };
+    const day = (d0) => { const d1 = dayAdd(d0, 1), len = d1 - d0; const parts = (segs || []).map(([a, b, live]) => [Math.max(a, d0), Math.min(b, d1), live]).filter(([a, b]) => b > a);
+      return { parts, tot: parts.reduce((n, [a, b]) => n + b - a, 0), bar: `<div class="pstrip">${parts.map(([a, b, live]) => `<i class="${live ? 'now' : ''}" style="left:${((a - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.6, (b - a) / len * 100).toFixed(2)}%"></i>`).join('')}</div>` }; };
+    const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+    const last = (segs || []).filter((x) => !x[2]).slice(-1)[0], live = (segs || []).find((x) => x[2]), since = w.st === 'on' && w.ping ? (live ? live[0] : Date.parse(this._state(w.ping)?.last_changed)) : null;
+    const sub = w.st === 'on' ? `Aan${since ? ` · sinds ${fmtTime(since)}` : ''}` : w.st === 'busy' ? 'Wordt opgestart…' : `Uit${last ? ` · laatst aan ${dname(last[1]).toLowerCase()} tot ${fmtTime(last[1])}` : ''}`;
+    const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('pcN', w.name); set('pcS', this._pcWeek ? 'Geschiedenis · 7 dagen' : sub);
+    let hist = '';
+    if (!w.ping) hist = '<div class="pcard pnone">Voeg een Ping-sensor toe in dezelfde ruimte om te zien wanneer hij aan was.</div>';
+    else if (!segs) hist = '<div class="pcard pnone">Laden…</div>';
+    else if (this._pcWeek) {
+      hist = `<div class="pcard">${Array.from({ length: 7 }, (_, i) => dayAdd(startOfDay(now), -i)).map((d0) => { const d = day(d0); return `<div class="pdrow"><b>${dname(d0)}</b>${d.bar}<em>${d.tot ? du(d.tot).replace(' min', '') : '—'}</em></div>`; }).join('')}${ticks.replace('pticks', 'pticks pwk')}</div>`;
+    } else {
+      const d = day(startOfDay(now)), ses = (segs || []).slice(-3).reverse();
+      hist = `<div class="pcard"><div class="phh">Vandaag<b>${d.tot ? `${du(d.tot)} aan` : 'niet aan geweest'}</b></div>${d.bar}${ticks}${ses.length ? `<div class="pses">${ses.map(([a, b, live]) => `<div>${live ? `Nu aan, sinds ${fmtTime(a)}` : `${dname(a)} ${fmtTime(a)} – ${fmtTime(b)}`}<span>${du(b - a)}</span></div>`).join('')}</div>` : ''}</div>`;
+    }
+    const note = w.st === 'busy' ? 'Dit duurt meestal 30 tot 60 seconden' : w.st === 'on' ? `Uitzetten kan alleen op de ${w.name.toLowerCase()} zelf` : !w.ping ? 'Na het aanzetten kan de app niet zien of hij aan is' : '';
+    const html = `${hist}${this._pcWeek ? '' : `<div class="pbig">${RIC.svg(w.icon, w.st)}</div><div class="lpw"><button id="pcPw" class="${w.st}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span>${w.st === 'on' ? 'Aan' : w.st === 'busy' ? 'Wordt opgestart…' : 'Aanzetten'}</span></button></div>${note ? `<div class="pnote">${note}</div>` : ''}`}`;
+    if (box._k === html) return; box._k = html; box.innerHTML = html;
+    this.$('pcPw')?.addEventListener('click', () => this._wolWake(this._wolList().find((x) => x.id === this._cvId)));
   }
   _updLights() {
     const ids = this._lightIds();
@@ -4921,13 +4996,11 @@ class ThuisCard extends HTMLElement {
       el.addEventListener('pointerdown', () => { long = false; el.classList.add('press'); timer = setTimeout(() => { long = true; cancel(); this._moreInfo(w.ping || w.id); }, 500); });
       ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => el.addEventListener(t, cancel));
       el.addEventListener('contextmenu', (ev) => { ev.preventDefault(); });
-      el.addEventListener('click', () => {
+      el.addEventListener('click', (e) => {
         if (long) { long = false; return; }
-        if (w.st !== 'off') return;
-        (this._wolBusy ||= {})[w.id] = Date.now();
-        this._hass.callService('button', 'press', { entity_id: w.id });
-        this._lightKey = null; this._updLights();
-        clearTimeout(this._wolT); this._wolT = setTimeout(() => { this._lightKey = null; this._updLights(); }, 3 * 60000 + 500);
+        // tik op de tegel = detailvenster (v272), tik op het rondje = meteen aanzetten (zoals bij de lampen)
+        if (!e.target.closest('.mi2')) { this._openSheet('pc', w.id); return; }
+        this._wolWake(w);
       });
     });
     // tikken = aan/uit, lang indrukken (of rechtermuisknop) = venster met helderheid en kleur
@@ -5726,7 +5799,7 @@ class ThuisCard extends HTMLElement {
     if (!this._mq?.matches) return;
     this._sheet = kind; this._shKey = null; this._cvId = id; this._thArc = null;
     const sh = this.$('sheet'), body = this.$('shBody');
-    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl', 'waste'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
+    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl', 'waste', 'pc'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
     const HB = '<button class="cvhb" id="cvHb" aria-label="Geschiedenis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></button>';
     if (kind === 'lt') {
       this._cvHist = false;
@@ -5835,6 +5908,11 @@ class ThuisCard extends HTMLElement {
       sl.addEventListener('pointerup', vEnd); sl.addEventListener('pointercancel', vEnd);
       sl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
       clearInterval(this._hpTimer); this._hpTimer = setInterval(() => { if (this._sheet === 'hp') this._updHpSheet(); else { clearInterval(this._hpTimer); this._hpTimer = null; } }, 1000);
+    } else if (kind === 'pc') {
+      this._cvHist = false; this._pcWeek = false;
+      body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="pcN"></b><span id="pcS"></span></div><div class="pcs" id="pcB"></div>`;
+      this.$('cvHb').addEventListener('click', () => { this._pcWeek = !this._pcWeek; this._updPcSheet(); });
+      this._updPcSheet();
     } else if (kind === 'waste') {
       this._cvHist = false;
       body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b>Afval</b><span>Komende twee weken</span></div><div id="wsB"><div class="hnone">Laden…</div></div>`;
@@ -6086,6 +6164,7 @@ class ThuisCard extends HTMLElement {
     if (!this._sheet || !this._hass) return;
     if (this._sheet === 'room') { this._updRoomSheet(); return; }
     if (this._sheet === 'hp') { this._updHpSheet(); return; }
+    if (this._sheet === 'pc') { this._updPcSheet(); return; }
     if (this._sheet === 'ppl') { this._updPplSheet(); return; }
     const sh = this.$('sheet');
     if (this._sheet === 'lt') {

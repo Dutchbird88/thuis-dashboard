@@ -20,6 +20,7 @@
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
 //   tok=1                               thermostaat op temperatuur (niet aan het verwarmen)
 //   wol=1                               Wake on LAN: computer (uit) en server (aan) met Ping-sensoren
+//   hide=Leeslamp,light.spiegellamp     hide_lights: lampen niet tonen onder Bediening
 const q = new URLSearchParams(location.search);
 const CARD = { thuis: 'thuis-card', kamers: 'kamers-card', nu: 'zonnepanelen-card', energie: 'verbruik-card', auto: 'auto-card' }[q.get('card') || 'thuis'] || q.get('card');
 const SRC = q.get('src') || '../thuis-dashboard.js';
@@ -175,6 +176,12 @@ async function callWS(m) {
 async function callApi(method, path) {
   // oven die afkoelt: 25 en 12 minuten geleden heter (voor de schatting "koel rond …")
   if (path.startsWith('history/period') && path.includes('oven_huidige_temperatuur')) return [[{ state: '152', last_changed: at(Date.now() - 25 * 6e4) }, { state: '128', last_changed: at(Date.now() - 12 * 6e4) }]];
+  // Ping-historie: computer gisteren en vanochtend aan (nu uit), server sinds 50 minuten aan
+  if (path.startsWith('history/period') && path.includes('_ping')) {
+    const n = Date.now(), H = (h) => at(n - h * 36e5), srv = path.includes('server_ping');
+    return [srv ? [{ state: 'off', last_changed: H(30) }, { state: 'on', last_changed: H(0.83) }]
+      : [{ state: 'off', last_changed: H(40) }, { state: 'on', last_changed: H(26) }, { state: 'off', last_changed: H(22.9) }, { state: 'on', last_changed: H(4.3) }, { state: 'off', last_changed: H(1.8) }]];
+  }
   if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }];
   return [];
 }
@@ -186,7 +193,7 @@ const hass = {
   hassUrl: (p) => p, fetchWithAuth: (p) => fetch(p),
 };
 const CONFIG = {
-  'thuis-card': { persons: ['person.bewoner', 'person.bewoner2'], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'] },
+  'thuis-card': { persons: ['person.bewoner', 'person.bewoner2'], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'], ...(q.get('hide') ? { hide_lights: q.get('hide').split(',') } : {}) },
   'kamers-card': {},
   'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: { image: HUIS, width: 400, height: 300, panels: {} } },
   'verbruik-card': { power: 'sensor.p1_vermogen', import: 'sensor.stroom_afname', export: 'sensor.stroom_teruglevering', gas: 'sensor.gas_stand', water: 'sensor.water_stand' },
