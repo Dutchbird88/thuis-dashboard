@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v274**.*
+*Bijgewerkt: 7 november 2026, versie **v275**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v274** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v275** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v274.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v275.
 
 ## Gerealiseerde functies (per tab)
 
@@ -145,6 +145,7 @@
 | v272 | Telefoon: detailvenster voor computer/server (Wake on LAN): bovenin de historie van vandaag uit de Ping-sensor (balk, totaal, laatste sessies), klokje = 7 dagen, daaronder de aan-knop in de stijl van het lampvenster. "Wordt opgestart…" in plaats van "Wordt gewekt…". Nieuwe instelling `hide_lights` om lampen onder Bediening te verbergen. Computer ongewijzigd. |
 | v273 | Telefoon: klokje in het venster van computer/server opent een tijdlijn zoals bij lampen en rolluiken: grafiek 24 uur aan/uit, "Opstarten gevraagd" met wie, "Aan" met opstarttijd en "Uit". Vervangt de 7-dagenbalken. |
 | v274 | Telefoon: Wake on LAN-apparaten ook als pil in het kamervenster van hun ruimte (Aan/Uit/Wordt opgestart…); tik opent het computervenster, sluiten gaat terug naar de kamer. |
+| v275 | `hide_lights` herkent nu ook het begin van een lampnaam ("Tuin" → "Tuinverlichting"), een los woord en de ruimte in HA (alle lampen in die ruimte). |
 
 ## Volgende stappen
 

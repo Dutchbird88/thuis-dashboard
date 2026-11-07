@@ -89,7 +89,7 @@ wake_on_lan:
 
 ### Lampen verbergen onder Bediening
 
-Wil je sommige lampen niet onder Bediening op Thuis zien (bijvoorbeeld buitenlampen), zet ze dan bij `hide_lights`. Een naam of een entity-id mag allebei:
+Wil je sommige lampen niet onder Bediening op Thuis zien (bijvoorbeeld buitenlampen), zet ze dan bij `hide_lights`, in de instellingen van de Thuis-kaart. Dit mag een entity-id zijn, (het begin van) een lampnaam of de naam van een ruimte in Home Assistant: dan verdwijnen alle lampen in die ruimte.
 
 ```yaml
 hide_lights:

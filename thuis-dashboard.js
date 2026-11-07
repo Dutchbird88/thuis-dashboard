@@ -1699,7 +1699,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '274';
+const CARD_VERSION = '275';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4216,7 +4216,12 @@ class ThuisCard extends HTMLElement {
     const norm = (x) => String(x || '').toLowerCase().replace(/^hue\s+/, '').replace(/[^a-z0-9]+/g, ' ').replace(/([a-z])\1+/g, '$1').trim();
     const hide = (this._config.hide_lights || []).map(norm).filter(Boolean);
     if (!hide.length) return this._lightIds0();
-    return this._lightIds0().filter((id) => { const n = norm(this._nm(id)), e = norm(id); return !hide.some((h) => h === e || h === n || n.startsWith(`${h} `)); });
+    // verbergen op entity-id, op naam (ook als de naam ermee begint of het woord bevat, bv. "Tuinverlichting") of op de ruimte in Home Assistant
+    const E = this._hass?.entities || {}, D = this._hass?.devices || {}, A = this._hass?.areas || {};
+    return this._lightIds0().filter((id) => {
+      const n = norm(this._nm(id)), e = norm(id), ar = norm(A[E[id]?.area_id || D[E[id]?.device_id]?.area_id]?.name);
+      return !hide.some((h) => h === e || h === n || n.startsWith(h) || n.split(' ').includes(h) || h === ar);
+    });
   }
   _lightIds0() {
     const all0 = Object.values(this._hass?.states || {}).filter((s) => s.entity_id.startsWith('light.'));
