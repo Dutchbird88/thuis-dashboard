@@ -35,6 +35,8 @@ const VIEWS = [
   ['venster-computer', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.computer_wekken')],
   ['venster-computer-historie', 'card=thuis&wol=1', 390, (c) => { c._openSheet('pc', 'button.computer_wekken'); c.shadowRoot.querySelector('#cvHb').click(); }],
   ['venster-server', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.server_wekken')],
+  ['venster-kamer-wol', 'card=kamers&wol=1', 390, (c) => c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer'))],
+  ['venster-kamer-wol-pc', 'card=kamers&wol=1', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills [data-wol]').click(); }],
 ].filter((v) => !ALLEEN || v[0].includes(ALLEEN));
 
 const res = []; let fout = 0;

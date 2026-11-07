@@ -73,7 +73,7 @@ Heb je de integratie **Wake on LAN** ingesteld, dan staat er op Thuis onder Bedi
 - **Wordt opgestart…** (blauw): de opdracht is verstuurd, tot hij reageert (maximaal 3 minuten);
 - **Aan** (groen): de computer is bereikbaar.
 
-Tik op het rondje om meteen aan te zetten. Tik op de tegel voor het detailvenster: bovenin de historie van vandaag (wanneer hij aan was), daaronder de aan-knop. Met het klokje linksboven zie je de afgelopen 7 dagen.
+In het kamervenster van de ruimte waar de computer staat, verschijnt hij ook als pil; tik erop voor hetzelfde detailvenster. Tik op het rondje om meteen aan te zetten. Tik op de tegel voor het detailvenster: bovenin de historie van vandaag (wanneer hij aan was), daaronder de aan-knop. Met het klokje linksboven zie je de afgelopen 7 dagen.
 
 Of een apparaat aanstaat, ziet de app aan een **Ping**-sensor. Voeg die toe via Instellingen → Apparaten en diensten → Integratie toevoegen → Ping (ICMP) en zet hem in dezelfde ruimte als de wekknop. Zonder Ping-sensor staat er "Aanzetten" en is er geen historie. Lang indrukken opent het venster van Home Assistant.
 

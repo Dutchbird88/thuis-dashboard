@@ -1699,7 +1699,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '273';
+const CARD_VERSION = '274';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4100,6 +4100,7 @@ const HPSTYLE = `
   .pbig svg { width: 118px; height: 118px; margin: 18px auto 4px; display: block; }
   .pcs .lpw { margin-top: 16px; } .pnote { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
   #pcPw.busy span { color: #a9c8ff; } #pcPw.on span { color: #8fe3ad; }
+  .ksp.wolp i.g svg { width: 100%; height: 100%; }
   .hico.pcq { background: rgba(98,189,245,.2); color: #a9c8ff; } .hico.pcon { background: rgba(79,208,127,.2); } .hico .ri2 { width: 22px; height: 22px; }
   :host([data-th=l]) .pcard { background: rgba(0,0,0,.04); } :host([data-th=l]) .pstrip { background: rgba(0,0,0,.08); }
   :host([data-th=l]) .pses div { border-color: rgba(0,0,0,.07); }
@@ -6394,10 +6395,11 @@ class ThuisCard extends HTMLElement {
         if (/automation|alarm|detection|detectie|overlay|privacy|adguard|statuslampje|hoge_fps|cloud|_motion|_illuminance|ingeschakeld|nachtwacht|lichtpad|stoomcontrole|let_op/i.test(x)) return false;
         return Object.keys(E).some((k) => E[k].device_id === d && h.states[k]?.attributes.device_class === 'power') || /plug|stopcontact|grillplats|tretakt|inspelning/i.test(x); });
       const speakers = dom('media_player').filter((x) => this._isSpeaker(x));
-      if (!lights.length && !covers.length && !climate && !sensors.length && !plugs.length && !cams.length && !speakers.length) return null;
+      const wolIds = new Set(this._wolList().map((w) => w.id)), wol = dom('button').filter((x) => wolIds.has(x)); // v274: Wake on LAN in de eigen ruimte
+      if (!lights.length && !covers.length && !climate && !sensors.length && !plugs.length && !cams.length && !speakers.length && !wol.length) return null;
       const t = sens('temperature'), hu = sens('humidity');
       return { name: a.name, floor: flr(a.floor_id).name || '', level: flr(a.floor_id).level ?? 99, icon: icon(a.name), climate, lights, covers, apps, scenes: aid,
-        temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors, plugs, cams, speakers };
+        temp: climate ? null : t.find((x) => !/motion/.test(x)) || t[0] || null, humidity: hu[0] || null, sensors, plugs, cams, speakers, wol };
     }).filter(Boolean);
     // verdiepingen op volgorde (laag naar hoog, buiten als laatste); binnen een verdieping de volgorde van Home Assistant
     // verdieping: herken de naam (kelder, begane grond, eerste, tweede, zolder, buiten), anders het niveau uit Home Assistant
@@ -6489,7 +6491,7 @@ class ThuisCard extends HTMLElement {
         return { id, nm: dv.name_by_user || dv.name || this._nm(id) || 'Camera', on: !!cur, txt: cur ? `${cur.lb} nu` : last ? `${last.lb} · ${relTime(last.t)}` : 'Geen detectie' };
       });
       const speakers = this._spkDedupe((r.speakers || []).filter((id) => S[id]));
-      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams, speakers };
+      return { i, r, name: r.name, floor: r.floor || '', icon: r.icon, lights, on, covers, temp, hum, heat, apps, offApps, scenes, sensors, plugs, cams, speakers, wol: r.wol || [] };
     });
   }
   // helderheid van een hele kamer: slepen toont direct, bij loslaten één opdracht (helemaal links = uit)
@@ -6653,8 +6655,9 @@ class ThuisCard extends HTMLElement {
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span>${m.txt}</span></div></div>`; }).join('');
+    const wolPills = this._mq?.matches ? this._wolList().filter((w) => rm.wol.includes(w.id)).map((w) => `<div class="mp ksp wolp${w.st !== 'off' ? ' hot' : ''}" data-wol="${w.id}" style="--c:${w.st === 'on' ? '#4fd07f' : '#62bdf5'}"><i class="g">${RIC.svg(w.icon, w.st)}</i><div><b>${w.name}</b><span>${w.txt}</span></div></div>`).join('') : '';
     const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc'), scenes: [] }; } // oprit: geen scènes
-    const html = (hpPills + plugPills + camPills + pills ? `<div class="kspills">${hpPills}${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
+    const html = (hpPills + wolPills + plugPills + camPills + pills ? `<div class="kspills">${hpPills}${wolPills}${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
       + this._evSection(rm)
@@ -6673,6 +6676,7 @@ class ThuisCard extends HTMLElement {
     B.querySelectorAll('.evb button, .evseg button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
     B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
     B.querySelectorAll('.kspills .mp[data-hp]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('hp', el.dataset.hp); this._roomBack = ri; }, true));
+    B.querySelectorAll('.kspills .mp[data-wol]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('pc', el.dataset.wol); this._roomBack = ri; }, true));
     B.querySelectorAll('.kspills .mp[data-plug]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._hass.callService('switch', 'toggle', { entity_id: el.dataset.plug }); }, true));
     B.querySelectorAll('.klk.koff .lk').forEach((el) => el.addEventListener('click', (e) => { if (el.dataset.k && el.dataset.k !== 'evc') { e.stopImmediatePropagation(); this._appHistory(this._roomIdx, el.dataset.k); } }, true));
     B.querySelectorAll('.klk .lk, .kspills .mp').forEach((el) => el.addEventListener('click', () => el.dataset.k === 'evc' ? (this._closeSheet?.(), go({ dataset: { nav: NAV.auto } })) : this._moreInfo(el.dataset.id)));
