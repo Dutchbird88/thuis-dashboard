@@ -628,6 +628,24 @@ const fcPeriods = (hours) => {
 // ---------- lichte weergave (alleen telefoon): theme donker / licht / automatisch ----------
 const THEME_CARDS = new Set();
 let chromeApply = null; // zet de statusbalk in de kleur van het thema (zie hieronder)
+// telefoon (v267): de scrollbalk van Home Assistant verbergen. Vanaf de kaart omhoog (ook door shadow roots heen)
+// elk element dat verticaal scrollt markeren, en in diens eigen root een stijl zetten die de scrollbalk verbergt.
+const SB_CSS = '@media (max-width: 600px) { [data-thuis-sb] { scrollbar-width: none; } [data-thuis-sb]::-webkit-scrollbar { display: none; width: 0; height: 0; } }';
+const hideScrollbars = (el) => {
+  if (!window.matchMedia?.('(max-width: 600px)').matches) return;
+  let n = el;
+  const mark = (x) => {
+    if (!x || x.hasAttribute?.('data-thuis-sb')) return;
+    x.setAttribute('data-thuis-sb', '');
+    const root = x.getRootNode?.(), host = root instanceof ShadowRoot ? root : document.head;
+    if (host && !host.querySelector?.(':scope > style[data-thuis-sb-css]')) { const st = document.createElement('style'); st.setAttribute('data-thuis-sb-css', ''); st.textContent = SB_CSS; host.appendChild(st); }
+  };
+  mark(document.documentElement); mark(document.body);
+  while (n) {
+    if (n instanceof Element) { const o = getComputedStyle(n).overflowY; if (o === 'auto' || o === 'scroll') mark(n); }
+    n = n.parentNode || n.host || (n instanceof ShadowRoot ? n.host : null);
+  }
+};
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
   if (cfg) { el._theme = String(cfg.theme || 'donker').toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
@@ -798,6 +816,7 @@ class ZonnepanelenCard extends HTMLElement {
 
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
+    setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
     this._timer = setInterval(() => this._fetchStats(true), 5 * 60000);
   }
   disconnectedCallback() {
@@ -1677,7 +1696,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '266';
+const CARD_VERSION = '267';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1861,7 +1880,7 @@ class VerbruikCard extends HTMLElement {
   getCardSize() { return 12; }
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
-  connectedCallback() { THEME_CARDS.add(this); chromeApply?.(); this._timer = setInterval(() => this._fetch(), 60000); }
+  connectedCallback() { THEME_CARDS.add(this); chromeApply?.(); setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000); this._timer = setInterval(() => this._fetch(), 60000); }
   disconnectedCallback() { clearInterval(this._timer); }
 
   $(id) { return this.shadowRoot.getElementById(id); }
@@ -2757,6 +2776,7 @@ class AutoCard extends HTMLElement {
 
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
+    setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
     this._ctimer = setInterval(() => { this._fetchCharge(); this._update(); this._maybeRefresh(); }, 60000);
     this._onVis = () => this._maybeRefresh();
     document.addEventListener('visibilitychange', this._onVis);
@@ -4126,6 +4146,7 @@ class ThuisCard extends HTMLElement {
   static getStubConfig() { return {}; }
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
+    setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
     this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); }, 10000);
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') setTimeout(() => this._carRefresh(true), 800); }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);

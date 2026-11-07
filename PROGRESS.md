@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v266**.*
+*Bijgewerkt: 5 november 2026, versie **v267**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v266** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v267** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v266.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v267.
 
 ## Gerealiseerde functies (per tab)
 
@@ -135,6 +135,7 @@
 | v264 | Vervolg codecontrole: Energie vraagt statistieken op in kWh/m³/W (`STAT_UNITS`) en rekent live meterstanden om (`toStatUnit`: Wh, MWh, L, kW); daggrenzen met kalenderdagen (`dayAdd`) rond zomer-/wintertijd (Nu, Energie, agenda; meerdaagse afspraak op kalenderdagen); Kamers: entiteiten per apparaat via een index (`_devEnts`) in plaats van het hele register per sensor; weervenster houdt een geopende radar vast bij verversen; thermostaatgeschiedenis haalt automatiseringen in porties van 40 op (te lange URL). |
 | v265 | Bovenbalk (statusbalk) kleurt direct zodra een kaart verschijnt (`chromeApply` in elke `connectedCallback`). Sinds v263 wachtte hij op de vaste controles (0,5–10 s) en bleef zo lang licht. |
 | v266 | Bovenbalk terug naar het gedrag tot v262 (gebruiker): op de telefoon altijd direct de kleur van de app, ook zonder zichtbare kaart. De beperking uit v263 ("alleen als een kaart zichtbaar is") is teruggedraaid. |
+| v267 | Telefoon: poging om de scrollbalk van de HA-app te verbergen (`hideScrollbars`): vanaf de kaart omhoog door shadow roots elk verticaal scrollend element markeren (`data-thuis-sb`) en in diens root `::-webkit-scrollbar { display: none }` + `scrollbar-width: none` zetten; ook `html`/`body`. Ongetest op een echte iPhone. |
 
 ## Volgende stappen
 
