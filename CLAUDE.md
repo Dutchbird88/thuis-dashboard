@@ -134,6 +134,12 @@ Verdere regels:
 - Hoes (v253): `_hpArt([bronnen])` laadt eerst op de achtergrond (cache `_hpArtC`), toont pas bij succes, anders `HPICON`. Bronnen: deze speler en de tweede speler (zelfde apparaatnaam). Om en om `Image` en `hass.fetchWithAuth` (blob-URL), tot 20 pogingen. Bij AirPlay vanaf de iPhone levert HA soms geen hoes.
 - `entity_picture` van een mediaspeler bevat een token: niet loggen of delen.
 
+**Wake on LAN** (v271, alleen telefoon; op de computer verborgen via `@media (min-width: 601px)`)
+
+- `_wolList()`: knoppen met `platform: wake_on_lan` (of `wake_on_lan:` in de YAML: lijst van ids of `{button, ping, name, icon}`; `[]` = uit). Ping-sensor (`binary_sensor`, `platform: ping`): de enige in dezelfde ruimte als de knop, anders op gedeelde woorden in naam/id. Naam zonder "wekken/wake/wol" aan het eind.
+- Tegels `.lt.wol` achteraan in `#lights` (in `_updLights`, de sleutel bevat de wol-status): uit = grijs "Uit" (of "Wekken" zonder ping), tik = `button.press` en 3 min "Wordt gewekt…" (blauw, `_wolBusy`), ping aan = "Aan" (lichtgroen `#4fd07f`). Tik op een tegel die aan is doet niets; lang indrukken = `_moreInfo` (ping, anders knop).
+- Iconen `pc` en `server` in `DRAW` (tonen `on`, `busy`, `off`).
+
 **Meldingen**
 
 - `_safety` en `_updAlarm` tonen rook, CO en water als rode kaart onder de camera's op Thuis. De melding is weg te vegen en komt terug bij een nieuwe verandering.
@@ -255,10 +261,10 @@ Verdere regels:
 - **Syntax:** `node --check thuis-dashboard.js`.
 - **Lint:** `npx --yes eslint@8.57.0 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-undef":"error","no-redeclare":"error","no-dupe-keys":"error"}' thuis-dashboard.js`. Dit moet 0 fouten geven en is getest bij v214. Gebruik eventueel ook `no-unused-vars` als waarschuwing.
 - **Testpagina en testscript (in de repo, map `test/`):**
-  - `node test/test.js` doet alles in één keer: `node --check`, lint, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 19 views (alle tabbladen op 390 en 1280, licht thema, muziek, alarm en de vensters thermostaat, afval, kamer en HomePod) in `test/out/`. Een fout in de console telt als fout.
+  - `node test/test.js` doet alles in één keer: `node --check`, lint, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 21 views (alle tabbladen op 390 en 1280, licht thema, muziek, alarm en de vensters thermostaat, afval, kamer en HomePod) in `test/out/`. Een fout in de console telt als fout.
   - `node test/test.js --vergelijk HEAD~1` (git-ref of pad naar een .js) vergelijkt elke view pixel voor pixel met die versie. Bij verschil komen er `<naam>.oud.png` en `<naam>.verschil.png` bij (verschil in rood). Gebruik dit vóór elke publicatie: de computerviews moeten "gelijk" zijn bij wijzigingen voor de telefoon.
   - Extra: `--alleen <deel van de naam>` en `--geen-lint`. De klok staat vast op 5 november 2026 12:30, dus screenshots zijn steeds gelijk.
-  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
+  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur), `wol=1` (computer uit en server aan, met Ping-sensoren). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
   - Persoonlijke termen: zet ze in `test/prive.txt` (één per regel). Dat bestand staat in `.gitignore` en is er in een nieuwe sessie niet: vraag de gebruiker dan om de lijst. Zonder dat bestand meldt het script "niet gecontroleerd".
   - Zet nooit eigen entity-ids, namen of foto's in `test/`. De foto's van huis en auto zijn getekende SVG's.
 

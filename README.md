@@ -65,6 +65,26 @@ speakers:
   - media_player.homepod
 ```
 
+### Computers wekken (Wake on LAN, telefoon)
+
+Heb je de integratie **Wake on LAN** ingesteld, dan staat er op Thuis onder Bediening een tegel per computer of server, tussen de lampen:
+
+- **Uit** (grijs): tik om te wekken;
+- **Wordt gewekt…** (blauw): de opdracht is verstuurd, tot hij reageert (maximaal 3 minuten);
+- **Aan** (groen): de computer is bereikbaar.
+
+Of een apparaat aanstaat, ziet de app aan een **Ping**-sensor. Voeg die toe via Instellingen → Apparaten en diensten → Integratie toevoegen → Ping (ICMP) en zet hem in dezelfde ruimte als de wekknop. Zonder Ping-sensor staat er "Wekken". Lang indrukken opent het venster van Home Assistant.
+
+De knoppen worden vanzelf gevonden. Zelf kiezen of koppelen kan ook (`[]` zet de tegels uit):
+
+```yaml
+wake_on_lan:
+  - button: button.computer_wekken
+    ping: binary_sensor.computer_ping   # optioneel
+    name: PC                            # optioneel
+    icon: pc                            # pc of server
+```
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

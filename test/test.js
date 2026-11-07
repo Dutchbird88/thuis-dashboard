@@ -23,6 +23,7 @@ const VIEWS = [
   ['thuis-telefoon', 'card=thuis&wt=pmd1', 390], ['thuis-computer', 'card=thuis&wt=pmd1', 1280], ['thuis-telefoon-licht', 'card=thuis&wt=pmd1&th=licht', 390],
   ['thuis-telefoon-muziek', 'card=thuis&hp=playing&art=1', 390], ['thuis-telefoon-alarm', 'card=thuis&alarm=water', 390],
   ['thuis-telefoon-oven', 'card=thuis&oven=koel&tok=1', 390], ['thuis-computer-oven', 'card=thuis&oven=koel&tok=1', 1280],
+  ['thuis-telefoon-wol', 'card=thuis&wol=1', 390], ['thuis-computer-wol', 'card=thuis&wol=1', 1280],
   ['kamers-telefoon', 'card=kamers', 390], ['kamers-computer', 'card=kamers', 1280],
   ['nu-telefoon', 'card=nu', 390], ['nu-computer', 'card=nu', 1280],
   ['energie-telefoon', 'card=energie', 390], ['energie-computer', 'card=energie', 1280],

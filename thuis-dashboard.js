@@ -172,6 +172,9 @@ Object.assign(DRAW, {
 });
 Object.assign(DRAW, {
  attic:()=>`<rect x="20" y="50" width="60" height="40" rx="5" fill="${f('white')}"/><path d="M50 10 92 50H8z" fill="${f('amber')}" stroke="${f('amber')}" stroke-width="8" stroke-linejoin="round"/><circle cx="50" cy="35" r="8.5" fill="${f('yellow')}"/><circle cx="50" cy="35" r="8.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2.5"/><rect x="42" y="66" width="16" height="24" rx="3" fill="${f('metal')}"/>${HL('M24 42 44 24',4.5)}`,
+ // v271: computer (beeldscherm) en server (twee kasten) voor Wake on LAN; t 'on' = aan, 'busy' = wordt gewekt, 'off' = grijs
+ pc:(t)=>`<rect x="8" y="14" width="84" height="56" rx="10" fill="${f('white')}"/><rect x="15" y="21" width="70" height="42" rx="5" fill="${f(t==='off'?'dark':'sky')}"/><rect x="44" y="70" width="12" height="11" fill="${f('metal')}"/><rect x="28" y="80" width="44" height="8" rx="4" fill="${f('metal')}"/>${HL('M22 28v12',4)}`,
+ server:(t)=>`${[10,54].map(y=>`<rect x="14" y="${y}" width="72" height="36" rx="9" fill="${f('white')}"/><circle cx="29" cy="${y+18}" r="5" fill="${f(t==='busy'?'sky':'green')}"/><rect x="44" y="${y+15}" width="30" height="6" rx="3" fill="${f('dark')}"/>`).join('')}${HL('M22 18h16',4)}`,
 });
 const ROOMICON = { attic: 'attic', sofa: 'sofa', pot: 'pot', door: 'door', toilet: 'toilet', bed: 'bed', bath: 'bath', desk: 'desk', stairs: 'stairs', tree: 'tree', drive: 'car', shed: 'shed', wash: 'washer' };
 // tekenen: toon 'off' = gedempt grijs, 'lit' = één warme kleur (kamers die oplichten), anders de eigen kleuren
@@ -1696,7 +1699,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '270';
+const CARD_VERSION = '271';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3378,6 +3381,7 @@ const TDEFAULTS = {
   calendars_placeholder: null,                       // leeg = alle calendar.*; of [{ entity: 'calendar.…', color: '#ff453a' }]
   // rolluiken, in deze volgorde; de naam komt uit Home Assistant (zonder 'Rolluik ')
   covers: [],
+  wake_on_lan: null,               // v271: Wake on LAN-tegels op de telefoon; null = zelf zoeken (knoppen van de integratie, met de Ping-sensor in dezelfde ruimte), [] = uit
   washer: 'sensor.wasmachine',
   dishwasher: 'vaatwasser',            // Home Connect: sensor.vaatwasser_status, …
   oven: 'oven',                        // Home Connect: sensor.oven_status, …         // Miele: status; programma, fase, tijden worden afgeleid (sensor.wasmachine_…)
@@ -4077,7 +4081,11 @@ const HPI = {
 };
 const HPSTYLE = `
 #hpc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
+@media (min-width: 601px) { .lt.wol { display: none; } }
 @media (max-width: 600px) {
+  /* v271: Wake on LAN-tegels tussen de lampen: aan = lichtgroen, wordt gewekt = blauw, uit = grijs */
+  .lt.wol.on { --tk: color-mix(in srgb, var(--lc) 65%, #fff); } .lt.wol.on .ms { color: var(--tk) !important; }
+  :host([data-th=l]) .lt.wol.on .ms { color: color-mix(in srgb, var(--lc) 70%, #000) !important; }
   /* v270: oven koelt af compact (ontwerp C): rustig oranje, titel met "Uit · koel rond …", temperatuur rechts */
   #oven.was.cool { background: rgba(255,159,10,.08) !important; border-color: rgba(255,159,10,.25) !important; padding-top: 10px !important; padding-bottom: 10px !important; }
   #oven.cool .r { align-items: center; } #oven.cool .r > svg { width: 44px !important; height: 44px !important; }
@@ -4870,10 +4878,31 @@ class ThuisCard extends HTMLElement {
     if (k) return k < 2700 ? '#ff9a2e' : k < 3500 ? '#ffb02e' : k < 4500 ? '#ffc83d' : '#ffe27a';
     return '#ffc83d';
   }
+  // Wake on LAN: knoppen van de integratie (of `wake_on_lan:` in de YAML), elk met de Ping-sensor in dezelfde ruimte of met dezelfde naam
+  _wolList() {
+    const h = this._hass, S = h?.states || {}, E = h?.entities || {}, D = h?.devices || {}, c = this._config.wake_on_lan;
+    if (Array.isArray(c) && !c.length) return [];
+    const area = (k) => E[k]?.area_id || D[E[k]?.device_id]?.area_id || null;
+    const words = (k) => new Set(`${k.split('.')[1]} ${this._nm(k)}`.toLowerCase().split(/[^a-z0-9]+/).filter((x) => x.length > 1 && !['wake', 'on', 'lan', 'wol', 'ping', 'button'].includes(x)));
+    const pings = Object.keys(E).filter((k) => k.startsWith('binary_sensor.') && E[k].platform === 'ping' && S[k]);
+    const list = (Array.isArray(c) ? c.map((x) => (typeof x === 'string' ? { button: x } : x)) : Object.keys(E).filter((k) => k.startsWith('button.') && E[k].platform === 'wake_on_lan').sort().map((button) => ({ button })))
+      .filter((x) => S[x.button]);
+    return list.map((x) => {
+      const id = x.button, a = area(id), same = pings.filter((p) => a && area(p) === a), wd = words(id);
+      const byName = pings.find((p) => [...words(p)].some((w) => wd.has(w)));
+      const ping = x.ping || (same.length === 1 && list.filter((y) => area(y.button) === a).length === 1 ? same[0] : byName || null);
+      const name = x.name || (this._nm(id) || id.slice(7)).replace(/[\s_]*(wekken|wake on lan|wake|wol)$/i, '') || id.slice(7);
+      const on = ping && S[ping]?.state === 'on', busy = !on && Date.now() - (this._wolBusy?.[id] || 0) < 3 * 60000;
+      const st = on ? 'on' : busy ? 'busy' : 'off';
+      const icon = x.icon || (/server|nas|synology|qnap|unraid/i.test(`${id} ${name}`) ? 'server' : 'pc');
+      return { id, ping, name, icon, st, txt: on ? 'Aan' : busy ? 'Wordt gewekt…' : ping ? 'Uit' : 'Wekken' };
+    });
+  }
   _updLights() {
     const ids = this._lightIds();
     const ls = ids.map((id) => this._state(id) || (id.startsWith('missing:') ? { entity_id: id, state: 'unavailable', attributes: { friendly_name: id.slice(8) } } : null)).filter(Boolean);
-    const key = JSON.stringify(ls.map((s) => [s.entity_id, s.state, s.attributes.brightness, s.attributes.rgb_color, s.attributes.color_temp_kelvin]));
+    const wol = this._wolList();
+    const key = JSON.stringify(ls.map((s) => [s.entity_id, s.state, s.attributes.brightness, s.attributes.rgb_color, s.attributes.color_temp_kelvin])) + JSON.stringify(wol);
     if (key === this._lightKey) return;
     this._lightKey = key;
     const box = this.$('lights');
@@ -4883,9 +4912,26 @@ class ThuisCard extends HTMLElement {
       return `<div class="lt${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
         <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
-    }).join('');
+    }).join('') + wol.map((w) => `<div class="lt wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
+        <i class="mi2">${RIC.svg(w.icon, w.st)}</i><div class="n">${w.name}</div><div class="ms">${w.txt}</div></div>`).join('');
+    // Wake on LAN (telefoon): tik = wekken (als hij uit is), lang indrukken = venster van HA
+    box.querySelectorAll('.lt.wol').forEach((el) => {
+      const w = wol.find((x) => x.id === el.dataset.wol); let timer = null, long = false;
+      const cancel = () => { clearTimeout(timer); el.classList.remove('press'); };
+      el.addEventListener('pointerdown', () => { long = false; el.classList.add('press'); timer = setTimeout(() => { long = true; cancel(); this._moreInfo(w.ping || w.id); }, 500); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => el.addEventListener(t, cancel));
+      el.addEventListener('contextmenu', (ev) => { ev.preventDefault(); });
+      el.addEventListener('click', () => {
+        if (long) { long = false; return; }
+        if (w.st !== 'off') return;
+        (this._wolBusy ||= {})[w.id] = Date.now();
+        this._hass.callService('button', 'press', { entity_id: w.id });
+        this._lightKey = null; this._updLights();
+        clearTimeout(this._wolT); this._wolT = setTimeout(() => { this._lightKey = null; this._updLights(); }, 3 * 60000 + 500);
+      });
+    });
     // tikken = aan/uit, lang indrukken (of rechtermuisknop) = venster met helderheid en kleur
-    box.querySelectorAll('.lt').forEach((el) => {
+    box.querySelectorAll('.lt:not(.wol)').forEach((el) => {
       const id = el.dataset.id;
       if (id.startsWith('missing:')) return;
       let timer = null, long = false;

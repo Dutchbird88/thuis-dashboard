@@ -19,6 +19,7 @@
 //   lx=340                              lux van de bewegingssensor
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
 //   tok=1                               thermostaat op temperatuur (niet aan het verwarmen)
+//   wol=1                               Wake on LAN: computer (uit) en server (aan) met Ping-sensoren
 const q = new URLSearchParams(location.search);
 const CARD = { thuis: 'thuis-card', kamers: 'kamers-card', nu: 'zonnepanelen-card', energie: 'verbruik-card', auto: 'auto-card' }[q.get('card') || 'thuis'] || q.get('card');
 const SRC = q.get('src') || '../thuis-dashboard.js';
@@ -89,6 +90,13 @@ if (q.get('oven')) { dev('d_ov', 'Oven', 'keuken', { model: 'Oven', manufacturer
   ent('sensor.oven_status', q.get('oven') === 'aan' ? 'run' : 'inactive', {}, { dev: 'd_ov', hen: true, name: 'Status' });
   ent('sensor.oven_huidige_temperatuur_in_de_oven', q.get('oven') === 'aan' ? 180 : 109, { unit_of_measurement: '°C' }, { dev: 'd_ov', hen: true, name: 'Huidige temperatuur in de oven' });
   ent('switch.oven_inschakelen', 'off', {}, { dev: 'd_ov', hen: true, name: 'Inschakelen' }); }
+// Wake on LAN: wol=1 (computer uit, server aan, elk met een Ping-sensor in dezelfde ruimte)
+if (q.get('wol')) {
+  dev('d_pc', 'Computer', 'slaap'); ent('button.computer_wekken', 'unknown', {}, { dev: 'd_pc', hen: true, name: 'Wekken', pl: 'wake_on_lan' });
+  dev('d_pcp', 'Computer', 'slaap'); ent('binary_sensor.computer_ping', 'off', { device_class: 'connectivity' }, { dev: 'd_pcp', hen: true, name: 'Ping', pl: 'ping' });
+  dev('d_nas', 'Server', 'bad'); ent('button.server_wekken', 'unknown', {}, { dev: 'd_nas', hen: true, name: 'Wekken', pl: 'wake_on_lan' });
+  dev('d_nasp', 'Server', 'bad'); ent('binary_sensor.server_ping', 'on', { device_class: 'connectivity' }, { dev: 'd_nasp', hen: true, name: 'Ping', pl: 'ping' });
+}
 // ---------- laadpaal en auto (standaardnamen van de integraties, niet herleidbaar) ----------
 const EV = q.get('ev') || 'connected_charging', charging = EV === 'connected_charging';
 dev('d_lp', 'Laadpaal', 'oprit', { model: 'Laadpaal', manufacturer: 'Test' });
