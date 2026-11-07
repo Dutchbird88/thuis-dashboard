@@ -18,6 +18,7 @@
 //   alarm=water|rook                    een alarm op Thuis
 //   lx=340                              lux van de bewegingssensor
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
+//   tok=1                               thermostaat op temperatuur (niet aan het verwarmen)
 const q = new URLSearchParams(location.search);
 const CARD = { thuis: 'thuis-card', kamers: 'kamers-card', nu: 'zonnepanelen-card', energie: 'verbruik-card', auto: 'auto-card' }[q.get('card') || 'thuis'] || q.get('card');
 const SRC = q.get('src') || '../thuis-dashboard.js';
@@ -53,7 +54,7 @@ dev('d_l4', 'Leeslamp', 'slaap'); ent('light.leeslamp', 'off', { supported_color
 dev('d_l5', 'Spiegellamp', 'bad'); ent('light.spiegellamp', 'off', { supported_color_modes: ['onoff'] }, { dev: 'd_l5', hen: true });
 dev('d_c1', 'Rolluik woonkamer', 'woon'); ent('cover.rolluik_woonkamer', 'open', { current_position: 60, device_class: 'shutter', supported_features: 15 }, { dev: 'd_c1', hen: true });
 dev('d_c2', 'Rolluik slaapkamer', 'slaap'); ent('cover.rolluik_slaapkamer', 'closed', { current_position: 0, device_class: 'shutter', supported_features: 15 }, { dev: 'd_c2', hen: true });
-dev('d_th', 'Thermostaat', 'woon'); ent('climate.thermostaat', 'heat', { current_temperature: 20.4, temperature: 20.5, hvac_action: 'heating', min_temp: 6, max_temp: 30, target_temp_step: 0.5, preset_mode: 'home', preset_modes: ['home', 'away', 'sleep'], hvac_modes: ['off', 'heat'] }, { dev: 'd_th', hen: true });
+dev('d_th', 'Thermostaat', 'woon'); ent('climate.thermostaat', 'heat', { current_temperature: q.get('tok') ? 19.4 : 20.4, temperature: q.get('tok') ? 19 : 20.5, hvac_action: q.get('tok') ? 'idle' : 'heating', min_temp: 6, max_temp: 30, target_temp_step: 0.5, preset_mode: 'home', preset_modes: ['home', 'away', 'sleep'], hvac_modes: ['off', 'heat'] }, { dev: 'd_th', hen: true });
 dev('d_wx', 'Buienradar', null); ent('weather.buienradar', 'partlycloudy', { temperature: 11.6, humidity: 80, wind_speed: 14, wind_bearing: 220, pressure: 1012, temperature_unit: '°C', wind_speed_unit: 'km/h' }, { dev: 'd_wx', hen: true, pl: 'buienradar' });
 dev('d_sp', 'Koffiezetter', 'keuken'); ent('switch.koffiezetter', 'on', {}, { dev: 'd_sp', hen: true }); ent('sensor.koffiezetter_vermogen', '42', { device_class: 'power', unit_of_measurement: 'W' }, { dev: 'd_sp', hen: true, name: 'Vermogen' });
 dev('d_ms', 'Bewegingssensor', 'slaap'); ent('binary_sensor.bewegingssensor_beweging', 'off', { device_class: 'motion' }, { dev: 'd_ms', hen: true, name: 'Beweging' });
@@ -164,6 +165,8 @@ async function callWS(m) {
   return [];
 }
 async function callApi(method, path) {
+  // oven die afkoelt: 25 en 12 minuten geleden heter (voor de schatting "koel rond …")
+  if (path.startsWith('history/period') && path.includes('oven_huidige_temperatuur')) return [[{ state: '152', last_changed: at(Date.now() - 25 * 6e4) }, { state: '128', last_changed: at(Date.now() - 12 * 6e4) }]];
   if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }];
   return [];
 }

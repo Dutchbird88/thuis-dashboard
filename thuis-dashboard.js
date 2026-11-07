@@ -1696,7 +1696,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '269';
+const CARD_VERSION = '270';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4076,8 +4076,16 @@ const HPI = {
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
 const HPSTYLE = `
-#hpc, .ksp.hpp, .kr .ksl { display: none; }
+#hpc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
 @media (max-width: 600px) {
+  /* v270: oven koelt af compact (ontwerp C): rustig oranje, titel met "Uit · koel rond …", temperatuur rechts */
+  #oven.was.cool { background: rgba(255,159,10,.08) !important; border-color: rgba(255,159,10,.25) !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+  #oven.cool .r { align-items: center; } #oven.cool .r > svg { width: 44px !important; height: 44px !important; }
+  #oven.cool .t b { font-size: 15px !important; } #oven.cool .tm, #oven.cool .rt { display: none !important; }
+  #oven.cool .ocs { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  #oven.cool .ocb { display: block; margin-left: auto; font-size: 26px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  /* v270: thermostaat op temperatuur: tekst grijs, alleen het vinkje groen */
+  #mTh.ok #mSt { color: var(--muted); }
   .kspills .ksp.hpp { display: flex; }
   .sheet, .sheet * { scrollbar-width: none; -webkit-overflow-scrolling: auto !important; } .sheet::-webkit-scrollbar, .sheet *::-webkit-scrollbar { display: none; width: 0; height: 0; } /* v268: geen scrollbalk in vensters */
   #kDate { display: none; } /* v261: geen datum onder Kamers op de telefoon */
@@ -4948,6 +4956,27 @@ class ThuisCard extends HTMLElement {
   }
 
   /* ---------- vaatwasser, oven en meldingen ---------- */
+  // oven koelt af: wanneer is hij onder 50°? Afkoelen volgens Newton met de kamertemperatuur als omgeving,
+  // uit de metingen van de afgelopen 30 minuten (bij het openen eenmalig aangevuld uit de geschiedenis van HA)
+  _ovCoolAt(id, v) {
+    const now = Date.now(), M = 60000;
+    if (this._ovS?.id !== id || now - (this._ovS.last || 0) > 60 * M) this._ovS = { id, pts: [] };
+    const S = this._ovS; S.last = now;
+    if (!S.pts.length || S.pts[S.pts.length - 1].v !== v) S.pts.push({ t: now, v });
+    while (S.pts.length > 2 && now - S.pts[0].t > 30 * M) S.pts.shift();
+    if (!S.hist) {
+      S.hist = true;
+      this._hass.callApi('GET', `history/period/${new Date(now - 30 * M).toISOString()}?filter_entity_id=${id}&minimal_response&no_attributes`).then((r) => {
+        const old = (r?.[0] || []).map((x) => ({ t: Date.parse(x.last_changed), v: parseFloat(x.state) })).filter((p) => p.t && !isNaN(p.v) && p.t < S.pts[0].t);
+        if (this._ovS === S && old.length) { S.pts = [...old, ...S.pts]; this._updAppliances(); }
+      }).catch(() => {});
+    }
+    const P = S.pts, b = P[P.length - 1], a = P.find((p) => b.t - p.t >= 4 * M);
+    const room = parseFloat(this._state(this._climateId())?.attributes?.current_temperature), amb = room > 5 && room < 35 ? room : 20;
+    if (!a || a.v - b.v < 2 || b.v <= 50 || b.v - amb < 10) return null;
+    const k = Math.log((a.v - amb) / (b.v - amb)) / (b.t - a.t), at = b.t + Math.log((b.v - amb) / (50 - amb)) / k;
+    return k > 0 && at - now < 3 * 3600000 ? Math.max(at, now + M) : null;
+  }
   _updAppliances() {
     if (!this.shadowRoot || !this._hass) return;
     const st = (id) => this._state(id)?.state, num = (id) => { const v = parseFloat(st(id)); return isNaN(v) ? null : v; };
@@ -4999,7 +5028,12 @@ class ThuisCard extends HTMLElement {
         const sp = st(`select.${o}_geselecteerd_programma`), w = sp.match(/microwave_(\d+)_watt/)?.[1];
         put(oBox, 'ready', block(microSvg(''), 'Magnetron', w ? `${w} W` : 'Max', 'Aan', 'klaar om te starten', null)); }
       else if (st(`switch.${o}_inschakelen`) === 'on') { const sel = prog(`select.${o}_geselecteerd_programma`, OVEN_PROG); put(oBox, 'ready', block(ovenSvg(temp >= 50 ? 'hot' : '', temp), 'Oven', tt, 'Aan', sel ? `${sel}<br>klaar om te starten` : 'geen programma gekozen', null)); }
-      else if (temp != null && temp >= 50) put(oBox, 'cool', block(ovenSvg('hot', temp), 'Oven koelt af', tt, 'Heet', 'uit · nog warm<br>pas op bij openen', null));
+      else if (temp != null && temp >= 50) {
+        // telefoon (v270): compact, met een schatting wanneer de oven koel is (onder 50°); de computer houdt de oude opmaak
+        const ca = this._ovCoolAt(`sensor.${o}_huidige_temperatuur_in_de_oven`, temp);
+        put(oBox, 'cool', block(ovenSvg('hot', temp), 'Oven koelt af', tt, 'Heet', 'uit · nog warm<br>pas op bij openen', null)
+          .replace('</span></div><div class="rt">', `</span><span class="ocs">Uit · ${ca ? `koel rond ${fmtTime(ca)}` : 'nog warm'}</span></div><span class="ocb">${tt}</span><div class="rt">`));
+      }
       else put(oBox, '', '');
     }
     this._updCharge();

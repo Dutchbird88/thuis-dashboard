@@ -122,6 +122,7 @@ Verdere regels:
 - `_updAppliances`, `_updWasher`, `_appOpen` en `_appHistory` (7 dagen geschiedenis).
 - Wasmachine (Miele) en vaatwasser/oven (Home Connect) met programma, fase en resterende tijd.
 - Magnetronstand: het actieve of geselecteerde programma `microwave_*` toont "Magnetron" met een eigen icoon en het vermogen.
+- Oven koelt af (uit, ≥ 50°), telefoon (v270, ontwerp C): compacte kaart in rustig oranje, "Oven koelt af" met "Uit · koel rond HH:MM" en rechts groot de temperatuur (`.ocs`/`.ocb`, op de computer verborgen; daar blijft de oude opmaak). De tijd komt uit `_ovCoolAt`: afkoelen volgens Newton met de kamertemperatuur (thermostaat, anders 20°) als omgeving, uit de metingen van 30 min (bij openen eenmalig aangevuld uit `history/period`). Te weinig gegevens: "Uit · nog warm". Rood en "Heet" zijn bewust weg: een warme oven is een waarschuwing, geen alarm.
 
 **HomePod (mini)** (v248, alleen telefoon; stijl in `HPSTYLE`, achteraan in de `<style>` van Thuis)
 
@@ -230,6 +231,7 @@ Verdere regels:
 - **Bewust zo gelaten (november 2026):** de gekleurde chips (Lampen, Rolluiken, Klimaat), de gloedrand van de tegels en de gloed om de profielfoto's blijven. Vlakke tegels en grijze chips zijn als mockup getoond en afgewezen: de gebruiker wil zien wanneer iets actief is. Niet opnieuw voorstellen.
 - **Picnic-tekst (v256):** vóór het tijdvak "Verwacht/Vandaag · over X min" (tot het begin), binnen het tijdvak "Onderweg · elk moment". Is er een live-aankomstsensor (v257: `ids.live` in `_picnicIds`, standaard `sensor.picnic_estimated_arrival_of_next_delivery`, tijdstip of minuten), dan "Onderweg · nog X min" (binnen 30 min) en "elk moment" bij < 1,5 min of voorbij. Na bezorgen (v258, `ids.done` = `last_order_delivery_time`, binnen 2 uur vóór het tijdvak of later, vandaag): "Picnic is bezorgd" met het tijdstip, 15 min lang, daarna weg. Sinds v259 ook bezorgd als `last_order_status` afgerond is (`ids.status`, `ids.lslot` gelijk aan het tijdslot); sensoren worden ook op entiteitnaam gevonden.
 - **Picnic-kaart (telefoon, v241):** gedempt Picnic-rood (zachte tint, dunne rand, `#ffc2c2` voor Vandaag/Onderweg, balk zonder gloed). Een bezorging is informatie, geen waarschuwing. Sinds v242 icoon 58 px met 22 px afstand tot de tekst.
+- **Thermostaattegel (telefoon, v270):** bij op temperatuur is de tekst "Op temperatuur · 19°" grijs; alleen het vinkje is groen. Het huisje (stand Thuis) blijft in de huidige kleur (keuze gebruiker).
 - **Kamerkaart:** de temperatuur staat klein en grijs in de statusregel, met een effen thermometer. Bij apparaten staat alleen "Nog xx min". Het aantal lampen staat niet achter de verdiepingen.
 - **Teksten:**
   - "Stand-by" alleen als een apparaat niets doet;
@@ -253,10 +255,10 @@ Verdere regels:
 - **Syntax:** `node --check thuis-dashboard.js`.
 - **Lint:** `npx --yes eslint@8.57.0 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-undef":"error","no-redeclare":"error","no-dupe-keys":"error"}' thuis-dashboard.js`. Dit moet 0 fouten geven en is getest bij v214. Gebruik eventueel ook `no-unused-vars` als waarschuwing.
 - **Testpagina en testscript (in de repo, map `test/`):**
-  - `node test/test.js` doet alles in één keer: `node --check`, lint, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 17 views (alle tabbladen op 390 en 1280, licht thema, muziek, alarm en de vensters thermostaat, afval, kamer en HomePod) in `test/out/`. Een fout in de console telt als fout.
+  - `node test/test.js` doet alles in één keer: `node --check`, lint, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 19 views (alle tabbladen op 390 en 1280, licht thema, muziek, alarm en de vensters thermostaat, afval, kamer en HomePod) in `test/out/`. Een fout in de console telt als fout.
   - `node test/test.js --vergelijk HEAD~1` (git-ref of pad naar een .js) vergelijkt elke view pixel voor pixel met die versie. Bij verschil komen er `<naam>.oud.png` en `<naam>.verschil.png` bij (verschil in rood). Gebruik dit vóór elke publicatie: de computerviews moeten "gelijk" zijn bij wijzigingen voor de telefoon.
   - Extra: `--alleen <deel van de naam>` en `--geen-lint`. De klok staat vast op 5 november 2026 12:30, dus screenshots zijn steeds gelijk.
-  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`. Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
+  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
   - Persoonlijke termen: zet ze in `test/prive.txt` (één per regel). Dat bestand staat in `.gitignore` en is er in een nieuwe sessie niet: vraag de gebruiker dan om de lijst. Zonder dat bestand meldt het script "niet gecontroleerd".
   - Zet nooit eigen entity-ids, namen of foto's in `test/`. De foto's van huis en auto zijn getekende SVG's.
 
