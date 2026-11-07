@@ -138,6 +138,7 @@
 | v267 | Telefoon: poging om de scrollbalk van de HA-app te verbergen (`hideScrollbars`): vanaf de kaart omhoog door shadow roots elk verticaal scrollend element markeren (`data-thuis-sb`) en in diens root `::-webkit-scrollbar { display: none }` + `scrollbar-width: none` zetten; ook `html`/`body`. Werkt op de iPhone (gebruiker). |
 | v268 | Telefoon: ook geen scrollbalk in de vensters (`.sheet` en alles erin). |
 | v269 | Vensters: `-webkit-overflow-scrolling: touch` uitgezet op de telefoon; daardoor tekende iOS een eigen scrollbalk die `::-webkit-scrollbar` negeert. Soepel scrollen is op iOS 13+ standaard. |
+| — | Testpagina `test/mock.html` en testscript `test/test.js` in de repo (controles, 17 screenshots, pixelvergelijking met `--vergelijk`). Git-geschiedenis opgeschoond: de oude reserve-coördinaten (tot v261) zijn in alle commits vervangen door een neutrale waarde. |
 
 ## Volgende stappen
 

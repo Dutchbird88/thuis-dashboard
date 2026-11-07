@@ -1,0 +1,187 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thuis Dashboard · testpagina</title>
+<style>body{margin:0;background:#000}</style></head><body>
+<script>
+(() => { // eigen scope: de app heeft zelf globale namen als DAY
+// Testpagina met een nep-Home Assistant. Alleen verzonnen namen en entity-ids: zet hier nooit eigen gegevens in.
+//
+// Parameters (allemaal optioneel):
+//   card=thuis|kamers|nu|energie|auto   welke kaart (standaard thuis)
+//   src=pad/naar/bestand.js             welke versie laden (standaard ../thuis-dashboard.js)
+//   th=licht|donker|automatisch         thema
+//   hp=playing|paused|idle              HomePod mini toevoegen;  art=1  met albumhoes
+//   dup=1                               HomePod die als twee mediaspelers binnenkomt
+//   wt=gft0|gft1|pmd0|...               afval: <bak>0 = vandaag, <bak>1 = morgen (standaard rest0)
+//   ev=connected_charging|connected_finished|connected_requesting|disconnected   laadpaal (standaard laden)
+//   pv=1240                             opwek in W op het tabblad Nu
+//   alarm=water|rook                    een alarm op Thuis
+//   lx=340                              lux van de bewegingssensor
+const q = new URLSearchParams(location.search);
+const CARD = { thuis: 'thuis-card', kamers: 'kamers-card', nu: 'zonnepanelen-card', energie: 'verbruik-card', auto: 'auto-card' }[q.get('card') || 'thuis'] || q.get('card');
+const SRC = q.get('src') || '../thuis-dashboard.js';
+const now = new Date(), iso = now.toISOString(), day0 = new Date(now); day0.setHours(0, 0, 0, 0);
+const H = 36e5, DAY = 864e5, at = (ms) => new Date(ms).toISOString();
+const svgUrl = (s) => 'data:image/svg+xml,' + encodeURIComponent(s);
+
+// ---------- registers ----------
+const floors = { f0: { floor_id: 'f0', name: 'Begane grond', level: 0 }, f1: { floor_id: 'f1', name: 'Eerste verdieping', level: 1 }, fb: { floor_id: 'fb', name: 'Buiten', level: -1 } };
+const areas = {
+  woon: { area_id: 'woon', name: 'Woonkamer', floor_id: 'f0', icon: 'mdi:sofa' },
+  keuken: { area_id: 'keuken', name: 'Keuken', floor_id: 'f0', icon: 'mdi:pot' },
+  slaap: { area_id: 'slaap', name: 'Slaapkamer', floor_id: 'f1', icon: 'mdi:bed' },
+  bad: { area_id: 'bad', name: 'Badkamer', floor_id: 'f1', icon: 'mdi:shower' },
+  oprit: { area_id: 'oprit', name: 'Oprit', floor_id: 'fb', icon: 'mdi:car' },
+};
+const devices = {}, entities = {}, states = {};
+function dev(id, name, area, extra) { devices[id] = Object.assign({ id, name, name_by_user: null, area_id: area, model: 'Test', manufacturer: 'Test' }, extra || {}); }
+// ent(entity_id, state, attributen, { dev, name, hen, fn, pl, reg })  hen = has_entity_name
+function ent(id, state, attrs, r) {
+  r = r || {}; const d = r.dev && devices[r.dev], dn = d ? (d.name_by_user || d.name) : '';
+  const fn = r.fn !== undefined ? r.fn : (r.hen ? [dn, r.name].filter(Boolean).join(' ') : r.name);
+  const a = Object.assign({}, attrs); if (fn) a.friendly_name = fn;
+  states[id] = { entity_id: id, state: String(state), attributes: a, last_changed: r.lc || iso, last_updated: r.lc || iso, context: {} };
+  if (r.reg !== false) entities[id] = { entity_id: id, name: r.name || undefined, device_id: r.dev, area_id: r.area, has_entity_name: !!r.hen, platform: r.pl || 'test', translation_key: r.tk, labels: [] };
+}
+
+// ---------- Thuis en Kamers ----------
+dev('d_l1', 'Banklamp', 'woon'); ent('light.banklamp', 'on', { brightness: 180, color_mode: 'color_temp', color_temp_kelvin: 2700, supported_color_modes: ['color_temp'] }, { dev: 'd_l1', hen: true, pl: 'hue' });
+dev('d_l2', 'Plafondlamp', 'woon'); ent('light.plafondlamp', 'off', { supported_color_modes: ['brightness'] }, { dev: 'd_l2', hen: true, pl: 'hue' });
+dev('d_l3', 'Keukenlamp', 'keuken'); ent('light.keukenlamp', 'on', { brightness: 255, rgb_color: [255, 200, 120], color_mode: 'rgb', supported_color_modes: ['rgb'] }, { dev: 'd_l3', hen: true, pl: 'hue' });
+dev('d_l4', 'Leeslamp', 'slaap'); ent('light.leeslamp', 'off', { supported_color_modes: ['brightness'] }, { dev: 'd_l4', hen: true, pl: 'hue' });
+dev('d_l5', 'Spiegellamp', 'bad'); ent('light.spiegellamp', 'off', { supported_color_modes: ['onoff'] }, { dev: 'd_l5', hen: true });
+dev('d_c1', 'Rolluik woonkamer', 'woon'); ent('cover.rolluik_woonkamer', 'open', { current_position: 60, device_class: 'shutter', supported_features: 15 }, { dev: 'd_c1', hen: true });
+dev('d_c2', 'Rolluik slaapkamer', 'slaap'); ent('cover.rolluik_slaapkamer', 'closed', { current_position: 0, device_class: 'shutter', supported_features: 15 }, { dev: 'd_c2', hen: true });
+dev('d_th', 'Thermostaat', 'woon'); ent('climate.thermostaat', 'heat', { current_temperature: 20.4, temperature: 20.5, hvac_action: 'heating', min_temp: 6, max_temp: 30, target_temp_step: 0.5, preset_mode: 'home', preset_modes: ['home', 'away', 'sleep'], hvac_modes: ['off', 'heat'] }, { dev: 'd_th', hen: true });
+dev('d_wx', 'Buienradar', null); ent('weather.buienradar', 'partlycloudy', { temperature: 11.6, humidity: 80, wind_speed: 14, wind_bearing: 220, pressure: 1012, temperature_unit: '°C', wind_speed_unit: 'km/h' }, { dev: 'd_wx', hen: true, pl: 'buienradar' });
+dev('d_sp', 'Koffiezetter', 'keuken'); ent('switch.koffiezetter', 'on', {}, { dev: 'd_sp', hen: true }); ent('sensor.koffiezetter_vermogen', '42', { device_class: 'power', unit_of_measurement: 'W' }, { dev: 'd_sp', hen: true, name: 'Vermogen' });
+dev('d_ms', 'Bewegingssensor', 'slaap'); ent('binary_sensor.bewegingssensor_beweging', 'off', { device_class: 'motion' }, { dev: 'd_ms', hen: true, name: 'Beweging' });
+ent('sensor.bewegingssensor_verlichtingssterkte', q.get('lx') || '12', { device_class: 'illuminance', unit_of_measurement: 'lx' }, { dev: 'd_ms', hen: true, name: 'Verlichtingssterkte' });
+ent('sensor.bewegingssensor_temperatuur', '18.6', { device_class: 'temperature', unit_of_measurement: '°C' }, { dev: 'd_ms', hen: true, name: 'Temperatuur' });
+dev('d_ds', 'Raamsensor', 'slaap'); ent('binary_sensor.raamsensor_raam', 'off', { device_class: 'window' }, { dev: 'd_ds', hen: true, name: 'Raam' });
+dev('d_ws', 'Lekdetector', 'bad'); ent('binary_sensor.lekdetector_water', q.get('alarm') === 'water' ? 'on' : 'off', { device_class: 'moisture' }, { dev: 'd_ws', hen: true, name: 'Water' });
+ent('sensor.lekdetector_batterij', '3', { device_class: 'battery', unit_of_measurement: '%' }, { dev: 'd_ws', hen: true, name: 'Batterij' });
+dev('d_sm', 'Rookmelder', 'slaap'); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
+dev('d_cam', 'Voordeur', 'woon'); ent('camera.voordeur', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam', hen: true, name: 'Camera' });
+ent('scene.woonkamer_avond', '2026-11-01T18:00:00Z', {}, { name: 'Woonkamer Avond', area: 'woon' });
+ent('person.bewoner', 'home', {}, { name: 'Bewoner', reg: false, fn: 'Bewoner' });
+ent('person.bewoner2', 'werk', {}, { name: 'Bewoner 2', reg: false, fn: 'Bewoner 2' });
+ent('zone.werk', '0', {}, { reg: false, fn: 'Werk' });
+const WT = q.get('wt') || 'rest0', dstr = (n) => { const d = new Date(day0); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const WD = (b) => WT === b + '0' ? dstr(0) : WT === b + '1' ? dstr(1) : ({ gft: dstr(7), pmd: dstr(4), papier: dstr(8), rest: dstr(14) })[b];
+dev('d_w1', 'Afval', null); ['gft', 'pmd', 'papier', 'rest'].forEach((b) => ent('sensor.afval_' + b, WD(b), { Wastecollector: 'x' }, { dev: 'd_w1', hen: true, name: b.toUpperCase() }));
+ent('calendar.familie', 'off', {}, { name: 'Familie' });
+if (q.get('hp')) {
+  const art = q.get('art') ? svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="a" x2="1" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset="1" stop-color="#5b3cc4"/></linearGradient></defs><rect width="100" height="100" fill="url(#a)"/><circle cx="50" cy="50" r="22" fill="none" stroke="#fff" stroke-width="4" opacity=".7"/></svg>') : null;
+  dev('d_hp', 'HomePod', 'woon', { model: 'HomePod mini', manufacturer: 'Apple' });
+  ent('media_player.homepod', q.get('hp'), q.get('hp') === 'idle' ? { volume_level: 0.3 } : { media_title: 'Zomeravond', media_artist: 'De Artiest', media_duration: 220, media_position: 84, media_position_updated_at: at(now - 1000), volume_level: 0.45, ...(art ? { entity_picture: art } : {}) }, { dev: 'd_hp', fn: 'HomePod', pl: 'apple_tv' });
+}
+if (q.get('dup')) {
+  dev('d_hpa', 'Keuken', 'keuken', { model: 'HomePod mini', manufacturer: 'Apple' }); dev('d_hpb', 'Keuken', 'keuken', { model: 'HomePod mini', manufacturer: 'Apple' });
+  ent('media_player.keuken', 'idle', { volume_level: 0.3 }, { dev: 'd_hpa', fn: 'Keuken', pl: 'apple_tv' });
+  ent('media_player.keuken_2', 'playing', { media_title: 'Ochtendlicht', media_artist: 'Artiest', volume_level: 0.4 }, { dev: 'd_hpb', fn: 'Keuken', pl: 'apple_tv' });
+}
+
+// ---------- laadpaal en auto (standaardnamen van de integraties, niet herleidbaar) ----------
+const EV = q.get('ev') || 'connected_charging', charging = EV === 'connected_charging';
+dev('d_lp', 'Laadpaal', 'oprit', { model: 'Laadpaal', manufacturer: 'Test' });
+ent('sensor.laadpaal_opladermodus', EV, {}, { dev: 'd_lp', name: 'Opladermodus' });
+ent('sensor.laadpaal_laadvermogen', charging ? 3700 : 0, { unit_of_measurement: 'W', device_class: 'power' }, { dev: 'd_lp', name: 'Laadvermogen' });
+ent('sensor.laadpaal_meterwaarde', 4321.5, { unit_of_measurement: 'kWh', device_class: 'energy' }, { dev: 'd_lp', name: 'Meterwaarde' });
+ent('number.laadpaal_max_stroom', 16, { min: 0, max: 16, step: 1, unit_of_measurement: 'A' }, { dev: 'd_lp', name: 'Max stroom' });
+ent('switch.laadpaal_opladen', EV.startsWith('connected') ? 'on' : 'off', {}, { dev: 'd_lp', name: 'Opladen' });
+ent('binary_sensor.laadpaal_online', 'on', { device_class: 'connectivity' }, { dev: 'd_lp', name: 'Online' });
+ent('sensor.laadpaal_temperatuur_intern', 24, { unit_of_measurement: '°C' }, { dev: 'd_lp', name: 'Temperatuur intern' });
+ent('sensor.byd_seal_batterijniveau', 64, { unit_of_measurement: '%', device_class: 'battery' }, { name: 'Batterijniveau' });
+ent('sensor.byd_seal_buitentemperatuur', 9, { unit_of_measurement: '°C' }, { name: 'Buitentemperatuur' });
+ent('sensor.byd_seal_cabine_temperatuur', 14, { unit_of_measurement: '°C' }, { name: 'Cabinetemperatuur' });
+ent('sensor.byd_seal_laatst_bijgewerkt', at(now - 6 * 6e4), { device_class: 'timestamp' }, { name: 'Laatst bijgewerkt' });
+ent('binary_sensor.byd_seal_stekker', EV === 'disconnected' ? 'off' : 'on', { device_class: 'plug' }, { name: 'Stekker' });
+ent('binary_sensor.byd_seal_opladen', charging ? 'on' : 'off', { device_class: 'battery_charging' }, { name: 'Opladen' });
+
+// ---------- zonnepanelen (Nu) ----------
+const PV = +(q.get('pv') || 1240);
+ent('sensor.ecu_current_power', PV, { unit_of_measurement: 'W', device_class: 'power' }, { name: 'Opwek' });
+ent('sensor.ecu_today_energy', 6.4, { unit_of_measurement: 'kWh', device_class: 'energy' }, { name: 'Opgewekt vandaag' });
+ent('sensor.ecu_lifetime_energy', 18234, { unit_of_measurement: 'kWh', device_class: 'energy' }, { name: 'Opgewekt totaal' });
+ent('sensor.ecu_inverters_online', 5, {}, { name: 'Omvormers online' });
+ent('sensor.p1_vermogen', -380, { unit_of_measurement: 'W', device_class: 'power' }, { name: 'Netvermogen' });
+ent('sensor.gas_vandaag', 2.1, { unit_of_measurement: 'm³', device_class: 'gas' }, { name: 'Gas vandaag' });
+ent('sun.sun', 'above_horizon', { next_setting: at(day0.getTime() + 16.9 * H), next_rising: at(day0.getTime() + DAY + 7.4 * H), elevation: 20 }, { reg: false, fn: 'Zon' });
+[['today', 4.1, 3.2], ['today_remaining', 0.8, 0.6], ['tomorrow', 3.0, 2.2]].forEach(([k, a, b]) => {
+  ent('sensor.energy_production_' + k, a, { unit_of_measurement: 'kWh' }, { name: k }); ent(`sensor.energy_production_${k}_2`, b, { unit_of_measurement: 'kWh' }, { name: k + ' 2' }); });
+ent('sensor.power_highest_peak_time_tomorrow', at(day0.getTime() + DAY + 11.75 * H), { device_class: 'timestamp' }, { name: 'Piek morgen' });
+const inverters = [], PW = [118, 125, 121, 116, 131, 128, 124, 85, 133, 129];
+for (let i = 0; i < 5; i++) {
+  const t = `sensor.omvormer_${i + 1}_temperatuur`; ent(t, 31 + i * 2, { unit_of_measurement: '°C' }, { name: `Omvormer ${i + 1} temperatuur` });
+  const panels = [0, 1].map((k) => { const n = i * 2 + k + 1, e = `sensor.paneel_${n}_vermogen`; ent(e, Math.round(PW[n - 1] * PV / 1240), { unit_of_measurement: 'W' }, { name: `Paneel ${n}` }); return { n, entity: e }; });
+  inverters.push({ name: `Omvormer ${i + 1}`, side: i < 2 ? 'achter' : 'voor', temp: t, panels });
+}
+// een verzonnen huis als foto (geen echte foto in de repo)
+const HUIS = svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><path d="M60 140 200 40l140 100v140H60z" fill="#3a4250"/><path d="M40 150 200 30l160 120-14 14L200 56 54 164z" fill="#232a35"/><rect x="170" y="200" width="60" height="80" fill="#1b2029"/><rect x="90" y="170" width="60" height="50" fill="#9bb4d4" opacity=".55"/><rect x="250" y="170" width="60" height="50" fill="#9bb4d4" opacity=".55"/></svg>');
+const AUTO = svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><path d="M40 130c0-18 14-26 40-30l60-36c20-10 40-14 80-14s70 8 96 30l30 22c20 4 34 12 34 28v14H40z" fill="#7d8796"/><path d="M150 72c16-10 34-12 66-12s50 4 70 22H130z" fill="#2a3240"/><circle cx="110" cy="146" r="26" fill="#14181f"/><circle cx="300" cy="146" r="26" fill="#14181f"/></svg>');
+// ---------- energie (Verbruik) ----------
+ent('sensor.stroom_afname', 12345.6, { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing' }, { name: 'Stroom afname' });
+ent('sensor.stroom_teruglevering', 6543.2, { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing' }, { name: 'Stroom teruglevering' });
+ent('sensor.gas_stand', 3210.5, { unit_of_measurement: 'm³', device_class: 'gas', state_class: 'total_increasing' }, { name: 'Gasstand' });
+ent('sensor.water_stand', 456.78, { unit_of_measurement: 'm³', device_class: 'water', state_class: 'total_increasing' }, { name: 'Waterstand' });
+ent('sensor.stroom_afname_vandaag', 5.2, { unit_of_measurement: 'kWh' }, { name: 'Afname vandaag' });
+ent('sensor.stroom_teruglevering_vandaag', 3.1, { unit_of_measurement: 'kWh' }, { name: 'Teruglevering vandaag' });
+ent('sensor.water_vandaag', 0.142, { unit_of_measurement: 'm³' }, { name: 'Water vandaag' });
+
+// statistieken: een rustig, voorspelbaar patroon (geen toeval, zodat screenshots gelijk blijven)
+function stat(id, period, t0, t1) {
+  const step = period === '5minute' ? 3e5 : period === 'hour' ? H : period === 'day' ? DAY : period === 'month' ? 30 * DAY : H;
+  const out = []; let sum = 0, tot = 0;
+  for (let t = t0; t < t1; t += step) {
+    const h = new Date(t).getHours() + new Date(t).getMinutes() / 60, sunf = Math.max(0, Math.sin(Math.PI * (h - 7.6) / 10.2));
+    const solar = /ecu|solar|paneel|opwek/.test(id), w = solar ? 1400 * sunf * (0.85 + 0.15 * Math.sin(t / 7e6)) : 350 + 250 * Math.sin(t / 9e6) ** 2;
+    let ch = w * step / H / 1000;
+    if (period === 'day' || period === 'month') ch = (solar ? 9 : 7) * (step / DAY) * (0.6 + 0.4 * Math.abs(Math.sin(t / 3e8)));
+    if (/gas/.test(id)) ch = ch * 0.25; if (/water/.test(id)) ch = ch * 0.02;
+    sum += ch; out.push({ start: t, end: t + step, change: ch, state: sum, sum, mean: w, min: w * 0.8, max: period === 'day' ? ch : w * 1.1 });
+  }
+  // meterstanden laten eindigen bij de huidige stand van de sensor (anders lijkt de hele stand verbruik van vandaag)
+  const cur = parseFloat(states[id]?.state); if (!isNaN(cur) && states[id].attributes.state_class) out.forEach((o) => { o.state = o.sum = cur - (sum - o.sum); });
+  return out;
+}
+async function callWS(m) {
+  if (m.type === 'recorder/statistics_during_period') {
+    const t0 = new Date(m.start_time).getTime(), t1 = m.end_time ? new Date(m.end_time).getTime() : Date.now(), res = {};
+    (m.statistic_ids || []).forEach((id) => { res[id] = stat(id, m.period, t0, t1); }); return res;
+  }
+  if (m.type === 'energy/solar_forecast') {
+    const wh = {}; for (let h = 7; h <= 18; h++) wh[at(day0.getTime() + h * H)] = Math.max(0, Math.round(1250 * Math.sin(Math.PI * (h - 7.6) / 10.2)));
+    return { a: { wh_hours: wh } };
+  }
+  if (m.type === 'energy/get_prefs') return { energy_sources: [], device_consumption: [] };
+  return [];
+}
+async function callApi(method, path) {
+  if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }];
+  return [];
+}
+const hass = {
+  states, entities, devices, areas, floors, language: 'nl', locale: { language: 'nl', number_format: 'language', time_format: '24' }, themes: {}, user: { name: 'Test', is_admin: true },
+  config: { time_zone: 'Europe/Amsterdam', unit_system: { temperature: '°C', length: 'km' }, latitude: 0, longitude: 0, version: '2026.11.0' },
+  callService: async (...a) => { (window.CALLS ||= []).push(a.slice(0, 3)); return {}; }, callApi, callWS,
+  connection: { subscribeMessage: async () => () => {}, sendMessagePromise: async (m) => callWS(m) },
+  hassUrl: (p) => p, fetchWithAuth: (p) => fetch(p),
+};
+const CONFIG = {
+  'thuis-card': { persons: ['person.bewoner', 'person.bewoner2'], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'] },
+  'kamers-card': {},
+  'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: { image: HUIS, width: 400, height: 300, panels: {} } },
+  'verbruik-card': { power: 'sensor.p1_vermogen', import: 'sensor.stroom_afname', export: 'sensor.stroom_teruglevering', gas: 'sensor.gas_stand', water: 'sensor.water_stand' },
+  'auto-card': { image: AUTO },
+}[CARD] || {};
+const sc = document.createElement('script'); sc.src = SRC;
+sc.onload = () => {
+  const c = document.createElement(CARD); document.body.appendChild(c);
+  c.setConfig({ ...CONFIG, ...(q.get('th') ? { theme: q.get('th') } : {}) }); c.hass = hass; window.card = c; window.hass = hass;
+  setTimeout(() => { c.hass = Object.assign({}, hass); window.ready = true; }, 300);
+};
+sc.onerror = () => { document.body.textContent = 'Kon ' + SRC + ' niet laden'; };
+document.head.appendChild(sc);
+})();
+</script></body></html>
