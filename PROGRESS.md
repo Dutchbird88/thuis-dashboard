@@ -1,17 +1,17 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 5 november 2026, versie **v268**.*
+*Bijgewerkt: 5 november 2026, versie **v269**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v268** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v269** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
   - kamers;
   - meldingen;
   - de rustige telefoonstijl.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v268.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v269.
 
 ## Gerealiseerde functies (per tab)
 
@@ -137,6 +137,7 @@
 | v266 | Bovenbalk terug naar het gedrag tot v262 (gebruiker): op de telefoon altijd direct de kleur van de app, ook zonder zichtbare kaart. De beperking uit v263 ("alleen als een kaart zichtbaar is") is teruggedraaid. |
 | v267 | Telefoon: poging om de scrollbalk van de HA-app te verbergen (`hideScrollbars`): vanaf de kaart omhoog door shadow roots elk verticaal scrollend element markeren (`data-thuis-sb`) en in diens root `::-webkit-scrollbar { display: none }` + `scrollbar-width: none` zetten; ook `html`/`body`. Werkt op de iPhone (gebruiker). |
 | v268 | Telefoon: ook geen scrollbalk in de vensters (`.sheet` en alles erin). |
+| v269 | Vensters: `-webkit-overflow-scrolling: touch` uitgezet op de telefoon; daardoor tekende iOS een eigen scrollbalk die `::-webkit-scrollbar` negeert. Soepel scrollen is op iOS 13+ standaard. |
 
 ## Volgende stappen
 
