@@ -26,7 +26,7 @@ const VIEWS = [
   ['thuis-telefoon-wol', 'card=thuis&wol=1', 390], ['thuis-computer-wol', 'card=thuis&wol=1', 1280],
   ['kamers-telefoon', 'card=kamers', 390], ['kamers-computer', 'card=kamers', 1280],
   ['nu-telefoon', 'card=nu', 390], ['nu-computer', 'card=nu', 1280],
-  ['nu-telefoon-scene', 'card=nu&scn=1', 390], ['nu-telefoon-scene-nacht', 'card=nu&scn=1&sun=-20&pv=0', 390], ['nu-computer-scene', 'card=nu&scn=1', 1280],
+  ['nu-telefoon-scene', 'card=nu&scn=1', 390], ['nu-telefoon-scene-nacht', 'card=nu&scn=1&sun=-20&pv=0', 390], ['nu-computer-scene', 'card=nu&scn=1', 1280], ['nu-telefoon-scene-ontbreekt', 'card=nu&scn=1&sun=-20&scnsrc=/bestaat-niet/', 390],
   ['energie-telefoon', 'card=energie', 390], ['energie-computer', 'card=energie', 1280],
   ['auto-telefoon', 'card=auto', 390], ['auto-computer', 'card=auto', 1280],
   ['venster-thermostaat', 'card=thuis', 390, (c) => c._openSheet('th')],

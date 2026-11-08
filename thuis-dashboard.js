@@ -1276,13 +1276,18 @@ class ZonnepanelenCard extends HTMLElement {
     set('mScImp', kwh(d?.imp)); set('mScExp', kwh(d?.exp));
     const up = sun ? sun.state === 'above_horizon' : true, e = typeof el === 'number' ? el : up ? 20 : -20;
     const phase = e >= 4 ? 'day' : e > -6 && ph.dusk ? 'dusk' : up ? 'day' : 'night';
-    const src = phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night || ph.dusk || ph.image;
+    // tekening van het tijdstip; lukt die niet, dan een andere tekening, en anders alleen een lucht in de kleur van het tijdstip (geen kapot plaatje)
+    const fail = (this._scFail ||= new Set());
+    const src = [phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night, ph.night, ph.dusk, ph.image].find((x) => x && !fail.has(x)) || '';
     const img = this.$('mScImg'), box = this.$('mScn');
+    if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '456px'; this.$('mSky').style.background = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; return; }
     if (img.dataset.src !== src) {
-      img.dataset.src = src;
+      img.dataset.src = src; img.style.visibility = 'hidden'; img.style.display = '';
+      this.$('mSky').style.background = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase];
+      img.onerror = () => { fail.add(src); img.dataset.src = ''; this._updScene(pv, grid, today, speed); };
       img.onload = () => { // lucht boven de tekening in de kleur van de bovenrand
         try { const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d'); x.drawImage(img, 4, 2, 1, 1, 0, 0, 1, 1); const [r, g, b] = x.getImageData(0, 0, 1, 1).data; this.$('mSky').style.background = `rgb(${r},${g},${b})`; } catch (er) { /* andere bron */ }
-        this._scW = 0; this._updScene(pv, grid, today, speed);
+        img.style.visibility = ''; this._scW = 0; this._updScene(pv, grid, today, speed);
       };
       img.src = src; return;
     }
@@ -1798,7 +1803,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '276';
+const CARD_VERSION = '277';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
