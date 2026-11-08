@@ -551,11 +551,13 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
 @media (max-width: 600px) {
   /* v276: scène (dag/schemer/nacht) achter de kop, zoals HomeWizard */
   .znu.scn { position: relative; isolation: isolate; background: var(--bg) !important; }
-  .znu.scn .mscn { display: block; position: absolute; left: 0; right: 0; top: 0; height: 470px; overflow: hidden; z-index: -1; }
+  .znu.scn .mscn { display: block; position: absolute; left: 0; right: 0; top: 0; height: 420px; overflow: hidden; z-index: -1; }
   .znu.scn .msky { position: absolute; inset: 0; background: #4f9bef; }
   .znu.scn .mimg2 { position: absolute; display: block; height: auto; -webkit-mask: linear-gradient(180deg, transparent 0, #000 18%); mask: linear-gradient(180deg, transparent 0, #000 18%); }
   .znu.scn .mgnd { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #1b2236, var(--bg)); }
-  .znu.scn .mcab { position: absolute; left: 0; top: 0; width: 100%; height: 470px; }
+  .znu.scn .mgnd::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .8s; background: radial-gradient(120% 90% at 50% 0%, var(--gc, transparent), transparent 70%); }
+  .znu.scn .mgnd.imp::after { --gc: rgba(176,108,255,.42); opacity: 1; } .znu.scn .mgnd.exp::after { --gc: rgba(79,208,127,.38); opacity: 1; }
+  .znu.scn .mcab { position: absolute; left: 0; top: 0; width: 100%; height: 420px; }
   .znu.scn .mcab .cb { fill: none; stroke: rgba(0,0,0,.4); stroke-width: 4; } .znu.scn .mcab #mCb2 { stroke: none; }
   .znu.scn .mcab .cf { fill: none; stroke-width: 4; stroke-linecap: round; opacity: 0; }
   .znu.scn .mcab .cf.in { opacity: 1; stroke: #c58aff; filter: drop-shadow(0 0 4px #b06cff); }
@@ -564,12 +566,12 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
   .znu.scn .mpv.on::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent); mix-blend-mode: screen; animation: mshine 3.2s ease-in-out infinite; }
   @keyframes mshine { from { left: -50%; } to { left: 110%; } }
-  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 92px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
+  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 96px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
   .znu.scn .st small { display: block; font-size: 13px; font-weight: 500; opacity: .62; margin-bottom: 1px; }
   .znu.scn .st b { font-size: 24px; font-weight: 400; color: #fff; } .znu.scn .st b i { font-style: normal; font-size: 14px; margin-left: 4px; } .znu.scn .st b em { font-style: normal; font-size: 14px; margin-left: 8px; opacity: .9; }
   .znu.scn .mtop .st { padding: 2px 12px 20px; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
   .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
-  .znu.scn .grid { margin-top: 380px; } .znu.scn .tile.mhome { display: none !important; }
+  .znu.scn .grid { margin-top: 330px; } .znu.scn .tile.mhome { display: none !important; }
   .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
 }
 @media (max-width: 600px) {
@@ -1280,7 +1282,7 @@ class ZonnepanelenCard extends HTMLElement {
     const fail = (this._scFail ||= new Set());
     const src = [phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night, ph.night, ph.dusk, ph.image].find((x) => x && !fail.has(x)) || '';
     const img = this.$('mScImg'), box = this.$('mScn');
-    if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '408px'; this.$('mSky').style.background = this._skyColor = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; chromeApply?.(); return; }
+    if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '358px'; this.$('mSky').style.background = this._skyColor = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; chromeApply?.(); return; }
     if (img.dataset.src !== src) {
       img.dataset.src = src; img.style.visibility = 'hidden'; img.style.display = '';
       this.$('mSky').style.background = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase];
@@ -1293,12 +1295,12 @@ class ZonnepanelenCard extends HTMLElement {
     }
     if (!img.naturalWidth) return;
     // maten: de tekening 136% breed en gecentreerd, de grond (onderkant oprit, photo.ground in px van de tekening) op 456 px
-    const W = box.clientWidth || 390, G = 408, iw = W * 1.2, sc = iw / img.naturalWidth, gy = ph.ground ?? img.naturalHeight * 0.909, top = G - gy * sc, lx = (W - iw) / 2;
+    const W = box.clientWidth || 390, G = 358, iw = W * 1.2, sc = iw / img.naturalWidth, gy = ph.ground ?? img.naturalHeight * 0.909, top = G - gy * sc, lx = (W - iw) / 2;
     if (this._scW !== W) {
       this._scW = W;
       Object.assign(img.style, { left: `${lx}px`, top: `${top}px`, width: `${iw}px` });
       this.$('mGnd').style.top = `${G}px`;
-      const svg = this.$('mCab'), cx = W / 2; svg.setAttribute('viewBox', `0 0 ${W} 470`);
+      const svg = this.$('mCab'), cx = W / 2; svg.setAttribute('viewBox', `0 0 ${W} 420`);
       const g = `M0 ${G + 30} H${cx - 14} Q${cx} ${G + 30} ${cx} ${G + 16} V${G + 0.5}`;
       this.$('mCb1').setAttribute('d', g); this.$('mCf1').setAttribute('d', g);
       // tweede tak naar rechts (zoals HomeWizard): daarover loopt de teruglevering het huis uit
@@ -1322,6 +1324,7 @@ class ZonnepanelenCard extends HTMLElement {
       p.style.strokeDasharray = `${D} ${L + D}`;
       p._an = p.animate?.([{ strokeDashoffset: D }, { strokeDashoffset: -L }], { duration: ms * Math.max(1, L / 200), iterations: Infinity });
     };
+    const gnd = this.$('mGnd'); gnd.classList.toggle('imp', imp); gnd.classList.toggle('exp', exp);
     flow(f1, imp, '', Math.abs(grid || 0)); flow(f3, exp, 'exp', Math.abs(grid || 0)); flow(f2, sunOn && !!ph.pipe, 'sol', pv || 0);
     this.$('mPv').classList.toggle('on', sunOn);
   }
@@ -1823,7 +1826,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '282';
+const CARD_VERSION = '283';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
