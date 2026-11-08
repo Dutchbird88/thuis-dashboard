@@ -1839,7 +1839,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '295';
+const CARD_VERSION = '296';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -7010,7 +7010,9 @@ class ThuisCard extends HTMLElement {
 
   _updPills() {
     const c = this._config;
-    const lights = this._lightIds().map((id) => this._state(id)).filter(Boolean), lOn = lights.filter((s) => s.state === 'on').length;
+    // v296: het aantal lampen aan geldt voor het hele huis (alle kamers, zoals op Kamers), niet alleen de lampen onder Bediening
+    let lights = this._lightIds().map((id) => this._state(id)).filter(Boolean), lOn = lights.filter((s) => s.state === 'on').length;
+    try { const rs = this._rooms(); if (rs.some((x) => x.lights?.length)) { lights = rs.flatMap((x) => x.lights); lOn = rs.reduce((n, x) => n + (x.on || 0), 0); } } catch (e) { /* zonder kamers: lampen onder Bediening */ }
     const covers = this._coverIds().map((id) => this._state(id)), cDown = covers.filter((s) => (s.attributes.current_position ?? (s.state === 'closed' ? 0 : 100)) < 99).length;
     const pvS = this._state(c.solar_power), pvV = parseFloat(pvS?.state), pv = isNaN(pvV) ? null : /kw/i.test(pvS.attributes.unit_of_measurement || '') ? pvV * 1000 : pvV;
     const rain = (this._rainSoon() || '').replace(/<[^>]+>/g, ''), rm = rain.match(/Regen over (\d+) min/), rNow = /regent nu/.test(rain);
