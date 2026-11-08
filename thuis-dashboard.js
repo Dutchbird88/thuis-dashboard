@@ -1839,7 +1839,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '297';
+const CARD_VERSION = '298';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4230,7 +4230,6 @@ const HPSTYLE = `
 @media (max-width: 600px) {
   /* v297: apparaatkaarten in dezelfde kleur, rand en gloedrand als de andere tegels (Thuis en kamervenster) */
   .mstack > .was, .mstack > .was.cool, #oven.was.cool { background: linear-gradient(rgb(19,32,54), rgb(15,24,40)) !important; border: 1px solid rgba(110,150,240,.2) !important; border-radius: 20px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
-  .mstack > .was .r > svg { background: rgba(255,255,255,.07); border-radius: 50%; padding: 8px; box-sizing: border-box; }
   .kglass.koff { background: linear-gradient(rgb(19,32,54), rgb(15,24,40)) !important; border: 1px solid rgba(110,150,240,.2) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
   /* v271: Wake on LAN-tegels tussen de lampen: aan = lichtgroen, wordt gewekt = blauw, uit = grijs */
   .lt.wol.on { --tk: color-mix(in srgb, var(--lc) 65%, #fff); } .lt.wol.on .ms { color: var(--tk) !important; }
