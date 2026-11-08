@@ -1828,7 +1828,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '291';
+const CARD_VERSION = '292';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5228,8 +5228,8 @@ class ThuisCard extends HTMLElement {
     }
     const P = S.pts, b = P[P.length - 1], a = P.find((p) => b.t - p.t >= 4 * M);
     const room = parseFloat(this._state(this._climateId())?.attributes?.current_temperature), amb = room > 5 && room < 35 ? room : 20;
-    if (!a || a.v - b.v < 2 || b.v <= 50 || b.v - amb < 10) return null;
-    const k = Math.log((a.v - amb) / (b.v - amb)) / (b.t - a.t), at = b.t + Math.log((b.v - amb) / (50 - amb)) / k;
+    if (!a || a.v - b.v < 2 || b.v <= 70 || b.v - amb < 10) return null;
+    const k = Math.log((a.v - amb) / (b.v - amb)) / (b.t - a.t), at = b.t + Math.log((b.v - amb) / (70 - amb)) / k;
     return k > 0 && at - now < 3 * 3600000 ? Math.max(at, now + M) : null;
   }
   _updAppliances() {
@@ -5283,7 +5283,7 @@ class ThuisCard extends HTMLElement {
         const sp = st(`select.${o}_geselecteerd_programma`), w = sp.match(/microwave_(\d+)_watt/)?.[1];
         put(oBox, 'ready', block(microSvg(''), 'Magnetron', w ? `${w} W` : 'Max', 'Aan', 'klaar om te starten', null)); }
       else if (st(`switch.${o}_inschakelen`) === 'on') { const sel = prog(`select.${o}_geselecteerd_programma`, OVEN_PROG); put(oBox, 'ready', block(ovenSvg(temp >= 50 ? 'hot' : '', temp), 'Oven', tt, 'Aan', sel ? `${sel}<br>klaar om te starten` : 'geen programma gekozen', null)); }
-      else if (temp != null && temp >= 50) {
+      else if (temp != null && temp >= 70) {
         // telefoon (v270): compact, met een schatting wanneer de oven koel is (onder 50°); de computer houdt de oude opmaak
         const ca = this._ovCoolAt(`sensor.${o}_huidige_temperatuur_in_de_oven`, temp);
         put(oBox, 'cool', block(ovenSvg('hot', temp), 'Oven koelt af', tt, 'Heet', 'uit · nog warm<br>pas op bij openen', null)

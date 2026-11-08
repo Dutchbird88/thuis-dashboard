@@ -129,7 +129,7 @@ Verdere regels:
 - `_updAppliances`, `_updWasher`, `_appOpen` en `_appHistory` (7 dagen geschiedenis).
 - Wasmachine (Miele) en vaatwasser/oven (Home Connect) met programma, fase en resterende tijd.
 - Magnetronstand: het actieve of geselecteerde programma `microwave_*` toont "Magnetron" met een eigen icoon en het vermogen.
-- Oven koelt af (uit, ≥ 50°), telefoon (v270, ontwerp C): compacte kaart in rustig oranje, "Oven koelt af" met "Uit · koel rond HH:MM" en rechts groot de temperatuur (`.ocs`/`.ocb`, op de computer verborgen; daar blijft de oude opmaak). De tijd komt uit `_ovCoolAt`: afkoelen volgens Newton met de kamertemperatuur (thermostaat, anders 20°) als omgeving, uit de metingen van 30 min (bij openen eenmalig aangevuld uit `history/period`). Te weinig gegevens: "Uit · nog warm". Rood en "Heet" zijn bewust weg: een warme oven is een waarschuwing, geen alarm.
+- Oven koelt af (uit, ≥ 70° sinds v292, daarvoor 50°), telefoon (v270, ontwerp C): compacte kaart in rustig oranje, "Oven koelt af" met "Uit · koel rond HH:MM" en rechts groot de temperatuur (`.ocs`/`.ocb`, op de computer verborgen; daar blijft de oude opmaak). De tijd komt uit `_ovCoolAt`: afkoelen volgens Newton met de kamertemperatuur (thermostaat, anders 20°) als omgeving, uit de metingen van 30 min (bij openen eenmalig aangevuld uit `history/period`). Te weinig gegevens: "Uit · nog warm". Rood en "Heet" zijn bewust weg: een warme oven is een waarschuwing, geen alarm.
 
 **HomePod (mini)** (v248, alleen telefoon; stijl in `HPSTYLE`, achteraan in de `<style>` van Thuis)
 
