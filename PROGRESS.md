@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v275**.*
+*Bijgewerkt: 7 november 2026, versie **v276**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v275** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v276** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v275.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v276.
 
 ## Gerealiseerde functies (per tab)
 
@@ -146,6 +146,7 @@
 | v273 | Telefoon: klokje in het venster van computer/server opent een tijdlijn zoals bij lampen en rolluiken: grafiek 24 uur aan/uit, "Opstarten gevraagd" met wie, "Aan" met opstarttijd en "Uit". Vervangt de 7-dagenbalken. |
 | v274 | Telefoon: Wake on LAN-apparaten ook als pil in het kamervenster van hun ruimte (Aan/Uit/Wordt opgestart…); tik opent het computervenster, sluiten gaat terug naar de kamer. |
 | v275 | `hide_lights` herkent nu ook het begin van een lampnaam ("Tuin" → "Tuinverlichting"), een los woord en de ruimte in HA (alle lampen in die ruimte). |
+| v276 | Telefoon, Nu: scène in de stijl van HomeWizard met eigen tekeningen voor dag, schemer en nacht (`photo.dusk`/`photo.night`), Opwek en Zelfvoorzienend in de lucht, Net en Teruglevering onder het huis, bewegende leiding (paars afname, groen terug), gele lijn langs de regenpijp en glans op de panelen bij opwek. Dagcijfers uit het Energie-dashboard. Zonder schemer-/nachttekening en op de computer ongewijzigd. |
 
 ## Volgende stappen
 

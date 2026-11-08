@@ -213,6 +213,12 @@ Verdere regels:
 - v223 (telefoon): `Omvormers` toont rechts `#mIst` met het aantal online (`inverters_online`): groen alles, oranje een deel, rood geen, grijs "In rust" als `sun` onder is. Zonder die sensor blijft het pijltje staan.
 - v222 (telefoon): gele grafiek heet "Vandaag" en toont geen piek (`.pkinfo` verborgen); Opbrengst zonder gemiddeldelijn; bij Week staat de opbrengst boven elke staaf (`.bv`).
 
+**Nu: scène (v276, alleen telefoon, alleen als `photo.dusk` of `photo.night` is ingesteld: klasse `.scn` op `.wrap.znu`)**
+
+- Ontwerp zoals HomeWizard, gekozen in november 2026: tekeningen van de gebruiker voor dag/schemer/nacht (`photo.image`/`dusk`/`night`, zelfde uitsnede), geen labels op het huis. `.mscn` ligt absoluut achter de kop (530 px hoog), de datum is verborgen, de titel blijft. Bovenin `.mtop` Opwek | Zelfvoorzienend (kWh + %), met elk een lange dunne lijn aan de binnenkant; onder het huis `.mscrow` Net en Teruglevering (Kosten bewust weggelaten). De tegel Mijn huis is verborgen.
+- `_updScene` (vanuit `_updMob`): fase op `sun.elevation` (≥ 4° dag, > −6° schemer, anders nacht); de tekening is 136% breed en gecentreerd, `photo.ground` (px) ligt op 456 px. De lucht krijgt de kleur van de linkerbovenhoek van de tekening (canvas). Leiding `#mCf1` van links naar het midden en omhoog tot precies de oprit (paars `.in` bij afname, groen `.out` bij teruglevering, `speed()` voor de snelheid); `#mCf2` geel langs de regenpijp (`photo.pipe`) als `pv > 5`; glans over `photo.panels_box`. Dagcijfers: `_fetchGridDay` (5 min) haalt afname/teruglevering van vandaag (5-minuutstatistieken) via `energy/get_prefs` of `grid_import`/`grid_export`; zelfvoorzienend = opwek − teruglevering, % = dat gedeeld door (dat + afname).
+- De eigen tekeningen (met huisnummer) staan alleen in `/config/www` van de gebruiker, nooit in de repo. Test: `test/mock.html?card=nu&scn=1` (getekend testhuis, `sun=` zonnehoogte).
+
 **localStorage-sleutels** (allemaal met try/catch):
 
 | Sleutel | Waarvoor |
@@ -271,10 +277,10 @@ Verdere regels:
 - **Syntax:** `node --check thuis-dashboard.js`.
 - **Lint:** `npx --yes eslint@8.57.0 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-undef":"error","no-redeclare":"error","no-dupe-keys":"error"}' thuis-dashboard.js`. Dit moet 0 fouten geven en is getest bij v214. Gebruik eventueel ook `no-unused-vars` als waarschuwing.
 - **Testpagina en testscript (in de repo, map `test/`):**
-  - `node test/test.js` doet alles in één keer: `node --check`, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 25 views (alle tabbladen op 390 en 1280, muziek, alarm, oven, Wake on LAN en de vensters thermostaat, afval, kamer, HomePod en computer) in `test/out/`. Lint alleen met `--lint`. Een fout in de console telt als fout.
+  - `node test/test.js` doet alles in één keer: `node --check`, controle op vaste coördinaten, de persoonlijke-termencheck en screenshots van 28 views (alle tabbladen op 390 en 1280, muziek, alarm, oven, Wake on LAN en de vensters thermostaat, afval, kamer, HomePod en computer) in `test/out/`. Lint alleen met `--lint`. Een fout in de console telt als fout.
   - `node test/test.js --vergelijk HEAD~1` (git-ref of pad naar een .js) vergelijkt elke view pixel voor pixel met die versie. Bij verschil komen er `<naam>.oud.png` en `<naam>.verschil.png` bij (verschil in rood). Een view die in de oude versie nog niet bestaat (fout bij de actie), heet "nieuw". Gebruik dit vóór elke publicatie: de computerviews moeten "gelijk" zijn bij wijzigingen voor de telefoon.
   - Extra: `--alleen <deel van de naam>` en `--lint`. De klok staat vast op 5 november 2026 12:30, dus screenshots zijn steeds gelijk.
-  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur), `wol=1` (computer uit en server aan, met Ping-sensoren en historie), `hide=` (hide_lights). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
+  - `test/mock.html` is de nep-Home Assistant (alleen verzonnen namen). Parameters: `card=thuis|kamers|nu|energie|auto`, `src=` (versie), `th=`, `hp=playing|paused|idle` + `art=1`, `dup=1`, `wt=<bak>0|1`, `ev=<laadpaalmodus>`, `pv=`, `alarm=water|rook`, `lx=`, `oven=koel|aan`, `tok=1` (thermostaat op temperatuur), `wol=1` (computer uit en server aan, met Ping-sensoren en historie), `hide=` (hide_lights), `scn=1` (scène op Nu; `sun=` zonnehoogte, `scnsrc=` map met eigen tekeningen voor een lokale controle). Het script draait in een eigen scope, omdat de app globale namen als `DAY` heeft.
   - Persoonlijke termen: zet ze in `test/prive.txt` (één per regel). Dat bestand staat in `.gitignore` en is er in een nieuwe sessie niet: vraag de gebruiker dan om de lijst. Zonder dat bestand meldt het script "niet gecontroleerd".
   - Zet nooit eigen entity-ids, namen of foto's in `test/`. De foto's van huis en auto zijn getekende SVG's.
 

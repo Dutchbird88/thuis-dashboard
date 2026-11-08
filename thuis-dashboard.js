@@ -547,7 +547,33 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .big { font-size: 54px; }
 }
 /* Nu-pagina op de telefoon: mijn huis, twee meters, grafiek en panelen (computer ongewijzigd) */
-.znu .mob, .znu .ml { display: none; }
+.znu .mob, .znu .ml, .znu .mscn, .znu .mscrow { display: none; }
+@media (max-width: 600px) {
+  /* v276: scène (dag/schemer/nacht) achter de kop, zoals HomeWizard */
+  .znu.scn { position: relative; background: var(--bg) !important; }
+  .znu.scn .mscn { display: block; position: absolute; left: 0; right: 0; top: 0; height: 530px; overflow: hidden; z-index: 0; }
+  .znu.scn .inner { position: relative; z-index: 1; }
+  .znu.scn .msky { position: absolute; inset: 0; background: #4f9bef; }
+  .znu.scn .mimg2 { position: absolute; display: block; height: auto; -webkit-mask: linear-gradient(180deg, transparent 0, #000 18%); mask: linear-gradient(180deg, transparent 0, #000 18%); }
+  .znu.scn .mgnd { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #1b2236, var(--bg)); }
+  .znu.scn .mcab { position: absolute; left: 0; top: 0; width: 100%; height: 530px; }
+  .znu.scn .mcab .cb { fill: none; stroke: rgba(0,0,0,.4); stroke-width: 4; } .znu.scn .mcab #mCb2 { stroke: none; }
+  .znu.scn .mcab .cf { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 20 300; stroke-dashoffset: 20; opacity: 0; }
+  .znu.scn .mcab .cf.in, .znu.scn .mcab .cf.out { opacity: 1; animation: mflow 2s linear infinite; }
+  .znu.scn .mcab .cf.in { stroke: #c58aff; filter: drop-shadow(0 0 4px #b06cff); } .znu.scn .mcab .cf.out { stroke: #6fe39a; filter: drop-shadow(0 0 4px #4fd07f); animation-direction: reverse; }
+  .znu.scn .mcab .cf.sol { stroke: #fff3c2; stroke-width: 4.5; filter: drop-shadow(0 0 3px #ffb020) drop-shadow(0 0 7px #ff9a00); }
+  @keyframes mflow { from { stroke-dashoffset: 20; } to { stroke-dashoffset: -100; } }
+  .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
+  .znu.scn .mpv.on::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent); mix-blend-mode: screen; animation: mshine 3.2s ease-in-out infinite; }
+  @keyframes mshine { from { left: -50%; } to { left: 110%; } }
+  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 104px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
+  .znu.scn .st small { display: block; font-size: 14px; font-weight: 500; opacity: .62; margin-bottom: 2px; }
+  .znu.scn .st b { font-size: 30px; font-weight: 400; color: #fff; } .znu.scn .st b i { font-style: normal; font-size: 17px; margin-left: 4px; } .znu.scn .st b em { font-style: normal; font-size: 17px; margin-left: 10px; opacity: .9; }
+  .znu.scn .mtop .st { padding: 2px 12px 26px; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
+  .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
+  .znu.scn .grid { margin-top: 442px; } .znu.scn .tile.mhome { display: none !important; }
+  .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
+}
 @media (max-width: 600px) {
   .znu .grid { display: flex; flex-direction: column; gap: 10px; }
   .znu .tile.photo, .znu .tile.hero, .znu .tile.flow { display: none; }
@@ -878,10 +904,16 @@ class ZonnepanelenCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${STYLE}${LIGHT}</style>
       ${GLOSSY}
-      <div class="wrap znu"><div class="inner">
+      <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
+        <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
+        <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
+          <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb2"/><path class="cf" id="mCf1" pathLength="100"/><path class="cf sol" id="mCf2" pathLength="100"/></svg>
+          <div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
+        <div class="inner">
         ${headerHtml('nu')}
 
         <div class="grid" style="--gc:${Math.max(1, ...Object.values(sides).map((x) => x.length))}">
+          <div class="mscrow"><div class="st"><small>Net</small><b id="mScImp">—</b></div><div class="st rr"><small>Teruglevering</small><b id="mScExp">—</b></div></div>
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
@@ -1232,12 +1264,79 @@ class ZonnepanelenCard extends HTMLElement {
     this._updMob(pv, grid, home, today, fc, best, speed);
   }
 
+  // telefoon (v276): scène met de tekening van het tijdstip, bewegende lijnen (net: paars in / groen terug, zon: geel langs de regenpijp) en de dagcijfers
+  _updScene(pv, grid, today, speed) {
+    const c = this._config, ph = c.photo, sun = this._hass?.states[c.sun], el = sun?.attributes?.elevation;
+    // dagcijfers (ook als de tekening nog laadt)
+    const set = (id, h) => { const x = this.$(id); if (x && x.innerHTML !== h) x.innerHTML = h; };
+    const kwh = (v) => (v == null ? '—' : `${fmt(v, 1)}<i>kWh</i>`), d = this._gDay;
+    set('mScOp', kwh(today));
+    const self = d && today != null ? Math.max(0, today - d.exp) : null, pct = self != null && self + d.imp > 0 ? Math.round(self / (self + d.imp) * 100) : null;
+    set('mScSelf', self == null ? '—' : `${fmt(self, 1)}<i>kWh</i>${pct != null ? `<em>${pct}%</em>` : ''}`);
+    set('mScImp', kwh(d?.imp)); set('mScExp', kwh(d?.exp));
+    const up = sun ? sun.state === 'above_horizon' : true, e = typeof el === 'number' ? el : up ? 20 : -20;
+    const phase = e >= 4 ? 'day' : e > -6 && ph.dusk ? 'dusk' : up ? 'day' : 'night';
+    const src = phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night || ph.dusk || ph.image;
+    const img = this.$('mScImg'), box = this.$('mScn');
+    if (img.dataset.src !== src) {
+      img.dataset.src = src;
+      img.onload = () => { // lucht boven de tekening in de kleur van de bovenrand
+        try { const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d'); x.drawImage(img, 4, 2, 1, 1, 0, 0, 1, 1); const [r, g, b] = x.getImageData(0, 0, 1, 1).data; this.$('mSky').style.background = `rgb(${r},${g},${b})`; } catch (er) { /* andere bron */ }
+        this._scW = 0; this._updScene(pv, grid, today, speed);
+      };
+      img.src = src; return;
+    }
+    if (!img.naturalWidth) return;
+    // maten: de tekening 136% breed en gecentreerd, de grond (onderkant oprit, photo.ground in px van de tekening) op 456 px
+    const W = box.clientWidth || 390, G = 456, iw = W * 1.36, sc = iw / img.naturalWidth, gy = ph.ground ?? img.naturalHeight * 0.909, top = G - gy * sc, lx = (W - iw) / 2;
+    if (this._scW !== W) {
+      this._scW = W;
+      Object.assign(img.style, { left: `${lx}px`, top: `${top}px`, width: `${iw}px` });
+      this.$('mGnd').style.top = `${G}px`;
+      const svg = this.$('mCab'), cx = W / 2; svg.setAttribute('viewBox', `0 0 ${W} 530`);
+      const g = `M0 ${G + 30} H${cx - 14} Q${cx} ${G + 30} ${cx} ${G + 16} V${G + 0.5}`;
+      this.$('mCb1').setAttribute('d', g); this.$('mCf1').setAttribute('d', g);
+      const pp = ph.pipe; // regenpijp [x, y] in px van de tekening
+      const sp = pp ? `M${(lx + pp[0] * sc).toFixed(1)} ${(top + pp[1] * sc).toFixed(1)} V${G + 14} H${cx - 14} Q${cx} ${G + 14} ${cx} ${G}` : '';
+      this.$('mCb2').setAttribute('d', sp); this.$('mCf2').setAttribute('d', sp);
+      const pb = ph.panels_box, pv0 = this.$('mPv'); // zonnepanelen [x, y, b, h] in px van de tekening
+      pv0.hidden = !pb; if (pb) Object.assign(pv0.style, { left: `${lx + pb[0] * sc}px`, top: `${top + pb[1] * sc}px`, width: `${pb[2] * sc}px`, height: `${pb[3] * sc}px` });
+    }
+    const exp = grid != null && grid < -5, imp = grid != null && grid > 5, sunOn = pv > 5;
+    const f1 = this.$('mCf1'), f2 = this.$('mCf2');
+    f1.setAttribute('class', `cf${imp ? ' in' : exp ? ' out' : ''}`); f1.style.animationDuration = speed(Math.abs(grid || 0));
+    f2.setAttribute('class', `cf sol${sunOn && ph.pipe ? ' in' : ''}`); f2.style.animationDuration = speed(pv || 0);
+    this.$('mPv').classList.toggle('on', sunOn);
+  }
+  // afname en teruglevering van vandaag: statistieken van het net uit het Energie-dashboard (of grid_import / grid_export), elke 5 minuten
+  async _fetchGridDay() {
+    if (this._gdBusy || Date.now() - (this._gdT || 0) < 300000 || !this._hass?.callWS) return;
+    this._gdBusy = true; this._gdT = Date.now();
+    try {
+      if (!this._gIds) {
+        const c = this._config, imp = [].concat(c.grid_import || []), exp = [].concat(c.grid_export || []);
+        if (!imp.length) {
+          const pr = await this._hass.callWS({ type: 'energy/get_prefs' }).catch(() => null);
+          for (const g of (pr?.energy_sources || []).filter((x) => x.type === 'grid')) {
+            if (g.stat_energy_from) imp.push(g.stat_energy_from); if (g.stat_energy_to) exp.push(g.stat_energy_to);
+            (g.flow_from || []).forEach((x) => imp.push(x.stat_energy_from)); (g.flow_to || []).forEach((x) => exp.push(x.stat_energy_to));
+          }
+        }
+        this._gIds = { imp: imp.filter(Boolean), exp: exp.filter(Boolean) };
+      }
+      const ids = [...this._gIds.imp, ...this._gIds.exp]; if (!ids.length) return;
+      const r = await this._hass.callWS({ type: 'recorder/statistics_during_period', start_time: new Date(startOfDay(Date.now())).toISOString(), statistic_ids: ids, period: '5minute', types: ['change'], units: STAT_UNITS });
+      const sum = (list) => list.reduce((n, id) => n + (r?.[id] || []).reduce((m, x) => m + (x.change || 0), 0), 0);
+      this._gDay = { imp: sum(this._gIds.imp), exp: sum(this._gIds.exp) };
+    } catch (er) { /* geen statistieken */ } finally { this._gdBusy = false; }
+  }
   // telefoon: mijn huis (zon, huis, net met stromende bolletjes) en de meters Opwekking nu / Opgewekt vandaag
   _updMob(pv, grid, home, today, fc, best, speed) {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML);
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
+    if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); this._fetchGridDay(); }
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
     set('mGridL', exporting ? 'Terug' : importing ? 'Van net' : 'Net');
     this.$('mGrid').className = `num${exporting ? ' exp' : importing ? ' imp' : ''}`;
@@ -1699,7 +1798,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '275';
+const CARD_VERSION = '276';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

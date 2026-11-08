@@ -18,6 +18,7 @@
 //   alarm=water|rook                    een alarm op Thuis
 //   lx=340                              lux van de bewegingssensor
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
+//   scn=1 [&scnsrc=/test/out/] [&sun=-3]  Nu: scène met tekeningen voor dag/schemer/nacht (zonnehoogte in graden)
 //   tok=1                               thermostaat op temperatuur (niet aan het verwarmen)
 //   wol=1                               Wake on LAN: computer (uit) en server (aan) met Ping-sensoren
 //   hide=Leeslamp,light.spiegellamp     hide_lights: lampen niet tonen onder Bediening
@@ -123,7 +124,7 @@ ent('sensor.ecu_lifetime_energy', 18234, { unit_of_measurement: 'kWh', device_cl
 ent('sensor.ecu_inverters_online', 5, {}, { name: 'Omvormers online' });
 ent('sensor.p1_vermogen', -380, { unit_of_measurement: 'W', device_class: 'power' }, { name: 'Netvermogen' });
 ent('sensor.gas_vandaag', 2.1, { unit_of_measurement: 'm³', device_class: 'gas' }, { name: 'Gas vandaag' });
-ent('sun.sun', 'above_horizon', { next_setting: at(day0.getTime() + 16.9 * H), next_rising: at(day0.getTime() + DAY + 7.4 * H), elevation: 20 }, { reg: false, fn: 'Zon' });
+ent('sun.sun', +(q.get('sun') ?? 20) > 0 ? 'above_horizon' : 'below_horizon', { elevation: +(q.get('sun') ?? 20), next_setting: at(day0.getTime() + 16.9 * H), next_rising: at(day0.getTime() + DAY + 7.4 * H) }, { reg: false, fn: 'Zon' });
 [['today', 4.1, 3.2], ['today_remaining', 0.8, 0.6], ['tomorrow', 3.0, 2.2]].forEach(([k, a, b]) => {
   ent('sensor.energy_production_' + k, a, { unit_of_measurement: 'kWh' }, { name: k }); ent(`sensor.energy_production_${k}_2`, b, { unit_of_measurement: 'kWh' }, { name: k + ' 2' }); });
 ent('sensor.power_highest_peak_time_tomorrow', at(day0.getTime() + DAY + 11.75 * H), { device_class: 'timestamp' }, { name: 'Piek morgen' });
@@ -136,6 +137,9 @@ for (let i = 0; i < 5; i++) {
 // een verzonnen huis als foto (geen echte foto in de repo)
 const HUIS = svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><path d="M60 140 200 40l140 100v140H60z" fill="#3a4250"/><path d="M40 150 200 30l160 120-14 14L200 56 54 164z" fill="#232a35"/><rect x="170" y="200" width="60" height="80" fill="#1b2029"/><rect x="90" y="170" width="60" height="50" fill="#9bb4d4" opacity=".55"/><rect x="250" y="170" width="60" height="50" fill="#9bb4d4" opacity=".55"/></svg>');
 const AUTO = svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><path d="M40 130c0-18 14-26 40-30l60-36c20-10 40-14 80-14s70 8 96 30l30 22c20 4 34 12 34 28v14H40z" fill="#7d8796"/><path d="M150 72c16-10 34-12 66-12s50 4 70 22H130z" fill="#2a3240"/><circle cx="110" cy="146" r="26" fill="#14181f"/><circle cx="300" cy="146" r="26" fill="#14181f"/></svg>');
+const SCN = (sky, win) => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941"><rect width="1672" height="941" fill="${sky}"/><path d="M0 700 Q400 560 836 680 T1672 640 V941 H0z" fill="#3f8a4f"/><rect x="560" y="420" width="560" height="435" fill="#e9b25a"/><path d="M520 420 L840 190 L1150 420z" fill="#e2622e"/><rect x="590" y="210" width="270" height="80" fill="#1d2a4a"/><rect x="555" y="425" width="8" height="430" fill="#8a8f99"/>${[[600,450],[880,450],[600,600]].map(([x, y]) => `<rect x="${x}" y="${y}" width="150" height="100" fill="${win}"/>`).join('')}<rect x="300" y="855" width="1050" height="86" fill="#9aa3b5"/></svg>`);
+const SCNSRC = q.get('scnsrc');
+const SCENE = q.get('scn') ? (SCNSRC ? { image: SCNSRC + 'dag.png', dusk: SCNSRC + 'zons.png', night: SCNSRC + 'nacht.png' } : { image: SCN('#4f9bef', '#9fd0ff'), dusk: SCN('#5749aa', '#ffd27a'), night: SCN('#132548', '#ffd27a') }) : null;
 // ---------- energie (Verbruik) ----------
 ent('sensor.stroom_afname', 12345.6, { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing' }, { name: 'Stroom afname' });
 ent('sensor.stroom_teruglevering', 6543.2, { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing' }, { name: 'Stroom teruglevering' });
@@ -170,7 +174,7 @@ async function callWS(m) {
     const wh = {}; for (let h = 7; h <= 18; h++) wh[at(day0.getTime() + h * H)] = Math.max(0, Math.round(1250 * Math.sin(Math.PI * (h - 7.6) / 10.2)));
     return { a: { wh_hours: wh } };
   }
-  if (m.type === 'energy/get_prefs') return { energy_sources: [], device_consumption: [] };
+  if (m.type === 'energy/get_prefs') return { energy_sources: q.get('scn') ? [{ type: 'grid', flow_from: [{ stat_energy_from: 'sensor.stroom_afname' }], flow_to: [{ stat_energy_to: 'sensor.stroom_teruglevering' }] }] : [], device_consumption: [] };
   return [];
 }
 async function callApi(method, path) {
@@ -197,7 +201,7 @@ const hass = {
 const CONFIG = {
   'thuis-card': { persons: [{ entity: 'person.bewoner', name: 'Bewoner' }, { entity: 'person.bewoner2', name: 'Bewoner 2' }], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'], ...(q.get('hide') ? { hide_lights: q.get('hide').split(',') } : {}) },
   'kamers-card': {},
-  'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: { image: HUIS, width: 400, height: 300, panels: {} } },
+  'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: SCENE ? { ...SCENE, ground: 855, pipe: [559, 428], panels_box: [585, 210, 273, 80], panels: {} } : { image: HUIS, width: 400, height: 300, panels: {} } },
   'verbruik-card': { power: 'sensor.p1_vermogen', import: 'sensor.stroom_afname', export: 'sensor.stroom_teruglevering', gas: 'sensor.gas_stand', water: 'sensor.water_stand' },
   'auto-card': { image: AUTO },
 }[CARD] || {};

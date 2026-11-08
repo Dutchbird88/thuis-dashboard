@@ -97,6 +97,25 @@ hide_lights:
   - light.schuur
 ```
 
+### Zonnepanelen als scène (telefoon)
+
+Op het tabblad Nu kan bovenaan een scène staan in de stijl van HomeWizard: je eigen tekening van het huis met de lucht erachter, bovenin **Opwek** en **Zelfvoorzienend** van vandaag, onder het huis **Net** en **Teruglevering**, en een leiding in de grond met een bewegend lichtje (paars = afname, groen = teruglevering, sneller bij meer vermogen). Als de panelen opwekken, glanst het zonnepaneel en loopt er een geel lichtje langs de regenpijp naar het huis.
+
+Lever drie tekeningen aan met precies dezelfde uitsnede (bijvoorbeeld 1672 × 941 px) en zet ze in `/config/www/`. De tekening wisselt met de stand van de zon: dag, schemering (zonnehoogte tussen −6° en 4°) en nacht. De lucht boven de tekening krijgt de kleur van de bovenrand.
+
+```yaml
+type: custom:zonnepanelen-card
+photo:
+  image: /local/huis-dag.png       # overdag
+  dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
+  night: /local/huis-nacht.png     # nacht
+  ground: 855                      # px vanaf boven: onderkant van de oprit (daar begint de grond)
+  pipe: [559, 428]                 # optioneel: bovenkant van de regenpijp (x, y in px)
+  panels_box: [585, 210, 273, 80]  # optioneel: de zonnepanelen (x, y, breedte, hoogte in px)
+```
+
+Afname en teruglevering van vandaag komen uit het Energie-dashboard van Home Assistant. Lukt dat niet, geef dan zelf de meters op met `grid_import` en `grid_export` (totaaltellers in kWh). Zonder `dusk` en `night` blijft de oude tegel "Mijn huis" staan.
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.
