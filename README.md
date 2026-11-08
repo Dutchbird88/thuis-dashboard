@@ -99,7 +99,7 @@ hide_lights:
 
 ### Zonnepanelen als scène (telefoon)
 
-Op het tabblad Nu kan bovenaan een scène staan in de stijl van HomeWizard: je eigen tekening van het huis met de lucht erachter, bovenin **Opwek** en **Zelfvoorzienend** van vandaag, onder het huis de live **Afname** en **Teruglevering**, en een leiding in de grond met een bewegend lichtje (paars van links het huis in bij afname, groen het huis uit naar rechts bij teruglevering, sneller bij meer vermogen). Als de panelen opwekken, glanst het zonnepaneel en loopt er een geel lichtje langs de regenpijp naar het huis.
+Op het tabblad Nu kan bovenaan een scène staan in de stijl van HomeWizard: je eigen tekening van het huis met de lucht erachter, bovenin **Opwek** en **Zelfvoorzienend** van vandaag, onder het huis de live **Afname** en **Teruglevering**, en een leiding in de grond met een bewegend lichtje (paars van links het huis in bij afname, groen het huis uit naar rechts bij teruglevering, sneller bij meer vermogen). Als de panelen opwekken, glanst het zonnepaneel.
 
 Lever drie tekeningen aan met precies dezelfde uitsnede (bijvoorbeeld 1672 × 941 px) en zet ze in `/config/www/`. De tekening wisselt met de stand van de zon: dag, schemering (zonnehoogte tussen −6° en 4°) en nacht. De lucht boven de tekening krijgt de kleur van de bovenrand.
 
@@ -110,7 +110,6 @@ photo:
   dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
   night: /local/huis-nacht.png     # nacht
   ground: 855                      # px vanaf boven: onderkant van de oprit (daar begint de grond)
-  pipe: [559, 428]                 # optioneel: bovenkant van de regenpijp (x, y in px)
   panels_box: [585, 210, 273, 80]  # optioneel: de zonnepanelen (x, y, breedte, hoogte in px)
 ```
 
