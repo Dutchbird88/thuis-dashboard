@@ -1281,7 +1281,6 @@ class ZonnepanelenCard extends HTMLElement {
     const phase = e >= 4 ? 'day' : e > -6 && ph.dusk ? 'dusk' : up ? 'day' : 'night';
     // tekening van het tijdstip; lukt die niet, dan een andere tekening, en anders alleen een lucht in de kleur van het tijdstip (geen kapot plaatje)
     const fail = (this._scFail ||= new Set());
-    const hi = this.shadowRoot.querySelector('.xhead h1 svg.hi use'); if (hi) hi.setAttribute('href', phase === 'day' ? '#gSun' : '#gMoon');
     const src = [phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night, ph.night, ph.dusk, ph.image].find((x) => x && !fail.has(x)) || '';
     const img = this.$('mScImg'), box = this.$('mScn');
     if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '332px'; this.$('mSky').style.background = this._skyColor = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; chromeApply?.(); return; }
@@ -1375,9 +1374,13 @@ class ZonnepanelenCard extends HTMLElement {
       this.$(`mk${k}`).setAttribute('cy', (100 + 80 * Math.sin(a)).toFixed(2));
       set(`mv${k}`, v); set(`mm${k}`, max);
     };
-    gauge('1', (pv || 0) / c.max_power, pv == null ? '—' : `${fmt(pv)}<tspan class="mgu" dx="5">W</tspan>`, fmt(c.max_power));
     // schaal: de beste dag van de afgelopen dagen (incl. vandaag), naar boven afgerond op een even getal; zonder gegevens 20
     const top = Math.max(today || 0, best?.v || 0), dmax = top > 0 ? Math.max(4, Math.ceil(top / 2) * 2) : 20;
+    // v286: na zonsondergang (en niets opgewekt) toont de eerste meter de verwachting voor morgen in plaats van 0 W
+    const tmr = this._hass?.states[c.sun]?.state === 'below_horizon' && !(pv > 5) && fc?.tomorrow != null;
+    const g1 = this.shadowRoot.querySelector('.mgt .mgh'); if (g1 && g1.lastChild.textContent !== (tmr ? 'Morgen verwacht' : 'Opwekking nu')) g1.lastChild.textContent = tmr ? 'Morgen verwacht' : 'Opwekking nu';
+    if (tmr) gauge('1', fc.tomorrow / dmax, `${fmt(fc.tomorrow, 1)}<tspan class="mgu" dx="5">kWh</tspan>`, fmt(dmax));
+    else gauge('1', (pv || 0) / c.max_power, pv == null ? '—' : `${fmt(pv)}<tspan class="mgu" dx="5">W</tspan>`, fmt(c.max_power));
     gauge('2', (today || 0) / dmax, today == null ? '—' : `${fmt(today, 1)}<tspan class="mgu" dx="5">kWh</tspan>`, fmt(dmax));
     // panelen: het compacte raster volgt de panelen van de computerweergave (kleur, waarde, afwijking)
     let tot = 0; const temps = [];
@@ -1825,7 +1828,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '285';
+const CARD_VERSION = '286';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
