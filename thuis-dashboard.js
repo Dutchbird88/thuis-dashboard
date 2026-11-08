@@ -561,6 +561,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mcab .cf { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 20 300; stroke-dashoffset: 20; opacity: 0; }
   .znu.scn .mcab .cf.in, .znu.scn .mcab .cf.out { opacity: 1; animation: mflow 2s linear infinite; }
   .znu.scn .mcab .cf.in { stroke: #c58aff; filter: drop-shadow(0 0 4px #b06cff); } .znu.scn .mcab .cf.out { stroke: #6fe39a; filter: drop-shadow(0 0 4px #4fd07f); animation-direction: reverse; }
+  .znu.scn .mcab .cf.exp { stroke: #6fe39a; filter: drop-shadow(0 0 4px #4fd07f); }
   .znu.scn .mcab .cf.sol { stroke: #fff3c2; stroke-width: 4.5; filter: drop-shadow(0 0 3px #ffb020) drop-shadow(0 0 7px #ff9a00); }
   @keyframes mflow { from { stroke-dashoffset: 20; } to { stroke-dashoffset: -100; } }
   .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
@@ -907,7 +908,7 @@ class ZonnepanelenCard extends HTMLElement {
       <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
         <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
-          <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb2"/><path class="cf" id="mCf1" pathLength="100"/><path class="cf sol" id="mCf2" pathLength="100"/></svg>
+          <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cb" id="mCb2"/><path class="cf" id="mCf1" pathLength="100"/><path class="cf" id="mCf3" pathLength="100"/><path class="cf sol" id="mCf2" pathLength="100"/></svg>
           <div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
         <div class="inner">
         ${headerHtml('nu')}
@@ -1301,6 +1302,9 @@ class ZonnepanelenCard extends HTMLElement {
       const svg = this.$('mCab'), cx = W / 2; svg.setAttribute('viewBox', `0 0 ${W} 530`);
       const g = `M0 ${G + 30} H${cx - 14} Q${cx} ${G + 30} ${cx} ${G + 16} V${G + 0.5}`;
       this.$('mCb1').setAttribute('d', g); this.$('mCf1').setAttribute('d', g);
+      // tweede tak naar rechts (zoals HomeWizard): daarover loopt de teruglevering het huis uit
+      const g2 = `M${cx} ${G + 0.5} V${G + 16} Q${cx} ${G + 30} ${cx + 14} ${G + 30} H${W}`;
+      this.$('mCb3').setAttribute('d', g2); this.$('mCf3').setAttribute('d', g2);
       const pp = ph.pipe; // regenpijp [x, y] in px van de tekening
       const sp = pp ? `M${(lx + pp[0] * sc).toFixed(1)} ${(top + pp[1] * sc).toFixed(1)} V${G + 14} H${cx - 14} Q${cx} ${G + 14} ${cx} ${G}` : '';
       this.$('mCb2').setAttribute('d', sp); this.$('mCf2').setAttribute('d', sp);
@@ -1308,8 +1312,9 @@ class ZonnepanelenCard extends HTMLElement {
       pv0.hidden = !pb; if (pb) Object.assign(pv0.style, { left: `${lx + pb[0] * sc}px`, top: `${top + pb[1] * sc}px`, width: `${pb[2] * sc}px`, height: `${pb[3] * sc}px` });
     }
     const exp = grid != null && grid < -5, imp = grid != null && grid > 5, sunOn = pv > 5;
-    const f1 = this.$('mCf1'), f2 = this.$('mCf2');
-    f1.setAttribute('class', `cf${imp ? ' in' : exp ? ' out' : ''}`); f1.style.animationDuration = speed(Math.abs(grid || 0));
+    const f1 = this.$('mCf1'), f2 = this.$('mCf2'), f3 = this.$('mCf3');
+    f1.setAttribute('class', `cf${imp ? ' in' : ''}`); f1.style.animationDuration = speed(Math.abs(grid || 0));
+    f3.setAttribute('class', `cf${exp ? ' in exp' : ''}`); f3.style.animationDuration = speed(Math.abs(grid || 0));
     f2.setAttribute('class', `cf sol${sunOn && ph.pipe ? ' in' : ''}`); f2.style.animationDuration = speed(pv || 0);
     this.$('mPv').classList.toggle('on', sunOn);
   }
@@ -1803,7 +1808,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '277';
+const CARD_VERSION = '278';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
