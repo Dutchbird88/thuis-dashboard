@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v293**.*
+*Bijgewerkt: 7 november 2026, versie **v294**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v293** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v294** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v293.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v294.
 
 ## Gerealiseerde functies (per tab)
 
@@ -164,6 +164,7 @@
 | v291 | Scène op Nu: kWh-waarden bij Opwek en Zelfvoorzienend dichter onder het label (iets hoger, meer ruimte boven het dak). |
 | v292 | Oven: "koelt af" alleen nog boven 70° (was 50°); "koel rond" rekent ook tot 70°. |
 | v293 | Nu (telefoon): grafiek Vandaag stopt 's avonds bij het einde van de opwek en heeft een strakkere schaal; dagtotaal naast "Vandaag"; in Opbrengst is alleen vandaag (of de aangetikte staaf) fel groen. |
+| v294 | Opbrengst (telefoon): Maand loopt van de 1e tot en met de laatste dag van de maand en Week van maandag tot en met zondag (dagen die nog komen leeg), in plaats van de laatste 30/7 dagen. |
 
 ## Volgende stappen
 

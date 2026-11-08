@@ -1762,7 +1762,11 @@ class ZonnepanelenCard extends HTMLElement {
     if (!W) return;
     const H = 220, pad = { l: 34, r: 6, t: 12, b: 26 };
     const rng = window.matchMedia('(max-width: 600px)').matches ? this._rng || 'week' : 'maand';
-    const days = rng === 'week' ? this._dayValues().slice(-7) : rng === 'jaar' ? this._monthValues() : this._dayValues();
+    // v294 (telefoon): Week = maandag t/m zondag van deze week, Maand = de 1e t/m de laatste dag van deze maand (dagen die nog komen leeg)
+    const cal = (from, to) => { const m = new Map(this._dayValues().map((d) => [d.t, d.v])), out = []; for (let t = from; t <= to; t = dayAdd(t, 1)) out.push({ t, v: m.get(t) ?? 0, fut: t > startOfDay(Date.now()) }); return out; };
+    const d0 = new Date(startOfDay(Date.now())), mon = dayAdd(d0.getTime(), -((d0.getDay() + 6) % 7));
+    const days = rng === 'jaar' ? this._monthValues() : !phone ? this._dayValues()
+      : rng === 'week' ? cal(mon, dayAdd(mon, 6)) : cal(new Date(d0.getFullYear(), d0.getMonth(), 1).getTime(), new Date(d0.getFullYear(), d0.getMonth() + 1, 0).getTime());
     if (!days.length) { el.innerHTML = ''; return; }
     const N = days.length;
     const top = Math.max(2, ...days.map((d) => d.v)), st0 = (top * 1.08) / 4, e10 = 10 ** Math.floor(Math.log10(st0)), f10 = st0 / e10;
@@ -1770,7 +1774,8 @@ class ZonnepanelenCard extends HTMLElement {
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
     const band = iw / N, bw = Math.max(2, band * 0.64);
     const Y = (v) => pad.t + (1 - v / ymax) * ih;
-    const past = days.slice(0, -1).filter((d) => d.v > 0);
+    const tIdx = days.findIndex((d) => d.t === startOfDay(Date.now())), lastI = tIdx >= 0 ? tIdx : days.length - 1;
+    const past = days.slice(0, lastI).filter((d) => d.v > 0 && !d.fut);
     const avg = past.length ? past.reduce((s, d) => s + d.v, 0) / past.length : 0;
     const best = Math.max(...days.map((d) => d.v));
 
@@ -1784,15 +1789,15 @@ class ZonnepanelenCard extends HTMLElement {
     days.forEach((d, i) => {
       const x = pad.l + i * band + (band - bw) / 2;
       const h = Math.max(d.v > 0 ? 2 : 0, Y(0) - Y(d.v));
-      const isToday = i === N - 1;
+      const isToday = i === lastI;
       const fill = isToday ? 'url(#gbt)' : !phone && d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
       bars += `<rect class="bar" data-i="${i}" x="${x.toFixed(1)}" y="${(Y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, bw / 2)}" fill="${fill}"/>`;
       if (rng === 'week' && d.v > 0) bars += `<text class="ax bv" x="${(x + bw / 2).toFixed(1)}" y="${(Y(0) - h - 6).toFixed(1)}" text-anchor="middle">${fmt(d.v, 1)}</text>`;
-      if (rng === 'week' || (rng === 'jaar' && ((N - 1 - i) % 3 === 0)) || (rng === 'maand' && (N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5))) {
+      if (rng === 'week' || (rng === 'jaar' && ((N - 1 - i) % 3 === 0)) || (rng === 'maand' && (phone ? i % 7 === 0 : (N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5)))) {
         const lbl = rng === 'jaar' ? (isToday ? 'Nu' : new Date(d.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', ''))
           : rng === 'week' ? new Date(d.t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')
-          : isToday ? 'Vandaag' : new Date(d.t).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
-        bars += `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="${isToday && rng !== 'week' ? 'end' : 'middle'}">${lbl}</text>`;
+          : isToday && !phone ? 'Vandaag' : new Date(d.t).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+        bars += `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="${isToday && rng !== 'week' && !phone ? 'end' : 'middle'}">${lbl}</text>`;
       }
     });
     const avgLine = avg > 0 && !window.matchMedia('(max-width: 600px)').matches
@@ -1834,7 +1839,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '293';
+const CARD_VERSION = '294';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
