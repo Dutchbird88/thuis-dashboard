@@ -1101,8 +1101,8 @@ class ZonnepanelenCard extends HTMLElement {
     this.$('gknob').setAttribute('cx', (100 + 80 * Math.cos(a)).toFixed(2));
     this.$('gknob').setAttribute('cy', (100 + 80 * Math.sin(a)).toFixed(2));
 
-    // today / avg / best — opgewekt vandaag komt alleen van de ECU-teller (geen eigen schatting uit het vermogen)
-    const today = this._num(c.solar_today);
+    // today / avg / best — opgewekt vandaag van de ECU-teller; valt die 's avonds terug naar 0, dan uit het vermogen van vandaag (v282)
+    const today = this._todayKwh();
     const days = this._dayValues();
     const past = days.slice(0, -1).filter((d) => d.v > 0);
     const avg = past.length ? past.reduce((s, d) => s + d.v, 0) / past.length : null;
@@ -1590,15 +1590,23 @@ class ZonnepanelenCard extends HTMLElement {
       const d = new Date(day0);
       d.setDate(d.getDate() - i);
       const t = d.getTime();
-      out.push({ t, v: i === 0 ? (this._num(c.solar_today) ?? map.get(t) ?? 0) : (map.get(t) ?? 0) });
+      out.push({ t, v: i === 0 ? (this._todayKwh() ?? map.get(t) ?? 0) : (map.get(t) ?? 0) });
     }
     return out;
   }
 
+  // opgewekt vandaag: de ECU-teller, maar sommige omvormers zetten die na zonsondergang op 0 (of onbereikbaar);
+  // dan de opwek uit de 5-minutenmetingen van vandaag (vermogen × tijd)
+  _todayKwh() {
+    const t = this._num(this._config.solar_today), d0 = startOfDay(Date.now());
+    const calc = (this._todayPts || []).filter((p) => p.t >= d0).reduce((n, p) => n + (p.v || 0) * 300 / 3.6e6, 0);
+    if (t != null && (t >= calc * 0.6 || calc < 0.05)) return t;
+    return calc >= 0.05 ? Math.round(calc * 10) / 10 : t;
+  }
   // telefoon, grafiek Jaar: opbrengst per maand (12 maanden, de huidige maand tot nu)
   _monthValues() {
     if (!this._yearDays) { this._fetchYear(); return []; }
-    const now = new Date(), out = [], today = this._num(this._config.solar_today), day0 = startOfDay(Date.now());
+    const now = new Date(), out = [], today = this._todayKwh(), day0 = startOfDay(Date.now());
     for (let i = 11; i >= 0; i--) {
       const m0 = new Date(now.getFullYear(), now.getMonth() - i, 1).getTime(), m1 = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime();
       let v = this._yearDays.filter((d) => d.t >= m0 && d.t < m1 && d.t !== day0).reduce((s, d) => s + d.v, 0);
@@ -1815,7 +1823,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '281';
+const CARD_VERSION = '282';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
