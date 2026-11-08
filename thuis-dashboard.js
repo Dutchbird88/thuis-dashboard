@@ -558,12 +558,10 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mgnd { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #1b2236, var(--bg)); }
   .znu.scn .mcab { position: absolute; left: 0; top: 0; width: 100%; height: 530px; }
   .znu.scn .mcab .cb { fill: none; stroke: rgba(0,0,0,.4); stroke-width: 4; } .znu.scn .mcab #mCb2 { stroke: none; }
-  .znu.scn .mcab .cf { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 20 300; stroke-dashoffset: 20; opacity: 0; }
-  .znu.scn .mcab .cf.in, .znu.scn .mcab .cf.out { opacity: 1; animation: mflow 2s linear infinite; }
-  .znu.scn .mcab .cf.in { stroke: #c58aff; filter: drop-shadow(0 0 4px #b06cff); } .znu.scn .mcab .cf.out { stroke: #6fe39a; filter: drop-shadow(0 0 4px #4fd07f); animation-direction: reverse; }
+  .znu.scn .mcab .cf { fill: none; stroke-width: 4; stroke-linecap: round; opacity: 0; }
+  .znu.scn .mcab .cf.in { opacity: 1; stroke: #c58aff; filter: drop-shadow(0 0 4px #b06cff); }
   .znu.scn .mcab .cf.exp { stroke: #6fe39a; filter: drop-shadow(0 0 4px #4fd07f); }
   .znu.scn .mcab .cf.sol { stroke: #fff3c2; stroke-width: 4.5; filter: drop-shadow(0 0 3px #ffb020) drop-shadow(0 0 7px #ff9a00); }
-  @keyframes mflow { from { stroke-dashoffset: 20; } to { stroke-dashoffset: -100; } }
   .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
   .znu.scn .mpv.on::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent); mix-blend-mode: screen; animation: mshine 3.2s ease-in-out infinite; }
   @keyframes mshine { from { left: -50%; } to { left: 110%; } }
@@ -908,7 +906,7 @@ class ZonnepanelenCard extends HTMLElement {
       <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
         <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
-          <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cb" id="mCb2"/><path class="cf" id="mCf1" pathLength="100"/><path class="cf" id="mCf3" pathLength="100"/><path class="cf sol" id="mCf2" pathLength="100"/></svg>
+          <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cb" id="mCb2"/><path class="cf" id="mCf1"/><path class="cf" id="mCf3"/><path class="cf sol" id="mCf2"/></svg>
           <div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
         <div class="inner">
         ${headerHtml('nu')}
@@ -1313,9 +1311,17 @@ class ZonnepanelenCard extends HTMLElement {
     }
     const exp = grid != null && grid < -5, imp = grid != null && grid > 5, sunOn = pv > 5;
     const f1 = this.$('mCf1'), f2 = this.$('mCf2'), f3 = this.$('mCf3');
-    f1.setAttribute('class', `cf${imp ? ' in' : ''}`); f1.style.animationDuration = speed(Math.abs(grid || 0));
-    f3.setAttribute('class', `cf${exp ? ' in exp' : ''}`); f3.style.animationDuration = speed(Math.abs(grid || 0));
-    f2.setAttribute('class', `cf sol${sunOn && ph.pipe ? ' in' : ''}`); f2.style.animationDuration = speed(pv || 0);
+    // v280: bewegend streepje met de Web Animations API en de echte lengte van de lijn (Safari ondersteunt pathLength bij streepjes niet goed)
+    const flow = (p, on, cls, w) => {
+      p.setAttribute('class', `cf ${cls}${on ? ' in' : ''}`);
+      const L = on && p.getTotalLength ? p.getTotalLength() : 0, ms = Math.round(parseFloat(speed(w)) * 1000);
+      if (!on || !L) { p._an?.cancel(); p._an = null; p._L = 0; return; }
+      if (p._an && p._L === L) { if (Math.abs(p._ms - ms) > 150) { p._ms = ms; p._an.effect.updateTiming({ duration: ms * Math.max(1, L / 200) }); } return; }
+      p._an?.cancel(); p._L = L; p._ms = ms; const D = 26;
+      p.style.strokeDasharray = `${D} ${L + D}`;
+      p._an = p.animate?.([{ strokeDashoffset: D }, { strokeDashoffset: -L }], { duration: ms * Math.max(1, L / 200), iterations: Infinity });
+    };
+    flow(f1, imp, '', Math.abs(grid || 0)); flow(f3, exp, 'exp', Math.abs(grid || 0)); flow(f2, sunOn && !!ph.pipe, 'sol', pv || 0);
     this.$('mPv').classList.toggle('on', sunOn);
   }
   // afname en teruglevering van vandaag: statistieken van het net uit het Energie-dashboard (of grid_import / grid_export), elke 5 minuten
@@ -1808,7 +1814,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '279';
+const CARD_VERSION = '280';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
