@@ -565,10 +565,12 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
   .znu.scn .mpv.on::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent); mix-blend-mode: screen; animation: mshine 3.2s ease-in-out infinite; }
   @keyframes mshine { from { left: -50%; } to { left: 110%; } }
-  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 70px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
+  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 76px; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 12px; color: #fff; }
   .znu.scn .st small { display: block; font-size: 13px; font-weight: 500; opacity: .62; margin-bottom: 1px; }
   .znu.scn .st b { font-size: 24px; font-weight: 400; color: #fff; } .znu.scn .st b i { font-style: normal; font-size: 14px; margin-left: 4px; } .znu.scn .st b em { font-style: normal; font-size: 14px; margin-left: 8px; opacity: .9; }
-  .znu.scn .mtop .st { padding: 2px 12px 6px; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
+  .znu.scn .mtop .st { padding: 0 12px; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .l { text-align: right; } .znu.scn .mtop small { display: block; width: fit-content; } .znu.scn .mtop .l small { margin-left: auto; }
+  /* v287: hoekige wijslijntjes van het label naar het dak (zoals het voorbeeld van de gebruiker) */
+  .znu.scn .mld { position: absolute; border: 0 solid rgba(255,255,255,.32); border-top-width: 1px; border-right-width: 1px; pointer-events: none; } .znu.scn .mld.r { border-right-width: 0; border-left-width: 1px; } .znu.scn .mld[hidden] { display: none; }
   .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
   .znu.scn .grid { margin-top: 312px; } .znu.scn .tile.mhome { display: none !important; }
   .znu.scn .mscrow b.zero { opacity: .4; }
@@ -908,7 +910,7 @@ class ZonnepanelenCard extends HTMLElement {
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
         <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
           <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cf" id="mCf1"/><path class="cf" id="mCf3"/></svg>
-          <div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
+          <i class="mld" id="mLd1"></i><i class="mld r" id="mLd2"></i><div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
         <div class="inner">
         ${headerHtml('nu')}
 
@@ -1307,6 +1309,7 @@ class ZonnepanelenCard extends HTMLElement {
       // tweede tak naar rechts (zoals HomeWizard): daarover loopt de teruglevering het huis uit
       const g2 = `M${cx} ${G + 0.5} V${G + 16} Q${cx} ${G + 30} ${cx + 14} ${G + 30} H${W}`;
       this.$('mCb3').setAttribute('d', g2); this.$('mCf3').setAttribute('d', g2);
+      requestAnimationFrame(() => this._sceneLeaders(lx, top, sc, W));
       const pb = ph.panels_box, pv0 = this.$('mPv'); // zonnepanelen [x, y, b, h] in px van de tekening
       pv0.hidden = !pb; if (pb) Object.assign(pv0.style, { left: `${lx + pb[0] * sc}px`, top: `${top + pb[1] * sc}px`, width: `${pb[2] * sc}px`, height: `${pb[3] * sc}px` });
     }
@@ -1325,6 +1328,16 @@ class ZonnepanelenCard extends HTMLElement {
     const gnd = this.$('mGnd'); gnd.classList.toggle('imp', imp); gnd.classList.toggle('exp', exp);
     flow(f1, imp, '', Math.abs(grid || 0)); flow(f3, exp, 'exp', Math.abs(grid || 0));
     this.$('mPv').classList.toggle('on', sunOn);
+  }
+  // wijslijntjes: horizontaal vanaf het label (op halve hoogte) en dan omlaag tot het dak; zonder panels_box geen lijntjes
+  _sceneLeaders(lx, top, sc, W) {
+    const pb = this._config.photo.panels_box, box = this.$('mScn'), l1 = this.$('mLd1'), l2 = this.$('mLd2');
+    l1.hidden = l2.hidden = !pb; if (!pb) return;
+    const B = box.getBoundingClientRect(), a = box.querySelector('.mtop .r small').getBoundingClientRect(), b = box.querySelector('.mtop .l small').getBoundingClientRect();
+    const roofY = top + pb[1] * sc - 6, x1 = lx + (pb[0] + pb[2] * 0.62) * sc, x2 = W - (lx + (pb[0] + pb[2] * 0.62) * sc) + (W / 2 - (lx + (pb[0] + pb[2] / 2) * sc)) * 0;
+    const y1 = a.top - B.top + a.height / 2, y2 = b.top - B.top + b.height / 2;
+    Object.assign(l1.style, { left: `${a.right - B.left + 8}px`, top: `${y1}px`, width: `${Math.max(0, x1 - (a.right - B.left + 8))}px`, height: `${Math.max(0, roofY - y1)}px` });
+    Object.assign(l2.style, { left: `${x2}px`, top: `${y2}px`, width: `${Math.max(0, b.left - B.left - 8 - x2)}px`, height: `${Math.max(0, roofY + 22 - y2)}px` });
   }
   // afname en teruglevering van vandaag: statistieken van het net uit het Energie-dashboard (of grid_import / grid_export), elke 5 minuten
   async _fetchGridDay() {
@@ -1828,7 +1841,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '286';
+const CARD_VERSION = '287';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
