@@ -850,7 +850,7 @@ class ZonnepanelenCard extends HTMLElement {
     this._timer = setInterval(() => this._fetchStats(true), 5 * 60000);
   }
   disconnectedCallback() {
-    clearInterval(this._timer);
+    clearInterval(this._timer); setTimeout(() => chromeApply?.(), 0); // scène weg: balk weer in de kleur van de app (v279)
   }
 
   $(id) { return this.shadowRoot.getElementById(id); }
@@ -1281,13 +1281,13 @@ class ZonnepanelenCard extends HTMLElement {
     const fail = (this._scFail ||= new Set());
     const src = [phase === 'day' ? ph.image : phase === 'dusk' ? ph.dusk : ph.night, ph.night, ph.dusk, ph.image].find((x) => x && !fail.has(x)) || '';
     const img = this.$('mScImg'), box = this.$('mScn');
-    if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '456px'; this.$('mSky').style.background = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; return; }
+    if (!src) { img.style.display = 'none'; this.$('mGnd').style.top = '456px'; this.$('mSky').style.background = this._skyColor = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase]; chromeApply?.(); return; }
     if (img.dataset.src !== src) {
       img.dataset.src = src; img.style.visibility = 'hidden'; img.style.display = '';
       this.$('mSky').style.background = { day: '#4f9bef', dusk: '#5749aa', night: '#132548' }[phase];
       img.onerror = () => { fail.add(src); img.dataset.src = ''; this._updScene(pv, grid, today, speed); };
       img.onload = () => { // lucht boven de tekening in de kleur van de bovenrand
-        try { const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d'); x.drawImage(img, 4, 2, 1, 1, 0, 0, 1, 1); const [r, g, b] = x.getImageData(0, 0, 1, 1).data; this.$('mSky').style.background = `rgb(${r},${g},${b})`; } catch (er) { /* andere bron */ }
+        try { const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d'); x.drawImage(img, 4, 2, 1, 1, 0, 0, 1, 1); const [r, g, b] = x.getImageData(0, 0, 1, 1).data; this.$('mSky').style.background = `rgb(${r},${g},${b})`; this._skyColor = `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`; chromeApply?.(); } catch (er) { /* andere bron */ }
         img.style.visibility = ''; this._scW = 0; this._updScene(pv, grid, today, speed);
       };
       img.src = src; return;
@@ -1808,7 +1808,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '278';
+const CARD_VERSION = '279';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1821,7 +1821,10 @@ const CARD_VERSION = '278';
     try {
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
-      const bgRgb = BG === '#0a111d' ? 'rgb(10, 17, 29)' : 'rgb(246, 247, 251)';
+      // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
+      const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn'));
+      const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
+      const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
       let meta = document.querySelector('meta[name="theme-color"]');
       if (mq.matches) { // v266: weer zoals tot v262 — op de telefoon altijd direct donker (ook voordat een kaart verschijnt)
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
@@ -1829,7 +1832,8 @@ const CARD_VERSION = '278';
         VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
         if (root.style.backgroundColor !== bgRgb) root.style.backgroundColor = BG;
         if (document.body && document.body.style.backgroundColor !== bgRgb) document.body.style.backgroundColor = BG;
-      } else if (['#0a111d', '#f6f7fb'].includes(root.style.getPropertyValue('--app-header-background-color').trim())) {
+        BG = BG0;
+      } else if (root.style.getPropertyValue('--app-header-background-color').trim()) {
         VARS.forEach((v) => root.style.removeProperty(v)); root.style.backgroundColor = '';
         if (document.body) document.body.style.backgroundColor = '';
         if (meta?.dataset.thuisOld) meta.content = meta.dataset.thuisOld;

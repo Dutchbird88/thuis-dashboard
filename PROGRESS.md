@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v278**.*
+*Bijgewerkt: 7 november 2026, versie **v279**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v278** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v279** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v278.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v279.
 
 ## Gerealiseerde functies (per tab)
 
@@ -149,6 +149,7 @@
 | v276 | Telefoon, Nu: scène in de stijl van HomeWizard met eigen tekeningen voor dag, schemer en nacht (`photo.dusk`/`photo.night`), Opwek en Zelfvoorzienend in de lucht, Net en Teruglevering onder het huis, bewegende leiding (paars afname, groen terug), gele lijn langs de regenpijp en glans op de panelen bij opwek. Dagcijfers uit het Energie-dashboard. Zonder schemer-/nachttekening en op de computer ongewijzigd. |
 | v277 | Scène op Nu: ontbreekt een tekening, dan een andere tekening als reserve en anders alleen een lucht in de kleur van het tijdstip (geen kapot-plaatje-icoon). |
 | v278 | Scène op Nu: leiding als T zoals HomeWizard; afname paars van links het huis in, teruglevering groen van het huis naar rechts. |
+| v279 | Scène op Nu: de balk bovenin (achter klok en batterij) krijgt de kleur van de lucht; op de andere tabbladen weer de kleur van de app. |
 
 ## Volgende stappen
 
