@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v283**.*
+*Bijgewerkt: 7 november 2026, versie **v284**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v283** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v284** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v283.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v284.
 
 ## Gerealiseerde functies (per tab)
 
@@ -154,6 +154,7 @@
 | v281 | Scène op Nu: menu onderaan weer zichtbaar, compactere tekening, kleinere letters, live afname/teruglevering in watt, rustigere animatie die meeschaalt met het vermogen. |
 | v282 | Opgewekt vandaag: valt de ECU-teller na zonsondergang terug naar 0 (of is hij onbereikbaar), dan de opwek uit de 5-minutenmetingen van vandaag (`_todayKwh`). Geldt voor de meter, de scène, Week en Jaar. |
 | v283 | Scène op Nu (ontwerp C): huis hoger en compacter, dichter bij Opwek en Zelfvoorzienend; lichte gloed in de grond bij afname (paars) of teruglevering (groen). |
+| v284 | Scène op Nu (ontwerp B): lijnen stoppen boven het dak, 0 W grijs, alles iets hoger, maantje in de titel na zonsondergang, zachtere gloed in de grond. |
 
 ## Volgende stappen
 
