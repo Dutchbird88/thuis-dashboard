@@ -565,7 +565,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mpv { position: absolute; overflow: hidden; border-radius: 2px; } .znu.scn .mpv[hidden] { display: none; }
   .znu.scn .mpv.on::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent); mix-blend-mode: screen; animation: mshine 3.2s ease-in-out infinite; }
   @keyframes mshine { from { left: -50%; } to { left: 110%; } }
-  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 86px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
+  .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 78px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
   .znu.scn .st small { display: block; font-size: 13px; font-weight: 500; opacity: .62; margin-bottom: 1px; }
   .znu.scn .st b { font-size: 24px; font-weight: 400; color: #fff; } .znu.scn .st b i { font-style: normal; font-size: 14px; margin-left: 4px; } .znu.scn .st b em { font-style: normal; font-size: 14px; margin-left: 8px; opacity: .9; }
   .znu.scn .mtop .st { padding: 2px 12px 0; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
@@ -1828,7 +1828,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '288';
+const CARD_VERSION = '289';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
