@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v280**.*
+*Bijgewerkt: 7 november 2026, versie **v281**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v280** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v281** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v280.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v281.
 
 ## Gerealiseerde functies (per tab)
 
@@ -151,6 +151,7 @@
 | v278 | Scène op Nu: leiding als T zoals HomeWizard; afname paars van links het huis in, teruglevering groen van het huis naar rechts. |
 | v279 | Scène op Nu: de balk bovenin (achter klok en batterij) krijgt de kleur van de lucht; op de andere tabbladen weer de kleur van de app. |
 | v280 | Scène op Nu: bewegende streepjes (afname, teruglevering, zon) via de Web Animations API, zodat ze ook op de iPhone lopen. |
+| v281 | Scène op Nu: menu onderaan weer zichtbaar, compactere tekening, kleinere letters, live afname/teruglevering in watt, rustigere animatie die meeschaalt met het vermogen. |
 
 ## Volgende stappen
 
