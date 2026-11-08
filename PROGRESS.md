@@ -1,10 +1,10 @@
 # PROGRESS.md — voortgang Thuis Dashboard
 
-*Bijgewerkt: 7 november 2026, versie **v290**.*
+*Bijgewerkt: 7 november 2026, versie **v291**.*
 
 ## Huidige stand
 
-- **De nieuwste versie is v290** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
+- **De nieuwste versie is v291** (telefoon: weer standaard donker; licht kan met `theme: licht` of `automatisch`). v214 is door de gebruiker getest en geïnstalleerd via HACS. Alle onderdelen werken en zijn door de gebruiker getest:
   - laden met pauzeren en hervatten;
   - weer;
   - afval;
@@ -12,7 +12,7 @@
   - meldingen;
   - de rustige telefoonstijl.
 - **Getest met Home Assistant 2026.11.0** (7 november 2026, door de gebruiker): alles werkt, ook na de overstap van HACS naar de Marketplace. De code gebruikt geen van de onderdelen die in 2026.11 uit de frontend zijn verwijderd.
-- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v290.
+- De code is nagelopen in v178: ESLint gaf 0 fouten, kamers worden één keer per update berekend en ongebruikte code is weg. `node --check` en lint zijn schoon bij v291.
 
 ## Gerealiseerde functies (per tab)
 
@@ -161,6 +161,7 @@
 | v288 | Scène op Nu: terug naar de opzet van vóór v287 (lijnen aan de binnenkant), Opwek en Zelfvoorzienend iets lager en dichter bij het dak. |
 | v289 | Scène op Nu: Opwek en Zelfvoorzienend 8 px hoger, zodat de lijnen net boven het dak stoppen. |
 | v290 | Kamers: een op Thuis weggeveegde apparaatkaart (bv. oven koelt af) verdween ook uit het kamervenster; nu niet meer. Kamerkaart: "59°" in plaats van "Nog 59°" bij een afkoelende oven. |
+| v291 | Scène op Nu: kWh-waarden bij Opwek en Zelfvoorzienend dichter onder het label (iets hoger, meer ruimte boven het dak). |
 
 ## Volgende stappen
 

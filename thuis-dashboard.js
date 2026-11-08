@@ -568,7 +568,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mtop { position: absolute; left: 0; right: 0; top: 78px; display: grid; grid-template-columns: 1fr 46px 1.25fr; padding: 0 12px; color: #fff; }
   .znu.scn .st small { display: block; font-size: 13px; font-weight: 500; opacity: .62; margin-bottom: 1px; }
   .znu.scn .st b { font-size: 24px; font-weight: 400; color: #fff; } .znu.scn .st b i { font-style: normal; font-size: 14px; margin-left: 4px; } .znu.scn .st b em { font-style: normal; font-size: 14px; margin-left: 8px; opacity: .9; }
-  .znu.scn .mtop .st { padding: 2px 12px 0; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
+  .znu.scn .mtop small { margin-bottom: -2px; } .znu.scn .mtop .st b { line-height: 1.05; } .znu.scn .mtop .st { padding: 2px 12px 0; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
   .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
   .znu.scn .grid { margin-top: 312px; } .znu.scn .tile.mhome { display: none !important; }
   .znu.scn .mscrow b.zero { opacity: .4; }
@@ -1828,7 +1828,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '290';
+const CARD_VERSION = '291';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
