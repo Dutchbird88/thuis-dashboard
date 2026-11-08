@@ -572,6 +572,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
   .znu.scn .grid { margin-top: 312px; } .znu.scn .tile.mhome { display: none !important; }
   .znu.scn .mscrow b.zero { opacity: .4; }
+  .znu .tday .ml .tdk { font-weight: 500; color: var(--muted); font-size: .8em; margin-left: 6px; }
   .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
 }
 @media (max-width: 600px) {
@@ -1662,7 +1663,8 @@ class ZonnepanelenCard extends HTMLElement {
       // telefoon: alleen het stuk van de dag met zon (een uur marge), en altijd tot nu
       t0 = day0 + Math.floor((on[0].t - day0) / HOUR - 1) * HOUR;
       const lastPv = pts.filter((p) => p.v > 1).map((p) => p.t).pop() || 0, lastFc = fcPts.filter((p) => p.v > 1).map((p) => p.e ?? p.t + HOUR / 2).pop() || 0;
-      t1 = day0 + Math.ceil((Math.max(lastPv, lastFc, now) - day0) / HOUR) * HOUR;
+      const sunUp = this._state(this._config.sun)?.state !== 'below_horizon' || live > 5; // v293: 's avonds stopt de grafiek bij het einde van de opwek
+      t1 = day0 + Math.ceil((Math.max(lastPv, lastFc, sunUp ? now : 0) - day0) / HOUR) * HOUR;
     } else if (on.length) {
       t0 = Math.min(t0, day0 + Math.floor((on[0].t - day0) / HOUR) * HOUR);
       t1 = Math.max(t1, day0 + Math.ceil((on[on.length - 1].t - day0) / HOUR) * HOUR);
@@ -1671,7 +1673,8 @@ class ZonnepanelenCard extends HTMLElement {
     t1 = Math.min(t1, dayAdd(day0, 1));
     const vis = pts.filter((p) => p.t >= t0 && p.t <= t1);
     const fcVis = fcPts.filter((p) => p.t >= t0 && p.t <= t1);
-    const ymax = niceMax(Math.max(200, ...vis.map((p) => p.v), ...fcVis.map((p) => p.v)));
+    const vmax = Math.max(200, ...vis.map((p) => p.v), ...fcVis.map((p) => p.v));
+    const ymax = phone ? 4 * ([50, 100, 125, 150, 200, 250, 300, 400, 500, 750, 1000, 1250, 1500].find((st) => 4 * st >= vmax) || Math.ceil(vmax / 2000) * 500) : niceMax(vmax);
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
     const X = (t) => pad.l + ((t - t0) / (t1 - t0)) * iw;
     const Y = (v) => pad.t + (1 - v / ymax) * ih;
@@ -1712,6 +1715,8 @@ class ZonnepanelenCard extends HTMLElement {
 
     const peak = pts.reduce((m, p) => (p.pk > (m?.pk ?? -1) ? p : m), null);
     const fcToday = this._forecast().today;
+    const tk = this._todayKwh(), lab = this.shadowRoot.querySelector('.tday .th .ml');
+    if (lab) { const h = `Vandaag${tk != null ? ` <b class="num tdk">${fmt(tk, 1)} kWh</b>` : ''}`; if (lab.innerHTML !== h) lab.innerHTML = h; }
     this.$('peak').innerHTML = (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
       + (fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
 
@@ -1751,6 +1756,7 @@ class ZonnepanelenCard extends HTMLElement {
   }
 
   _drawDays() {
+    const phone = window.matchMedia('(max-width: 600px)').matches;
     const el = this.$('chartDays');
     const W = el.clientWidth;
     if (!W) return;
@@ -1779,7 +1785,7 @@ class ZonnepanelenCard extends HTMLElement {
       const x = pad.l + i * band + (band - bw) / 2;
       const h = Math.max(d.v > 0 ? 2 : 0, Y(0) - Y(d.v));
       const isToday = i === N - 1;
-      const fill = isToday ? 'url(#gbt)' : d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
+      const fill = isToday ? 'url(#gbt)' : !phone && d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
       bars += `<rect class="bar" data-i="${i}" x="${x.toFixed(1)}" y="${(Y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, bw / 2)}" fill="${fill}"/>`;
       if (rng === 'week' && d.v > 0) bars += `<text class="ax bv" x="${(x + bw / 2).toFixed(1)}" y="${(Y(0) - h - 6).toFixed(1)}" text-anchor="middle">${fmt(d.v, 1)}</text>`;
       if (rng === 'week' || (rng === 'jaar' && ((N - 1 - i) % 3 === 0)) || (rng === 'maand' && (N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5))) {
@@ -1810,13 +1816,13 @@ class ZonnepanelenCard extends HTMLElement {
       const mx = e.clientX - svg.getBoundingClientRect().left;
       const i = clamp(Math.floor((mx - pad.l) / band), 0, N - 1);
       const d = days[i];
-      rects.forEach((r, j) => (r.style.opacity = j === i ? 1 : 0.45));
+      rects.forEach((r, j) => { r.style.opacity = j === i ? 1 : 0.45; if (phone) r.style.fill = j === i ? 'url(#gbt)' : 'rgba(144,238,144,.4)'; });
       tip.classList.add('on');
       tip.innerHTML = `<b>${fmt(d.v, 1)} kWh</b>${new Date(d.t).toLocaleDateString('nl-NL', rng === 'jaar' ? { month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'short' })}`;
       tip.style.left = `${clamp(pad.l + i * band + band / 2, 70, W - 70)}px`;
       tip.style.top = `${Y(d.v)}px`;
     };
-    svg.onmouseleave = () => { tip.classList.remove('on'); rects.forEach((r) => (r.style.opacity = '')); };
+    svg.onmouseleave = () => { tip.classList.remove('on'); rects.forEach((r) => { r.style.opacity = ''; r.style.fill = ''; }); };
   }
 }
 
@@ -1828,7 +1834,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '292';
+const CARD_VERSION = '293';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
