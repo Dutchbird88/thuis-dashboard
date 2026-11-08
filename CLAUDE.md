@@ -29,7 +29,7 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
   - Geen losse testscripts; antwoorden kort houden (gebruiker vindt het werk te traag, 7 november 2026).
   - Zo min mogelijk losse testscripts: wat vaker nodig is, gaat in `test/mock.html` en `test/test.js`.
   - Mockups blijven verplicht, maar eenvoudig en snel.
-- **Na publiceren:** noem het versienummer én het commitnummer (korte hash, bijvoorbeeld `v217 · c0ffee1`). De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
+- **Na publiceren:** noem het versienummer én het commitnummer (korte hash, bijvoorbeeld `v217 · c0ffee1`). **Eindig het bericht altijd met die release-info als laatste regel**, op zichzelf, bijvoorbeeld: `v287 · fe9b9d7` (afspraak 8 november 2026). De gebruiker werkt bij via HACS (opnieuw downloaden) en herlaadt de app. Ziet de gebruiker een oude versie, dan ligt dat aan de cache: download opnieuw in HACS en wis de frontend-cache of de app-cache.
 
 ## Privacy en veiligheid (strikt)
 
