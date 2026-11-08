@@ -1828,7 +1828,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '289';
+const CARD_VERSION = '290';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6708,7 +6708,7 @@ class ThuisCard extends HTMLElement {
       rm.apps.forEach((a) => {
         if (a.k === 'evc') { const on = a.box.classList.contains('evon'); l2.push(`<span class="ap" style="color:${on ? '#5ee1d0' : ''}"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</svg>${a.txt}${on ? ' · laadt' : ' · wacht'}</span>`); return; }
         const [ic, md, , nm] = AP[a.k] || AP.was, t = String(a.txt || '').trim();
-        const txt = /^\d/.test(t) ? `Nog ${t}` : t ? `${nm} ${t.charAt(0).toLowerCase()}${t.slice(1)}` : `${nm} bezig`;
+        const txt = /^\d/.test(t) && !/°/.test(t) ? `Nog ${t}` : t ? `${nm} ${t.charAt(0).toLowerCase()}${t.slice(1)}` : `${nm} bezig`;
         l2.push(`<span class="ap"><svg class="ri2" viewBox="0 0 100 100">${RIC.draw(ic, 'on', md)}</svg>${txt}</span>`); });
       // temperatuur klein in de statusregel
       if (rm.temp != null) l2.push(`<span class="tq">${MTHERM}${fmtT(rm.temp)}°</span>`);
@@ -6799,7 +6799,7 @@ class ThuisCard extends HTMLElement {
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
       + this._evSection(rm)
-      + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
+      + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className.replace(/\bgone\b/, '').trim()}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
     this._rmKey = html; B.innerHTML = html;
