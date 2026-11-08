@@ -535,8 +535,8 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   /* telefoon: tabkleuren — Thuis hemelsblauw, Kamers paars (Zon is al geel) */
   .xtabs button { flex-direction: column; justify-content: center; gap: 3px; padding: 7px 2px 6px; font-size: 11px; font-weight: 600; border-radius: 26px; }
   .xtabs button svg { width: 23px; height: 23px; }
-  /* v244: actief tabblad wit, de rest grijzer (geen kleur per tabblad) */
-  .xtabs button.on { color: #fff; } .xtabs button:not(.on) { color: rgba(235,240,248,.55); }
+  /* v244: actief tabblad wit, de rest grijzer; sinds v295 het actieve tabblad lichtblauw (de kleur van Thuis) */
+  .xtabs button.on { color: #7cb6ff; } .xtabs button:not(.on) { color: rgba(235,240,248,.55); }
   .wrap { padding: 20px 12px calc(92px + env(safe-area-inset-bottom, 0px) / 3); background: radial-gradient(520px 360px at 12% 240px, rgba(255,150,40,.10), transparent 70%), var(--bg); }
   .tile { padding: 16px; border-radius: 18px; }
   h1 { font-size: 26px; }
@@ -1839,7 +1839,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '294';
+const CARD_VERSION = '295';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
