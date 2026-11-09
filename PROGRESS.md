@@ -202,6 +202,7 @@
 | v329 | Wasmachinekaart (telefoon): tijdens het wassen stijgen kleine doorzichtige zeepbellen op aan de rechterkant (keuze A, niet bij pauze; uit bij "beweging beperken"). Icoon met animatie blijft. Testpagina: `was=1`, view `thuis-telefoon-was`. |
 | v330 | Zeepbellen alleen bij wassen en spoelen; niet bij centrifugeren, pompen, drogen, kreukbescherming of pauze. |
 | v331 | Apparaatkaart bij klaar (wasmachine, vaatwasser, oven; donker, telefoon) zacht groen: groene waas linksboven en dunne groene rand (keuze B). |
+| v332 | Eigen venster voor bewegingssensoren (telefoon, ontwerp A): tik op de pil Beweging in het kamervenster → groot icoon (geel bij beweging), temperatuur/lux/aantal vandaag, tijdbalk van vandaag en de laatste 6 bewegingen met duur. Sluiten gaat terug naar de kamer. Test: `venster-beweging`. |
 
 ## Volgende stappen
 

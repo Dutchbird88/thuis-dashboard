@@ -119,6 +119,7 @@ Verdere regels:
 
 - `_updRoomSheet` toont de sensoren als pillen bovenaan: Watersensor, Rookmelder (rook én CO, zoals Nest Protect), Beweging (met temperatuur), deur en raam.
   - Lux van de bewegingssensor: op de telefoon een eigen pil direct na Beweging ("340 lux" met Donker < 10, Schemerig < 100, Helder < 1000, anders Zonnig; maan of zon). Op de computer staat de lux nog in de bewegingspil.
+- v332 (telefoon): de pil Beweging heeft `data-mo` en opent venster `mo` (`_updMoSheet`, historie van vandaag via `_moHistory`, cache 1 min of tot de sensor verandert; stijl `.mos` in `HPSTYLE`) met `_roomBack`. Ontwerp A: groot icoon `motionS` (26 px onder de titel), chips temperatuur/lux/aantal, tijdbalk `.mostrip`, lijst van de laatste 6 bewegingen met duur.
 - Slimme stekkers verschijnen automatisch als pil: een switch met vermogensmeter, of met "plug", "stopcontact" of "grillplats" in de naam.
 - Camera-apparaten krijgen één pil met de laatste detectie. Die detecties tellen **niet** als bewegings- of rookmelder en geven geen alarm.
 - Apparaten die niets doen staan als "Stand-by" in een lijst.

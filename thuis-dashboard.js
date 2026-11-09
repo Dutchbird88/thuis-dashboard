@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '331';
+const CARD_VERSION = '332';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4268,6 +4268,18 @@ const HPI = {
 };
 const HPSTYLE = `
 
+/* v332: venster bewegingssensor */
+.mos { text-align: center; }
+.mos .mobig { width: 96px; height: 96px; margin: 26px auto 4px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,200,61,.10); box-shadow: 0 0 0 1px rgba(255,200,61,.22); }
+.mos .mobig.off { background: rgba(255,255,255,.05); box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
+.mos .mobig svg { width: 58px; height: 58px; }
+.mos .most { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 10px; } .mos .most span { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.mos .mochips { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; } .mos .mochips div { background: rgba(255,255,255,.05); border-radius: 12px; padding: 7px 11px; font-size: 12.5px; color: var(--muted); } .mos .mochips b { display: block; font-size: 15px; color: var(--text); }
+.mos .mostrip { height: 22px; border-radius: 7px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
+.mos .modh { font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; }
+.mos .molog { margin-top: 0; } .mos .molog div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13.5px; color: var(--text); text-align: left; } .mos .molog div:first-child { border-top: 0; }
+.mos .molog i { width: 9px; height: 9px; border-radius: 50%; background: #ffc83d; } .mos .molog span { color: var(--muted); font-variant-numeric: tabular-nums; } .mos .molog em { font-style: normal; font-size: 12.5px; }
+
 /* v329: zeepbellen op de wasmachinekaart tijdens het wassen (alleen telefoon) */
 .wbb { display: none; }
 @media (max-width: 600px) {
@@ -5224,6 +5236,45 @@ class ThuisCard extends HTMLElement {
     }).catch(() => { this._pcH = { ping, lc, t: Date.now(), busy: false, segs: [] }; if (this._sheet === 'pc') this._updPcSheet(); });
     return this._pcH.segs;
   }
+  // v332: venster van een bewegingssensor (telefoon, ontwerp A): groot icoon, temperatuur/lux/aantal, tijdbalk van vandaag en de laatste bewegingen
+  _moHistory(id) {
+    const now = Date.now(), H = this._moH, lc = this._state(id)?.last_changed;
+    if (H?.id === id && (H.busy || (H.lc === lc && now - H.t < 60000))) return H.segs;
+    this._moH = { id, lc, t: now, busy: true, segs: H?.id === id ? H.segs : null };
+    const from = startOfDay(now);
+    this._hass.callApi('GET', `history/period/${new Date(from).toISOString()}?filter_entity_id=${id}&minimal_response&no_attributes&end_time=${encodeURIComponent(new Date(now).toISOString())}`).then((r) => {
+      const L = (r?.[0] || []).map((x) => ({ t: Math.max(from, Date.parse(x.last_changed)), on: x.state === 'on' })).filter((x) => !isNaN(x.t)), segs = [];
+      L.forEach((x, i) => { if (x.on) segs.push([x.t, i + 1 < L.length ? L[i + 1].t : Date.now(), i + 1 >= L.length]); });
+      this._moH = { id, lc, t: Date.now(), busy: false, segs };
+      if (this._sheet === 'mo') this._updMoSheet();
+    }).catch(() => { this._moH = { id, lc, t: Date.now(), busy: false, segs: [] }; if (this._sheet === 'mo') this._updMoSheet(); });
+    return this._moH.segs;
+  }
+  _updMoSheet() {
+    const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
+    let sen = null, room = null; (this._rooms() || []).some((rm) => { const x = (rm.sensors || []).find((y) => y.id === id); if (x) { sen = x; room = rm.name; } return !!x; });
+    const on = st.state === 'on', segs = this._moHistory(id), now = Date.now(), d0 = startOfDay(now), len = DAY;
+    const du = (ms) => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? `${s} s` : `${Math.round(s / 60)} min`; };
+    const ago = (t) => { const m = Math.round((now - t) / 60000); return m < 1 ? 'zojuist' : m < 60 ? `${m} min geleden` : `${Math.floor(m / 60)} u geleden`; };
+    const lastEnd = (segs || []).filter((x) => !x[2]).slice(-1)[0]?.[1] || (on ? null : Date.parse(st.last_changed));
+    const set = (k, h) => { const el = this.$(k); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('moN', `Beweging${room ? ` · ${room}` : ''}`);
+    set('moS', on ? 'Beweging · nu' : `Geen beweging${lastEnd ? ` · laatst ${fmtTime(lastEnd)}` : ''}`);
+    const n = segs ? segs.length : null;
+    const chips = [sen?.tmp != null ? `<div><b>${fmt(sen.tmp, 1)}°</b>temperatuur</div>` : '', sen?.lux != null ? `<div><b>${fmt(sen.lux)} lux</b>${sen.lux < 10 ? 'donker' : sen.lux < 100 ? 'schemerig' : sen.lux < 1000 ? 'helder' : 'zonnig'}</div>` : '', n != null ? `<div><b>${n}×</b>vandaag</div>` : ''].join('');
+    const top = `<div class="mobig${on ? '' : ' off'}">${RIC.svg('motionS', on ? 'on' : 'off')}</div><div class="most">${on ? 'Beweging' : 'Geen beweging'}<span>${on ? 'nu' : lastEnd ? `laatst ${ago(lastEnd)} · ${fmtTime(lastEnd)}` : ''}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;
+    const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+    let hist;
+    if (!segs) hist = '<div class="pcard pnone">Laden…</div>';
+    else {
+      const bar = `<div class="pstrip mostrip">${segs.map(([a, b]) => `<i style="left:${((a - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (b - a) / len * 100).toFixed(2)}%"></i>`).join('')}</div>`;
+      const log = segs.slice(-6).reverse();
+      hist = `<div class="pcard"><div class="phh">Vandaag<b>${n ? `${n} keer beweging` : 'geen beweging'}</b></div>${bar}${ticks}</div>`
+        + (log.length ? `<div class="modh">Vandaag</div><div class="pcard molog">${log.map(([a, b, live]) => `<div><i></i>Beweging<span>${fmtTime(a)} <em>· ${live ? 'nu' : du(b - a)}</em></span></div>`).join('')}</div>` : '');
+    }
+    const html = top + hist;
+    if (box._k === html) return; box._k = html; box.innerHTML = html;
+  }
   _updPcSheet() {
     const w = this._wolList().find((x) => x.id === this._cvId), box = this.$('pcB'); if (!w || !box) return;
     const now = Date.now(), M = 60000, segs = w.ping ? this._pcHistory(w.ping) : null;
@@ -6084,7 +6135,7 @@ class ThuisCard extends HTMLElement {
     if (!this._mq?.matches) return;
     this._sheet = kind; this._shKey = null; this._cvId = id; this._thArc = null;
     const sh = this.$('sheet'), body = this.$('shBody');
-    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl', 'waste', 'pc'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
+    sh.classList.toggle('full', ['cv', 'lt', 'th', 'room', 'rh', 'ppl', 'waste', 'pc', 'mo'].includes(kind)); sh.classList.toggle('lamp', kind === 'lt'); sh.classList.toggle('therm', kind === 'th');
     const HB = '<button class="cvhb" id="cvHb" aria-label="Geschiedenis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></button>';
     if (kind === 'lt') {
       this._cvHist = false;
@@ -6193,6 +6244,10 @@ class ThuisCard extends HTMLElement {
       sl.addEventListener('pointerup', vEnd); sl.addEventListener('pointercancel', vEnd);
       sl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
       clearInterval(this._hpTimer); this._hpTimer = setInterval(() => { if (this._sheet === 'hp') this._updHpSheet(); else { clearInterval(this._hpTimer); this._hpTimer = null; } }, 1000);
+    } else if (kind === 'mo') {
+      this._cvHist = false;
+      body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="moN"></b><span id="moS"></span></div><div class="pcs mos" id="moB"></div>`;
+      this._updMoSheet();
     } else if (kind === 'pc') {
       this._cvHist = false;
       body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="pcN"></b><span id="pcS"></span></div><div class="pcs" id="pcB"></div>`;
@@ -6495,6 +6550,7 @@ class ThuisCard extends HTMLElement {
     if (this._sheet === 'room') { this._updRoomSheet(); return; }
     if (this._sheet === 'hp') { this._updHpSheet(); return; }
     if (this._sheet === 'pc') { this._updPcSheet(); return; }
+    if (this._sheet === 'mo') { this._updMoSheet(); return; }
     if (this._sheet === 'ppl') { this._updPplSheet(); return; }
     const sh = this.$('sheet');
     if (this._sheet === 'lt') {
@@ -6938,7 +6994,7 @@ class ThuisCard extends HTMLElement {
         ? `<div class="mp ksp" data-id="${x.luxId}"><i class="g">${RIC.svg(x.lux < 10 ? 'moon' : 'sun', 'on')}</i><div><b>${fmt(x.lux)} lux</b><span>${x.lux < 10 ? 'Donker' : x.lux < 100 ? 'Schemerig' : x.lux < 1000 ? 'Helder' : 'Zonnig'}</span></div></div>` : '';
       const extra = x.kind === 'motion' && !x.off ? [x.lux != null && !luxP ? `${fmt(x.lux)} lux` : '', x.tmp != null && rm.r.climate ? `${fmt(x.tmp, 1)}°` : ''].filter(Boolean).join(' · ') : '';
       const v2 = extra ? `${v} · ${extra}` : v;
-      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
+      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${x.kind === 'motion' && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span>${m.txt}</span></div></div>`; }).join('');
@@ -6963,6 +7019,7 @@ class ThuisCard extends HTMLElement {
     B.querySelectorAll('.evb button, .evseg button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (!b.disabled) this._evAct(b.dataset.a); }));
     B.querySelector('.evsec .was')?.addEventListener('click', () => { this._closeSheet?.(); go({ dataset: { nav: NAV.auto } }); });
     B.querySelectorAll('.kspills .mp[data-hp]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('hp', el.dataset.hp); this._roomBack = ri; }, true));
+    B.querySelectorAll('.kspills .mp[data-mo]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('mo', el.dataset.id); this._roomBack = ri; }, true)); // v332: eigen venster voor beweging
     B.querySelectorAll('.kspills .mp[data-wol]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._openSheet('pc', el.dataset.wol); this._roomBack = ri; }, true));
     B.querySelectorAll('.kspills .mp[data-plug]').forEach((el) => el.addEventListener('click', (e) => { e.stopImmediatePropagation(); this._hass.callService('switch', 'toggle', { entity_id: el.dataset.plug }); }, true));
     B.querySelectorAll('.klk.koff .lk').forEach((el) => el.addEventListener('click', (e) => { if (el.dataset.k && el.dataset.k !== 'evc') { e.stopImmediatePropagation(); this._appHistory(this._roomIdx, el.dataset.k); } }, true));

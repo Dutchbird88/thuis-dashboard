@@ -182,6 +182,8 @@ async function callWS(m) {
 }
 async function callApi(method, path) {
   // oven die afkoelt: 25 en 12 minuten geleden heter (voor de schatting "koel rond …")
+  // bewegingssensor: een paar keer beweging vandaag
+  if (path.startsWith('history/period') && path.includes('bewegingssensor')) { const d = new Date(Date.now()); d.setHours(0, 0, 0, 0); const o = []; [[7.2, .3], [7.9, .5], [8.4, .2], [11.1, .4], [11.6, .3], [12.2, .2]].forEach(([h, m]) => { o.push({ state: 'on', last_changed: at(+d + h * 36e5) }, { state: 'off', last_changed: at(+d + h * 36e5 + m * 6e4) }); }); return [o]; }
   if (path.startsWith('history/period') && path.includes('oven_huidige_temperatuur')) return [[{ state: '152', last_changed: at(Date.now() - 25 * 6e4) }, { state: '128', last_changed: at(Date.now() - 12 * 6e4) }]];
   // Ping-historie: computer gisteren en vanochtend aan (nu uit), server sinds 50 minuten aan
   if (path.startsWith('history/period') && path.includes('_ping')) {
