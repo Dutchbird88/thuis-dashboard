@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '318';
+const CARD_VERSION = '319';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1868,6 +1868,12 @@ const CARD_VERSION = '318';
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
         let chg = false; VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) { root.style.setProperty(v, BG); chg = true; } });
+        // v319: de balk bovenin is de (met Kiosk verborgen) kopbalk van HA zelf; HA zet zijn themakleuren op eigen elementen, dus daar ook de kleur zetten en de kopbalk zelf kleuren
+        try {
+          const ha = document.querySelector('home-assistant'), main = ha?.shadowRoot?.querySelector('home-assistant-main'), pl = main?.shadowRoot?.querySelector('ha-panel-lovelace'), hr = pl?.shadowRoot?.querySelector('hui-root');
+          [ha, main, pl, hr].forEach((el) => { if (el) VARS.forEach((v) => { if (el.style.getPropertyValue(v).trim() !== BG) el.style.setProperty(v, BG); }); });
+          const hs = hr?.shadowRoot; if (hs) hs.querySelectorAll('.header, app-header, .toolbar, ha-top-app-bar-fixed, ha-top-app-bar').forEach((el) => { if (el.style.backgroundColor !== bgRgb) el.style.backgroundColor = BG; });
+        } catch (e) { /* andere HA-opbouw */ }
         // v318: de HA-app (iOS/Android) leest de balkkleur pas opnieuw na een 'theme-update'-bericht van de frontend; dat sturen we zelf als de kleur verandert
         if (chg) { try { const m = { type: 'theme-update', id: 900000 + Math.floor(Math.random() * 99999) }; if (window.externalApp?.externalBus) window.externalApp.externalBus(JSON.stringify(m)); else window.webkit?.messageHandlers?.externalBus?.postMessage(m); } catch (e) { /* geen app */ } }
         // v314: lichte glas-pagina (Kamers): donkere tekst in de balk bovenin, zodat iOS er geen donkere waas over legt

@@ -189,6 +189,7 @@
 | v316 | Vaste strook achter de statusbalk op Kamers (v314) weer weg: die gaf een harde rand waar de inhoud onder verdween. |
 | v317 | Proef statusbalk Kamers: bij een lichte glas-pagina ook `color-scheme: light` (html en meta), zodat iOS een zwarte klok gebruikt en geen donkere waas achter de statusbalk legt. |
 | v318 | Statusbalk: na een kleurwissel stuurt het dashboard zelf een `theme-update` naar de HA-app (externalBus), zodat de app de nieuwe balkkleur overneemt (proef). |
+| v319 | Statusbalk met Kiosk: de balk bovenin is de verborgen kopbalk van HA. De kleur wordt nu ook gezet op `home-assistant`, `home-assistant-main`, `ha-panel-lovelace` en `hui-root`, en de kopbalk in `hui-root` krijgt zelf de achtergrondkleur. |
 
 ## Volgende stappen
 
