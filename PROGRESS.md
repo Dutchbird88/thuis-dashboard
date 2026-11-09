@@ -188,6 +188,7 @@
 | v315 | Statusbalk bij glas: Thuis en Kamers zetten de balk bij elke update opnieuw (hooguit elke 1,5 s), zoals de scène op Nu; hij bleef soms in de kleur van het vorige tabblad. |
 | v316 | Vaste strook achter de statusbalk op Kamers (v314) weer weg: die gaf een harde rand waar de inhoud onder verdween. |
 | v317 | Proef statusbalk Kamers: bij een lichte glas-pagina ook `color-scheme: light` (html en meta), zodat iOS een zwarte klok gebruikt en geen donkere waas achter de statusbalk legt. |
+| v318 | Statusbalk: na een kleurwissel stuurt het dashboard zelf een `theme-update` naar de HA-app (externalBus), zodat de app de nieuwe balkkleur overneemt (proef). |
 
 ## Volgende stappen
 
