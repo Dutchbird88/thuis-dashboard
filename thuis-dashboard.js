@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '322';
+const CARD_VERSION = '323';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4282,12 +4282,8 @@ const HPSTYLE = `
   :host(thuis-card[data-gl]) #notTile:not(.open) #notList { display: none; }
   :host(thuis-card[data-gl]) #notTile.open #notList { padding: 0 14px 10px; }
   /* thermostaat: thermometer linksboven, huisje rechtsboven, groot getal eronder, witte stepper */
-  :host(thuis-card[data-gl]) #mTh .mtop { display: grid !important; grid-template-columns: 1fr auto; align-items: start; }
-  :host(thuis-card[data-gl]) #mTh .mthi { display: block; grid-column: 1; grid-row: 1; color: #f08a2c; width: 26px; height: 26px; }
-  :host(thuis-card[data-gl]) #mTh .mthi svg { width: 26px; height: 26px; stroke: #f08a2c !important; fill: none !important; }
+  :host(thuis-card[data-gl]) #mTh .mbig { color: #101828 !important; } /* v323: indeling weer als het origineel (donker): groot getal linksboven, huisje rechts, geen thermometer */
   :host(thuis-card[data-gl]) #evc .xh b, :host(thuis-card[data-gl]) #evc .xk b { color: #101828 !important; } :host(thuis-card[data-gl]) #evc .xh span, :host(thuis-card[data-gl]) #evc .xk, :host(thuis-card[data-gl]) #evc .xr span { color: #3d4655 !important; }
-  :host(thuis-card[data-gl]) #mTh #mPre { grid-column: 2; grid-row: 1; }
-  :host(thuis-card[data-gl]) #mTh .mbig { grid-column: 1 / 3; grid-row: 2; color: #101828 !important; margin-top: 4px; }
   :host(thuis-card[data-gl]) .twrap .mstp.mstp { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0 !important; background: #fff !important; border-radius: 99px !important; overflow: hidden !important; box-shadow: 0 4px 14px -8px rgba(30,60,110,.45) !important; }
   :host(thuis-card[data-gl]) .twrap .mstp.mstp button { width: auto !important; height: 36px !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; color: #101828 !important; }
   :host(thuis-card[data-gl]) .twrap .mstp.mstp button + button { border-left: 1px solid #e3e7ee !important; }

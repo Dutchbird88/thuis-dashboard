@@ -193,6 +193,7 @@
 | v320 | Oorzaak grijze balk gevonden: iOS legt in de donkere modus van de iPhone een donkere waas achter de klok (met de iPhone op licht kleurt de balk mee). De proeven v317–v319 (color-scheme, theme-update, kleur op HA-elementen) weer weggehaald. |
 | v321 | Kamers (glas): de achtergrond begint bovenin exact in de balkkleur `#c6d9ee` (zonder blauwe vlek rechtsboven), zodat de balk naadloos in de pagina overloopt. |
 | v322 | Thema `glas` nu op alle tabbladen (standaard): Nu, Energie en Auto met lichte lucht en witte glastegels (`GLASS2`); groepen zonder eigen vlak (Vandaag op Energie); Nu-scène: grond onder het huis loopt over in licht, cijfers donker. Statusbalk wordt ook op Nu/Energie/Auto bij elke update gezet. Computer ongewijzigd. |
+| v323 | Thermostaattegel (glas) weer in de indeling van het origineel: groot getal linksboven, huisje rechts, status eronder, witte stepper; thermometer-icoon weg. Het ontwerp met icoonvlakken is afgewezen. |
 
 ## Volgende stappen
 
