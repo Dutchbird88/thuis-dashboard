@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '324';
+const CARD_VERSION = '325';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4254,6 +4254,12 @@ const HPI = {
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
 const HPSTYLE = `
+
+/* v325: pillen met glas-effect (donker, telefoon): dunne rand in de eigen kleur, glanslijn bovenin, verloop van licht naar donker */
+@media (max-width: 600px) {
+  :host(:not([data-th])) .mp.mp.mp:not(.alarm):not(.warn) { background: linear-gradient(180deg, #252c36 0%, #161d25 55%, #1e252e 100%) !important; border: 1px solid rgba(255,255,255,.07) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.13), inset 0 -1px 0 rgba(255,255,255,.03), 0 6px 16px -8px rgba(0,0,0,.7) !important; }
+  :host(:not([data-th])) .mp.mp.mp.hot:not(.alarm):not(.warn) { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 26%, #1b1f27) 0%, color-mix(in srgb, var(--c) 13%, #10141b) 55%, color-mix(in srgb, var(--c) 20%, #141820) 100%) !important; border: 1px solid color-mix(in srgb, var(--c) 11%, transparent) !important; box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c) 22%, rgba(255,255,255,.1)), inset 0 -1px 0 rgba(255,255,255,.04), 0 6px 16px -8px rgba(0,0,0,.7) !important; }
+}
 
 /* v310: thema 'glas' op Thuis — 1:1 naar het ontwerp: diepblauwe lucht bovenin, witte titel, witte glaskaarten, compacte meldingregel, thermometer */
 .nsum, .mthi { display: none; }

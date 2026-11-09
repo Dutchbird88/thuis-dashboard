@@ -195,6 +195,7 @@
 | v322 | Thema `glas` nu op alle tabbladen (standaard): Nu, Energie en Auto met lichte lucht en witte glastegels (`GLASS2`); groepen zonder eigen vlak (Vandaag op Energie); Nu-scène: grond onder het huis loopt over in licht, cijfers donker. Statusbalk wordt ook op Nu/Energie/Auto bij elke update gezet. Computer ongewijzigd. |
 | v323 | Thermostaattegel (glas) weer in de indeling van het origineel: groot getal linksboven, huisje rechts, status eronder, witte stepper; thermometer-icoon weg. Het ontwerp met icoonvlakken is afgewezen. |
 | v324 | Op verzoek voorlopig weer donker als standaard (`theme` leeg = donker, pixelgelijk aan v308). Het glas-thema blijft beschikbaar met `theme: glas` per kaart. |
+| v325 | Pillen (donker, telefoon, Thuis/Kamers/kamervenster) met glas-effect naar voorbeeld: subtiele rand in de eigen kleur, glanslijn bovenin, verloop licht→donker; uit = grijs glas. Alarm en waarschuwing ongewijzigd. |
 
 ## Volgende stappen
 
