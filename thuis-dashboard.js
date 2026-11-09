@@ -524,9 +524,6 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
 @media (max-width: 600px) {
   /* telefoon: iets lichtere achtergrond (computer blijft zoals hij is) */
   :host { --bg: #0a111d; }
-  /* v307: één centrale kaartkleur voor alle tabbladen en vensters: de kleur van de Rolluiken-chip (#192c49), subtiele rand */
-  :host(:not([data-th=l])) { --tile: #192c49; --tile2: #1c304f; --card: linear-gradient(180deg, var(--tile2), var(--tile)); --card-bd: rgba(150,180,240,.12); }
-  .tile { border-color: var(--card-bd); }
   /* telefoon: inhoud vervaagt onderaan achter de menubalk (vervagend glas) */
   .wrap::after { content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 130px; z-index: 29; pointer-events: none;
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); background: linear-gradient(180deg, rgba(10,17,29,0), rgba(10,17,29,.55));
@@ -1846,7 +1843,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '307';
+const CARD_VERSION = '308';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4236,10 +4233,8 @@ const HPSTYLE = `
 @media (min-width: 601px) { .lt.wol { display: none; } }
 @media (max-width: 600px) {
   /* v297: apparaatkaarten in dezelfde kleur, rand en gloedrand als de andere tegels (Thuis en kamervenster) */
-  .mstack > .was:not(.xchg):not(.pic), .was.run:not(.xchg), .was.done:not(.xchg), .was.ready:not(.xchg), .mstack > .was.was.was:not(.xchg):not(.pic), .sheet .mstack > .was.was.was:not(.xchg):not(.pic), #dish.was.was, #oven.was.was:not(.cool) { background: var(--card) !important; border: 1px solid var(--card-bd) !important; border-radius: 20px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
-  .kglass.koff { background: var(--card) !important; border: 1px solid var(--card-bd) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
-  /* v307: dezelfde basiskleur voor laadkaart, kamervenster en lijsten; statuskleuren (aan, laden in het venster, alarm, Picnic, oven koelt af) blijven */
-  :host(:not([data-th=l])) .was.xchg:not(.evon), :host(:not([data-th=l])) .mstack > .was.xchg.xchg:not(.sheet .was), :host(:not([data-th=l])) .sheet .kglass:not(.mth):not(.lit):not(.on), :host(:not([data-th=l])) .sheet .mstack > .was.was.was.was:not(.xchg):not(.pic):not(.cool), :host(:not([data-th=l])) .wsr, :host(:not([data-th=l])) .pc, :host(:not([data-th=l])) .evsec .evoff, :host(:not([data-th=l])) .kr:not(.lit), :host(:not([data-th=l])) .lt:not(.on), :host(:not([data-th=l])) .cv:not(.on) { background: var(--card) !important; border-color: var(--card-bd) !important; }
+  .mstack > .was:not(.xchg):not(.pic), .was.run:not(.xchg), .was.done:not(.xchg), .was.ready:not(.xchg), .mstack > .was.was.was:not(.xchg):not(.pic), .sheet .mstack > .was.was.was:not(.xchg):not(.pic), #dish.was.was, #oven.was.was:not(.cool) { background: linear-gradient(rgb(19,32,54), rgb(15,24,40)) !important; border: 1px solid rgba(110,150,240,.2) !important; border-radius: 20px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
+  .kglass.koff { background: linear-gradient(rgb(19,32,54), rgb(15,24,40)) !important; border: 1px solid rgba(110,150,240,.2) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
   /* v271: Wake on LAN-tegels tussen de lampen: aan = lichtgroen, wordt gewekt = blauw, uit = grijs */
   .lt.wol.on { --tk: color-mix(in srgb, var(--lc) 65%, #fff); } .lt.wol.on .ms { color: var(--tk) !important; }
   :host([data-th=l]) .lt.wol.on .ms { color: color-mix(in srgb, var(--lc) 70%, #000) !important; }
