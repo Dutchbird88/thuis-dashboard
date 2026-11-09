@@ -198,6 +198,7 @@
 | v325 | Pillen (donker, telefoon, Thuis/Kamers/kamervenster) met glas-effect naar voorbeeld: subtiele rand in de eigen kleur, glanslijn bovenin, verloop licht→donker; uit = grijs glas. Alarm en waarschuwing ongewijzigd. |
 | v326 | Pillen die uit staan doorschijnend (wit 3–7,5 %) in plaats van grijs, zodat actieve pillen beter opvallen (keuze A). |
 | v327 | Pillen: uit nog doorschijnender (wit 1–4,5 %, geen schaduw); pillen zonder eigen kleur (zoals Beweging bij beweging) kregen geen achtergrond en krijgen nu amber glas (`var(--c, #ffb547)`). |
+| v328 | Donker, telefoon, alle tabbladen (`TIDY`): maten gelijkgetrokken (hoek 20 px, binnenruimte 14/16 px, kolommen gelijk) en tegels met een zachte rand zonder blauwe gloed (keuze C). Statuskleuren (lampen aan, laden, alarm, Picnic, oven) houden hun gloed. |
 
 ## Volgende stappen
 

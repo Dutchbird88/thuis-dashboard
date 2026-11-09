@@ -907,7 +907,7 @@ class ZonnepanelenCard extends HTMLElement {
     const arc = 'M30.72 140 A80 80 0 1 1 169.28 140';
 
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${LIGHT}${GLASS2}</style>
+      <style>${STYLE}${LIGHT}${GLASS2}${TIDY}</style>
       ${GLOSSY}
       <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '327';
+const CARD_VERSION = '328';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1927,6 +1927,17 @@ const VDEFAULTS = {
 // Energie rekent in kWh, m³ en W: vraag de statistieken van HA in die eenheden op (ook als een meter Wh of liters geeft)
 const STAT_UNITS = { energy: 'kWh', volume: 'm³', power: 'W' };
 const toStatUnit = (v, u) => (v == null ? v : u === 'Wh' ? v / 1000 : u === 'MWh' ? v * 1000 : u === 'L' ? v / 1000 : u === 'kW' ? v * 1000 : v);
+// v328 (donker, telefoon, alle tabbladen): maten gelijk (hoek 20 px, binnenruimte 14/16 px, kolommen gelijk) en tegels met een zachte rand zonder gloed (keuze C); statuskleuren houden hun eigen gloed
+const TIDY = `
+@media (max-width: 600px) {
+  :host(:not([data-th])) .tile.tile:not(#bedTile):not(#agTile), :host(:not([data-th])) #camTile .cam { border-radius: 20px !important; }
+  :host(:not([data-th])) #notTile.tile.tile { padding: 14px 16px !important; }
+  :host(:not([data-th])) #mTh.tile.tile, :host(:not([data-th])) #mAf.tile.tile { padding: 14px 16px !important; }
+  :host(:not([data-th])) .lights.lights, :host(:not([data-th])) .covers.covers { gap: 12px !important; }
+  :host(:not([data-th])) .tile.tile:not(#camTile):not(#bedTile):not(#agTile):not(.photo), :host(:not([data-th])) .mt.mt, :host(:not([data-th])) .mstack > .was.was.was.was.was:not(.pic):not(.cool), :host(:not([data-th])) #oven.was.was.was.was:not(.cool), :host(:not([data-th])) #dish.was.was.was.was, :host(:not([data-th])) .kglass.koff.koff, :host(:not([data-th])) .lt.lt:not(.on), :host(:not([data-th])) .cv.cv:not(.on), :host(:not([data-th])) .kr.kr:not(.lit) { box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; border-color: rgba(130,170,255,.11) !important; }
+  :host(:not([data-th])) .vwrap .grid > .tile.s8.s8:first-child { box-shadow: none !important; border-color: transparent !important; }
+}
+`;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
 const GLASS2 = `
 @media (max-width: 600px) {
@@ -2082,7 +2093,7 @@ class VerbruikCard extends HTMLElement {
                 <div class="fc" id="fc${k}"></div>
               </div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}</style>
+      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}${TIDY}</style>
       ${GLOSSY}
       <div class="wrap vwrap"><div class="inner">
         ${headerHtml('verbruik')}
@@ -2829,7 +2840,7 @@ class AutoCard extends HTMLElement {
     const c = this._config, e = (d, k) => this._e(d, k);
     const tyre = (k, label) => `<div class="tyre" id="t_${k}" data-e="${e('sensor', 'bandenspanning_' + k)}"><b>—</b><div>${label}</div></div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${ASTYLE}${LIGHT}${GLASS2}</style>
+      <style>${STYLE}${ASTYLE}${LIGHT}${GLASS2}${TIDY}</style>
       <div class="wrap awrap"><div class="inner">
         ${headerHtml('auto')}
         <div class="grid">
@@ -4499,7 +4510,7 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}${TIDY}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
       <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
