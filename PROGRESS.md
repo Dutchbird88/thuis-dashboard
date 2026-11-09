@@ -172,6 +172,7 @@
 | v299 | Apparaatkaarten krijgen nu echt de tegelkleur, rand en gloedrand (de regel werd door de rustige telefoonstijl overschreven). Laad- en Picnic-kaart en de afkoelende oven houden hun eigen kleur. |
 | v300 | Apparaatkaarten: nog sterkere regel (ook op id en in het kamervenster), zodat de tegelkleur altijd wint. |
 | v301 | Nu: oranje bolletje in de paneelmelding blijft rond (niet meer platgedrukt). |
+| v302 | Nu (scène): de twee meters zijn weg; onder Opwek staat klein "nu 1,24 kW" in groen (alleen bij opwek). |
 
 ## Volgende stappen
 
