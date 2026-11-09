@@ -179,6 +179,7 @@
 | v306 | Statusbalk: luchtkleur van Nu alleen als de Nu-kaart echt zichtbaar is (HA houdt soms een verborgen tabblad aan); de scène zet de balk bij elke update opnieuw. |
 | v307 | Telefoon: één centrale kaartkleur (`--tile` #192c49 / `--tile2` #1c304f, `--card`, rand `--card-bd`), de kleur van de Rolluiken-chip, op alle tabbladen en in de vensters; statuskleuren blijven. Computer ongewijzigd. |
 | v308 | v307 teruggedraaid op verzoek: kaarten weer in de vorige kleur (de nieuwe blauwe kaartkleur maakte vooral de grafiektegels te blauw). Niet opnieuw voorstellen. |
+| v309 | Nieuw thema `glas` (ontwerp van de gebruiker, licht glas). Eerst Kamers 1:1: lichte lucht, witte glaskaarten (69 px, hoek 18), icoon in blauw vlak, crème kaart + oranje schakelaar + schuif met knop bij licht aan, "1 aan", rolluiktekst grijs, chips en tabbalk in glas. Standaard op Kamers (telefoon); `theme: donker` zet het terug. |
 
 ## Volgende stappen
 

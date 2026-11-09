@@ -679,10 +679,12 @@ const hideScrollbars = (el) => {
 };
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
-  if (cfg) { el._theme = String(cfg.theme || 'donker').toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
+  // v309: 'glas' (licht glas, ontwerp van de gebruiker) = licht thema + data-gl; voorlopig de standaard op Kamers
+  if (cfg) { el._theme = String(cfg.theme || (el.localName === 'kamers-card' ? 'glas' : 'donker')).toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
   THEME_CARDS.add(el);
-  const t = el._theme || 'donker', light = t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
+  const t = el._theme || 'donker', glass = t === 'glas' || t === 'glass', light = glass || t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
+  if (glass) el.setAttribute('data-gl', ''); else el.removeAttribute('data-gl');
   chromeApply?.();
 };
 try { window.matchMedia(LIGHT_Q).addEventListener('change', () => THEME_CARDS.forEach((c) => { if (!c.isConnected) THEME_CARDS.delete(c); else { applyTheme(c); c._updSheet?.(); } })); } catch (e) { /* oude browser */ }
@@ -1843,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '308';
+const CARD_VERSION = '309';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1857,6 +1859,7 @@ const CARD_VERSION = '308';
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
+      const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = '#c6d9ee'; // v309: glas: lucht bovenin
       const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
       const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
       const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
@@ -4229,6 +4232,37 @@ const HPI = {
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
 const HPSTYLE = `
+
+/* v309: thema 'glas' (telefoon) — Kamers 1:1 naar het ontwerp van de gebruiker: lichte lucht, witte glaskaarten, icoon in blauw vlak, crème bij licht aan */
+@media (max-width: 600px) {
+  :host([data-gl]) .wrap.wrap, :host([data-gl]) .twrap.twrap { background: radial-gradient(420px 260px at 85% 0%, rgba(140,185,235,.55), transparent 70%), linear-gradient(180deg, #c6d9ee 0px, #d6e5f6 90px, #e6f0fd 220px, #eff5ff 420px, #eef4fe 100%) !important; }
+  :host([data-gl]) h1 { color: #101828 !important; font-size: 30px !important; font-weight: 800 !important; }
+  :host([data-gl]) .twrap .mp.mp { background: rgba(236,243,252,.75) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(40,70,130,.35) !important; height: 48px; padding: 0 16px 0 12px !important; border-radius: 24px !important; }
+  :host([data-gl]) #kview .mp.mp.hot[style*='#ffc83d'], :host([data-gl]) .twrap .mp.mp.mp.hot[style*='#ffc83d'] { background: #f9f5e8 !important; }
+  :host([data-gl]) #kview .mp.mp.hot:not([style*='#ffc83d']), :host([data-gl]) .twrap .mp.mp.mp.hot:not([style*='#ffc83d']) { background: rgba(236,243,252,.75) !important; }
+  :host([data-gl]) .twrap .mp b { font-size: 13.5px !important; font-weight: 700 !important; color: #101828 !important; } :host([data-gl]) .twrap .mp span { font-size: 12.5px !important; color: #3d4655 !important; }
+  :host([data-gl]) .xtabs.xtabs { background: rgba(247,250,255,.9) !important; }
+  :host([data-gl]) .xtabs button.on.on.on { background: #e2edfd !important; box-shadow: none !important; color: #1a73f0 !important; }
+  :host([data-gl]) .twrap .kfh b { font-size: 19px !important; font-weight: 700 !important; color: #101828 !important; }
+  :host([data-gl]) .twrap .krs { gap: 11px !important; }
+  :host([data-gl]) .twrap .kr.kr { background: rgba(247,251,254,.92) !important; border: 1px solid rgba(255,255,255,.95) !important; box-shadow: 0 8px 22px -14px rgba(40,70,130,.3) !important; border-radius: 18px !important; height: 69px !important; padding: 0 16px 0 12px !important; gap: 14px !important; margin: 0 !important; }
+  :host([data-gl]) .twrap .kr.lit.lit { background: linear-gradient(180deg, #fcf9f1, #fbf5e8) !important; height: 89px !important; align-items: flex-start !important; padding-top: 11px !important; }
+  :host([data-gl]) .twrap .kr .ri.ri.ri { width: 51px !important; height: 46px !important; border-radius: 12px !important; background: linear-gradient(180deg, #eef5fd, #d8e5f4) !important; box-shadow: inset 0 1px 0 #fff, 0 2px 6px -3px rgba(40,70,130,.25) !important; }
+  :host([data-gl]) .twrap .kr.lit .ri.ri.ri { background: linear-gradient(180deg, #fdf6e6, #f8edd6) !important; }
+  :host([data-gl]) .twrap .kr .ri svg { width: 30px !important; height: 30px !important; }
+  :host([data-gl]) .twrap .kr:not(.lit) .ri svg [fill^="url"] { fill: #7d9bc2 !important; } :host([data-gl]) .twrap .kr:not(.lit) .ri svg [stroke="#fff"] { stroke-opacity: .35; }
+  :host([data-gl]) .twrap .kr .nm { font-size: 17.5px !important; font-weight: 700 !important; color: #101828 !important; }
+  :host([data-gl]) .twrap .kr .ln { font-size: 13px !important; color: #5d6574 !important; gap: 12px !important; }
+  :host([data-gl]) .twrap .kr .ln .y { color: #c97a00 !important; }
+  :host([data-gl]) .twrap .kr .ln .b, :host([data-gl]) .twrap .kr .ln .ap { color: #5d6574 !important; } :host([data-gl]) .twrap .kr .ln .b svg { filter: grayscale(1) brightness(.85); }
+  :host([data-gl]) .twrap .ksw.ksw { background: #d3dbe4 !important; width: 53px; height: 31px; } :host([data-gl]) .twrap .ksw.ksw::after { width: 27px; height: 27px; }
+  :host([data-gl]) .twrap .ksw.on.on { background: linear-gradient(90deg, #ffbe2e, #fd9b12) !important; } :host([data-gl]) .twrap .ksw.on::after { left: 24px; }
+  :host([data-gl]) .twrap .kr .ksl.ksl { left: 77px; right: 16px; bottom: 9px; height: 18px; }
+  :host([data-gl]) .twrap .kr .ksl::before { left: 0; right: 0; bottom: 6px; height: 5px; border-radius: 3px; background: #e4e8ee !important; }
+  :host([data-gl]) .twrap .kr .ksl i { bottom: 6px; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #ffbe2e, #fd9b12) !important; }
+  :host([data-gl]) .twrap .kr .ksl b { display: block !important; position: absolute; bottom: 0; width: 17px; height: 17px; margin-left: -8px; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0,0,0,.22); }
+  :host([data-gl]) .twrap .kr .ksl.drag i, :host([data-gl]) .twrap .kr .ksl.drag::before { height: 7px; }
+}
 #hpc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
 @media (min-width: 601px) { .lt.wol { display: none; } }
 @media (max-width: 600px) {
@@ -6718,7 +6752,7 @@ class ThuisCard extends HTMLElement {
     if (this._kOpt) { rooms.forEach((rm) => { if (opt[rm.i] != null && (rm.on > 0) === opt[rm.i]) delete opt[rm.i]; }); if (!Object.keys(opt).length) this._kOpt = null; }
     const BL = (p) => mBlind(p), fmtT = (v) => fmt(v, 1);
     const row = (rm) => {
-      const lit = rm.lights.length && (opt[rm.i] ?? rm.on > 0), l1 = rm.lights.length ? (lit ? `<span class="y">${MBULB}${opt[rm.i] != null ? '' : rm.on}</span>` : `<span>${MBULB}Uit</span>`) : '';
+      const lit = rm.lights.length && (opt[rm.i] ?? rm.on > 0), l1 = rm.lights.length ? (lit ? `<span class="y">${MBULB}${opt[rm.i] != null ? '' : rm.on}${opt[rm.i] == null && this.hasAttribute('data-gl') && this._mq?.matches ? ' aan' : ''}</span>` : `<span>${MBULB}Uit</span>`) : '';
       const l2 = [];
       if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? (rm.apps.length && dn[0].pos > 1 && !dn[0].moving ? `${100 - dn[0].pos}%` : this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase())) : `${dn.length} dicht`}</span>` : `<span>${BL(100)}Open</span>`); }
       // apparaat: Rounded-icoon en wat er gebeurt ("Wast nog 42 min")
