@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '315';
+const CARD_VERSION = '316';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4277,8 +4277,6 @@ const HPSTYLE = `
 @media (max-width: 600px) {
   :host([data-gl]) .wrap.wrap, :host([data-gl]) .twrap.twrap { background: radial-gradient(420px 260px at 85% 0%, rgba(140,185,235,.55), transparent 70%), linear-gradient(180deg, #c6d9ee 0px, #d6e5f6 90px, #e6f0fd 220px, #eff5ff 420px, #eef4fe 100%) !important; }
   :host([data-gl]) h1 { color: #101828 !important; font-size: 30px !important; font-weight: 800 !important; }
-  /* v314: Kamers (licht): de lucht loopt door tot achter de statusbalk */
-  :host(kamers-card[data-gl]) .twrap::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: calc(env(safe-area-inset-top, 0px) + 2px); background: #c6d9ee; z-index: 40; pointer-events: none; }
   :host([data-gl]) .twrap .mp.mp { background: rgba(236,243,252,.75) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(40,70,130,.35) !important; height: 48px; padding: 0 16px 0 12px !important; border-radius: 24px !important; }
   :host([data-gl]) #kview .mp.mp.hot[style*='#ffc83d'], :host([data-gl]) .twrap .mp.mp.mp.hot[style*='#ffc83d'] { background: #f9f5e8 !important; }
   :host([data-gl]) #kview .mp.mp.hot:not([style*='#ffc83d']), :host([data-gl]) .twrap .mp.mp.mp.hot:not([style*='#ffc83d']) { background: rgba(236,243,252,.75) !important; }
