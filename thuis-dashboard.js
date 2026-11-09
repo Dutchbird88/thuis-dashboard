@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '314';
+const CARD_VERSION = '315';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4396,6 +4396,7 @@ class ThuisCard extends HTMLElement {
     if (this._hass) this._update();
   }
   set hass(hass) {
+    if (this.hasAttribute('data-gl') && Date.now() - (this._chT || 0) > 1500) { this._chT = Date.now(); chromeApply?.(); } // v315: balk bovenin bij elke update opnieuw (zoals de scène op Nu), anders bleef hij soms in de kleur van het vorige tabblad
     const first = !this._hass;
     this._hass = hass;
     this._update();
