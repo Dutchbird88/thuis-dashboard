@@ -22,7 +22,7 @@ const KLOK = '2026-11-05T12:30:00+01:00'; // vaste tijd, zodat screenshots gelij
 const VIEWS = [
   ['thuis-telefoon', 'card=thuis&wt=pmd1', 390], ['thuis-computer', 'card=thuis&wt=pmd1', 1280],
   ['thuis-telefoon-muziek', 'card=thuis&hp=playing&art=1', 390], ['thuis-telefoon-alarm', 'card=thuis&alarm=water', 390],
-  ['thuis-telefoon-was', 'card=thuis&was=1', 390], ['thuis-telefoon-oven', 'card=thuis&oven=koel&tok=1', 390], ['thuis-computer-oven', 'card=thuis&oven=koel&tok=1', 1280],
+  ['thuis-telefoon-was', 'card=thuis&was=1', 390], ['thuis-telefoon-vaat', 'card=thuis&vaat=1', 390], ['thuis-telefoon-oven', 'card=thuis&oven=koel&tok=1', 390], ['thuis-computer-oven', 'card=thuis&oven=koel&tok=1', 1280],
   ['thuis-telefoon-wol', 'card=thuis&wol=1', 390], ['thuis-computer-wol', 'card=thuis&wol=1', 1280],
   ['kamers-telefoon', 'card=kamers', 390], ['kamers-computer', 'card=kamers', 1280],
   ['nu-telefoon', 'card=nu', 390], ['nu-computer', 'card=nu', 1280],

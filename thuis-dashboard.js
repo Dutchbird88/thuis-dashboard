@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '335';
+const CARD_VERSION = '336';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4270,6 +4270,17 @@ const HPI = {
 };
 const HPSTYLE = `
 
+/* v336: stoom op de vaatwasserkaart tijdens het afwassen (alleen telefoon) */
+.wst { display: none; }
+@media (max-width: 600px) {
+  .was.steam { position: relative; overflow: hidden; }
+  .was.steam > :not(.wst) { position: relative; z-index: 1; }
+  .was.steam .wst { display: block; position: absolute; top: 0; bottom: 0; left: 40%; right: 0; pointer-events: none; }
+  .was.steam .wst i { position: absolute; bottom: -30px; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, rgba(200,225,255,.20), rgba(200,225,255,.06) 50%, transparent 70%); filter: blur(5px); animation: wsteam linear infinite; }
+  @keyframes wsteam { 0% { transform: translate(0,0) scale(.6); opacity: 0; } 20% { opacity: 1; } 60% { transform: translate(10px,-70px) scale(1.2); } 100% { transform: translate(-8px,-140px) scale(1.7); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .was.steam .wst { display: none; } }
+}
+
 /* v332: venster bewegingssensor */
 .mos { text-align: center; }
 .mos .mobig { width: 96px; height: 96px; margin: 26px auto 4px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,200,61,.10); box-shadow: 0 0 0 1px rgba(255,200,61,.22); }
@@ -5491,7 +5502,9 @@ class ThuisCard extends HTMLElement {
       if (ds === 'run' || ds === 'delayedstart') { if (done) save(done = null); }
       else if (ds === 'finished' && !done) save(done = { at: Date.now(), end: de || fmtTime(Date.now()) });
       if (done && (door?.state === 'open' || (door && Date.parse(door.last_changed) > done.at) || Date.now() - done.at > 12 * HOUR)) save(done = null);
-      if (ds === 'run') put(dBox, 'dish run', block(dishSvg(true), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Bezig', `${dp}${dpct != null ? ` · ${fmt(dpct)}%` : ''}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0, chips));
+      // v336: zachte stoomwolkjes achter de kaart tijdens het afwassen (telefoon, keuze A); vaste posities zodat de kaart niet steeds opnieuw wordt opgebouwd
+      const steam = `<div class="wst">${[[6, 6.4, 0.6], [26, 7.6, 3.3], [46, 5.8, 1.9], [66, 7.0, 4.8], [84, 6.6, 2.7]].map(([x, d, l]) => `<i style="left:${x}%;animation-duration:${d}s;animation-delay:-${l}s"></i>`).join('')}</div>`;
+      if (ds === 'run') put(dBox, 'dish run steam', steam + block(dishSvg(true), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Bezig', `${dp}${dpct != null ? ` · ${fmt(dpct)}%` : ''}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0, chips));
       else if (ds === 'delayedstart') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', 'Gepland', 'Uitgesteld', `${dp}<br>${de ? `klaar ${de}` : ''}`, null, chips));
       else if (ds === 'pause') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Gepauzeerd', `${dp}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0));
       else if (done) put(dBox, 'done', block(dishSvg(false), 'Vaat is klaar', done.end, 'Klaar', 'deur nog dicht —<br>laat de stoom eruit', 100));

@@ -206,6 +206,7 @@
 | v333 | Bewegingsvenster: klokje (geschiedenis 7 dagen: per dag tijdbalk en periodes met beweging, tussenpozen < 3 min samengevoegd) en schuiven over de tijdbalk toont het tijdstip en de dichtstbijzijnde beweging (witte lijn, label rechtsboven). Test: `venster-beweging-historie`. |
 | v334 | Bewegingsvenster: tijdbalk hoger (34 px, in de geschiedenis 24 px), makkelijker om over te schuiven. |
 | v335 | Uitgeschakelde kamers, lampen en rolluiken (donker, telefoon, overal) ~10% lichter (4% wit door de tegelkleur), voor meer contrast. |
+| v336 | Vaatwasserkaart (telefoon): tijdens het afwassen stijgen zachte stoomwolkjes op aan de rechterkant (keuze A; niet bij pauze of gepland, uit bij "beweging beperken"). Testpagina `vaat=1`, view `thuis-telefoon-vaat`. |
 
 ## Volgende stappen
 

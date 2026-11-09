@@ -17,6 +17,7 @@
 //   pv=1240                             opwek in W op het tabblad Nu
 //   alarm=water|rook                    een alarm op Thuis
 //   lx=340                              lux van de bewegingssensor
+//   vaat=1                              vaatwasser bezig (stoom)
 //   was=1                               wasmachine bezig (zeepbellen)
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
 //   scn=1 [&scnsrc=/test/out/] [&sun=-3]  Nu: scène met tekeningen voor dag/schemer/nacht (zonnehoogte in graden)
@@ -89,6 +90,8 @@ if (q.get('dup')) {
 }
 
 // oven (Home Connect): oven=koel (uit, nog 109°) of oven=aan
+// vaatwasser: vaat=1 (bezig, met stoom op de telefoon)
+if (q.get('vaat')) { ent('sensor.vaatwasser_status', 'run', {}, { name: 'Vaatwasser' }); ent('sensor.vaatwasser_programmavoortgang', 7, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_resterende_programmaduur', new Date(Date.now() + 88 * 6e4).toISOString(), {}, {}); }
 // wasmachine: was=1 (wast, met zeepbellen op de telefoon)
 if (q.get('was')) { ent('sensor.wasmachine', 'in_use', {}, { name: 'Wasmachine' }); ent('sensor.wasmachine_programmafase', 'main_wash', {}, {}); ent('sensor.wasmachine_resterende_tijd', 39, {}, {}); ent('sensor.wasmachine_verstreken_tijd', 10, {}, {}); ent('sensor.wasmachine_temperatuur', 40, {}, {}); }
 if (q.get('oven')) { dev('d_ov', 'Oven', 'keuken', { model: 'Oven', manufacturer: 'Test' });
