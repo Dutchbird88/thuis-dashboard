@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '329';
+const CARD_VERSION = '330';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5697,9 +5697,10 @@ class ThuisCard extends HTMLElement {
     if (['in_use', 'pause', 'rinse_hold'].includes(status)) {
       const pct = left != null && done != null && left + done > 0 ? done / (left + done) * 100 : 0;
       const ph = status === 'pause' ? 'Gepauzeerd' : WPHASE[phase] || 'Bezig';
-      cls = status === 'pause' ? 'run' : 'run wash';
+      const bubOn = status !== 'pause' && phase !== 'spin' && !/drain|drying|droog|cool|anti_crease|kreuk|finish|steam/.test(String(phase || '')); // v330: bellen alleen bij wassen en spoelen, niet bij centrifugeren of pauze
+      cls = bubOn ? 'run wash' : 'run';
       // v329: zeepbellen achter de kaart tijdens het wassen (telefoon, keuze A: klein en rustig, rechts); vaste posities, zodat de kaart niet steeds opnieuw wordt opgebouwd
-      const bub = status === 'pause' ? '' : `<div class="wbb">${[[8, 9, 6.2, 0.4], [22, 6, 7.8, 3.1], [35, 12, 5.6, 1.7], [50, 7, 8.4, 5.2], [63, 10, 6.8, 2.6], [76, 8, 7.2, 4.4], [88, 13, 6, 0.9]].map(([x, z, d, l]) => `<i style="left:${x}%;width:${z}px;height:${z}px;animation-duration:${d}s;animation-delay:-${l}s"></i>`).join('')}</div>`;
+      const bub = !bubOn ? '' : `<div class="wbb">${[[8, 9, 6.2, 0.4], [22, 6, 7.8, 3.1], [35, 12, 5.6, 1.7], [50, 7, 8.4, 5.2], [63, 10, 6.8, 2.6], [76, 8, 7.2, 4.4], [88, 13, 6, 0.9]].map(([x, z, d, l]) => `<i style="left:${x}%;width:${z}px;height:${z}px;animation-duration:${d}s;animation-delay:-${l}s"></i>`).join('')}</div>`;
       html = `${bub}<div class="r">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div class="t"><b>Wasmachine</b><span class="tm" style="color:#fff">${left != null ? dur(left) : '—'}</span></div>
         <div class="rt"><b>${ph}</b>${sub ? `${sub}<br>` : ''}${end ? `klaar ${end}` : ''}</div></div><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div>`;
     } else if (['programmed', 'waiting_to_start'].includes(status)) {

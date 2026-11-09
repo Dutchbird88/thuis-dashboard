@@ -200,6 +200,7 @@
 | v327 | Pillen: uit nog doorschijnender (wit 1–4,5 %, geen schaduw); pillen zonder eigen kleur (zoals Beweging bij beweging) kregen geen achtergrond en krijgen nu amber glas (`var(--c, #ffb547)`). |
 | v328 | Donker, telefoon, alle tabbladen (`TIDY`): maten gelijkgetrokken (hoek 20 px, binnenruimte 14/16 px, kolommen gelijk) en tegels met een zachte rand zonder blauwe gloed (keuze C). Statuskleuren (lampen aan, laden, alarm, Picnic, oven) houden hun gloed. |
 | v329 | Wasmachinekaart (telefoon): tijdens het wassen stijgen kleine doorzichtige zeepbellen op aan de rechterkant (keuze A, niet bij pauze; uit bij "beweging beperken"). Icoon met animatie blijft. Testpagina: `was=1`, view `thuis-telefoon-was`. |
+| v330 | Zeepbellen alleen bij wassen en spoelen; niet bij centrifugeren, pompen, drogen, kreukbescherming of pauze. |
 
 ## Volgende stappen
 

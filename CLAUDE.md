@@ -128,7 +128,7 @@ Verdere regels:
 
 - `_updAppliances`, `_updWasher`, `_appOpen` en `_appHistory` (7 dagen geschiedenis).
 - Wasmachine (Miele) en vaatwasser/oven (Home Connect) met programma, fase en resterende tijd.
-- v329 (telefoon): tijdens het wassen (niet bij pauze) krijgt `#was` de klasse `wash` en een laag `.wbb` met 7 kleine zeepbellen rechts (vaste posities, CSS-animatie `wbub`, in `HPSTYLE`; uit bij `prefers-reduced-motion`). Testpagina `was=1`.
+- v329/v330 (telefoon): tijdens wassen en spoelen (niet bij pauze, centrifugeren, pompen, drogen, kreukbescherming of stomen) krijgt `#was` de klasse `wash` en een laag `.wbb` met 7 kleine zeepbellen rechts (vaste posities, CSS-animatie `wbub`, in `HPSTYLE`; uit bij `prefers-reduced-motion`). Testpagina `was=1`.
 - Magnetronstand: het actieve of geselecteerde programma `microwave_*` toont "Magnetron" met een eigen icoon en het vermogen.
 - Oven koelt af (uit, ≥ 70° sinds v292, daarvoor 50°), telefoon (v270, ontwerp C): compacte kaart in rustig oranje, "Oven koelt af" met "Uit · koel rond HH:MM" en rechts groot de temperatuur (`.ocs`/`.ocb`, op de computer verborgen; daar blijft de oude opmaak). De tijd komt uit `_ovCoolAt`: afkoelen volgens Newton met de kamertemperatuur (thermostaat, anders 20°) als omgeving, uit de metingen van 30 min (bij openen eenmalig aangevuld uit `history/period`). Te weinig gegevens: "Uit · nog warm". Rood en "Heet" zijn bewust weg: een warme oven is een waarschuwing, geen alarm.
 
