@@ -173,6 +173,7 @@
 | v300 | Apparaatkaarten: nog sterkere regel (ook op id en in het kamervenster), zodat de tegelkleur altijd wint. |
 | v301 | Nu: oranje bolletje in de paneelmelding blijft rond (niet meer platgedrukt). |
 | v302 | Nu (scène): de twee meters zijn weg; onder Opwek staat klein "nu 1,24 kW" in groen (alleen bij opwek). |
+| v303 | Nu: "nu …" strak onder de kWh (waarde als blok, vaste regelhoogte), "nu" wit, waarde groen. |
 
 ## Volgende stappen
 
