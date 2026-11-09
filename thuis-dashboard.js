@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '310';
+const CARD_VERSION = '311';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4242,7 +4242,8 @@ const HPSTYLE = `
   :host(thuis-card[data-gl]) .av .ring { background: var(--pc) !important; padding: 3px !important; box-shadow: 0 0 12px -3px var(--pc) !important; }
   :host(thuis-card[data-gl]) .av .face { border-color: #fff !important; }
   :host(thuis-card[data-gl]) .twrap .mp.mp.mp.mp, :host(thuis-card[data-gl]) .twrap .mp.mp.mp.mp.hot { background: rgba(240,245,252,.88) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(20,50,100,.45) !important; height: 51px; }
-  :host(thuis-card[data-gl]) .twrap .tile:not(#camTile):not(.mus), :host(thuis-card[data-gl]) .twrap .mstack > .was.was.was.was.was, :host(thuis-card[data-gl]) .twrap #oven.was.was.was.was:not(.cool), :host(thuis-card[data-gl]) .twrap #dish.was.was.was.was, :host(thuis-card[data-gl]) .twrap #evc.was.was.was, :host(thuis-card[data-gl]) .twrap .lt:not(.on), :host(thuis-card[data-gl]) .twrap .cv:not(.on) { background: rgba(250,252,255,.9) !important; border: 1px solid rgba(255,255,255,.95) !important; box-shadow: 0 8px 22px -14px rgba(30,60,110,.35) !important; border-radius: 20px !important; }
+  :host(thuis-card[data-gl]) .twrap .tile:not(#camTile):not(.mus):not(#bedTile):not(#agTile), :host(thuis-card[data-gl]) .twrap .mstack > .was.was.was.was.was, :host(thuis-card[data-gl]) .twrap #oven.was.was.was.was:not(.cool), :host(thuis-card[data-gl]) .twrap #dish.was.was.was.was, :host(thuis-card[data-gl]) .twrap #evc.was.was.was, :host(thuis-card[data-gl]) .twrap .lt:not(.on), :host(thuis-card[data-gl]) .twrap .cv:not(.on) { background: rgba(250,252,255,.9) !important; border: 1px solid rgba(255,255,255,.95) !important; box-shadow: 0 8px 22px -14px rgba(30,60,110,.35) !important; border-radius: 20px !important; }
+  :host(thuis-card[data-gl]) .twrap #bedTile.tile, :host(thuis-card[data-gl]) .twrap #agTile.tile { background: none !important; border: 0 !important; box-shadow: none !important; } /* v311: groepen zonder eigen vlak */
   :host(thuis-card[data-gl]) #camTile .cam, :host(thuis-card[data-gl]) #camTile { border-radius: 20px !important; }
   :host(thuis-card[data-gl]) .twrap .tile .label, :host(thuis-card[data-gl]) .twrap h2, :host(thuis-card[data-gl]) .twrap .sech { color: #101828 !important; }
   /* meldingen: één regel */

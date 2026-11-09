@@ -181,6 +181,7 @@
 | v308 | v307 teruggedraaid op verzoek: kaarten weer in de vorige kleur (de nieuwe blauwe kaartkleur maakte vooral de grafiektegels te blauw). Niet opnieuw voorstellen. |
 | v309 | Nieuw thema `glas` (ontwerp van de gebruiker, licht glas). Eerst Kamers 1:1: lichte lucht, witte glaskaarten (69 px, hoek 18), icoon in blauw vlak, crème kaart + oranje schakelaar + schuif met knop bij licht aan, "1 aan", rolluiktekst grijs, chips en tabbalk in glas. Standaard op Kamers (telefoon); `theme: donker` zet het terug. |
 | v310 | Thema `glas` ook op Thuis (standaard, telefoon), 1:1 naar het ontwerp: diepblauwe lucht bovenin met witte titel, gekleurde ringen om de profielfoto’s, witte glaschips en -kaarten, meldingen als één regel (bel, aantal, eerste melding, pijltje; tik klapt de lijst uit), thermometer linksboven in de thermostaattegel en een witte stepper. Statusbalk `#23466b`. |
+| v311 | Glas op Thuis: het blok Bediening (en Agenda) heeft geen eigen achtergrond meer; alleen de losse tegels zijn glas. |
 
 ## Volgende stappen
 
