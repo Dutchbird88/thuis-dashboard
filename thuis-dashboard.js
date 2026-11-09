@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '332';
+const CARD_VERSION = '333';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4276,7 +4276,10 @@ const HPSTYLE = `
 .mos .most { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 10px; } .mos .most span { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .mos .mochips { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; } .mos .mochips div { background: rgba(255,255,255,.05); border-radius: 12px; padding: 7px 11px; font-size: 12.5px; color: var(--muted); } .mos .mochips b { display: block; font-size: 15px; color: var(--text); }
 .mos .mostrip { height: 22px; border-radius: 7px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
-.mos .modh { font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; }
+.mos .modh { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; } .mos .modh span { font-weight: 500; }
+.mos .mostrip:not(.mostatic) { touch-action: none; cursor: pointer; } .mos .momk { display: none; position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; box-shadow: 0 0 6px rgba(255,255,255,.6); }
+.mos .mostrip { overflow: visible; } .mos .mohint { font-size: 11.5px; color: #6b7385; margin-top: 6px; text-align: center; }
+#hBody.mos .molog { margin-top: 10px; } #hBody.mos .mostrip { height: 14px; }
 .mos .molog { margin-top: 0; } .mos .molog div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13.5px; color: var(--text); text-align: left; } .mos .molog div:first-child { border-top: 0; }
 .mos .molog i { width: 9px; height: 9px; border-radius: 50%; background: #ffc83d; } .mos .molog span { color: var(--muted); font-variant-numeric: tabular-nums; } .mos .molog em { font-style: normal; font-size: 12.5px; }
 
@@ -4660,7 +4663,7 @@ class ThuisCard extends HTMLElement {
     let drag = null;
     const shReset = () => { shEl.style.transition = ''; shEl.style.transform = ''; shBg.style.transition = ''; shBg.style.opacity = ''; };
     shEl.addEventListener('touchstart', (e) => {
-      drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap, .hpsl')
+      drag = e.touches.length === 1 && shEl.scrollTop <= 0 && !e.target.closest?.('.cvsl, #thArc, .tqch, .pmap, .hpsl, .mostrip')
         ? { x: e.touches[0].clientX, y: e.touches[0].clientY, d: 0, on: false, v: 0, ly: e.touches[0].clientY, lt: e.timeStamp } : null;
     }, { passive: true });
     shEl.addEventListener('touchmove', (e) => {
@@ -5269,11 +5272,53 @@ class ThuisCard extends HTMLElement {
     else {
       const bar = `<div class="pstrip mostrip">${segs.map(([a, b]) => `<i style="left:${((a - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (b - a) / len * 100).toFixed(2)}%"></i>`).join('')}</div>`;
       const log = segs.slice(-6).reverse();
-      hist = `<div class="pcard"><div class="phh">Vandaag<b>${n ? `${n} keer beweging` : 'geen beweging'}</b></div>${bar}${ticks}</div>`
+      hist = `<div class="pcard"><div class="phh">Vandaag<b id="moTot">${n ? `${n} keer beweging` : 'geen beweging'}</b></div>${bar}${ticks}<div class="mohint">Schuif over de balk voor het tijdstip</div></div>`
         + (log.length ? `<div class="modh">Vandaag</div><div class="pcard molog">${log.map(([a, b, live]) => `<div><i></i>Beweging<span>${fmtTime(a)} <em>· ${live ? 'nu' : du(b - a)}</em></span></div>`).join('')}</div>` : '');
     }
     const html = top + hist;
+    if (this._moScrub) return; // niet opnieuw opbouwen tijdens het schuiven
     if (box._k === html) return; box._k = html; box.innerHTML = html;
+    // v333: over de tijdbalk schuiven (of tikken) toont het tijdstip en de dichtstbijzijnde beweging
+    const strip = box.querySelector('.mostrip'); if (!strip || !segs) return;
+    const mk = document.createElement('b'); mk.className = 'momk'; strip.appendChild(mk);
+    const tot = this.$('moTot'), def = tot?.textContent;
+    const show = (e) => {
+      const r0 = strip.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - r0.left) / r0.width)), t = d0 + f * len;
+      mk.style.left = `${(f * 100).toFixed(2)}%`; mk.style.display = 'block';
+      let best = null; for (const sg of segs) { const dd = t < sg[0] ? sg[0] - t : t > sg[1] ? t - sg[1] : 0; if (!best || dd < best.dd) best = { sg, dd }; }
+      const hit = best && best.dd <= 10 * 60000 ? best.sg : null;
+      if (tot) tot.textContent = hit ? `${fmtTime(hit[0])} · ${hit[2] ? 'nu' : du(hit[1] - hit[0])}` : `${fmtTime(t)} · geen beweging`;
+    };
+    const end = () => { this._moScrub = false; mk.style.display = 'none'; if (tot) tot.textContent = def; };
+    strip.addEventListener('pointerdown', (e) => { this._moScrub = true; strip.setPointerCapture?.(e.pointerId); show(e); });
+    strip.addEventListener('pointermove', (e) => { if (this._moScrub) show(e); });
+    strip.addEventListener('pointerup', () => setTimeout(end, 1800)); strip.addEventListener('pointercancel', end);
+    strip.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  }
+  // v333: geschiedenis van een bewegingssensor (7 dagen), per dag een tijdbalk en de periodes met beweging (tussenpozen < 3 min samengevoegd)
+  async _moLog() {
+    const id = this._cvId, body = this.$('shBody'); if (!id) return;
+    this._cvHist = true;
+    const room = this.$('moN')?.textContent || 'Beweging';
+    body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${room}</button></div>
+      <div class="hti"><b>Geschiedenis</b><span>Afgelopen 7 dagen</span></div><div id="hBody" class="mos"><div class="hnone">Laden…</div></div>`;
+    this.$('hBack').addEventListener('click', () => this._openSheet('mo', id));
+    const now = Date.now(), from = dayAdd(startOfDay(now), -6);
+    const hist = await this._hass.callApi('GET', `history/period/${new Date(from).toISOString()}?filter_entity_id=${id}&minimal_response&no_attributes&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []);
+    if (this._sheet !== 'mo' || !this._cvHist || this._cvId !== id) return;
+    const L = (Array.isArray(hist) && Array.isArray(hist[0]) ? hist[0] : []).map((x) => ({ t: Math.max(from, Date.parse(x.last_changed)), on: x.state === 'on' })).filter((x) => !isNaN(x.t)), segs = [];
+    L.forEach((x, i) => { if (x.on) segs.push([x.t, i + 1 < L.length ? L[i + 1].t : now, i + 1 >= L.length]); });
+    const du = (ms) => { const m = Math.round(ms / 60000); return ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : m < 60 ? `${m} min` : `${Math.floor(m / 60)} u ${m % 60} min`; };
+    const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+    let html = '';
+    for (let k = 0; k < 7; k++) {
+      const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1), len = d1 - d0, ds = segs.filter(([a, b]) => b > d0 && a < d1);
+      const dn = k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
+      const per = []; for (const [a, b, live] of ds) { const p = per[per.length - 1]; if (p && a - p.b < 3 * 60000) { p.b = b; p.n++; p.live = live; } else per.push({ a, b, n: 1, live }); }
+      html += `<div class="modh">${dn}<span>${ds.length ? `${ds.length}× beweging` : 'geen beweging'}</span></div><div class="pcard" style="margin-top:0"><div class="pstrip mostrip mostatic">${ds.map(([a, b]) => `<i style="left:${((Math.max(a, d0) - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (Math.min(b, d1) - Math.max(a, d0)) / len * 100).toFixed(2)}%"></i>`).join('')}</div>${ticks}`
+        + (per.length ? `<div class="molog">${per.slice().reverse().map((p) => `<div><i></i>${p.n > 1 ? `${p.n}× beweging` : 'Beweging'}<span>${fmtTime(p.a)}${p.n > 1 || p.b - p.a > 90000 ? `–${p.live ? 'nu' : fmtTime(p.b)}` : ''} <em>· ${p.live ? 'nu' : du(p.b - p.a)}</em></span></div>`).join('')}</div>` : '') + '</div>';
+    }
+    this.$('hBody').innerHTML = html;
   }
   _updPcSheet() {
     const w = this._wolList().find((x) => x.id === this._cvId), box = this.$('pcB'); if (!w || !box) return;
@@ -6246,7 +6291,9 @@ class ThuisCard extends HTMLElement {
       clearInterval(this._hpTimer); this._hpTimer = setInterval(() => { if (this._sheet === 'hp') this._updHpSheet(); else { clearInterval(this._hpTimer); this._hpTimer = null; } }, 1000);
     } else if (kind === 'mo') {
       this._cvHist = false;
-      body.innerHTML = `<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="moN"></b><span id="moS"></span></div><div class="pcs mos" id="moB"></div>`;
+      body.innerHTML = `${HB}<button class="shx cvx" aria-label="Sluiten">✕</button><div class="cvh"><b id="moN"></b><span id="moS"></span></div><div class="pcs mos" id="moB"></div>`;
+      this.$('cvHb').addEventListener('click', () => this._moLog());
+      this._moScrub = false;
       this._updMoSheet();
     } else if (kind === 'pc') {
       this._cvHist = false;
