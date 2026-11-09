@@ -180,6 +180,7 @@
 | v307 | Telefoon: één centrale kaartkleur (`--tile` #192c49 / `--tile2` #1c304f, `--card`, rand `--card-bd`), de kleur van de Rolluiken-chip, op alle tabbladen en in de vensters; statuskleuren blijven. Computer ongewijzigd. |
 | v308 | v307 teruggedraaid op verzoek: kaarten weer in de vorige kleur (de nieuwe blauwe kaartkleur maakte vooral de grafiektegels te blauw). Niet opnieuw voorstellen. |
 | v309 | Nieuw thema `glas` (ontwerp van de gebruiker, licht glas). Eerst Kamers 1:1: lichte lucht, witte glaskaarten (69 px, hoek 18), icoon in blauw vlak, crème kaart + oranje schakelaar + schuif met knop bij licht aan, "1 aan", rolluiktekst grijs, chips en tabbalk in glas. Standaard op Kamers (telefoon); `theme: donker` zet het terug. |
+| v310 | Thema `glas` ook op Thuis (standaard, telefoon), 1:1 naar het ontwerp: diepblauwe lucht bovenin met witte titel, gekleurde ringen om de profielfoto’s, witte glaschips en -kaarten, meldingen als één regel (bel, aantal, eerste melding, pijltje; tik klapt de lijst uit), thermometer linksboven in de thermostaattegel en een witte stepper. Statusbalk `#23466b`. |
 
 ## Volgende stappen
 

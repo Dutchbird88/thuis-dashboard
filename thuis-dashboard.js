@@ -680,7 +680,7 @@ const hideScrollbars = (el) => {
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
   // v309: 'glas' (licht glas, ontwerp van de gebruiker) = licht thema + data-gl; voorlopig de standaard op Kamers
-  if (cfg) { el._theme = String(cfg.theme || (el.localName === 'kamers-card' ? 'glas' : 'donker')).toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
+  if (cfg) { el._theme = String(cfg.theme || (el.localName === 'kamers-card' || el.localName === 'thuis-card' ? 'glas' : 'donker')).toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
   THEME_CARDS.add(el);
   const t = el._theme || 'donker', glass = t === 'glas' || t === 'glass', light = glass || t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '309';
+const CARD_VERSION = '310';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1859,7 +1859,7 @@ const CARD_VERSION = '309';
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
-      const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = '#c6d9ee'; // v309: glas: lucht bovenin
+      const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = gl.localName === 'thuis-card' ? '#23466b' : '#c6d9ee'; // v309: glas: lucht bovenin
       const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
       const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
       const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
@@ -4233,6 +4233,43 @@ const HPI = {
 };
 const HPSTYLE = `
 
+/* v310: thema 'glas' op Thuis — 1:1 naar het ontwerp: diepblauwe lucht bovenin, witte titel, witte glaskaarten, compacte meldingregel, thermometer */
+.nsum, .mthi { display: none; }
+@media (max-width: 600px) {
+  :host(thuis-card[data-gl]) .wrap.wrap, :host(thuis-card[data-gl]) .twrap.twrap { background: linear-gradient(180deg, #23466b 0px, #2f5a82 70px, #36648d 120px, #40709a 155px, #75a3d3 205px, #b0cdf1 270px, #d9e7fe 400px, #e7eefa 540px, #eaf0f9 100%) !important; }
+  :host(thuis-card[data-gl]) #mGreet { color: #fff !important; font-size: 34px !important; font-weight: 800 !important; text-shadow: 0 1px 10px rgba(10,30,70,.25); }
+  :host(thuis-card[data-gl]) .mdate b, :host(thuis-card[data-gl]) .mdate span { color: rgba(255,255,255,.92) !important; }
+  :host(thuis-card[data-gl]) .av .ring { background: var(--pc) !important; padding: 3px !important; box-shadow: 0 0 12px -3px var(--pc) !important; }
+  :host(thuis-card[data-gl]) .av .face { border-color: #fff !important; }
+  :host(thuis-card[data-gl]) .twrap .mp.mp.mp.mp, :host(thuis-card[data-gl]) .twrap .mp.mp.mp.mp.hot { background: rgba(240,245,252,.88) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(20,50,100,.45) !important; height: 51px; }
+  :host(thuis-card[data-gl]) .twrap .tile:not(#camTile):not(.mus), :host(thuis-card[data-gl]) .twrap .mstack > .was.was.was.was.was, :host(thuis-card[data-gl]) .twrap #oven.was.was.was.was:not(.cool), :host(thuis-card[data-gl]) .twrap #dish.was.was.was.was, :host(thuis-card[data-gl]) .twrap #evc.was.was.was, :host(thuis-card[data-gl]) .twrap .lt:not(.on), :host(thuis-card[data-gl]) .twrap .cv:not(.on) { background: rgba(250,252,255,.9) !important; border: 1px solid rgba(255,255,255,.95) !important; box-shadow: 0 8px 22px -14px rgba(30,60,110,.35) !important; border-radius: 20px !important; }
+  :host(thuis-card[data-gl]) #camTile .cam, :host(thuis-card[data-gl]) #camTile { border-radius: 20px !important; }
+  :host(thuis-card[data-gl]) .twrap .tile .label, :host(thuis-card[data-gl]) .twrap h2, :host(thuis-card[data-gl]) .twrap .sech { color: #101828 !important; }
+  /* meldingen: één regel */
+  :host(thuis-card[data-gl]) #notTile.tile { padding: 0 !important; }
+  :host(thuis-card[data-gl]) #notTile .nsum { display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 56px; box-sizing: border-box; cursor: pointer; }
+  :host(thuis-card[data-gl]) #notTile .nbell { width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center; background: #fff1d6; }
+  :host(thuis-card[data-gl]) #notTile .nbell svg { width: 21px; height: 21px; }
+  :host(thuis-card[data-gl]) #notTile .nsum > div { flex: 1; min-width: 0; }
+  :host(thuis-card[data-gl]) #notTile .nsum b { display: block; font-size: 15px; font-weight: 700; color: #101828; }
+  :host(thuis-card[data-gl]) #notTile .nsum span { display: block; font-size: 13px; color: #3d4655; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  :host(thuis-card[data-gl]) #notTile .nchev { width: 20px; height: 20px; flex: none; color: #3d4655; transition: transform .2s; }
+  :host(thuis-card[data-gl]) #notTile.open .nchev { transform: rotate(90deg); }
+  :host(thuis-card[data-gl]) #notTile > .th { display: none !important; }
+  :host(thuis-card[data-gl]) #notTile:not(.open) #notList { display: none; }
+  :host(thuis-card[data-gl]) #notTile.open #notList { padding: 0 14px 10px; }
+  /* thermostaat: thermometer linksboven, huisje rechtsboven, groot getal eronder, witte stepper */
+  :host(thuis-card[data-gl]) #mTh .mtop { display: grid !important; grid-template-columns: 1fr auto; align-items: start; }
+  :host(thuis-card[data-gl]) #mTh .mthi { display: block; grid-column: 1; grid-row: 1; color: #f08a2c; width: 26px; height: 26px; }
+  :host(thuis-card[data-gl]) #mTh .mthi svg { width: 26px; height: 26px; stroke: #f08a2c !important; fill: none !important; }
+  :host(thuis-card[data-gl]) #evc .xh b, :host(thuis-card[data-gl]) #evc .xk b { color: #101828 !important; } :host(thuis-card[data-gl]) #evc .xh span, :host(thuis-card[data-gl]) #evc .xk, :host(thuis-card[data-gl]) #evc .xr span { color: #3d4655 !important; }
+  :host(thuis-card[data-gl]) #mTh #mPre { grid-column: 2; grid-row: 1; }
+  :host(thuis-card[data-gl]) #mTh .mbig { grid-column: 1 / 3; grid-row: 2; color: #101828 !important; margin-top: 4px; }
+  :host(thuis-card[data-gl]) .twrap .mstp.mstp { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0 !important; background: #fff !important; border-radius: 99px !important; overflow: hidden !important; box-shadow: 0 4px 14px -8px rgba(30,60,110,.45) !important; }
+  :host(thuis-card[data-gl]) .twrap .mstp.mstp button { width: auto !important; height: 36px !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; color: #101828 !important; }
+  :host(thuis-card[data-gl]) .twrap .mstp.mstp button + button { border-left: 1px solid #e3e7ee !important; }
+}
+
 /* v309: thema 'glas' (telefoon) — Kamers 1:1 naar het ontwerp van de gebruiker: lichte lucht, witte glaskaarten, icoon in blauw vlak, crème bij licht aan */
 @media (max-width: 600px) {
   :host([data-gl]) .wrap.wrap, :host([data-gl]) .twrap.twrap { background: radial-gradient(420px 260px at 85% 0%, rgba(140,185,235,.55), transparent 70%), linear-gradient(180deg, #c6d9ee 0px, #d6e5f6 90px, #e6f0fd 220px, #eff5ff 420px, #eef4fe 100%) !important; }
@@ -4488,7 +4525,7 @@ class ThuisCard extends HTMLElement {
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
             <div class="was" id="oven" hidden></div>
-            <div class="tile" id="notTile" hidden><div class="th"><span class="label">Meldingen</span><span class="aside" id="notN"></span></div><div id="notList"></div></div>
+            <div class="tile" id="notTile" hidden><div class="nsum" id="notSum"></div><div class="th"><span class="label">Meldingen</span><span class="aside" id="notN"></span></div><div id="notList"></div></div>
             <div class="tile entile" id="enTile" data-nav="${NAV.nu}">
               <div class="th"><span class="label">Energie nu</span></div>
               <div class="en">
@@ -4511,7 +4548,7 @@ class ThuisCard extends HTMLElement {
           <div class="mpills" id="mPills"></div>
           <div class="mstack" id="mA"></div>
           <div class="mrow">
-            <div class="tile mth" id="mTh"><div class="mtop"><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
+            <div class="tile mth" id="mTh"><div class="mtop"><span class="mthi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13.6V5a2 2 0 1 1 4 0v8.6a4 4 0 1 1-4 0z"/><path d="M12 9.5v6"/></svg></span><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
               <div class="mst"><span class="mic" id="mIc"></span><span id="mSt"></span></div>
               <div class="mstp"><button id="mMin" aria-label="Lager">−</button><button id="mPlus" aria-label="Hoger">+</button></div></div>
             <div class="tile maf" id="mAf"></div><div class="tile mus" id="hpc" hidden></div>
@@ -5370,6 +5407,13 @@ class ThuisCard extends HTMLElement {
     const html = items.map((n) => `<div class="nrow" style="--c:${n.c}"><span class="mi">${n.svg || NI[n.ic]}</span><div><b>${n.t}</b><span>${n.desc}</span></div><button data-id="${n.id}" data-since="${n.since}">Gedaan</button></div>`).join('');
     box.hidden = !items.length;
     this.$('notN').textContent = items.length || '';
+    // v310 (glas): één compacte regel met bel, aantal en de eerste melding; tik klapt de lijst uit
+    const sum = this.$('notSum');
+    if (sum) {
+      const f = items[0], sh = f ? `<i class="nbell"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v3.5L4.5 15.5h15L18 12.5V9a6 6 0 0 0-6-6z" fill="url(#nbg)"/><path d="M9.5 18a2.5 2.5 0 0 0 5 0z" fill="#f59e0b"/><defs><linearGradient id="nbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf4a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs></svg></i><div><b>${items.length} ${items.length === 1 ? 'melding' : 'meldingen'}</b><span>${f.t} · ${f.desc}</span></div><svg class="nchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>` : '';
+      if (sum.innerHTML !== sh) sum.innerHTML = sh;
+      if (!sum._b) { sum._b = 1; sum.addEventListener('click', () => box.classList.toggle('open')); }
+    }
     if (list._k === html) return;
     list._k = html; list.innerHTML = html;
     list.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
