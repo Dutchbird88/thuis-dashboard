@@ -204,6 +204,7 @@
 | v331 | Apparaatkaart bij klaar (wasmachine, vaatwasser, oven; donker, telefoon) zacht groen: groene waas linksboven en dunne groene rand (keuze B). |
 | v332 | Eigen venster voor bewegingssensoren (telefoon, ontwerp A): tik op de pil Beweging in het kamervenster → groot icoon (geel bij beweging), temperatuur/lux/aantal vandaag, tijdbalk van vandaag en de laatste 6 bewegingen met duur. Sluiten gaat terug naar de kamer. Test: `venster-beweging`. |
 | v333 | Bewegingsvenster: klokje (geschiedenis 7 dagen: per dag tijdbalk en periodes met beweging, tussenpozen < 3 min samengevoegd) en schuiven over de tijdbalk toont het tijdstip en de dichtstbijzijnde beweging (witte lijn, label rechtsboven). Test: `venster-beweging-historie`. |
+| v334 | Bewegingsvenster: tijdbalk hoger (34 px, in de geschiedenis 24 px), makkelijker om over te schuiven. |
 
 ## Volgende stappen
 

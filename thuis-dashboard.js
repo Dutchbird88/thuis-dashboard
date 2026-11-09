@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '333';
+const CARD_VERSION = '334';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4275,11 +4275,11 @@ const HPSTYLE = `
 .mos .mobig svg { width: 58px; height: 58px; }
 .mos .most { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 10px; } .mos .most span { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .mos .mochips { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; } .mos .mochips div { background: rgba(255,255,255,.05); border-radius: 12px; padding: 7px 11px; font-size: 12.5px; color: var(--muted); } .mos .mochips b { display: block; font-size: 15px; color: var(--text); }
-.mos .mostrip { height: 22px; border-radius: 7px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
+.mos .mostrip { height: 34px; border-radius: 9px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
 .mos .modh { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; } .mos .modh span { font-weight: 500; }
-.mos .mostrip:not(.mostatic) { touch-action: none; cursor: pointer; } .mos .momk { display: none; position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; box-shadow: 0 0 6px rgba(255,255,255,.6); }
+.mos .mostrip:not(.mostatic) { touch-action: none; cursor: pointer; } .mos .momk { display: none; position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; box-shadow: 0 0 6px rgba(255,255,255,.6); }
 .mos .mostrip { overflow: visible; } .mos .mohint { font-size: 11.5px; color: #6b7385; margin-top: 6px; text-align: center; }
-#hBody.mos .molog { margin-top: 10px; } #hBody.mos .mostrip { height: 14px; }
+#hBody.mos .molog { margin-top: 10px; } #hBody.mos .mostrip { height: 24px; border-radius: 7px; }
 .mos .molog { margin-top: 0; } .mos .molog div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13.5px; color: var(--text); text-align: left; } .mos .molog div:first-child { border-top: 0; }
 .mos .molog i { width: 9px; height: 9px; border-radius: 50%; background: #ffc83d; } .mos .molog span { color: var(--muted); font-variant-numeric: tabular-nums; } .mos .molog em { font-style: normal; font-size: 12.5px; }
 
