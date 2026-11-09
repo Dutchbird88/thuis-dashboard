@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '312';
+const CARD_VERSION = '313';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1859,7 +1859,7 @@ const CARD_VERSION = '312';
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
-      const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = gl.localName === 'thuis-card' ? '#23466b' : '#c6d9ee'; // v309: glas: lucht bovenin
+      const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = '#23466b'; // v309: glas: lucht bovenin
       const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
       const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
       const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
@@ -4275,9 +4275,12 @@ const HPSTYLE = `
 @media (max-width: 600px) {
   :host([data-gl]) .wrap.wrap, :host([data-gl]) .twrap.twrap { background: radial-gradient(420px 260px at 85% 0%, rgba(140,185,235,.55), transparent 70%), linear-gradient(180deg, #c6d9ee 0px, #d6e5f6 90px, #e6f0fd 220px, #eff5ff 420px, #eef4fe 100%) !important; }
   :host([data-gl]) h1 { color: #101828 !important; font-size: 30px !important; font-weight: 800 !important; }
-  :host([data-gl]) .twrap .mp.mp { background: rgba(236,243,252,.75) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(40,70,130,.35) !important; height: 48px; padding: 0 16px 0 12px !important; border-radius: 24px !important; }
+  /* v313: Kamers bovenin dezelfde donkerblauwe lucht als Thuis (iOS legt een donkere waas achter de statusbalk; op licht gaf dat een grijze band) */
+  :host(kamers-card[data-gl]) .wrap.wrap, :host(kamers-card[data-gl]) .twrap.twrap { background: linear-gradient(180deg, #23466b 0px, #2f5a82 50px, #36648d 85px, #4576a2 115px, #8bb3de 142px, #bcd6f5 165px, #d6e6fb 300px, #e2eefd 500px, #e6f0fe 100%) !important; }
+  :host(kamers-card[data-gl]) #kview .khead h1 { color: #fff !important; text-shadow: 0 1px 10px rgba(10,30,70,.25); }
+  :host([data-gl]) .twrap .mp.mp { background: rgba(240,245,252,.9) !important; border: 1px solid rgba(255,255,255,.9) !important; box-shadow: 0 6px 18px -12px rgba(40,70,130,.35) !important; height: 48px; padding: 0 16px 0 12px !important; border-radius: 24px !important; }
   :host([data-gl]) #kview .mp.mp.hot[style*='#ffc83d'], :host([data-gl]) .twrap .mp.mp.mp.hot[style*='#ffc83d'] { background: #f9f5e8 !important; }
-  :host([data-gl]) #kview .mp.mp.hot:not([style*='#ffc83d']), :host([data-gl]) .twrap .mp.mp.mp.hot:not([style*='#ffc83d']) { background: rgba(236,243,252,.75) !important; }
+  :host([data-gl]) #kview .mp.mp.hot:not([style*='#ffc83d']), :host([data-gl]) .twrap .mp.mp.mp.hot:not([style*='#ffc83d']) { background: rgba(240,245,252,.9) !important; }
   :host([data-gl]) .twrap .mp b { font-size: 13.5px !important; font-weight: 700 !important; color: #101828 !important; } :host([data-gl]) .twrap .mp span { font-size: 12.5px !important; color: #3d4655 !important; }
   :host([data-gl]) .xtabs.xtabs { background: rgba(247,250,255,.9) !important; }
   :host([data-gl]) .xtabs button.on.on.on { background: #e2edfd !important; box-shadow: none !important; color: #1a73f0 !important; }

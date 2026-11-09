@@ -183,6 +183,7 @@
 | v310 | Thema `glas` ook op Thuis (standaard, telefoon), 1:1 naar het ontwerp: diepblauwe lucht bovenin met witte titel, gekleurde ringen om de profielfoto’s, witte glaschips en -kaarten, meldingen als één regel (bel, aantal, eerste melding, pijltje; tik klapt de lijst uit), thermometer linksboven in de thermostaattegel en een witte stepper. Statusbalk `#23466b`. |
 | v311 | Glas op Thuis: het blok Bediening (en Agenda) heeft geen eigen achtergrond meer; alleen de losse tegels zijn glas. |
 | v312 | Glas op Thuis: onderkant van de achtergrond lichtblauw zoals Kamers (keuze A). |
+| v313 | Glas op Kamers: bovenin dezelfde donkerblauwe lucht als Thuis met witte titel (iOS legt een donkere waas achter de statusbalk, die op de lichte bovenkant een grijze band gaf); chips iets witter; statusbalk overal `#23466b`. |
 
 ## Volgende stappen
 
