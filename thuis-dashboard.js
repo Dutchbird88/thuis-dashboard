@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '319';
+const CARD_VERSION = '320';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1867,19 +1867,8 @@ const CARD_VERSION = '319';
       if (mq.matches) { // v266: weer zoals tot v262 — op de telefoon altijd direct donker (ook voordat een kaart verschijnt)
         if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
-        let chg = false; VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) { root.style.setProperty(v, BG); chg = true; } });
-        // v319: de balk bovenin is de (met Kiosk verborgen) kopbalk van HA zelf; HA zet zijn themakleuren op eigen elementen, dus daar ook de kleur zetten en de kopbalk zelf kleuren
-        try {
-          const ha = document.querySelector('home-assistant'), main = ha?.shadowRoot?.querySelector('home-assistant-main'), pl = main?.shadowRoot?.querySelector('ha-panel-lovelace'), hr = pl?.shadowRoot?.querySelector('hui-root');
-          [ha, main, pl, hr].forEach((el) => { if (el) VARS.forEach((v) => { if (el.style.getPropertyValue(v).trim() !== BG) el.style.setProperty(v, BG); }); });
-          const hs = hr?.shadowRoot; if (hs) hs.querySelectorAll('.header, app-header, .toolbar, ha-top-app-bar-fixed, ha-top-app-bar').forEach((el) => { if (el.style.backgroundColor !== bgRgb) el.style.backgroundColor = BG; });
-        } catch (e) { /* andere HA-opbouw */ }
-        // v318: de HA-app (iOS/Android) leest de balkkleur pas opnieuw na een 'theme-update'-bericht van de frontend; dat sturen we zelf als de kleur verandert
-        if (chg) { try { const m = { type: 'theme-update', id: 900000 + Math.floor(Math.random() * 99999) }; if (window.externalApp?.externalBus) window.externalApp.externalBus(JSON.stringify(m)); else window.webkit?.messageHandlers?.externalBus?.postMessage(m); } catch (e) { /* geen app */ } }
+        VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
         // v314: lichte glas-pagina (Kamers): donkere tekst in de balk bovenin, zodat iOS er geen donkere waas over legt
-        // v317: lichte glas-pagina: ook het kleurschema op licht, zodat iOS de klok zwart maakt en er geen donkere waas achter legt
-        const cs = gl && BG !== '#23466b' ? 'light' : ''; if (root.style.colorScheme !== cs) root.style.colorScheme = cs;
-        let mcs = document.querySelector('meta[name="color-scheme"]'); if (cs) { if (!mcs) { mcs = document.createElement('meta'); mcs.name = 'color-scheme'; document.head.appendChild(mcs); } if (mcs.content !== 'light') { mcs.dataset.thuisOld = mcs.dataset.thuisOld ?? mcs.content; mcs.content = 'light'; } } else if (mcs && mcs.dataset.thuisOld != null) { mcs.content = mcs.dataset.thuisOld; delete mcs.dataset.thuisOld; }
         const hdTxt = gl && BG !== '#23466b' ? '#101828' : ''; if (root.style.getPropertyValue('--app-header-text-color').trim() !== hdTxt) { if (hdTxt) root.style.setProperty('--app-header-text-color', hdTxt); else root.style.removeProperty('--app-header-text-color'); }
         if (root.style.backgroundColor !== bgRgb) root.style.backgroundColor = BG;
         if (document.body && document.body.style.backgroundColor !== bgRgb) document.body.style.backgroundColor = BG;

@@ -190,6 +190,7 @@
 | v317 | Proef statusbalk Kamers: bij een lichte glas-pagina ook `color-scheme: light` (html en meta), zodat iOS een zwarte klok gebruikt en geen donkere waas achter de statusbalk legt. |
 | v318 | Statusbalk: na een kleurwissel stuurt het dashboard zelf een `theme-update` naar de HA-app (externalBus), zodat de app de nieuwe balkkleur overneemt (proef). |
 | v319 | Statusbalk met Kiosk: de balk bovenin is de verborgen kopbalk van HA. De kleur wordt nu ook gezet op `home-assistant`, `home-assistant-main`, `ha-panel-lovelace` en `hui-root`, en de kopbalk in `hui-root` krijgt zelf de achtergrondkleur. |
+| v320 | Oorzaak grijze balk gevonden: iOS legt in de donkere modus van de iPhone een donkere waas achter de klok (met de iPhone op licht kleurt de balk mee). De proeven v317–v319 (color-scheme, theme-update, kleur op HA-elementen) weer weggehaald. |
 
 ## Volgende stappen
 
