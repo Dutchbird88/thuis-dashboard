@@ -680,7 +680,7 @@ const hideScrollbars = (el) => {
 const LIGHT_Q = '(prefers-color-scheme: light)';
 const applyTheme = (el, cfg) => {
   // v309: 'glas' (licht glas, ontwerp van de gebruiker) = licht thema + data-gl; voorlopig de standaard op Kamers
-  if (cfg) { el._theme = String(cfg.theme || (el.localName === 'kamers-card' || el.localName === 'thuis-card' ? 'glas' : 'donker')).toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
+  if (cfg) { el._theme = String(cfg.theme || 'glas').toLowerCase().trim(); try { localStorage.removeItem('thuis-thema'); } catch (e) { /* geen opslag */ } }
   THEME_CARDS.add(el);
   const t = el._theme || 'donker', glass = t === 'glas' || t === 'glass', light = glass || t === 'licht' || t === 'light' || ((t === 'automatisch' || t === 'auto') && window.matchMedia?.(LIGHT_Q).matches);
   if (light) el.setAttribute('data-th', 'l'); else el.removeAttribute('data-th');
@@ -837,6 +837,7 @@ class ZonnepanelenCard extends HTMLElement {
   }
 
   set hass(hass) {
+    if (this.hasAttribute('data-gl') && Date.now() - (this._chT || 0) > 1500) { this._chT = Date.now(); chromeApply?.(); } // v322
     this._hass = hass;
     this._update();
     this._fetchStats();
@@ -906,7 +907,7 @@ class ZonnepanelenCard extends HTMLElement {
     const arc = 'M30.72 140 A80 80 0 1 1 169.28 140';
 
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${LIGHT}</style>
+      <style>${STYLE}${LIGHT}${GLASS2}</style>
       ${GLOSSY}
       <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
@@ -1845,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '321';
+const CARD_VERSION = '322';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1926,6 +1927,24 @@ const VDEFAULTS = {
 // Energie rekent in kWh, m³ en W: vraag de statistieken van HA in die eenheden op (ook als een meter Wh of liters geeft)
 const STAT_UNITS = { energy: 'kWh', volume: 'm³', power: 'W' };
 const toStatUnit = (v, u) => (v == null ? v : u === 'Wh' ? v / 1000 : u === 'MWh' ? v * 1000 : u === 'L' ? v / 1000 : u === 'kW' ? v * 1000 : v);
+// v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
+const GLASS2 = `
+@media (max-width: 600px) {
+  :host([data-gl]) .wrap.wrap, :host([data-gl]) .znu.znu, :host([data-gl]) .vwrap.vwrap, :host([data-gl]) .awrap.awrap { background: linear-gradient(180deg, #c6d9ee 0px, #c6d9ee 24px, #d3e3f5 90px, #e2eefd 220px, #e6f0fe 100%) !important; }
+  :host([data-gl]) .tile.tile, :host([data-gl]) .mt.mt { background: rgba(250,252,255,.9) !important; border: 1px solid rgba(255,255,255,.95) !important; box-shadow: 0 8px 22px -14px rgba(30,60,110,.35) !important; border-radius: 20px !important; }
+  :host([data-gl]) .vwrap .grid > .tile.s8.s8:first-child { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  :host([data-gl]) .vwrap .grid > .tile.s8.s8:first-child::before, :host([data-gl]) .vwrap .grid > .tile.s8.s8:first-child::after { display: none !important; }
+  :host([data-gl]) .xtabs.xtabs { background: rgba(247,250,255,.9) !important; }
+  :host([data-gl]) .xtabs button.on.on.on { background: #e2edfd !important; box-shadow: none !important; color: #1a73f0 !important; }
+  :host([data-gl]) .xhead h1 { color: #101828 !important; }
+  /* Nu met scène: grond onder het huis loopt over in de lichte pagina, cijfers donker */
+  :host([data-gl]) .znu.scn .mgnd { background: linear-gradient(180deg, #b8c8dc, #d3e3f5 70%, #e2eefd) !important; }
+  :host([data-gl]) .znu.scn .mcab .cb { stroke: rgba(40,60,90,.22); }
+  :host([data-gl]) .znu.scn .mscrow, :host([data-gl]) .znu.scn .mscrow b { color: #101828 !important; text-shadow: none !important; }
+  :host([data-gl]) .znu.scn .mscrow small { color: #3d4655 !important; opacity: 1 !important; }
+  :host([data-gl]) .znu.scn .xhead h1 { color: #fff !important; }
+}
+`;
 const VSTYLE = `
 :host { --imp: #a855f7; --exp: #22d37f; --gas: #f0245a; --water: #38bdf8; }
 .vwrap { background: radial-gradient(900px 420px at 12% -8%, rgba(168,85,247,.08), transparent 65%), var(--bg); }
@@ -2028,6 +2047,7 @@ class VerbruikCard extends HTMLElement {
   }
 
   set hass(hass) {
+    if (this.hasAttribute('data-gl') && Date.now() - (this._chT || 0) > 1500) { this._chT = Date.now(); chromeApply?.(); } // v322
     this._hass = hass;
     this._update();
     this._fetch();
@@ -2062,7 +2082,7 @@ class VerbruikCard extends HTMLElement {
                 <div class="fc" id="fc${k}"></div>
               </div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${VSTYLE}${LIGHT}</style>
+      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}</style>
       ${GLOSSY}
       <div class="wrap vwrap"><div class="inner">
         ${headerHtml('verbruik')}
@@ -2792,7 +2812,7 @@ class AutoCard extends HTMLElement {
     this._build();
     if (this._hass) this._update();
   }
-  set hass(hass) { this._hass = hass; this._update(); this._maybeRefresh(); }
+  set hass(hass) { if (this.hasAttribute('data-gl') && Date.now() - (this._chT || 0) > 1500) { this._chT = Date.now(); chromeApply?.(); } this._hass = hass; this._update(); this._maybeRefresh(); }
   getCardSize() { return 12; }
   getGridOptions() { return { columns: 'full' }; }
   static getStubConfig() { return {}; }
@@ -2809,7 +2829,7 @@ class AutoCard extends HTMLElement {
     const c = this._config, e = (d, k) => this._e(d, k);
     const tyre = (k, label) => `<div class="tyre" id="t_${k}" data-e="${e('sensor', 'bandenspanning_' + k)}"><b>—</b><div>${label}</div></div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${ASTYLE}${LIGHT}</style>
+      <style>${STYLE}${ASTYLE}${LIGHT}${GLASS2}</style>
       <div class="wrap awrap"><div class="inner">
         ${headerHtml('auto')}
         <div class="grid">
