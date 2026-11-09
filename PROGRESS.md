@@ -187,6 +187,7 @@
 | v314 | v313 teruggedraaid op verzoek: Kamers weer met de lichte bovenkant (v312). Statusbalk op Kamers `#c6d9ee` met donkere tekst (`--app-header-text-color`), en een vaste strook in de luchtkleur achter de statusbalk (`env(safe-area-inset-top)`), zodat de lucht doorloopt. |
 | v315 | Statusbalk bij glas: Thuis en Kamers zetten de balk bij elke update opnieuw (hooguit elke 1,5 s), zoals de scène op Nu; hij bleef soms in de kleur van het vorige tabblad. |
 | v316 | Vaste strook achter de statusbalk op Kamers (v314) weer weg: die gaf een harde rand waar de inhoud onder verdween. |
+| v317 | Proef statusbalk Kamers: bij een lichte glas-pagina ook `color-scheme: light` (html en meta), zodat iOS een zwarte klok gebruikt en geen donkere waas achter de statusbalk legt. |
 
 ## Volgende stappen
 

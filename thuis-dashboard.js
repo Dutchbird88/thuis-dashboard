@@ -1845,7 +1845,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '316';
+const CARD_VERSION = '317';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1869,6 +1869,9 @@ const CARD_VERSION = '316';
         if (meta.content !== BG) { meta.dataset.thuisOld = meta.dataset.thuisOld || meta.content; meta.content = BG; }
         VARS.forEach((v) => { if (root.style.getPropertyValue(v).trim() !== BG) root.style.setProperty(v, BG); });
         // v314: lichte glas-pagina (Kamers): donkere tekst in de balk bovenin, zodat iOS er geen donkere waas over legt
+        // v317: lichte glas-pagina: ook het kleurschema op licht, zodat iOS de klok zwart maakt en er geen donkere waas achter legt
+        const cs = gl && BG !== '#23466b' ? 'light' : ''; if (root.style.colorScheme !== cs) root.style.colorScheme = cs;
+        let mcs = document.querySelector('meta[name="color-scheme"]'); if (cs) { if (!mcs) { mcs = document.createElement('meta'); mcs.name = 'color-scheme'; document.head.appendChild(mcs); } if (mcs.content !== 'light') { mcs.dataset.thuisOld = mcs.dataset.thuisOld ?? mcs.content; mcs.content = 'light'; } } else if (mcs && mcs.dataset.thuisOld != null) { mcs.content = mcs.dataset.thuisOld; delete mcs.dataset.thuisOld; }
         const hdTxt = gl && BG !== '#23466b' ? '#101828' : ''; if (root.style.getPropertyValue('--app-header-text-color').trim() !== hdTxt) { if (hdTxt) root.style.setProperty('--app-header-text-color', hdTxt); else root.style.removeProperty('--app-header-text-color'); }
         if (root.style.backgroundColor !== bgRgb) root.style.backgroundColor = BG;
         if (document.body && document.body.style.backgroundColor !== bgRgb) document.body.style.backgroundColor = BG;
