@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '334';
+const CARD_VERSION = '335';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1936,6 +1936,8 @@ const TIDY = `
   :host(:not([data-th])) .lights.lights, :host(:not([data-th])) .covers.covers { gap: 12px !important; }
   :host(:not([data-th])) .tile.tile:not(#camTile):not(#bedTile):not(#agTile):not(.photo), :host(:not([data-th])) .mt.mt, :host(:not([data-th])) .mstack > .was.was.was.was.was:not(.pic):not(.cool), :host(:not([data-th])) #oven.was.was.was.was:not(.cool), :host(:not([data-th])) #dish.was.was.was.was, :host(:not([data-th])) .kglass.koff.koff, :host(:not([data-th])) .lt.lt:not(.on), :host(:not([data-th])) .cv.cv:not(.on), :host(:not([data-th])) .kr.kr:not(.lit) { box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; border-color: rgba(130,170,255,.11) !important; }
   :host(:not([data-th])) .vwrap .grid > .tile.s8.s8:first-child { box-shadow: none !important; border-color: transparent !important; }
+  /* v335: uitgeschakelde kamers, lampen en rolluiken ~10% lichter (overal) */
+  :host(:not([data-th])) .kr.kr.kr.kr:not(.lit), :host(:not([data-th])) .lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, #132036), color-mix(in srgb, #ffffff 4%, #0f1828)) !important; }
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
   :host(:not([data-th])) .was.was.was.was.was.was.done, :host(:not([data-th])) .mstack > .was.was.was.was.was.was.done { background: radial-gradient(120% 140% at 0% 0%, rgba(79,208,127,.13), transparent 65%), linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(79,208,127,.28) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; }
 }
