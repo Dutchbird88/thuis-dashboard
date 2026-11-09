@@ -255,6 +255,7 @@ Verdere regels:
   - Kleur alleen met betekenis: rood = alarm, oranje = waarschuwing/open, teal = laden, blauw = wacht/gepland.
 - **Telefoon (`CALM`, alleen ≤ 600px, Thuis en Kamers):**
   - effen vensters (`#111827`); apparaatkaarten hebben sinds v297 dezelfde tegelkleur, rand en gloedrand als de andere tegels (`.mstack > .was`, `.kglass.koff`, in `HPSTYLE`), zonder statuskleur; uitzondering sinds v243: het thermostaatvenster (oranje bij verwarmen, anders blauw) en het lampvenster (lampkleur) houden hun eigen kleur;
+  - v307: één centrale kaartkleur (telefoon, donker): `--tile` `#192c49`, `--tile2` `#1c304f` (de kleur van de Rolluiken-chip), `--card` (verloop) en `--card-bd` (rand `rgba(150,180,240,.12)`), gezet in `STYLE` en dus voor alle kaarten. Kaarten met een eigen grijze of doorschijnende kleur (laadkaart, kamervenster, `.kr`, `.lt`/`.cv` uit, `.wsr`, `.pc`) gebruiken `var(--card)` via een blok achteraan `HPSTYLE`; statuskleuren (lamp aan, laden in het venster, alarm, Picnic, oven koelt af) blijven. Nieuwe kaarten: gebruik `var(--card)` en `var(--card-bd)`.
   - grijze chips en grijze afvallabels;
   - venstertitels en ondertitels **gecentreerd**, de ondertitel grijs;
   - alarmen houden hun rode gloed.

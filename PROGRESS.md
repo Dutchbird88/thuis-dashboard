@@ -177,6 +177,7 @@
 | v304 | Nu (scène): live "Zon" in het midden tussen Afname en Teruglevering; "nu …" bovenin weg. |
 | v305 | Nu (scène): bovenin live Zon en Verbruik (zon + afname − teruglevering), onderin alleen Afname en Teruglevering; na zonsondergang "morgen X kWh" in de kop van Vandaag. Dagcijfers (`_fetchGridDay`) worden niet meer opgehaald. |
 | v306 | Statusbalk: luchtkleur van Nu alleen als de Nu-kaart echt zichtbaar is (HA houdt soms een verborgen tabblad aan); de scène zet de balk bij elke update opnieuw. |
+| v307 | Telefoon: één centrale kaartkleur (`--tile` #192c49 / `--tile2` #1c304f, `--card`, rand `--card-bd`), de kleur van de Rolluiken-chip, op alle tabbladen en in de vensters; statuskleuren blijven. Computer ongewijzigd. |
 
 ## Volgende stappen
 
