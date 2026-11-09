@@ -516,7 +516,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
 .invfoot .tb { flex: none; width: 34px; height: 5px; }
 .alert { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 14px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.4;
   background: color-mix(in srgb, var(--sun) 9%, transparent); border: 1px solid color-mix(in srgb, var(--sun) 35%, transparent); color: #e9dcc6; }
-.alert b { color: #fff; } .alert[hidden] { display: none; }
+.alert b { color: #fff; } .alert[hidden] { display: none; } .alert .dot { flex: none; }
 
 /* inverters */
 .tb { flex: 1; height: 6px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; }
@@ -1839,7 +1839,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '300';
+const CARD_VERSION = '301';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

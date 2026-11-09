@@ -171,6 +171,7 @@
 | v298 | Apparaatkaarten: icoon weer zoals het was (zonder rondje); alleen rand, gloed en kleur gelijk aan de andere tegels. |
 | v299 | Apparaatkaarten krijgen nu echt de tegelkleur, rand en gloedrand (de regel werd door de rustige telefoonstijl overschreven). Laad- en Picnic-kaart en de afkoelende oven houden hun eigen kleur. |
 | v300 | Apparaatkaarten: nog sterkere regel (ook op id en in het kamervenster), zodat de tegelkleur altijd wint. |
+| v301 | Nu: oranje bolletje in de paneelmelding blijft rond (niet meer platgedrukt). |
 
 ## Volgende stappen
 
