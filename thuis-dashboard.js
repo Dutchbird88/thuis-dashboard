@@ -1275,6 +1275,7 @@ class ZonnepanelenCard extends HTMLElement {
     const pw = (w) => { if (w == null || isNaN(w)) return '—'; const f = fmtPower(Math.max(0, w)); return `${f.v}<i>${f.u}</i>`; };
     set('mScOp', pw(pv)); this.$('mScOp').classList.toggle('zero', !(pv > 5));
     set('mScSelf', pw(grid == null ? null : (pv || 0) + grid));
+    chromeApply?.(); // v306: balk volgt of Nu (weer) in beeld is
     // live vermogen van het net (niet het dagtotaal): links afname, rechts teruglevering
     const lw = (w) => { if (grid == null) return '—'; const f = fmtPower(Math.max(0, w)); return `${f.v}<i>${f.u}</i>`; };
     set('mScImp', lw(grid)); set('mScExp', lw(-grid));
@@ -1842,7 +1843,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '305';
+const CARD_VERSION = '306';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1856,7 +1857,7 @@ const CARD_VERSION = '305';
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
-      const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn'));
+      const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
       const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
       const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
       let meta = document.querySelector('meta[name="theme-color"]');
