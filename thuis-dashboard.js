@@ -571,8 +571,8 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mtop small { margin-bottom: -2px; } .znu.scn .mtop .st b { line-height: 1.05; } .znu.scn .mtop .st { padding: 2px 12px 0; text-shadow: 0 1px 8px rgba(0,0,0,.25); } .znu.scn .mtop .r { text-align: right; border-right: 1px solid rgba(255,255,255,.28); } .znu.scn .mtop .l { border-left: 1px solid rgba(255,255,255,.28); }
   .znu.scn .xhead { margin-bottom: 0; height: 44px; } .znu.scn .xhead #date { display: none; } .znu.scn .xhead h1 { color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
   .znu.scn .grid { margin-top: 312px; } .znu.scn .tile.mhome { display: none !important; }
-  .znu.scn .mscrow b.zero { opacity: .4; }
-  .znu.scn .mgauges { display: none; } .znu.scn .mtop .st b { display: block; } .znu.scn .mscrow .st { flex: 1; } .znu.scn .mscrow .cc { text-align: center; }
+  .znu.scn .mscrow b.zero, .znu.scn .mtop b.zero { opacity: .4; }
+  .znu.scn .mgauges { display: none; } .znu.scn .mtop .st b { display: block; }
   .znu .tday .ml .tdk { font-weight: 500; color: var(--muted); font-size: .8em; margin-left: 6px; }
   .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
 }
@@ -910,12 +910,12 @@ class ZonnepanelenCard extends HTMLElement {
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
         <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
           <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cf" id="mCf1"/><path class="cf" id="mCf3"/></svg>
-          <div class="mtop"><div class="st r"><small>Opwek</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Zelfvoorzienend</small><b id="mScSelf">—</b></div></div></div>
+          <div class="mtop"><div class="st r"><small>Zon</small><b id="mScOp">—</b></div><div></div><div class="st l"><small>Verbruik</small><b id="mScSelf">—</b></div></div></div>
         <div class="inner">
         ${headerHtml('nu')}
 
         <div class="grid" style="--gc:${Math.max(1, ...Object.values(sides).map((x) => x.length))}">
-          <div class="mscrow"><div class="st"><small>Afname</small><b id="mScImp">—</b></div><div class="st cc"><small>Zon</small><b id="mScSun">—</b></div><div class="st rr"><small>Teruglevering</small><b id="mScExp">—</b></div></div>
+          <div class="mscrow"><div class="st"><small>Afname</small><b id="mScImp">—</b></div><div class="st rr"><small>Teruglevering</small><b id="mScExp">—</b></div></div>
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
@@ -1271,13 +1271,13 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, ph = c.photo, sun = this._hass?.states[c.sun], el = sun?.attributes?.elevation;
     // dagcijfers (ook als de tekening nog laadt)
     const set = (id, h) => { const x = this.$(id); if (x && x.innerHTML !== h) x.innerHTML = h; };
-    const kwh = (v) => (v == null ? '—' : `${fmt(v, 1)}<i>kWh</i>`), d = this._gDay;
-    set('mScOp', kwh(today));
-    const self = d && today != null ? Math.max(0, today - d.exp) : null, pct = self != null && self + d.imp > 0 ? Math.round(self / (self + d.imp) * 100) : null;
-    set('mScSelf', self == null ? '—' : `${fmt(self, 1)}<i>kWh</i>${pct != null ? `<em>${pct}%</em>` : ''}`);
+    // v305: bovenin live Zon en Verbruik (zon + afname − teruglevering)
+    const pw = (w) => { if (w == null || isNaN(w)) return '—'; const f = fmtPower(Math.max(0, w)); return `${f.v}<i>${f.u}</i>`; };
+    set('mScOp', pw(pv)); this.$('mScOp').classList.toggle('zero', !(pv > 5));
+    set('mScSelf', pw(grid == null ? null : (pv || 0) + grid));
     // live vermogen van het net (niet het dagtotaal): links afname, rechts teruglevering
     const lw = (w) => { if (grid == null) return '—'; const f = fmtPower(Math.max(0, w)); return `${f.v}<i>${f.u}</i>`; };
-    set('mScImp', lw(grid)); set('mScExp', lw(-grid)); set('mScSun', pv == null ? '—' : (() => { const f = fmtPower(Math.max(0, pv)); return `${f.v}<i>${f.u}</i>`; })()); this.$('mScSun').classList.toggle('zero', !(pv > 5)); // v304: zon nu in het midden
+    set('mScImp', lw(grid)); set('mScExp', lw(-grid));
     this.$('mScImp').classList.toggle('zero', !(grid > 5)); this.$('mScExp').classList.toggle('zero', !(grid < -5));
     const up = sun ? sun.state === 'above_horizon' : true, e = typeof el === 'number' ? el : up ? 20 : -20;
     const phase = e >= 4 ? 'day' : e > -6 && ph.dusk ? 'dusk' : up ? 'day' : 'night';
@@ -1356,7 +1356,7 @@ class ZonnepanelenCard extends HTMLElement {
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML);
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
-    if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); this._fetchGridDay(); }
+    if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); }
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
     set('mGridL', exporting ? 'Terug' : importing ? 'Van net' : 'Net');
     this.$('mGrid').className = `num${exporting ? ' exp' : importing ? ' imp' : ''}`;
@@ -1715,11 +1715,13 @@ class ZonnepanelenCard extends HTMLElement {
     }
 
     const peak = pts.reduce((m, p) => (p.pk > (m?.pk ?? -1) ? p : m), null);
-    const fcToday = this._forecast().today;
+    const fc0 = this._forecast(), fcToday = fc0.today;
+    // v305 (telefoon): na zonsondergang de verwachting voor morgen in plaats van die van vandaag
+    const tmrw = matchMedia('(max-width: 600px)').matches && this._hass?.states[this._config.sun]?.state === 'below_horizon' && fc0.tomorrow != null;
     const tk = this._todayKwh(), lab = this.shadowRoot.querySelector('.tday .th .ml');
     if (lab) { const h = `Vandaag${tk != null ? ` <b class="num tdk">${fmt(tk, 1)} kWh</b>` : ''}`; if (lab.innerHTML !== h) lab.innerHTML = h; }
     this.$('peak').innerHTML = (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
-      + (fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
+      + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
 
     el.innerHTML = `
       <svg width="${W}" height="${H}">
@@ -1840,7 +1842,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '304';
+const CARD_VERSION = '305';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

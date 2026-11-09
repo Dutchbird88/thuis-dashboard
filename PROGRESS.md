@@ -175,6 +175,7 @@
 | v302 | Nu (scène): de twee meters zijn weg; onder Opwek staat klein "nu 1,24 kW" in groen (alleen bij opwek). |
 | v303 | Nu: "nu …" strak onder de kWh (waarde als blok, vaste regelhoogte), "nu" wit, waarde groen. |
 | v304 | Nu (scène): live "Zon" in het midden tussen Afname en Teruglevering; "nu …" bovenin weg. |
+| v305 | Nu (scène): bovenin live Zon en Verbruik (zon + afname − teruglevering), onderin alleen Afname en Teruglevering; na zonsondergang "morgen X kWh" in de kop van Vandaag. Dagcijfers (`_fetchGridDay`) worden niet meer opgehaald. |
 
 ## Volgende stappen
 
