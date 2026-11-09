@@ -41,7 +41,7 @@ Op de telefoon kun je kiezen voor een lichte weergave met `theme`:
 
 ```yaml
 - type: custom:thuis-card
-  theme: licht   # donker (standaard), licht of automatisch
+  theme: licht   # donker (standaard), licht, automatisch of glas (licht glas, alleen telefoon)
 ```
 
 - `donker` (standaard): de donkere weergave.
