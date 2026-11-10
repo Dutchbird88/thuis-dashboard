@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '348';
+const CARD_VERSION = '349';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3999,11 +3999,11 @@ const TSTYLE = `
   /* v348: thermostaattegel zonder − en +: thermometer + getal, status, "Doel" (ontwerp gebruiker); afval zonder kopje */
   .mth .mstp { display: none; } .mth .mtop { justify-content: flex-start; align-items: center; margin-top: 4px; } .mth #mPre { margin-left: auto; align-self: flex-start; margin-top: -4px; }
   .mthm { width: 30px; height: 40px; flex: none; margin: 0 2px 0 -6px; } .mthm svg { width: 100%; height: 100%; display: block; } .mthm:empty { display: none; }
-  .mth .mbig { font-size: 40px; font-weight: 700; } .mth .mbig small { color: var(--text); }
-  .mth .mst { margin: 12px 0 0; padding: 0; font-size: 14px; color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
-  .mth .mdl { font-size: 13px; color: var(--muted); margin-top: 3px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; }
+  .mth .mbig { font-size: 40px; font-weight: 700; } .mth .mbig small { color: var(--text); font-size: 26px; font-weight: 600; margin-left: 1px; line-height: 1; } /* v349: groter gradenteken */
+  .mth .mst { margin: 12px 0 0; padding: 0; line-height: 1.2; font-size: 14px; color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
+  .mth .mdl { font-size: 13px; line-height: 1.2; color: var(--muted); margin-top: 1px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; }
   .mrow .mth.ok { background: linear-gradient(180deg, var(--tile2), var(--tile)); }
-  .maf .mbin { top: 8px !important; }
+  .maf { justify-content: center; } .maf .mbin { top: 50% !important; transform: translateY(-50%); } /* v349: inhoud verticaal in het midden */
   .maf { position: relative; cursor: pointer; } .maf .mlab i { font-style: normal; color: var(--bc); }
   .maf .mlab i.ric { display: grid; place-items: center; width: 16px; height: 16px; } .maf .mlab i.ric .ri2 { width: 16px; height: 16px; }
   .maf .mbin { position: absolute; right: 4px; top: 22px; width: 72px; height: 72px; overflow: visible; }

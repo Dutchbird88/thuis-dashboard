@@ -219,6 +219,7 @@
 | v346 | Standaardthema weer `glas` (licht) op alle kaarten, om te testen; donker blijft beschikbaar met `theme: donker`. |
 | v347 | Standaardthema weer donker. |
 | v348 | Thuis (telefoon): thermostaattegel zonder − en +, met thermometer, status en "Doel"; afvaltegel zonder kopje. |
+| v349 | Thermostaattegel: groter gradenteken, status en Doel dichter bij elkaar; afvaltegel verticaal gecentreerd. |
 
 ## Volgende stappen
 
