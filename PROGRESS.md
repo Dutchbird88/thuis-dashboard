@@ -211,6 +211,7 @@
 | v338 | Thuis (telefoon): actieve pillen (Lampen aan, Rolluiken dicht, Zon, Auto laadt, Regen) staan altijd vooraan; de rest in de vaste volgorde. |
 | v339 | Camera op Thuis: valt de live-stream weg ("De WebRTC-stream kon niet worden gestart"), dan start hij vanzelf opnieuw (controle elke 10 s en bij terugkomen in de app). Lukt dat 3× binnen 2 min niet, dan 5 min stilstaande camerabeelden en daarna weer live. |
 | v340 | Camera: de korte WebRTC-melding bij het opstarten wordt verborgen; zolang de stream opstart staat het laatste stilstaande beeld als achtergrond in plaats van zwart. Herstarten pas als de fout langer dan 10 s blijft. |
+| v341 | Camera laadt weer vlot: niet meer herstarten zolang er beeld loopt, en bij terugkomen in de app de stream niet meer altijd afbreken (alleen na 3 s zonder beeld). |
 
 ## Volgende stappen
 

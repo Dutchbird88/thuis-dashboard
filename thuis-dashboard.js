@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '340';
+const CARD_VERSION = '341';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4485,7 +4485,7 @@ class ThuisCard extends HTMLElement {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
     this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); }, 10000);
-    if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); this._camRestart(1200); } }; document.addEventListener('visibilitychange', this._carVis); }
+    if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); clearTimeout(this._camVt); this._camVt = setTimeout(() => { if (this._camEl && !this._camEl._snap && !this._camPlaying(this._camEl)) this._camRestart(0); }, 3000); } }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
     if (this._hass && !this._unsubs) this._subForecast();
@@ -5078,10 +5078,18 @@ class ThuisCard extends HTMLElement {
     for (const c of sr.querySelectorAll?.('*') || []) if (c.shadowRoot && this._camErr(c, d + 1)) return true;
     return false;
   }
+  // v341: speelt er al beeld (video loopt of plaatje geladen)? Dan niet herstarten, ook als er ergens nog een (verborgen) melding staat
+  _camPlaying(root, d = 0) {
+    if (!root || d > 8) return false;
+    const sr = root.shadowRoot || root;
+    for (const v of sr.querySelectorAll?.('video') || []) if (v.readyState >= 2 && !v.paused) return true;
+    for (const c of sr.querySelectorAll?.('*') || []) if (c.shadowRoot && this._camPlaying(c, d + 1)) return true;
+    return false;
+  }
   _camWatch() {
     if (this._camEl?._snap && Date.now() >= (this._camSnapUntil || 0)) { this._camRestart(0); return; } // na 5 min weer live proberen
     if (!this._camEl || document.visibilityState !== 'visible') return;
-    const err = this._camErr(this._camEl); if (!err) { this._camErrN = 0; return; }
+    const err = this._camErr(this._camEl) && !this._camPlaying(this._camEl); if (!err) { this._camErrN = 0; return; }
     if (++this._camErrN < 2) return; // een melding bij het opstarten verdwijnt binnen enkele seconden: pas herstarten als hij blijft staan
     this._camErrN = 0;
     const now = Date.now(); this._camFails = (this._camFails || []).filter((t) => now - t < 2 * 60000); this._camFails.push(now);
