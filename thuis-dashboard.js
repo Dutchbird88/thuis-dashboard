@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '342';
+const CARD_VERSION = '343';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4274,7 +4274,7 @@ const WSKY = `
 .wsky { display: none; }
 @media (max-width: 600px) {
   :host(:not([data-th]):not([data-gl])) .twrap.wxs { position: relative; isolation: isolate; }
-  :host(:not([data-th]):not([data-gl])) .twrap.wxs .wsky { display: block; position: absolute; left: 0; right: 0; top: 0; height: 480px; z-index: -1; pointer-events: none; overflow: hidden; background: linear-gradient(180deg, var(--a) 0, var(--b) 24%, rgba(14,22,38,.55) 52%, transparent 100%); }
+  :host(:not([data-th]):not([data-gl])) .twrap.wxs .wsky { display: block; position: absolute; left: 0; right: 0; top: 0; height: 1000px; z-index: -1; pointer-events: none; overflow: hidden; background: linear-gradient(180deg, var(--a) 0, var(--b) 14%, color-mix(in srgb, var(--b) 55%, #0a111d) 38%, color-mix(in srgb, var(--b) 25%, #0a111d) 70%, transparent 100%); } /* v343: de lucht loopt door tot halverwege de pagina (keuze D) */
   .wsky .glow { position: absolute; right: -70px; top: -90px; width: 330px; height: 330px; border-radius: 50%; background: radial-gradient(circle, rgba(255,206,110,.34), rgba(255,180,80,.09) 45%, transparent 70%); }
   .wsky .cl { position: absolute; border-radius: 50%; filter: blur(22px); background: rgba(200,215,235,var(--o,.12)); animation: wdrift 40s linear infinite alternate; }
   .wsky .rain { position: absolute; left: 0; right: 0; top: 0; height: 390px; -webkit-mask: linear-gradient(#000 30%, transparent); mask: linear-gradient(#000 30%, transparent); }

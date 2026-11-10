@@ -213,6 +213,7 @@
 | v340 | Camera: de korte WebRTC-melding bij het opstarten wordt verborgen; zolang de stream opstart staat het laatste stilstaande beeld als achtergrond in plaats van zwart. Herstarten pas als de fout langer dan 10 s blijft. |
 | v341 | Camera laadt weer vlot: niet meer herstarten zolang er beeld loopt, en bij terugkomen in de app de stream niet meer altijd afbreken (alleen na 3 s zonder beeld). |
 | v342 | Thuis (telefoon, donker): bovenin een lucht in de kleur van het weer, met rustige wolken, regen, sneeuw, mist, onweer of sterren; de statusbalk kleurt mee. |
+| v343 | Thuis (telefoon): de weerlucht loopt door tot halverwege de pagina, zodat onderin geen vlak donker stuk meer is. |
 
 ## Volgende stappen
 
