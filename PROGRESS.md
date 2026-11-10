@@ -225,6 +225,7 @@
 | v352 | Muziektegel: alleen de titel (loopt door als hij niet past), grotere afspeelknop. |
 | v353 | Kamervenster: klimaattegel in het nieuwe ontwerp (past weer), HomePod-pil niet meer extreem breed en lange titel loopt door. |
 | v354 | Lamptegels in ontwerp L: grote gloeilamp rechts die sterker gloeit naarmate de lamp feller staat, één kleur, overal gelijk uitgelijnd. |
+| v355 | Lamptegels: lamp kleiner en links, met meer ruimte eromheen. |
 
 ## Volgende stappen
 
