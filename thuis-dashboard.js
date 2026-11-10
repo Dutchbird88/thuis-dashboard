@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '353';
+const CARD_VERSION = '354';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1940,6 +1940,15 @@ const TIDY = `
   :host(:not([data-th])) .kr.kr.kr.kr:not(.lit), :host(:not([data-th])) .lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, #132036), color-mix(in srgb, #ffffff 4%, #0f1828)) !important; }
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
   :host(:not([data-th])) .was.was.was.was.was.was.done, :host(:not([data-th])) .mstack > .was.was.was.was.was.was.done, :host(:not([data-th])) #dish.was.was.was.was.was.done, :host(:not([data-th])) #oven.was.was.was.was.was.done, :host(:not([data-th])) #was.was.was.was.was.was.done { background: radial-gradient(120% 140% at 0% 0%, rgba(79,208,127,.13), transparent 65%), linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(79,208,127,.28) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; }
+  /* v354: lamptegel ontwerp L — grote gloeilamp rechts (vaste plek, half buiten de tegel), gloed sterker met de helderheid (--k); één warme kleur */
+  :host(:not([data-th])) .lt.lt.lb { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); padding: 12px 58px 12px 14px; min-height: 66px; }
+  :host(:not([data-th])) .lt.lb .n, :host(:not([data-th])) .lt.lb .ms { grid-column: 1; position: relative; z-index: 1; }
+  :host(:not([data-th])) .lt.lb .mi2.mi2 { position: absolute; right: -12px; top: 50%; transform: translateY(-50%); width: 72px; height: 72px; border-radius: 0; background: none !important; box-shadow: none !important; display: block; }
+  :host(:not([data-th])) .lt.lb .mi2 svg { width: 72px; height: 72px; display: block; transition: filter .35s, opacity .35s; }
+  :host(:not([data-th])) .lt.lb:not(.on) .mi2 svg { opacity: .55; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on { background: radial-gradient(75% 110% at 100% 50%, rgba(255,205,90,calc(.08 + .22 * var(--k, 1))), transparent 70%), linear-gradient(135deg, #17213a, #111a2c) !important; border-color: rgba(255,214,120,calc(.10 + .20 * var(--k, 1))) !important; }
+  :host(:not([data-th])) .lt.lb.on .mi2 svg { opacity: calc(.6 + .4 * var(--k, 1)); filter: drop-shadow(0 0 calc(6px + 16px * var(--k, 1)) rgba(255,205,90,calc(.5 + .4 * var(--k, 1)))); }
+  :host(:not([data-th])) .lt.lt.lb.on .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
@@ -5422,9 +5431,9 @@ class ThuisCard extends HTMLElement {
     box.innerHTML = ls.map((s) => {
       const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a);
       const name = (this._nm(s) || s.entity_id).replace(/^Hue /, '');
-      return `<div class="lt${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}">
+      return `<div class="lt lb${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
-        <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
+        <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
     }).join('') + wol.map((w) => `<div class="lt wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
         <i class="mi2">${RIC.svg(w.icon, w.st)}</i><div class="n">${w.name}</div><div class="ms">${w.txt}</div></div>`).join('');
     // Wake on LAN (telefoon): tik = wekken (als hij uit is), lang indrukken = venster van HA
@@ -7072,7 +7081,7 @@ class ThuisCard extends HTMLElement {
   // lamp- en rolluiktegels zoals bij Bediening (telefoon): tik = eigen paneel, tik op het rondje = aan/uit of open/dicht, lang = HA-venster
   _ltTile(s) {
     const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a), name = this._shortName(this._nm(s) || s.entity_id);
-    return `<div class="lt${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? `Aan${a.brightness != null ? ` · ${Math.round(a.brightness / 2.55)}%` : ''}` : 'Uit'}</div></div>`;
+    return `<div class="lt lb${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : 'Uit'}</div></div>`;
   }
   _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
   _shortName(n) { const rm = ((this._config.rooms || []).length ? this._config.rooms : this._areaRooms())[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${reEsc(rm.name)}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
