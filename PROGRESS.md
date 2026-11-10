@@ -208,6 +208,7 @@
 | v335 | Uitgeschakelde kamers, lampen en rolluiken (donker, telefoon, overal) ~10% lichter (4% wit door de tegelkleur), voor meer contrast. |
 | v336 | Vaatwasserkaart (telefoon): tijdens het afwassen stijgen zachte stoomwolkjes op aan de rechterkant (keuze A; niet bij pauze of gepland, uit bij "beweging beperken"). Testpagina `vaat=1`, view `thuis-telefoon-vaat`. |
 | v337 | Fix: "Vaat is klaar" kreeg het groene klaar-effect niet (de id-regel `#dish` uit `TIDY` won); nu ook groen, net als de wasmachine en de oven. |
+| v338 | Thuis (telefoon): actieve pillen (Lampen aan, Rolluiken dicht, Zon, Auto laadt, Regen) staan altijd vooraan; de rest in de vaste volgorde. |
 
 ## Volgende stappen
 

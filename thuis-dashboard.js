@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '337';
+const CARD_VERSION = '338';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -7279,11 +7279,13 @@ class ThuisCard extends HTMLElement {
     const minPos = covers.reduce((m, s) => Math.min(m, s.attributes.current_position ?? (s.state === 'closed' ? 0 : 100)), 100);
     const night = this._state('sun.sun')?.state === 'below_horizon';
     const car = parseFloat(this._state(c.car_battery)?.state), chg = /charg|laden|laadt/i.test(this._state(c.car_charging)?.state || '');
-    const html = (rNow || rm ? P('rain', '#38bdf8', u(rNow ? 'wRain' : 'gDrop'), rNow ? 'Het regent' : 'Regen', rNow ? 'nu' : `over ${rm[1]} min`, 1) : '')
+    let html = (rNow || rm ? P('rain', '#38bdf8', u(rNow ? 'wRain' : 'gDrop'), rNow ? 'Het regent' : 'Regen', rNow ? 'nu' : `over ${rm[1]} min`, 1) : '')
       + (lights.length ? P('bed', '#ffc83d', gBulb(lOn > 0), 'Lampen', lOn ? `${lOn} aan` : 'alles uit', lOn > 0) : '')
       + (covers.length ? P('bed', '#5aa2ff', gBlind(minPos), 'Rolluiken', cDown ? `${cDown} dicht` : 'alles open', cDown > 0) : '')
       + P('nu', 'var(--sun)', pv > 5 ? u('gSun') : night ? u('wNight') : RIC.svg('sun', 'off'), 'Zon', pv > 5 ? pw : 'geen opwek', pv > 5)
       + (!isNaN(car) ? P('auto', '#5ee1d0', RIC.svg('car', chg ? 'teal' : 'on'), 'Auto', `${Math.round(car)}%${chg ? ' · laadt' : ''}`, chg) : '');
+    // v338 (telefoon): actieve pillen altijd vooraan, verder in de vaste volgorde
+    if (this._mq?.matches) { const parts = html.split(/(?=<div class="mp)/); html = [...parts.filter((x) => x.startsWith('<div class="mp hot')), ...parts.filter((x) => !x.startsWith('<div class="mp hot'))].join(''); }
     if (html === this._pillKey) return;
     this._pillKey = html;
     const box = this.$('mPills');
