@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '355';
+const CARD_VERSION = '356';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1946,9 +1946,10 @@ const TIDY = `
   :host(:not([data-th])) .lt.lb .mi2.mi2 { position: absolute; left: 10px; right: auto; top: calc(50% - 24px); transform: none; width: 48px; height: 48px; border-radius: 0; background: none !important; box-shadow: none !important; display: block; }
   :host(:not([data-th])) .lt.lb .mi2 svg { width: 48px; height: 48px; display: block; transition: filter .35s, opacity .35s; }
   :host(:not([data-th])) .lt.lb:not(.on) .mi2 svg { opacity: .55; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on { background: radial-gradient(80% 120% at 0% 50%, rgba(255,205,90,calc(.08 + .22 * var(--k, 1))), transparent 70%), linear-gradient(135deg, #17213a, #111a2c) !important; border-color: rgba(255,214,120,calc(.10 + .20 * var(--k, 1))) !important; }
-  :host(:not([data-th])) .lt.lb.on .mi2 svg { opacity: calc(.6 + .4 * var(--k, 1)); filter: drop-shadow(0 0 calc(4px + 10px * var(--k, 1)) rgba(255,205,90,calc(.5 + .4 * var(--k, 1)))); }
-  :host(:not([data-th])) .lt.lt.lb.on .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on:not(.wol) { background: radial-gradient(80% 120% at 0% 50%, rgba(255,205,90,.14), transparent 70%), linear-gradient(135deg, #17213a, #111a2c) !important; border-color: rgba(255,214,120,.18) !important; } /* v356: achtergrond van alle actieve lamptegels gelijk */
+  :host(:not([data-th])) .lt.lb.on:not(.wol) .mi2 svg { opacity: calc(.6 + .4 * var(--k, 1)); filter: drop-shadow(0 0 calc(3px + 7px * var(--k, 1)) rgba(255,205,90,calc(.38 + .3 * var(--k, 1)))); } /* v356: gloed ~25% zachter */
+  :host(:not([data-th])) .lt.lb.wol .mi2 svg { width: 42px; height: 42px; margin: 3px; } :host(:not([data-th])) .lt.lb.wol:not(.on) .mi2 svg { opacity: .7; } /* v356: computer/server in dezelfde opzet als de lampen */
+  :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
@@ -5434,7 +5435,7 @@ class ThuisCard extends HTMLElement {
       return `<div class="lt lb${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
         <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
-    }).join('') + wol.map((w) => `<div class="lt wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
+    }).join('') + wol.map((w) => `<div class="lt lb wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
         <i class="mi2">${RIC.svg(w.icon, w.st)}</i><div class="n">${w.name}</div><div class="ms">${w.txt}</div></div>`).join('');
     // Wake on LAN (telefoon): tik = wekken (als hij uit is), lang indrukken = venster van HA
     box.querySelectorAll('.lt.wol').forEach((el) => {

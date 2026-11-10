@@ -226,6 +226,7 @@
 | v353 | Kamervenster: klimaattegel in het nieuwe ontwerp (past weer), HomePod-pil niet meer extreem breed en lange titel loopt door. |
 | v354 | Lamptegels in ontwerp L: grote gloeilamp rechts die sterker gloeit naarmate de lamp feller staat, één kleur, overal gelijk uitgelijnd. |
 | v355 | Lamptegels: lamp kleiner en links, met meer ruimte eromheen. |
+| v356 | Lamptegels: gelijke achtergrond voor alle lampen die aan zijn, zachtere gloed; computer en server in dezelfde opzet als de lampen. |
 
 ## Volgende stappen
 
