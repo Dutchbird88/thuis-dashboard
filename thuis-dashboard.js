@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '356';
+const CARD_VERSION = '357';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1941,14 +1941,14 @@ const TIDY = `
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
   :host(:not([data-th])) .was.was.was.was.was.was.done, :host(:not([data-th])) .mstack > .was.was.was.was.was.was.done, :host(:not([data-th])) #dish.was.was.was.was.was.done, :host(:not([data-th])) #oven.was.was.was.was.was.done, :host(:not([data-th])) #was.was.was.was.was.was.done { background: radial-gradient(120% 140% at 0% 0%, rgba(79,208,127,.13), transparent 65%), linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(79,208,127,.28) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; }
   /* v354: lamptegel ontwerp L — grote gloeilamp rechts (vaste plek, half buiten de tegel), gloed sterker met de helderheid (--k); één warme kleur */
-  :host(:not([data-th])) .lt.lt.lb { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); padding: 12px 12px 12px 68px; min-height: 66px; } /* v355: lamp links, kleiner, met ruimte (keuze B, links) */
+  :host(:not([data-th])) .lt.lt.lb { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); padding: 12px 12px 12px 64px; min-height: 66px; } /* v355: lamp links, kleiner, met ruimte (keuze B, links) */
   :host(:not([data-th])) .lt.lb .n, :host(:not([data-th])) .lt.lb .ms { grid-column: 1; position: relative; z-index: 1; }
-  :host(:not([data-th])) .lt.lb .mi2.mi2 { position: absolute; left: 10px; right: auto; top: calc(50% - 24px); transform: none; width: 48px; height: 48px; border-radius: 0; background: none !important; box-shadow: none !important; display: block; }
-  :host(:not([data-th])) .lt.lb .mi2 svg { width: 48px; height: 48px; display: block; transition: filter .35s, opacity .35s; }
+  :host(:not([data-th])) .lt.lb .mi2.mi2 { position: absolute; left: 10px; right: auto; top: calc(50% - 22px); transform: none; width: 44px; height: 44px; border-radius: 0; background: none !important; box-shadow: none !important; display: block; }
+  :host(:not([data-th])) .lt.lb .mi2 svg { width: 44px; height: 44px; display: block; transition: filter .35s, opacity .35s; }
   :host(:not([data-th])) .lt.lb:not(.on) .mi2 svg { opacity: .55; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on:not(.wol) { background: radial-gradient(80% 120% at 0% 50%, rgba(255,205,90,.14), transparent 70%), linear-gradient(135deg, #17213a, #111a2c) !important; border-color: rgba(255,214,120,.18) !important; } /* v356: achtergrond van alle actieve lamptegels gelijk */
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on:not(.wol) { background: linear-gradient(135deg, color-mix(in srgb, #ffc83d 26%, rgba(28,38,60,.9)), color-mix(in srgb, #ffc83d 14%, rgba(20,28,46,.9))) !important; border-color: color-mix(in srgb, #ffc83d 30%, transparent) !important; } /* v357: geel vlak zoals de server (keuze A), voor alle lampen gelijk */
   :host(:not([data-th])) .lt.lb.on:not(.wol) .mi2 svg { opacity: calc(.6 + .4 * var(--k, 1)); filter: drop-shadow(0 0 calc(3px + 7px * var(--k, 1)) rgba(255,205,90,calc(.38 + .3 * var(--k, 1)))); } /* v356: gloed ~25% zachter */
-  :host(:not([data-th])) .lt.lb.wol .mi2 svg { width: 42px; height: 42px; margin: 3px; } :host(:not([data-th])) .lt.lb.wol:not(.on) .mi2 svg { opacity: .7; } /* v356: computer/server in dezelfde opzet als de lampen */
+  :host(:not([data-th])) .lt.lb.wol .mi2 svg { width: 38px; height: 38px; margin: 3px; } :host(:not([data-th])) .lt.lb.wol:not(.on) .mi2 svg { opacity: .7; } /* v356: computer/server in dezelfde opzet als de lampen */
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
 }
 `;
