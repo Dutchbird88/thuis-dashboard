@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '350';
+const CARD_VERSION = '351';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4004,6 +4004,7 @@ const TSTYLE = `
   .mth .mdl { font-size: 13px; line-height: 1.2; color: var(--muted); margin-top: 1px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; } .mth.hot .mdl, .mth.ok .mdl { padding-left: 21px; } .mth.ok .mdl { padding-left: 20px; } /* v350: Doel lijnt uit met de tekst achter het icoon */
   .mrow .mth.ok { background: linear-gradient(180deg, var(--tile2), var(--tile)); }
   .maf { justify-content: center; } .maf .mbin { top: 50% !important; transform: translateY(-50%); } /* v349: inhoud verticaal in het midden */
+  .maf.quiet .mbin { top: 10px !important; transform: none; width: 44px; height: 44px; } /* v351: bij Geen afval de bak rechtsboven, anders valt hij over de tekst */
   .maf { position: relative; cursor: pointer; } .maf .mlab i { font-style: normal; color: var(--bc); }
   .maf .mlab i.ric { display: grid; place-items: center; width: 16px; height: 16px; } .maf .mlab i.ric .ri2 { width: 16px; height: 16px; }
   .maf .mbin { position: absolute; right: 4px; top: 22px; width: 72px; height: 72px; overflow: visible; }

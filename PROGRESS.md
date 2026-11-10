@@ -221,6 +221,7 @@
 | v348 | Thuis (telefoon): thermostaattegel zonder − en +, met thermometer, status en "Doel"; afvaltegel zonder kopje. |
 | v349 | Thermostaattegel: groter gradenteken, status en Doel dichter bij elkaar; afvaltegel verticaal gecentreerd. |
 | v350 | Thermostaattegel: "Doel" lijnt uit met de tekst "Verwarmt"/"Op temperatuur". |
+| v351 | Afvaltegel: bij "Geen afval" staat de bak weer rechtsboven, zodat hij niet over de tekst valt. |
 
 ## Volgende stappen
 
