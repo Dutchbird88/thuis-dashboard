@@ -222,6 +222,7 @@
 | v349 | Thermostaattegel: groter gradenteken, status en Doel dichter bij elkaar; afvaltegel verticaal gecentreerd. |
 | v350 | Thermostaattegel: "Doel" lijnt uit met de tekst "Verwarmt"/"Op temperatuur". |
 | v351 | Afvaltegel: bij "Geen afval" staat de bak weer rechtsboven, zodat hij niet over de tekst valt. |
+| v352 | Muziektegel: alleen de titel (loopt door als hij niet past), grotere afspeelknop. |
 
 ## Volgende stappen
 

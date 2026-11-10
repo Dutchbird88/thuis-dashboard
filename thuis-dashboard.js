@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '351';
+const CARD_VERSION = '352';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4444,9 +4444,13 @@ const HPSTYLE = `
   .mus .mart { width: 52px; height: 52px; border-radius: 11px; margin: 0 0 10px; box-shadow: 0 8px 18px rgba(0,0,0,.45); object-fit: cover; background: rgba(255,255,255,.08); flex: none; }
   .mus .mart.ic { display: grid; place-items: center; } .mus .mart.ic svg { width: 34px; height: 34px; }
   .mus b { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mus .mtt { display: block; text-overflow: clip; } .mus .mtt span { display: inline-block; white-space: nowrap; } .mus .mtt .mgap { display: inline-block; width: 40px; }
+  .mus .mtt.run { -webkit-mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); } .mus .mtt.run span { animation: mtt var(--d, 10s) linear infinite; }
+  @keyframes mtt { 0%, 12% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .mus .mtt.run span { animation: none; } }
   .mus .msub { font-size: 13px; color: rgba(255,255,255,.72); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mus .hpbtn { position: absolute; right: 14px; top: 18px; width: 38px !important; height: 38px !important; padding: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center; color: #fff !important; background: rgba(255,255,255,.18) !important; border: 1px solid rgba(255,255,255,.22) !important; box-shadow: none !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-  .mus .hpbtn svg { width: 17px !important; height: 17px !important; }
+  .mus .hpbtn { position: absolute; right: 14px; top: 16px; width: 48px !important; height: 48px !important; padding: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center; color: #fff !important; background: rgba(255,255,255,.18) !important; border: 1px solid rgba(255,255,255,.22) !important; box-shadow: none !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .mus .hpbtn svg { width: 22px !important; height: 22px !important; } /* v352: knop groter */
   .mus .mpg { margin-top: auto; height: 3px; border-radius: 99px; background: rgba(255,255,255,.18); } .mus .mpg i { display: block; height: 100%; border-radius: 99px; background: #fff; transition: width 1s linear; }
   .ksp.hpp i.g svg { width: 100%; height: 100%; }
   .hpsh { display: flex; flex-direction: column; align-items: center; padding: 6px 8px 10px; }
@@ -6085,15 +6089,20 @@ class ThuisCard extends HTMLElement {
     let html = '';
     if (m) {
       const art = m.pic ? `<img class="mart" src="${m.pic}" alt="">` : `<div class="mart ic">${HPICON(true)}</div>`;
-      const sub = [m.artist, m.area || m.dev].filter(Boolean).join(' · ');
       html = `<div class="mbg"${m.pic ? ` style="background-image:url('${m.pic}')"` : ''}></div>${art}<button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button>`
-        + `<b>${m.title || 'Muziek'}</b><span class="msub">${sub}</span><div class="mpg">${m.dur ? '<i></i>' : ''}</div>`;
+        + `<b class="mtt"><span>${m.title || 'Muziek'}</span></b><div class="mpg">${m.dur ? '<i></i>' : ''}</div>`;
     }
     box.hidden = !m;
     box.dataset.sig = ses ? String(ses.start) : '';
     if (box._k !== html) {
       box._k = html; box.innerHTML = html;
       box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
+    }
+    // v352: past de titel niet, dan loopt hij van rechts naar links (eenmalig gemeten zodra de tegel zichtbaar is)
+    const tt = box.querySelector('.mtt');
+    if (tt && !tt._m && tt.clientWidth > 0) {
+      tt._m = 1; const sp = tt.firstChild, w = sp.scrollWidth;
+      if (w > tt.clientWidth + 2) { const t = sp.innerHTML; sp.innerHTML = `${t}<i class="mgap"></i>${t}<i class="mgap"></i>`; tt.classList.add('run'); tt.style.setProperty('--d', `${Math.max(6, (w + 40) / 30).toFixed(1)}s`); }
     }
     const pg = box.querySelector('.mpg i'); if (pg && m?.dur) pg.style.width = `${(m.pos / m.dur * 100).toFixed(1)}%`;
     box.dataset.id = m ? m.id : '';

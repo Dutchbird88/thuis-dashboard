@@ -81,7 +81,7 @@ ent('calendar.familie', 'off', {}, { name: 'Familie' });
 if (q.get('hp')) {
   const art = q.get('art') ? svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="a" x2="1" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset="1" stop-color="#5b3cc4"/></linearGradient></defs><rect width="100" height="100" fill="url(#a)"/><circle cx="50" cy="50" r="22" fill="none" stroke="#fff" stroke-width="4" opacity=".7"/></svg>') : null;
   dev('d_hp', 'HomePod', 'woon', { model: 'HomePod mini', manufacturer: 'Apple' });
-  ent('media_player.homepod', q.get('hp'), q.get('hp') === 'idle' ? { volume_level: 0.3 } : { media_title: 'Zomeravond', media_artist: 'De Artiest', media_duration: 220, media_position: 84, media_position_updated_at: at(now - 1000), volume_level: 0.45, ...(art ? { entity_picture: art } : {}) }, { dev: 'd_hp', fn: 'HomePod', pl: 'apple_tv' });
+  ent('media_player.homepod', q.get('hp'), q.get('hp') === 'idle' ? { volume_level: 0.3 } : { media_title: q.get('mt') || 'Zomeravond', media_artist: 'De Artiest', media_duration: 220, media_position: 84, media_position_updated_at: at(now - 1000), volume_level: 0.45, ...(art ? { entity_picture: art } : {}) }, { dev: 'd_hp', fn: 'HomePod', pl: 'apple_tv' });
 }
 if (q.get('dup')) {
   dev('d_hpa', 'Keuken', 'keuken', { model: 'HomePod mini', manufacturer: 'Apple' }); dev('d_hpb', 'Keuken', 'keuken', { model: 'HomePod mini', manufacturer: 'Apple' });
