@@ -220,6 +220,7 @@
 | v347 | Standaardthema weer donker. |
 | v348 | Thuis (telefoon): thermostaattegel zonder − en +, met thermometer, status en "Doel"; afvaltegel zonder kopje. |
 | v349 | Thermostaattegel: groter gradenteken, status en Doel dichter bij elkaar; afvaltegel verticaal gecentreerd. |
+| v350 | Thermostaattegel: "Doel" lijnt uit met de tekst "Verwarmt"/"Op temperatuur". |
 
 ## Volgende stappen
 
