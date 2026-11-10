@@ -215,6 +215,7 @@
 | v342 | Thuis (telefoon, donker): bovenin een lucht in de kleur van het weer, met rustige wolken, regen, sneeuw, mist, onweer of sterren; de statusbalk kleurt mee. |
 | v343 | Thuis (telefoon): de weerlucht loopt door tot halverwege de pagina, zodat onderin geen vlak donker stuk meer is. |
 | v344 | Thuis (telefoon): pillen die aan staan zijn op de weerlucht doorschijnend glas met amber rand en tekst, in plaats van mosterdbruin. |
+| v345 | Thuis: weer de donkere achtergrond van v341 (weerlucht en glaspillen van v342–v344 teruggedraaid op verzoek). |
 
 ## Volgende stappen
 

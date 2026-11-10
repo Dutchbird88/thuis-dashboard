@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '344';
+const CARD_VERSION = '345';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1861,7 +1861,6 @@ const CARD_VERSION = '344';
       if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
       const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = gl.localName === 'thuis-card' ? '#23466b' : '#c6d9ee'; // v309: glas: lucht bovenin
-      const wx = !gl && cards.find((c) => c._wxSky && !c.hasAttribute('data-th') && c.getBoundingClientRect().height > 0); if (wx) BG = wx._wxSky; // v342: Thuis: balk in de kleur van de weerlucht
       const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
       const BG0 = BG; BG = sky && mq.matches ? sky._skyColor : BG; // BG zelf blijft de themakleur
       const bgRgb = `rgb(${parseInt(BG.slice(1, 3), 16)}, ${parseInt(BG.slice(3, 5), 16)}, ${parseInt(BG.slice(5, 7), 16)})`;
@@ -4269,31 +4268,6 @@ const HPI = {
   vol0: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/></svg>',
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
-// v342: Thuis (telefoon, donker): bovenin een lucht in de kleur van het weer, met rustige wolken, regen, sneeuw, mist, onweer of sterren
-const WSKY = `
-.wsky { display: none; }
-@media (max-width: 600px) {
-  :host(:not([data-th]):not([data-gl])) .twrap.wxs { position: relative; isolation: isolate; }
-  :host(:not([data-th]):not([data-gl])) .twrap.wxs .wsky { display: block; position: absolute; left: 0; right: 0; top: 0; height: 1000px; z-index: -1; pointer-events: none; overflow: hidden; background: linear-gradient(180deg, var(--a) 0, var(--b) 14%, color-mix(in srgb, var(--b) 55%, #0a111d) 38%, color-mix(in srgb, var(--b) 25%, #0a111d) 70%, transparent 100%); } /* v343: de lucht loopt door tot halverwege de pagina (keuze D) */
-  .wsky .glow { position: absolute; right: -70px; top: -90px; width: 330px; height: 330px; border-radius: 50%; background: radial-gradient(circle, rgba(255,206,110,.34), rgba(255,180,80,.09) 45%, transparent 70%); }
-  .wsky .cl { position: absolute; border-radius: 50%; filter: blur(22px); background: rgba(200,215,235,var(--o,.12)); animation: wdrift 40s linear infinite alternate; }
-  .wsky .rain { position: absolute; left: 0; right: 0; top: 0; height: 390px; -webkit-mask: linear-gradient(#000 30%, transparent); mask: linear-gradient(#000 30%, transparent); }
-  .wsky .rain i { position: absolute; top: -30px; width: 1px; height: 22px; background: linear-gradient(transparent, rgba(190,215,255,.45)); transform: rotate(12deg); animation: wfall linear infinite; }
-  .wsky .snow i { position: absolute; top: -10px; border-radius: 50%; background: rgba(255,255,255,.7); animation: wsnow linear infinite; }
-  .wsky .flash { position: absolute; inset: 0; background: radial-gradient(70% 40% at 30% 0%, rgba(190,180,255,.35), transparent 70%); opacity: 0; animation: wflash 7s infinite; }
-  .wsky .fog { position: absolute; left: -30%; width: 160%; height: 76px; border-radius: 50%; background: rgba(200,210,225,.10); filter: blur(16px); animation: wdrift 25s ease-in-out infinite alternate; }
-  .wsky .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: wtw 4s ease-in-out infinite; }
-  @keyframes wdrift { to { transform: translateX(50px); } }
-  @keyframes wfall { to { transform: translate(-75px, 430px) rotate(12deg); } }
-  @keyframes wsnow { 0% { transform: translate(0, 0); } 50% { transform: translate(12px, 210px); } 100% { transform: translate(-8px, 420px); opacity: 0; } }
-  @keyframes wflash { 0%, 88%, 100% { opacity: 0; } 89% { opacity: 1; } 90% { opacity: .2; } 91.5% { opacity: .8; } 94% { opacity: 0; } }
-  @keyframes wtw { 50% { opacity: .25; } }
-  @media (prefers-reduced-motion: reduce) { .wsky * { animation: none !important; } }
-  /* v344 (keuze A): pillen die aan staan op de lucht: hetzelfde glas als uit, met rand en tekst in de eigen kleur (amber over grijs werd mosterdbruin op het blauw) */
-  :host(:not([data-th]):not([data-gl])) .twrap.wxs .mp.mp.mp.hot:not(.alarm):not(.warn) { background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 55%, rgba(255,255,255,.05) 100%) !important; border: 1px solid color-mix(in srgb, var(--c, #ffb547) 38%, transparent) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16) !important; }
-  :host(:not([data-th]):not([data-gl])) .twrap.wxs .mp.mp.mp.hot:not(.alarm):not(.warn) span { color: color-mix(in srgb, var(--c, #ffb547) 70%, #fff) !important; }
-}
-`;
 const HPSTYLE = `
 
 /* v336: stoom op de vaatwasserkaart tijdens het afwassen (alleen telefoon) */
@@ -4577,9 +4551,9 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}${WSKY}${TIDY}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}${TIDY}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
-      <div class="wrap twrap${this._kmode ? ' kmode' : ''}">${this._kmode ? '' : '<div class="wsky" id="wsky"></div>'}<div class="inner">
+      <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
           <div class="clock"><b id="time">—</b><div><span id="greet"></span><span id="tdate" style="font-size:14px;color:var(--muted);font-weight:400"></span></div></div>
           ${tabsHtml(this._kmode ? 'kamers' : 'thuis')}
@@ -4970,37 +4944,7 @@ class ThuisCard extends HTMLElement {
     }
     return `${drop}<b style="color:#38bdf8;font-weight:600">Regen over ${Math.max(5, Math.round((list[wetI].t - now) / 60000 / 5) * 5)} min</b> · ${peak}`;
   }
-  // v342: lucht bovenin Thuis (telefoon, donker) volgt het weer; 's nachts (zon onder) donker met sterren of zacht weer
-  _updSky() {
-    const el = this.$('wsky'); if (!el) return;
-    const c = this._wxState()?.state || '', sun = this._state('sun.sun');
-    const night = sun ? sun.state === 'below_horizon' : ((h) => h < 7 || h >= 18)(new Date().getHours());
-    const wet = /rain|pour|lightning/.test(c), snow = /snow|hail/.test(c);
-    let k, fx;
-    if (night) { k = /clear|sunny|partly/.test(c) || !c ? 'nacht' : 'nachtb'; fx = k === 'nacht' ? 'sterren' : snow ? 'sneeuw' : wet ? 'zregen' : 'zwolk'; }
-    else if (/lightning/.test(c)) k = fx = 'onweer';
-    else if (snow) k = fx = 'sneeuw';
-    else if (wet) k = fx = 'regen';
-    else if (c === 'sunny') k = fx = 'zon';
-    else { k = 'half'; fx = /fog/.test(c) ? 'mist' : /cloudy$|exceptional/.test(c) && c !== 'partlycloudy' ? 'bew' : 'half'; } // bewolkt en mist in de kleur van half bewolkt (keuze gebruiker)
-    const key = k + fx; if (key === this._skyKey) return; this._skyKey = key;
-    const [a, b] = { zon: ['#24508f', '#173158'], half: ['#2a4c7e', '#183052'], regen: ['#2a3d5c', '#1a2840'], onweer: ['#2a2747', '#1b1a33'], sneeuw: ['#3e4f68', '#223248'], nacht: ['#121c3a', '#0d1530'], nachtb: ['#1a2234', '#111a2a'] }[k];
-    el.style.setProperty('--a', a); el.style.setProperty('--b', b);
-    let sd = 7; const R = (lo, hi) => { sd = (sd * 16807) % 2147483647; return lo + (sd / 2147483647) * (hi - lo); }; // vaste posities
-    const cl = (n, o) => Array.from({ length: n }, () => `<i class="cl" style="--o:${o};left:${R(-30, 70).toFixed(1)}%;top:${R(-40, 160).toFixed(0)}px;width:${R(150, 260).toFixed(0)}px;height:${R(50, 90).toFixed(0)}px;animation-duration:${R(30, 60).toFixed(0)}s"></i>`).join('');
-    const rain = (n, o) => `<div class="rain">${Array.from({ length: n }, () => `<i style="left:${R(0, 120).toFixed(1)}%;opacity:${o};animation-duration:${R(0.9, 1.4).toFixed(2)}s;animation-delay:-${R(0, 2).toFixed(2)}s"></i>`).join('')}</div>`;
-    const flakes = (n) => `<div class="rain snow">${Array.from({ length: n }, () => { const z = R(2, 4).toFixed(1); return `<i style="left:${R(0, 100).toFixed(1)}%;width:${z}px;height:${z}px;animation-duration:${R(6, 11).toFixed(1)}s;animation-delay:-${R(0, 11).toFixed(1)}s"></i>`; }).join('')}</div>`;
-    el.innerHTML = {
-      zon: '<div class="glow"></div>', half: cl(3, 0.10), bew: cl(5, 0.12), mist: [0, 1, 2, 3].map((i) => `<i class="fog" style="top:${50 + i * 78}px;animation-duration:${R(18, 30).toFixed(0)}s"></i>`).join(''),
-      regen: cl(5, 0.12) + rain(55, 1), onweer: cl(5, 0.12) + rain(65, 1) + '<div class="flash"></div>', sneeuw: cl(4, 0.12) + flakes(45),
-      sterren: `<div class="stars">${Array.from({ length: 40 }, () => `<i style="left:${R(0, 100).toFixed(1)}%;top:${R(0, 300).toFixed(0)}px;opacity:${R(0.3, 0.9).toFixed(2)};animation-delay:-${R(0, 4).toFixed(1)}s;transform:scale(${R(0.5, 1.1).toFixed(2)})"></i>`).join('')}</div>`,
-      zregen: cl(4, 0.06) + rain(36, 0.5), zwolk: cl(4, 0.06),
-    }[fx] || '';
-    this.$('wsky').parentElement.classList.add('wxs');
-    this._wxSky = a; chromeApply?.();
-  }
   _updWeather(force) {
-    this._updSky();
     const w = this._wxState();
     if (!w) return;
     const a = w.attributes, set = (id, html) => { const el = this.$(id); if (el.innerHTML !== html) el.innerHTML = html; };
