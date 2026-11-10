@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '339';
+const CARD_VERSION = '340';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5057,6 +5057,8 @@ class ThuisCard extends HTMLElement {
       el._entity = this._camId; el._snap = snap;
       el.hass = this._hass;
       const box = this.$('camLive');
+      // v340: het laatste stilstaande beeld als achtergrond, zodat het niet zwart is zolang de live-stream opstart
+      const pic = this._state(this._camId)?.attributes.entity_picture; box.style.background = pic ? `#000 center/cover no-repeat url("${pic}")` : '';
       box.innerHTML = '';
       box.appendChild(el);
       this._camEl = el;
@@ -5078,7 +5080,10 @@ class ThuisCard extends HTMLElement {
   }
   _camWatch() {
     if (this._camEl?._snap && Date.now() >= (this._camSnapUntil || 0)) { this._camRestart(0); return; } // na 5 min weer live proberen
-    if (!this._camEl || document.visibilityState !== 'visible' || !this._camErr(this._camEl)) return;
+    if (!this._camEl || document.visibilityState !== 'visible') return;
+    const err = this._camErr(this._camEl); if (!err) { this._camErrN = 0; return; }
+    if (++this._camErrN < 2) return; // een melding bij het opstarten verdwijnt binnen enkele seconden: pas herstarten als hij blijft staan
+    this._camErrN = 0;
     const now = Date.now(); this._camFails = (this._camFails || []).filter((t) => now - t < 2 * 60000); this._camFails.push(now);
     if (this._camFails.length >= 3) { this._camSnapUntil = now + 5 * 60000; this._camFails = []; }
     this._camRestart(0);
@@ -5178,7 +5183,8 @@ class ThuisCard extends HTMLElement {
   _camFill(tries = 0, el = this._camEl, fit = 'cover') {
     if (!el) return;
     const css = 'ha-card,hui-image,ha-camera-stream,ha-hls-player,ha-web-rtc-player,.image-container,#image,div[style*="padding-bottom"]{display:block;width:100%!important;height:100%!important;padding-bottom:0!important}'
-      + `video,img{width:100%!important;height:100%!important;left:0!important;top:0!important;object-fit:${fit}!important}`;
+      + `video,img{width:100%!important;height:100%!important;left:0!important;top:0!important;object-fit:${fit}!important}`
+      + 'ha-alert{display:none!important}'; // v340: de korte WebRTC-melding bij het opstarten niet tonen (de stream start daarna gewoon)
     const roots = [], walk = (n) => { if (!n) return; if (n.shadowRoot) { roots.push(n.shadowRoot); walk(n.shadowRoot); } for (const ch of n.children || []) walk(ch); };
     walk(el);
     for (const r of roots) if (!r.getElementById('th-fill')) { const st = document.createElement('style'); st.id = 'th-fill'; st.textContent = css; r.appendChild(st); }

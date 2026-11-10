@@ -155,7 +155,7 @@ Verdere regels:
 
 **Camera (Thuis)**
 
-- v339: `_camWatch` (elke 10 s in `_tick`) zoekt een `ha-alert` diep in de camerakaart (`_camErr`); bij een fout `_camRestart` (kaart opnieuw maken). 3 fouten binnen 2 min → `_camSnapUntil` 5 min `camera_view: 'auto'` (stilstaande beelden), daarna weer live. Bij terugkomen in de app (`visibilitychange`) ook opnieuw starten.
+- v339: `_camWatch` (elke 10 s in `_tick`) zoekt een `ha-alert` diep in de camerakaart (`_camErr`); bij een fout `_camRestart` (kaart opnieuw maken). 3 fouten binnen 2 min → `_camSnapUntil` 5 min `camera_view: 'auto'` (stilstaande beelden), daarna weer live. Bij terugkomen in de app (`visibilitychange`) ook opnieuw starten. v340: de melding is alleen kort bij het opstarten: `ha-alert` wordt verborgen via `_camFill`, het laatste stilstaande beeld (`entity_picture`) staat als achtergrond van `#camLive`, en herstarten pas na 2 controles op rij met fout (`_camErrN`).
 
 **Meldingen**
 
