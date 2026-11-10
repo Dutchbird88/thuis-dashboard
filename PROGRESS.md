@@ -217,6 +217,7 @@
 | v344 | Thuis (telefoon): pillen die aan staan zijn op de weerlucht doorschijnend glas met amber rand en tekst, in plaats van mosterdbruin. |
 | v345 | Thuis: weer de donkere achtergrond van v341 (weerlucht en glaspillen van v342–v344 teruggedraaid op verzoek). |
 | v346 | Standaardthema weer `glas` (licht) op alle kaarten, om te testen; donker blijft beschikbaar met `theme: donker`. |
+| v347 | Standaardthema weer donker. |
 
 ## Volgende stappen
 
