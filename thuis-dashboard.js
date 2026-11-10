@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '347';
+const CARD_VERSION = '348';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3996,6 +3996,14 @@ const TSTYLE = `
   .mstp { display: grid; grid-template-columns: 1fr 1fr; margin-top: 0; border-radius: 99px; overflow: hidden; background: rgba(70,105,180,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
   .mstp button { all: unset; cursor: pointer; height: 38px; display: grid; place-items: center; font-size: 22px; color: var(--text); -webkit-tap-highlight-color: transparent; }
   .mstp button + button { border-left: 1px solid rgba(140,170,240,.22); } .mstp button:active { background: rgba(255,255,255,.12); }
+  /* v348: thermostaattegel zonder − en +: thermometer + getal, status, "Doel" (ontwerp gebruiker); afval zonder kopje */
+  .mth .mstp { display: none; } .mth .mtop { justify-content: flex-start; align-items: center; margin-top: 4px; } .mth #mPre { margin-left: auto; align-self: flex-start; margin-top: -4px; }
+  .mthm { width: 30px; height: 40px; flex: none; margin: 0 2px 0 -6px; } .mthm svg { width: 100%; height: 100%; display: block; } .mthm:empty { display: none; }
+  .mth .mbig { font-size: 40px; font-weight: 700; } .mth .mbig small { color: var(--text); }
+  .mth .mst { margin: 12px 0 0; padding: 0; font-size: 14px; color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
+  .mth .mdl { font-size: 13px; color: var(--muted); margin-top: 3px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; }
+  .mrow .mth.ok { background: linear-gradient(180deg, var(--tile2), var(--tile)); }
+  .maf .mbin { top: 8px !important; }
   .maf { position: relative; cursor: pointer; } .maf .mlab i { font-style: normal; color: var(--bc); }
   .maf .mlab i.ric { display: grid; place-items: center; width: 16px; height: 16px; } .maf .mlab i.ric .ri2 { width: 16px; height: 16px; }
   .maf .mbin { position: absolute; right: 4px; top: 22px; width: 72px; height: 72px; overflow: visible; }
@@ -4412,7 +4420,7 @@ const HPSTYLE = `
   #oven.cool .ocs { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
   #oven.cool .ocb { display: block; margin-left: auto; font-size: 26px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   /* v270: thermostaat op temperatuur: tekst grijs, alleen het vinkje groen */
-  #mTh.ok #mSt { color: var(--muted); }
+  #mTh.ok #mSt { color: var(--text); } /* v348: was grijs (v270); nieuw ontwerp: wit */
   .kspills .ksp.hpp { display: flex; }
   .sheet, .sheet * { scrollbar-width: none; -webkit-overflow-scrolling: auto !important; } .sheet::-webkit-scrollbar, .sheet *::-webkit-scrollbar { display: none; width: 0; height: 0; } /* v268: geen scrollbalk in vensters */
   #kDate { display: none; } /* v261: geen datum onder Kamers op de telefoon */
@@ -4626,8 +4634,8 @@ class ThuisCard extends HTMLElement {
           <div class="mpills" id="mPills"></div>
           <div class="mstack" id="mA"></div>
           <div class="mrow">
-            <div class="tile mth" id="mTh"><div class="mtop"><span class="mthi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13.6V5a2 2 0 1 1 4 0v8.6a4 4 0 1 1-4 0z"/><path d="M12 9.5v6"/></svg></span><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
-              <div class="mst"><span class="mic" id="mIc"></span><span id="mSt"></span></div>
+            <div class="tile mth" id="mTh"><div class="mtop"><span class="mthm" id="mThm"></span><span class="mthi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13.6V5a2 2 0 1 1 4 0v8.6a4 4 0 1 1-4 0z"/><path d="M12 9.5v6"/></svg></span><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
+              <div class="mst"><span class="mic" id="mIc"></span><span id="mSt"></span></div><div class="mdl" id="mDl"></div>
               <div class="mstp"><button id="mMin" aria-label="Lager">−</button><button id="mPlus" aria-label="Hoger">+</button></div></div>
             <div class="tile maf" id="mAf"></div><div class="tile mus" id="hpc" hidden></div>
           </div>
@@ -4860,7 +4868,11 @@ class ThuisCard extends HTMLElement {
     set('tS', this._tDragging ? 'loslaten om in te stellen' : this._tBusy ? 'naar de thermostaat…' : cur != null ? `nu <b>${fmt(cur, 1)}°</b>` : '');
     set('mCur', cur != null ? `${fmt(cur, 1)}<small>°</small>` : '—');
     const tt = `${fmt(target, target % 1 ? 1 : 0)}°`;
-    set('mSt', cl.state === 'off' ? 'Thermostaat uit' : heating ? `Verwarmt tot <b>${tt}</b>` : `Op temperatuur · <b>${tt}</b>`);
+    set('mSt', cl.state === 'off' ? 'Uit' : heating ? 'Verwarmt' : 'Op temperatuur'); // v348: ontwerp gebruiker — status, daaronder "Doel"
+    const pm = PRESETS[a.preset_mode]?.[0];
+    set('mDl', cl.state === 'off' ? (pm || '') : `Doel <b>${tt}</b>`);
+    const thK = heating ? 'h' : cl.state === 'off' ? 'u' : 'o';
+    if (this._thmK !== thK) { this._thmK = thK; this.$('mThm').innerHTML = `<svg viewBox="0 0 100 100">${thK === 'h' ? RIC.draw('therm', 'orange') : thK === 'u' ? RIC.draw('therm', 'off') : RIC.draw('therm', 'green').replace(/url\(#g-green\)/g, 'url(#g-sky)')}</svg>`; }
     set('mIc', heating ? '<svg class="gf" viewBox="0 0 100 100"><use href="#gFlame"/></svg>' : cl.state === 'off' ? '' : '<i class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg></i>');
     this.$('mTh').classList.toggle('hot', heating);
     this.$('mTh').classList.toggle('ok', !heating && cl.state !== 'off');
@@ -5961,10 +5973,10 @@ class ThuisCard extends HTMLElement {
     const quiet = next && next.days >= 2;
     const until = quiet ? (next.days === 2 ? 'vandaag en morgen' : `tot en met ${new Date(next.t - DAY).toLocaleDateString('nl-NL', { weekday: 'long' })}`) : '';
     if (quiet) { mf.classList.add('quiet'); mf.style.setProperty('--bc', 'var(--muted)');
-      mf.innerHTML = `<div class="mlab"><i class="ric">${RIC.svg('recycle', 'on')}</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#binRst"/></svg><b>Geen afval</b><span class="mq">${until}</span><em class="mchip">${next.name} · ${fd(next)}</em>`;
+      mf.innerHTML = `<svg class="mbin" viewBox="0 0 100 100"><use href="#binRst"/></svg><b>Geen afval</b><span class="mq">${until}</span><em class="mchip">${next.name} · ${fd(next)}</em>`;
       mf.onclick = () => this._openSheet('waste'); return; }
     mf.classList.remove('quiet');
-    mf.innerHTML = next ? `<div class="mlab"><i class="ric">${RIC.svg('recycle', 'on')}</i> Afval</div><svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag d${next.days}"><i class="dot"></i>${fd(next)}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : `<div class="mlab"><i class="ric">${RIC.svg('recycle', 'on')}</i> Afval</div><span>Geen ophaaldata</span>`;
+    mf.innerHTML = next ? `<svg class="mbin" viewBox="0 0 100 100"><use href="#${next.meta[0]}"/></svg><b>${next.name}</b>${next.days === 0 || next.days === 1 ? `<em class="mtag d${next.days}"><i class="dot"></i>${fd(next)}</em>` : `<em>${fd(next)}</em>`}${rest.map((i) => `<span>${i.name} · ${fd(i)}</span>`).join('')}` : `<span>Geen ophaaldata</span>`;
     mf.onclick = () => next && this._openSheet('waste');
   }
 

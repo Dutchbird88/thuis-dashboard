@@ -218,6 +218,7 @@
 | v345 | Thuis: weer de donkere achtergrond van v341 (weerlucht en glaspillen van v342–v344 teruggedraaid op verzoek). |
 | v346 | Standaardthema weer `glas` (licht) op alle kaarten, om te testen; donker blijft beschikbaar met `theme: donker`. |
 | v347 | Standaardthema weer donker. |
+| v348 | Thuis (telefoon): thermostaattegel zonder − en +, met thermometer, status en "Doel"; afvaltegel zonder kopje. |
 
 ## Volgende stappen
 
