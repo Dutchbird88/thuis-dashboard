@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '338';
+const CARD_VERSION = '339';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4484,8 +4484,8 @@ class ThuisCard extends HTMLElement {
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); }, 10000);
-    if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') setTimeout(() => this._carRefresh(true), 800); }; document.addEventListener('visibilitychange', this._carVis); }
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); }, 10000);
+    if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); this._camRestart(1200); } }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
     if (this._hass && !this._unsubs) this._subForecast();
@@ -5052,8 +5052,9 @@ class ThuisCard extends HTMLElement {
     this._camLoading = true;
     try {
       const helpers = await window.loadCardHelpers();
-      const el = helpers.createCardElement({ type: 'picture-entity', entity: this._camId, camera_view: 'live', fit_mode: 'cover', show_name: false, show_state: false, tap_action: { action: 'none' } });
-      el._entity = this._camId;
+      const snap = Date.now() < (this._camSnapUntil || 0);
+      const el = helpers.createCardElement({ type: 'picture-entity', entity: this._camId, camera_view: snap ? 'auto' : 'live', fit_mode: 'cover', show_name: false, show_state: false, tap_action: { action: 'none' } });
+      el._entity = this._camId; el._snap = snap;
       el.hass = this._hass;
       const box = this.$('camLive');
       box.innerHTML = '';
@@ -5065,6 +5066,26 @@ class ThuisCard extends HTMLElement {
     } finally {
       this._camLoading = false;
     }
+  }
+  // v339: de live-stream (WebRTC) valt soms weg, vooral na terugkomen in de app ("De WebRTC-stream kon niet worden gestart").
+  // Elke 10 s kijken of er een foutmelding in de camerakaart staat; zo ja: opnieuw starten. Lukt dat 3× binnen 2 min niet, dan 5 min de gewone stilstaande camerabeelden en daarna weer live.
+  _camErr(root, d = 0) {
+    if (!root || d > 8) return false;
+    const sr = root.shadowRoot || root;
+    if (sr.querySelector?.('ha-alert[alert-type="error"], ha-alert')) return true;
+    for (const c of sr.querySelectorAll?.('*') || []) if (c.shadowRoot && this._camErr(c, d + 1)) return true;
+    return false;
+  }
+  _camWatch() {
+    if (this._camEl?._snap && Date.now() >= (this._camSnapUntil || 0)) { this._camRestart(0); return; } // na 5 min weer live proberen
+    if (!this._camEl || document.visibilityState !== 'visible' || !this._camErr(this._camEl)) return;
+    const now = Date.now(); this._camFails = (this._camFails || []).filter((t) => now - t < 2 * 60000); this._camFails.push(now);
+    if (this._camFails.length >= 3) { this._camSnapUntil = now + 5 * 60000; this._camFails = []; }
+    this._camRestart(0);
+  }
+  _camRestart(delay) {
+    clearTimeout(this._camRt);
+    this._camRt = setTimeout(() => { if (!this._camId || this._camLoading) return; this._camEl = null; this._liveCam(); }, delay);
   }
   // schermvullende camera: live beeld, wisselen via de rij onderaan, sluit vanzelf na 3 minuten
   async _openCam(id, keep) {

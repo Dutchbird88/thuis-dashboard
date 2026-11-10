@@ -153,6 +153,10 @@ Verdere regels:
 - v272: tekst "Wordt opgestart…" (niet "gewekt"). Tik op de tegel = venster `pc` (`_updPcSheet`), tik op het rondje (`.mi2`) = meteen aanzetten (`_wolWake`). Venster (variant B, gekozen): bovenin kaart Vandaag (balk 0–24 uur, totaal, laatste 3 sessies) uit `history/period` van de Ping-sensor (`_pcHistory`, 7 dagen, cache 5 min of tot de ping verandert); klokje (`#cvHb`) = tijdlijn zoals bij lampen en rolluiken (`_pcLog`, v273): grafiek 24 uur aan/uit, en per dag "Opstarten gevraagd" met wie (logboek van de knop, `_who`), "Aan" met "Opgestart in X s" en "Uit" (Ping-sensor), 7 dagen. Daaronder groot icoon en de aan-knop met exact de stijl van het lampvenster (`.lpw`; licht thema eigen kleuren). Aan = "Uitzetten kan alleen op de … zelf".
 - v274: ook in het kamervenster: `_areaRooms` geeft per ruimte `wol` (knoppen in die ruimte; een ruimte met alleen een WoL-knop telt mee), pil `.ksp.wolp` na de HomePod-pil (icoon, naam, Aan/Uit/Wordt opgestart…; aan = groen, opstarten = blauw). Tik = venster `pc` met `_roomBack` (sluiten gaat terug naar de kamer).
 
+**Camera (Thuis)**
+
+- v339: `_camWatch` (elke 10 s in `_tick`) zoekt een `ha-alert` diep in de camerakaart (`_camErr`); bij een fout `_camRestart` (kaart opnieuw maken). 3 fouten binnen 2 min → `_camSnapUntil` 5 min `camera_view: 'auto'` (stilstaande beelden), daarna weer live. Bij terugkomen in de app (`visibilitychange`) ook opnieuw starten.
+
 **Meldingen**
 
 - `_safety` en `_updAlarm` tonen rook, CO en water als rode kaart onder de camera's op Thuis. De melding is weg te vegen en komt terug bij een nieuwe verandering.
