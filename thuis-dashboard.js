@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '352';
+const CARD_VERSION = '353';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3997,10 +3997,10 @@ const TSTYLE = `
   .mstp button { all: unset; cursor: pointer; height: 38px; display: grid; place-items: center; font-size: 22px; color: var(--text); -webkit-tap-highlight-color: transparent; }
   .mstp button + button { border-left: 1px solid rgba(140,170,240,.22); } .mstp button:active { background: rgba(255,255,255,.12); }
   /* v348: thermostaattegel zonder − en +: thermometer + getal, status, "Doel" (ontwerp gebruiker); afval zonder kopje */
-  .mth .mstp { display: none; } .mth .mtop { justify-content: flex-start; align-items: center; margin-top: 4px; } .mth #mPre { margin-left: auto; align-self: flex-start; margin-top: -4px; }
+  .mth .mstp { display: none; } .mth .mtop { justify-content: flex-start; align-items: center; margin-top: 4px; } .mth #mPre, .mth .kpre { margin-left: auto; align-self: flex-start; margin-top: -4px; }
   .mthm { width: 30px; height: 40px; flex: none; margin: 0 2px 0 -6px; } .mthm svg { width: 100%; height: 100%; display: block; } .mthm:empty { display: none; }
   .mth .mbig { font-size: 40px; font-weight: 700; } .mth .mbig small { color: var(--text); font-size: 26px; font-weight: 600; margin-left: 1px; line-height: 1; } /* v349: groter gradenteken */
-  .mth .mst { margin: 12px 0 0; padding: 0; line-height: 1.2; font-size: 14px; color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
+  .mth .mst { margin: 12px 0 0; padding: 0; line-height: 1.2; font-size: 14px; color: var(--text); } .mth.ok .mst, #rmTh.ok .mst { color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
   .mth .mdl { font-size: 13px; line-height: 1.2; color: var(--muted); margin-top: 1px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; } .mth.hot .mdl, .mth.ok .mdl { padding-left: 21px; } .mth.ok .mdl { padding-left: 20px; } /* v350: Doel lijnt uit met de tekst achter het icoon */
   .mrow .mth.ok { background: linear-gradient(180deg, var(--tile2), var(--tile)); }
   .maf { justify-content: center; } .maf .mbin { top: 50% !important; transform: translateY(-50%); } /* v349: inhoud verticaal in het midden */
@@ -4444,10 +4444,12 @@ const HPSTYLE = `
   .mus .mart { width: 52px; height: 52px; border-radius: 11px; margin: 0 0 10px; box-shadow: 0 8px 18px rgba(0,0,0,.45); object-fit: cover; background: rgba(255,255,255,.08); flex: none; }
   .mus .mart.ic { display: grid; place-items: center; } .mus .mart.ic svg { width: 34px; height: 34px; }
   .mus b { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mus .mtt { display: block; text-overflow: clip; } .mus .mtt span { display: inline-block; white-space: nowrap; } .mus .mtt .mgap { display: inline-block; width: 40px; }
-  .mus .mtt.run { -webkit-mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); } .mus .mtt.run span { animation: mtt var(--d, 10s) linear infinite; }
+  .mqw { display: block; overflow: hidden; white-space: nowrap; text-overflow: clip; } .mqw > span { display: inline-block !important; white-space: nowrap; margin: 0 !important; line-height: inherit !important; } .mqw .mgap { display: inline-block; width: 40px; height: 1px; }
+  .mqw.run { -webkit-mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); mask: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 14px), transparent); } .mqw.run > span { animation: mtt var(--d, 10s) linear infinite; }
   @keyframes mtt { 0%, 12% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) { .mus .mtt.run span { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .mqw.run > span { animation: none; } }
+  .ksp.hpp { max-width: 250px; } .ksp.hpp > div { min-width: 0; overflow: hidden; } .ksp.hpp > i.g { flex: none; }
+  #rmTh .kpre { position: absolute; right: 12px; top: 12px; margin: 0; } #rmTh .kpre svg { width: 22px; height: 22px; } #rmTh .mbig { font-size: 36px; } #rmTh { position: relative; } /* v353: kamervenster, smallere tegel */ /* v353: HomePod-pil niet eindeloos breed */
   .mus .msub { font-size: 13px; color: rgba(255,255,255,.72); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mus .hpbtn { position: absolute; right: 14px; top: 16px; width: 48px !important; height: 48px !important; padding: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center; color: #fff !important; background: rgba(255,255,255,.18) !important; border: 1px solid rgba(255,255,255,.22) !important; box-shadow: none !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
   .mus .hpbtn svg { width: 22px !important; height: 22px !important; } /* v352: knop groter */
@@ -6090,7 +6092,7 @@ class ThuisCard extends HTMLElement {
     if (m) {
       const art = m.pic ? `<img class="mart" src="${m.pic}" alt="">` : `<div class="mart ic">${HPICON(true)}</div>`;
       html = `<div class="mbg"${m.pic ? ` style="background-image:url('${m.pic}')"` : ''}></div>${art}<button class="hpbtn" aria-label="${m.play ? 'Pauzeren' : 'Afspelen'}">${m.play ? HPI.pause : HPI.play}</button>`
-        + `<b class="mtt"><span>${m.title || 'Muziek'}</span></b><div class="mpg">${m.dur ? '<i></i>' : ''}</div>`;
+        + `<b class="mtt mqw"><span>${m.title || 'Muziek'}</span></b><div class="mpg">${m.dur ? '<i></i>' : ''}</div>`;
     }
     box.hidden = !m;
     box.dataset.sig = ses ? String(ses.start) : '';
@@ -6099,15 +6101,19 @@ class ThuisCard extends HTMLElement {
       box.querySelector('.hpbtn')?.addEventListener('click', (e) => { e.stopPropagation(); this._hass.callService('media_player', 'media_play_pause', { entity_id: m.id }); this._hpOpt = { id: m.id, play: !m.play, t: Date.now() }; this._updMedia(); });
     }
     // v352: past de titel niet, dan loopt hij van rechts naar links (eenmalig gemeten zodra de tegel zichtbaar is)
-    const tt = box.querySelector('.mtt');
-    if (tt && !tt._m && tt.clientWidth > 0) {
-      tt._m = 1; const sp = tt.firstChild, w = sp.scrollWidth;
-      if (w > tt.clientWidth + 2) { const t = sp.innerHTML; sp.innerHTML = `${t}<i class="mgap"></i>${t}<i class="mgap"></i>`; tt.classList.add('run'); tt.style.setProperty('--d', `${Math.max(6, (w + 40) / 30).toFixed(1)}s`); }
-    }
+    this._marq(box);
     const pg = box.querySelector('.mpg i'); if (pg && m?.dur) pg.style.width = `${(m.pos / m.dur * 100).toFixed(1)}%`;
     box.dataset.id = m ? m.id : '';
     box.onclick = () => box.dataset.id && this._openSheet('hp', box.dataset.id);
     this._applyHidden();
+  }
+  // v352/v353: tekst die niet past loopt van rechts naar links (tekst dubbel + translateX(-50%)); eenmalig gemeten zodra zichtbaar
+  _marq(root) {
+    root?.querySelectorAll('.mqw:not([data-m])').forEach((w) => {
+      if (!w.clientWidth) return; w.dataset.m = '1';
+      const sp = w.firstElementChild, W = sp?.scrollWidth || 0;
+      if (W > w.clientWidth + 2) { const t = sp.innerHTML; sp.innerHTML = `${t}<mq-gap class="mgap"></mq-gap>${t}<mq-gap class="mgap"></mq-gap>`; w.classList.add('run'); w.style.setProperty('--d', `${Math.max(6, (W + 40) / 30).toFixed(1)}s`); }
+    });
   }
   _updHpSheet() {
     if (this._sheet !== 'hp' || !this.$('hpN')) return;
@@ -7095,8 +7101,9 @@ class ThuisCard extends HTMLElement {
     if (rm.r.climate) {
       const cl = this._state(this._climateId()), a = cl?.attributes || {}, tt = a.temperature != null ? `${fmt(a.temperature, 1)}°` : '—';
       const heating = isHeating(a), pre = this.$('tPre')?.querySelector('.pb .fi')?.outerHTML || '';
-      clim = `<div class="tile mth kglass${heating ? ' hot' : cl?.state !== 'off' ? ' ok' : ''}" id="rmTh"><div class="mtop"><div class="mbig">${a.current_temperature != null ? `${fmt(a.current_temperature, 1)}<small>°</small>` : '—'}</div><div class="kpre">${pre}</div></div>
-        <div class="mst"><span class="mic">${this.$('mIc')?.innerHTML || ''}</span><span>${cl?.state === 'off' ? 'Thermostaat uit' : heating ? `Verwarmt tot <b>${tt}</b>` : `Op temperatuur · <b>${tt}</b>`}</span></div>
+      const off = cl?.state === 'off', thm = this.$('mThm')?.innerHTML || '', pm = PRESETS[a.preset_mode]?.[0] || '';
+      clim = `<div class="tile mth kglass${heating ? ' hot' : !off ? ' ok' : ''}" id="rmTh"><div class="mtop"><span class="mthm">${thm}</span><div class="mbig">${a.current_temperature != null ? `${fmt(a.current_temperature, 1)}<small>°</small>` : '—'}</div><div class="kpre">${pre}</div></div>
+        <div class="mst"><span class="mic">${this.$('mIc')?.innerHTML || ''}</span><span>${off ? 'Uit' : heating ? 'Verwarmt' : 'Op temperatuur'}</span></div><div class="mdl">${off ? pm : `Doel <b>${tt}</b>`}</div>
         <div class="mstp"><button data-d="-1" aria-label="Lager">−</button><button data-d="1" aria-label="Hoger">+</button></div></div>`;
     } else if (rm.temp != null) {
       clim = `<div class="tile mth kglass" id="rmTh"><div class="mtop"><div class="mbig">${fmt(rm.temp, 1)}<small>°</small></div></div><div class="mst" style="color:var(--muted)">${rm.hum != null ? `<span>💧 ${fmt(rm.hum)}% vocht</span>` : '<span>Temperatuur</span>'}</div></div>`;
@@ -7116,7 +7123,7 @@ class ThuisCard extends HTMLElement {
       return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${x.kind === 'motion' && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
-    const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span>${m.txt}</span></div></div>`; }).join('');
+    const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span class="mqw"><span>${m.txt}</span></span></div></div>`; }).join('');
     const wolPills = this._mq?.matches ? this._wolList().filter((w) => rm.wol.includes(w.id)).map((w) => `<div class="mp ksp wolp${w.st !== 'off' ? ' hot' : ''}" data-wol="${w.id}" style="--c:${w.st === 'on' ? '#4fd07f' : '#62bdf5'}"><i class="g">${RIC.svg(w.icon, w.st)}</i><div><b>${w.name}</b><span>${w.txt}</span></div></div>`).join('') : '';
     const hasEv = (rm.r.apps || []).includes('evc'); if (hasEv) { rm = { ...rm, apps: rm.apps.filter((a) => a.k !== 'evc'), offApps: rm.offApps.filter((a) => a.k !== 'evc'), scenes: [] }; } // oprit: geen scènes
     const html = (hpPills + wolPills + plugPills + camPills + pills ? `<div class="kspills">${hpPills}${wolPills}${plugPills}${camPills}${pills}</div>` : '') + (clim ? `<div class="kth">Klimaat</div><div class="mrow">${clim}</div>` : '')
@@ -7127,6 +7134,7 @@ class ThuisCard extends HTMLElement {
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
     this._rmKey = html; B.innerHTML = html;
+    this._marq(B); setTimeout(() => this._marq(B), 450); // v353: lange tekst in de HomePod-pil loopt door
     const ri = this._roomIdx;
     this._bindTiles(B, ri);
     const th = B.querySelector('#rmTh');
