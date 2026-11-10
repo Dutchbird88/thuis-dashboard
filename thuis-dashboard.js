@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '343';
+const CARD_VERSION = '344';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4289,6 +4289,9 @@ const WSKY = `
   @keyframes wflash { 0%, 88%, 100% { opacity: 0; } 89% { opacity: 1; } 90% { opacity: .2; } 91.5% { opacity: .8; } 94% { opacity: 0; } }
   @keyframes wtw { 50% { opacity: .25; } }
   @media (prefers-reduced-motion: reduce) { .wsky * { animation: none !important; } }
+  /* v344 (keuze A): pillen die aan staan op de lucht: hetzelfde glas als uit, met rand en tekst in de eigen kleur (amber over grijs werd mosterdbruin op het blauw) */
+  :host(:not([data-th]):not([data-gl])) .twrap.wxs .mp.mp.mp.hot:not(.alarm):not(.warn) { background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 55%, rgba(255,255,255,.05) 100%) !important; border: 1px solid color-mix(in srgb, var(--c, #ffb547) 38%, transparent) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16) !important; }
+  :host(:not([data-th]):not([data-gl])) .twrap.wxs .mp.mp.mp.hot:not(.alarm):not(.warn) span { color: color-mix(in srgb, var(--c, #ffb547) 70%, #fff) !important; }
 }
 `;
 const HPSTYLE = `

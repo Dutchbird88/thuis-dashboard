@@ -214,6 +214,7 @@
 | v341 | Camera laadt weer vlot: niet meer herstarten zolang er beeld loopt, en bij terugkomen in de app de stream niet meer altijd afbreken (alleen na 3 s zonder beeld). |
 | v342 | Thuis (telefoon, donker): bovenin een lucht in de kleur van het weer, met rustige wolken, regen, sneeuw, mist, onweer of sterren; de statusbalk kleurt mee. |
 | v343 | Thuis (telefoon): de weerlucht loopt door tot halverwege de pagina, zodat onderin geen vlak donker stuk meer is. |
+| v344 | Thuis (telefoon): pillen die aan staan zijn op de weerlucht doorschijnend glas met amber rand en tekst, in plaats van mosterdbruin. |
 
 ## Volgende stappen
 
