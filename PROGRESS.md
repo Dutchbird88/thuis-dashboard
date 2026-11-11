@@ -230,6 +230,7 @@
 | v357 | Lamptegels: geel vlak voor lampen die aan zijn (zoals de server groen), iconen iets kleiner. |
 | v358 | Lampen schakelen in beeld direct (niet meer wachten op Home Assistant), vooral merkbaar op Thuis. |
 | v359 | Thuis (telefoon): verjaardagkaart uit de agenda op de plek van de afvaltegel, weg te vegen zoals de muziekkaart. |
+| v360 | Thuis (telefoon): agenda weggehaald (verjaardagen blijven werken). |
 
 ## Volgende stappen
 

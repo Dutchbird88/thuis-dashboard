@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '359';
+const CARD_VERSION = '360';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1940,6 +1940,7 @@ const TIDY = `
   :host(:not([data-th])) .kr.kr.kr.kr:not(.lit), :host(:not([data-th])) .lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, #132036), color-mix(in srgb, #ffffff 4%, #0f1828)) !important; }
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
   :host(:not([data-th])) .was.was.was.was.was.was.done, :host(:not([data-th])) .mstack > .was.was.was.was.was.was.done, :host(:not([data-th])) #dish.was.was.was.was.was.done, :host(:not([data-th])) #oven.was.was.was.was.was.done, :host(:not([data-th])) #was.was.was.was.was.was.done { background: radial-gradient(120% 140% at 0% 0%, rgba(79,208,127,.13), transparent 65%), linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(79,208,127,.28) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; }
+  #agTile.tile.tile { display: none !important; } /* v360: agenda niet op Thuis (telefoon); de afspraken worden nog wel opgehaald voor de verjaardagkaart */
   :host(:not([data-th])) #bdc#bdc#bdc#bdc.tile.tile.tile { background: radial-gradient(110% 90% at 100% 0%, rgba(255,122,168,.14), transparent 60%), linear-gradient(180deg, #132036, #0f1828) !important; border-color: rgba(255,122,168,.24) !important; } :host(:not([data-th])) .bdc .sub::first-letter { text-transform: none; } /* v359: verjaardagkaart */
   /* v354: lamptegel ontwerp L — grote gloeilamp rechts (vaste plek, half buiten de tegel), gloed sterker met de helderheid (--k); één warme kleur */
   :host(:not([data-th])) .lt.lt.lb { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); padding: 12px 12px 12px 64px; min-height: 66px; } /* v355: lamp links, kleiner, met ruimte (keuze B, links) */

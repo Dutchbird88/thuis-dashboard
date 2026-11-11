@@ -152,6 +152,7 @@ Verdere regels:
 
 - `#bdc` (`.tile.bdc`) in de `.mrow` tussen `#mAf` en `#hpc`. `_updBday()` (vanuit `_drawAgenda` en elke 10 s in `_tick`) zoekt in `this._events` afspraken van vandaag waarvan de titel of de agenda "jarig", "verjaardag", "birthday" of "geburtstag" bevat. Naam = titel zonder die woorden, jaartal, "(40)"/"wordt 40", "'s" en emoji; leeftijd uit een jaartal (19xx/20xx) of getal in de titel. Eén naam: "Jarig vandaag", naam (24 px), "wordt 40"; meer (max. 3): namen onder elkaar (19 px) en "40 · 78 jaar". Taart-icoon `CAKE` (Rounded, eigen verlopen `ck*`), zachte roze gloed en rand (in `TIDY` met `#bdc#bdc…` omdat de tegelregel `:not(#…)` heeft).
 - Voorrang: muziek > verjaardag > afval (`_applyHidden`: `#bdc.hpon` als muziek zichtbaar is, `#mAf.hpon` als muziek of verjaardag zichtbaar is). Wegvegen zoals de muziekkaart (`_swipe`/`_hide`, `dataset.sig` = dag + namen: weg voor die dag). Testpagina `bday=1` of `bday=2`.
+- v360: de agenda-tegel (`#agTile`) is op de telefoon verborgen (in `TIDY`); `_fetchAgenda` loopt door, want de verjaardagkaart gebruikt `this._events`.
 
 **Wake on LAN** (v271, alleen telefoon; op de computer verborgen via `@media (min-width: 601px)`)
 
