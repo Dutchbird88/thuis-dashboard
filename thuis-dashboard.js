@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '357';
+const CARD_VERSION = '358';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5421,16 +5421,30 @@ class ThuisCard extends HTMLElement {
     if (box._k === html) return; box._k = html; box.innerHTML = html;
     this.$('pcPw')?.addEventListener('click', () => this._wolWake(this._wolList().find((x) => x.id === this._cvId)));
   }
+  // v358: lamp direct omzetten in beeld (optimistisch), tot HA de nieuwe stand meldt (max. 5 s); Thuis werkt meer bij per update en reageerde daardoor trager dan Kamers
+  _ltIsOn(s) {
+    const o = this._ltOpt?.[s.entity_id], real = s.state === 'on';
+    if (o && Date.now() - o.t < 5000 && o.on !== real) return o.on;
+    if (o) delete this._ltOpt[s.entity_id];
+    return real;
+  }
+  _ltToggle(id) {
+    const s = this._state(id); if (!s) return;
+    (this._ltOpt ||= {})[id] = { on: !this._ltIsOn(s), t: Date.now() };
+    this._hass.callService('light', 'toggle', { entity_id: id });
+    const redraw = () => { this._lightKey = null; if (this.$('lights')) this._updLights(); if (this._sheet === 'room') { this._rmKey = null; this._updRoomSheet(); } };
+    redraw(); clearTimeout(this._ltOptT); this._ltOptT = setTimeout(redraw, 5200);
+  }
   _updLights() {
     const ids = this._lightIds();
     const ls = ids.map((id) => this._state(id) || (id.startsWith('missing:') ? { entity_id: id, state: 'unavailable', attributes: { friendly_name: id.slice(8) } } : null)).filter(Boolean);
     const wol = this._wolList();
-    const key = JSON.stringify(ls.map((s) => [s.entity_id, s.state, s.attributes.brightness, s.attributes.rgb_color, s.attributes.color_temp_kelvin])) + JSON.stringify(wol);
+    const key = JSON.stringify(ls.map((s) => [s.entity_id, this._ltIsOn(s), s.attributes.brightness, s.attributes.rgb_color, s.attributes.color_temp_kelvin])) + JSON.stringify(wol);
     if (key === this._lightKey) return;
     this._lightKey = key;
     const box = this.$('lights');
     box.innerHTML = ls.map((s) => {
-      const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a);
+      const a = s.attributes, isOn = this._ltIsOn(s), col = this._lightColor(a);
       const name = (this._nm(s) || s.entity_id).replace(/^Hue /, '');
       return `<div class="lt lb${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
@@ -5466,7 +5480,7 @@ class ThuisCard extends HTMLElement {
         if (long) { long = false; return; }
         // telefoon: tik op de tegel = lamppaneel, tik op het rondje = aan/uit
         if (this._mq?.matches && !e.target.closest('.mi2')) { this._openSheet('lt', id); return; }
-        this._hass.callService('light', 'toggle', { entity_id: id });
+        this._ltToggle(id);
       });
       el.addEventListener('contextmenu', (ev) => { ev.preventDefault(); if (!long) this._moreInfo(id); long = true; });
     });
@@ -7081,7 +7095,7 @@ class ThuisCard extends HTMLElement {
   }
   // lamp- en rolluiktegels zoals bij Bediening (telefoon): tik = eigen paneel, tik op het rondje = aan/uit of open/dicht, lang = HA-venster
   _ltTile(s) {
-    const a = s.attributes, isOn = s.state === 'on', col = this._lightColor(a), name = this._shortName(this._nm(s) || s.entity_id);
+    const a = s.attributes, isOn = this._ltIsOn(s), col = this._lightColor(a), name = this._shortName(this._nm(s) || s.entity_id);
     return `<div class="lt lb${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : 'Uit'}</div></div>`;
   }
   _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
@@ -7096,7 +7110,7 @@ class ThuisCard extends HTMLElement {
       el.addEventListener('contextmenu', (ev) => { ev.preventDefault(); if (!long) this._moreInfo(id); long = true; });
       el.addEventListener('click', (e) => {
         if (long) { long = false; return; }
-        if (e.target.closest('.mi2')) { if (lamp) this._hass.callService('light', 'toggle', { entity_id: id }); else this._coverToggle(id); return; }
+        if (e.target.closest('.mi2')) { if (lamp) this._ltToggle(id); else this._coverToggle(id); return; }
         this._openSheet(lamp ? 'lt' : 'cv', id); this._roomBack = ri;
       });
     });

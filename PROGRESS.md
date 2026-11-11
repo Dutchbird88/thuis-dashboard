@@ -228,6 +228,7 @@
 | v355 | Lamptegels: lamp kleiner en links, met meer ruimte eromheen. |
 | v356 | Lamptegels: gelijke achtergrond voor alle lampen die aan zijn, zachtere gloed; computer en server in dezelfde opzet als de lampen. |
 | v357 | Lamptegels: geel vlak voor lampen die aan zijn (zoals de server groen), iconen iets kleiner. |
+| v358 | Lampen schakelen in beeld direct (niet meer wachten op Home Assistant), vooral merkbaar op Thuis. |
 
 ## Volgende stappen
 
