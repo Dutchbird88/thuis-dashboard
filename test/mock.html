@@ -196,7 +196,7 @@ async function callApi(method, path) {
   }
   // logboek van de Wake on LAN-knop: computer vanochtend door een bewoner aangezet
   if (path.startsWith('logbook/') && path.includes('computer_wekken')) return [{ when: at(Date.now() - 4.3 * 36e5 - 50e3), entity_id: 'button.computer_wekken', context_user_id: 'u1' }];
-  if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }];
+  if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }, ...(q.get('bday') ? [{ summary: 'Sanne jarig (1986)', start: { date: dstr(0) }, end: { date: dstr(1) } }, ...(q.get('bday') === '2' ? [{ summary: 'Verjaardag Opa Piet (1948)', start: { date: dstr(0) }, end: { date: dstr(1) } }] : [])] : [])];
   return [];
 }
 const hass = {

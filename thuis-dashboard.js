@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '358';
+const CARD_VERSION = '359';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1940,6 +1940,7 @@ const TIDY = `
   :host(:not([data-th])) .kr.kr.kr.kr:not(.lit), :host(:not([data-th])) .lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, #132036), color-mix(in srgb, #ffffff 4%, #0f1828)) !important; }
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
   :host(:not([data-th])) .was.was.was.was.was.was.done, :host(:not([data-th])) .mstack > .was.was.was.was.was.was.done, :host(:not([data-th])) #dish.was.was.was.was.was.done, :host(:not([data-th])) #oven.was.was.was.was.was.done, :host(:not([data-th])) #was.was.was.was.was.was.done { background: radial-gradient(120% 140% at 0% 0%, rgba(79,208,127,.13), transparent 65%), linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(79,208,127,.28) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important; }
+  :host(:not([data-th])) #bdc#bdc#bdc#bdc.tile.tile.tile { background: radial-gradient(110% 90% at 100% 0%, rgba(255,122,168,.14), transparent 60%), linear-gradient(180deg, #132036, #0f1828) !important; border-color: rgba(255,122,168,.24) !important; } :host(:not([data-th])) .bdc .sub::first-letter { text-transform: none; } /* v359: verjaardagkaart */
   /* v354: lamptegel ontwerp L — grote gloeilamp rechts (vaste plek, half buiten de tegel), gloed sterker met de helderheid (--k); één warme kleur */
   :host(:not([data-th])) .lt.lt.lb { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); padding: 12px 12px 12px 64px; min-height: 66px; } /* v355: lamp links, kleiner, met ruimte (keuze B, links) */
   :host(:not([data-th])) .lt.lb .n, :host(:not([data-th])) .lt.lb .ms { grid-column: 1; position: relative; z-index: 1; }
@@ -4178,6 +4179,11 @@ const MBULB = '<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4.2 12.6c.7.5 1
 const mBlind = (p) => { const h = 14.5 * (1 - p / 100); return `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="5" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="12.8" y="8" width="6.2" height="11" rx=".6" fill="currentColor" opacity=".35"/><rect x="2" y="2.5" width="20" height="3.6" rx="1.2" fill="currentColor"/>${h > 0.5 ? `<rect x="3.8" y="6" width="16.4" height="${h.toFixed(1)}" fill="currentColor"/>${Array.from({ length: Math.floor(h / 2.4) }, (_, i) => `<path d="M3.8 ${(8.2 + i * 2.4).toFixed(1)}h16.4" stroke="#0005" stroke-width=".6"/>`).join('')}` : ''}</svg>`; };
 // kamericonen (tabblad Kamers)
 // glanzende pil-iconen: lamp aan/uit en een raam met rolluik (p = % open)
+// v359: taart met kaarsjes (Rounded-stijl) voor de verjaardagkaart
+const CAKE = '<defs><linearGradient id="ckP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9ec4"/><stop offset="1" stop-color="#f05f9a"/></linearGradient><linearGradient id="ckC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#f1dcc0"/></linearGradient><linearGradient id="ckK" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8ec5ff"/><stop offset="1" stop-color="#4f8cf7"/></linearGradient><radialGradient id="ckF" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#ff8a2a"/></radialGradient><linearGradient id="ckB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8edf5"/><stop offset="1" stop-color="#b9c3d3"/></linearGradient></defs>'
+  + '<rect x="12" y="78" width="76" height="8" rx="4" fill="url(#ckB)"/><rect x="18" y="46" width="64" height="34" rx="10" fill="url(#ckC)"/><path d="M18 56 q8 10 16 0 t16 0 t16 0 t16 0 V52 a8 8 0 0 0-8-6 H26 a8 8 0 0 0-8 6z" fill="url(#ckP)"/>'
+  + [34, 50, 66].map((x) => `<rect x="${x - 3}" y="26" width="6" height="20" rx="3" fill="url(#ckK)"/><path transform="translate(${x} 22) scale(.9)" d="M0 -11 C5 -5 6 -1 4 3 A5 5 0 0 1 -4 3 C-6 -1 -4 -5 0 -11Z" fill="url(#ckF)"/>`).join('')
+  + '<path d="M24 62v10" stroke="#fff" stroke-opacity=".55" stroke-width="4" fill="none" stroke-linecap="round"/>';
 const gBulb = (on) => `<svg viewBox="0 0 100 100"><use href="#${on ? 'gBulbOn' : 'gBulbOff'}"/></svg>`;
 const gBlind = (p) => RIC.svg('blind', p < 99 ? 'on' : 'off');
 // standaardscènes van Hue: in het kamerpaneel alleen de eigen scènes tonen
@@ -4396,7 +4402,7 @@ const HPSTYLE = `
   :host([data-gl]) .twrap .kr .ksl b { display: block !important; position: absolute; bottom: 0; width: 17px; height: 17px; margin-left: -8px; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0,0,0,.22); }
   :host([data-gl]) .twrap .kr .ksl.drag i, :host([data-gl]) .twrap .kr .ksl.drag::before { height: 7px; }
 }
-#hpc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
+#hpc, #bdc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
 @media (min-width: 601px) { .lt.wol { display: none; } }
 @media (max-width: 600px) {
   /* v297: apparaatkaarten in dezelfde kleur, rand en gloedrand als de andere tegels (Thuis en kamervenster) */
@@ -4445,7 +4451,13 @@ const HPSTYLE = `
   .kr .ksl.drag::before, .kr .ksl.drag i { height: 9px; }
   :host([data-th=l]) .kr .ksl::before { background: rgba(60,60,67,.14); } :host([data-th=l]) .kr .ksl i { background: linear-gradient(90deg, #f5c26b, #e8890c); }
   /* muziektegel (v251, ontwerp A): op de plek van de afvaltegel, vage hoes als achtergrond */
-  .mrow > #hpc:not([hidden]) { display: flex; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
+  .mrow > #hpc:not([hidden]) { display: flex; } .mrow > #bdc:not([hidden]) { display: flex; } #bdc.hpon { display: none !important; }
+  /* v359: verjaardag vandaag (agenda) op de plek van de afvaltegel, weg te vegen zoals de muziekkaart */
+  .tile.bdc { position: relative; overflow: hidden; flex-direction: column; justify-content: center; min-width: 0; cursor: pointer; background: radial-gradient(110% 90% at 100% 0%, rgba(255,122,168,.14), transparent 60%), linear-gradient(180deg, var(--tile2), var(--tile)) !important; border-color: rgba(255,122,168,.22) !important; }
+  .bdc .cake { position: absolute; right: 8px; top: 8px; width: 56px; height: 56px; }
+  .bdc .lab { font-size: 12.5px; font-weight: 600; color: #ff9ec4; padding-right: 54px; }
+  .bdc b { display: block; font-size: 24px; font-weight: 700; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .bdc b.two { font-size: 19px; margin-top: 2px; }
+  .bdc .sub { font-size: 13px; color: var(--muted); margin-top: 4px; } .mrow > .gone { display: none !important; } #mAf.hpon { display: none !important; }
   .tile.mus { position: relative; overflow: hidden; padding: 14px !important; flex-direction: column; cursor: pointer; min-width: 0; box-sizing: border-box;
     background: linear-gradient(160deg, #3a2a5e, #1a2340) !important; border: 1px solid rgba(255,255,255,.1) !important; box-shadow: none !important; }
   .mus .mbg { position: absolute; inset: -24px; background: center/cover no-repeat; filter: blur(26px) saturate(1.3); opacity: .55; }
@@ -4509,7 +4521,7 @@ class ThuisCard extends HTMLElement {
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); }, 10000);
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); this._updBday(); }, 10000);
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); clearTimeout(this._camVt); this._camVt = setTimeout(() => { if (this._camEl && !this._camEl._snap && !this._camPlaying(this._camEl)) this._camRestart(0); }, 3000); } }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
@@ -4654,7 +4666,7 @@ class ThuisCard extends HTMLElement {
             <div class="tile mth" id="mTh"><div class="mtop"><span class="mthm" id="mThm"></span><span class="mthi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13.6V5a2 2 0 1 1 4 0v8.6a4 4 0 1 1-4 0z"/><path d="M12 9.5v6"/></svg></span><div class="mbig" id="mCur">—</div><div id="mPre"></div></div>
               <div class="mst"><span class="mic" id="mIc"></span><span id="mSt"></span></div><div class="mdl" id="mDl"></div>
               <div class="mstp"><button id="mMin" aria-label="Lager">−</button><button id="mPlus" aria-label="Hoger">+</button></div></div>
-            <div class="tile maf" id="mAf"></div><div class="tile mus" id="hpc" hidden></div>
+            <div class="tile maf" id="mAf"></div><div class="tile bdc" id="bdc" hidden></div><div class="tile mus" id="hpc" hidden></div>
           </div>
           <div class="mstack" id="mB"></div>
         </div>
@@ -4677,7 +4689,7 @@ class ThuisCard extends HTMLElement {
     placeBins();
     this.$('tMin').addEventListener('click', () => this._tStep(-1));
     // telefoon: meldingen en apparaten naar links wegvegen (zoals Apple Mail)
-    ['pic', 'hpc', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
+    ['pic', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
     this.$('evc').addEventListener('click', () => {
       // naar het paneel van de kamer met de laadpaal (bediening); anders het tabblad Auto
       const ri = this._rooms().findIndex((r) => (r.r.apps || []).includes('evc'));
@@ -5506,7 +5518,35 @@ class ThuisCard extends HTMLElement {
     this._events = res.flat();
     this._drawAgenda();
   }
+  // v359: verjaardagen van vandaag uit de agenda (agenda of afspraak met jarig/verjaardag/birthday); leeftijd uit een jaartal of getal in de titel
+  _updBday() {
+    const box = this.$('bdc'); if (!box) return;
+    const day0 = startOfDay(Date.now()), d1 = dayAdd(day0, 1), Y = new Date().getFullYear();
+    const pd = (d) => (d.dateTime ? Date.parse(d.dateTime) : new Date(...d.date.split('-').map((x, i) => (i === 1 ? x - 1 : +x))).getTime());
+    const RE = /jarig|verjaardag|birthday|geburtstag/i;
+    const list = (this._events || []).filter((e) => { const st = pd(e.start), en = pd(e.end); return st < d1 && en > day0 && st >= day0 - DAY && (RE.test(e.summary || '') || RE.test(`${e.cal?.entity} ${e.cal?.name || ''} ${this._nm(e.cal?.entity) || ''}`)); })
+      .map((e) => {
+        const t = String(e.summary || '');
+        const yr = t.match(/\b(19\d{2}|20\d{2})\b/), num = t.match(/\((\d{1,3})\)|wordt\s+(\d{1,3})/i);
+        let age = yr ? Y - +yr[1] : num ? +(num[1] || num[2]) : null; if (!(age > 0 && age < 120)) age = null;
+        const nm = t.replace(/\(.*?\)/g, '').replace(/\b(19|20)\d{2}\b/g, '').replace(/\bwordt\s+\d+/i, '').replace(/\b(is\s+)?jarig\b/ig, '').replace(/\b(verjaardag|birthday|geburtstag)(\s+van)?\b/ig, '').replace(/['’]s\b/g, '').replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, '').replace(/^[\s:·\-–]+|[\s:·\-–!]+$/g, '').trim();
+        return { nm: nm || 'Verjaardag', age };
+      });
+    const show = list.length > 0;
+    let html = '';
+    if (show) {
+      const L = list.slice(0, 3), two = L.length > 1;
+      const ages = L.filter((x) => x.age != null).map((x) => x.age);
+      html = `<svg class="cake" viewBox="0 0 100 100">${CAKE}</svg><span class="lab">Jarig vandaag</span>${L.map((x) => `<b${two ? ' class="two"' : ''}>${x.nm.replace(/[<>&]/g, '')}</b>`).join('')}`
+        + (two ? (ages.length ? `<span class="sub">${ages.join(' · ')} jaar</span>` : '') : L[0].age != null ? `<span class="sub">wordt ${L[0].age}</span>` : '');
+    }
+    box.hidden = !show;
+    box.dataset.sig = show ? `${day0}|${list.map((x) => x.nm).join(',')}` : '';
+    if (box.innerHTML !== html) box.innerHTML = html;
+    this._applyHidden();
+  }
   _drawAgenda() {
+    this._updBday();
     const tile = this.$('agTile'), box = this.$('agenda');
     if (!this._events) { tile.hidden = true; return; }
     tile.hidden = false;
@@ -6202,7 +6242,7 @@ class ThuisCard extends HTMLElement {
 
   /* ---------- verbergen door te vegen (telefoon) ---------- */
   // een verborgen blok komt terug zodra de toestand verandert (bijv. van draaien naar klaar, of een nieuwe bezorging)
-  _sig(el) { return el.id === 'pic' || el.id === 'hpc' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
+  _sig(el) { return el.id === 'pic' || el.id === 'hpc' || el.id === 'bdc' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
   _hidden() {
     try {
       // eenmalig: oude verborgen blokken van vóór versie 120 vergeten (die bleven ten onrechte verborgen)
@@ -6217,14 +6257,17 @@ class ThuisCard extends HTMLElement {
   }
   _applyHidden() {
     const h = this._hidden(); let dirty = false;
-    ['pic', 'hpc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
+    ['pic', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
       const el = this.$(id); if (!el) return;
       // toestand veranderd (of apparaat uit): het verbergen vergeten, zodat het blok bij de volgende keer weer verschijnt
       if (h[id] != null && (h[id] !== this._sig(el) || el.hidden)) { delete h[id]; dirty = true; }
       el.classList.toggle('gone', h[id] != null);
     });
     if (dirty) try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
-    const hc = this.$('hpc'); if (hc) this.$('mAf')?.classList.toggle('hpon', !hc.hidden && !hc.classList.contains('gone'));
+    // v359: muziek > verjaardag > afval: er staat steeds één tegel naast de thermostaat
+    const vis = (e) => e && !e.hidden && !e.classList.contains('gone'), hc = this.$('hpc'), bc = this.$('bdc'), mus = vis(hc);
+    bc?.classList.toggle('hpon', mus);
+    this.$('mAf')?.classList.toggle('hpon', mus || vis(bc));
   }
   _swipe(el, onGone) {
     if (!el || el._swOn) return;
