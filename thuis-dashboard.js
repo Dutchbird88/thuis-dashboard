@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '360';
+const CARD_VERSION = '361';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4108,6 +4108,9 @@ const shutterSvg = (pos, key) => {
 
 // wasmachine die draait: 0 = stil, 1 = wassen/spoelen (rustig, met water), 2 = centrifugeren (snel, zonder water)
 // apparaten: trommel draait en water klotst / sproeiarm en druppels / gloeiende ruit en warmte (stijl Rounded)
+const WXI = { wave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>', clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>', drop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/></svg>' };
+// v361: zachte stofplooien rechtsboven in de wasmachinekaart (telefoon)
+const WFAB = '<svg class="wfab" viewBox="0 0 240 120" preserveAspectRatio="xMaxYMin slice"><defs><linearGradient id="wfa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6f9be8" stop-opacity=".0"/><stop offset=".55" stop-color="#6f9be8" stop-opacity=".16"/><stop offset="1" stop-color="#9cc0ff" stop-opacity=".26"/></linearGradient><linearGradient id="wfb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1828" stop-opacity="1"/><stop offset=".45" stop-color="#0f1828" stop-opacity="0"/></linearGradient></defs><path d="M120 0 C150 20 150 50 190 55 S240 40 240 40 V0Z" fill="url(#wfa)"/><path d="M90 0 C130 30 140 70 180 80 S240 70 240 70 V0Z" fill="url(#wfa)" opacity=".7"/><path d="M150 0 C170 15 200 25 240 18 V0Z" fill="url(#wfa)"/><path d="M60 0 C100 45 150 100 240 105 V0Z" fill="url(#wfa)" opacity=".45"/></svg>';
 const washSvg = (mode) => `<svg viewBox="0 0 100 100">${RIC.draw('washer', 'on', mode)}</svg>`;
 const dishSvg = (run) => `<svg viewBox="0 0 100 100">${RIC.draw('dish', 'on', run ? 1 : 0)}</svg>`;
 const microSvg = (mode, disp) => `<svg viewBox="3 6 94 88">${RIC.draw('micro', 'on', mode, disp)}</svg>`;
@@ -4295,6 +4298,22 @@ const HPI = {
   vol1: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
 };
 const HPSTYLE = `
+
+/* v361: wasmachinekaart (telefoon, bezig) in het ontwerp van de gebruiker */
+.wx, .wfab { display: none; }
+@media (max-width: 600px) {
+  .was.run:has(.wx) > .r, .was.run:has(.wx) > .bar { display: none !important; }
+  .was.run .wx { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; position: relative; z-index: 2; }
+  .was.run .wfab { display: block; position: absolute; right: 0; top: 0; width: 62%; height: 100%; z-index: 0; pointer-events: none; opacity: .9; -webkit-mask: linear-gradient(90deg, transparent, #000 45%); mask: linear-gradient(90deg, transparent, #000 45%); }
+  .wx .wxl { min-width: 0; padding-right: 12px; } .wx .wxr { display: flex; align-items: center; gap: 12px; } .wx .wxr > div { min-width: 0; } .wx .wxr > svg { width: 52px; height: 52px; flex: none; }
+  .wx .wxr b { display: block; font-size: 18px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #fff; }
+  .wx .wxr em { display: block; font-style: normal; font-size: 13.5px; color: #8fbfff; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wx .wxt { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; white-space: nowrap; } .wx .wxt span { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -.02em; line-height: 1.05; } .wx .wxt small { font-size: 12.5px; color: #a6b0c2; }
+  .wx .wxb { height: 8px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 12px; overflow: hidden; } .wx .wxb i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #8fd0ff, #4d8ff7); }
+  .wx .wxd { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 6px 12px; width: 118px; border-left: 1px solid rgba(255,255,255,.12); align-self: stretch; justify-content: center; }
+  .wx .wxd div { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #e6ebf3; white-space: nowrap; } .wx .wxd svg { width: 18px; height: 18px; flex: none; color: #c9d2e0; }
+  .was.run:has(.wx) .wbb { left: 44%; right: 36%; top: 0; bottom: 45%; }
+}
 
 /* v336: stoom op de vaatwasserkaart tijdens het afwassen (alleen telefoon) */
 .wst { display: none; }
@@ -5933,8 +5952,15 @@ class ThuisCard extends HTMLElement {
       cls = bubOn ? 'run wash' : 'run';
       // v329: zeepbellen achter de kaart tijdens het wassen (telefoon, keuze A: klein en rustig, rechts); vaste posities, zodat de kaart niet steeds opnieuw wordt opgebouwd
       const bub = !bubOn ? '' : `<div class="wbb">${[[8, 9, 6.2, 0.4], [22, 6, 7.8, 3.1], [35, 12, 5.6, 1.7], [50, 7, 8.4, 5.2], [63, 10, 6.8, 2.6], [76, 8, 7.2, 4.4], [88, 13, 6, 0.9]].map(([x, z, d, l]) => `<i style="left:${x}%;width:${z}px;height:${z}px;animation-duration:${d}s;animation-delay:-${l}s"></i>`).join('')}</div>`;
-      html = `${bub}<div class="r">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div class="t"><b>Wasmachine</b><span class="tm" style="color:#fff">${left != null ? dur(left) : '—'}</span></div>
-        <div class="rt"><b>${ph}</b>${sub ? `${sub}<br>` : ''}${end ? `klaar ${end}` : ''}</div></div><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div>`;
+      html = `${WFAB}${bub}<div class="r">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div class="t"><b>Wasmachine</b><span class="tm" style="color:#fff">${left != null ? dur(left) : '—'}</span></div>
+        <div class="rt"><b>${ph}</b>${sub ? `${sub}<br>` : ''}${end ? `klaar ${end}` : ''}</div></div><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div>`
+        // v361: telefoon — ontwerp van de gebruiker 1:1 (icoon + animatie blijven): links naam, status · programma, groot "19 min resterend" en balk; rechts achter een lijn "Klaar om" en waterverbruik (of de fase)
+        + (() => {
+          const water = num('waterverbruik') ?? num('water_consumption') ?? num('waterconsumption');
+          const sec = water != null ? `${WXI.drop}<span>Water: ${fmt(water)} l</span>` : `${WXI.wave}<span>${ph}</span>`;
+          return `<div class="wx"><div class="wxl"><div class="wxr">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div><b>Wasmachine</b><em>${status === 'pause' ? 'Gepauzeerd' : 'Bezig'}${sub ? ` · ${sub}` : ''}</em><div class="wxt">${left != null ? `<span>${dur(left)}</span><small>resterend</small>` : '<span>—</span>'}</div></div></div><div class="wxb"><i style="width:${pct.toFixed(1)}%"></i></div></div>`
+            + `<div class="wxd">${end ? `<div>${WXI.clock}<span>Klaar om ${end}</span></div>` : ''}<div>${sec}</div></div></div>`;
+        })();
     } else if (['programmed', 'waiting_to_start'].includes(status)) {
       cls = 'run';
       html = `<div class="r">${ic}<div class="t"><b>Wasmachine</b><span>${sub || 'programma gekozen'}</span></div><div class="rt"><b>Start ${at('starttijd') || (num('start_in') == null ? 'later' : num('start_in') * 60 >= 1 ? `over ${dur(num('start_in') * 60)}` : 'zo')}</b>${end ? `klaar ${end}` : ''}</div></div>`;
