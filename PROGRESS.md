@@ -242,6 +242,7 @@
 | v369 | Wasmachinekaart: "Klaar 21:14" in plaats van "Klaar om", rechterkolom smaller. |
 | v370 | Vaatwasserkaart (telefoon) in de stijl van de wasmachinekaart: nieuwe vaatwasser met borden in het venster, sproeiarm bovenin die water omlaag spuit (rustig tempo); standen Afwassen, Gepauzeerd, Gepland, Vaat klaar (Sinds), Storing, Aan. |
 | v371 | Wasmachine- en vaatwasserkaart: tijd als "1 u 24" (niet "1:24"), icoon 44 px, geen tijd meer in het display van de vaatwasser (lichtstreepje), minder ruimte onder de balk. |
+| v372 | Fix: in het kamervenster stonden de oude en de nieuwe apparaatkaart (vaatwasser/wasmachine) onder elkaar; nu alleen de nieuwe. |
 
 ## Volgende stappen
 

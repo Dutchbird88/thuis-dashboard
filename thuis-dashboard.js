@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '371';
+const CARD_VERSION = '372';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4327,8 +4327,8 @@ const HPSTYLE = `
 /* v367: wasmachinekaart (telefoon), het voorbeeld van de gebruiker nagemaakt: diep donkerblauw met schuine lichtinval rechtsboven; links icoon, "Wasmachine" (schuin), programma, groot de resterende tijd; rechts effen statuslabel + klokregel; balk over de hele breedte */
 .wx { display: none; }
 @media (max-width: 600px) {
-  #was#was.was:has(.wx), #dish#dish.was:has(.wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx) { display: none !important; }
+  #was#was.was:has(.wx), #dish#dish.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
   .was .wx { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 14px; align-items: center; }
   .wx .wxi svg { width: 44px; height: 52px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -7283,7 +7283,7 @@ class ThuisCard extends HTMLElement {
       + (n ? `<div class="kth">Lampen</div><div class="lights">${rm.lights.map((x) => this._ltTile(x)).join('')}</div>` : '')
       + (rm.covers.length ? `<div class="kth">${rm.covers.length > 1 ? 'Rolluiken' : 'Rolluik'}</div><div class="covers">${rm.covers.map((x) => this._cvTile(x)).join('')}</div>` : '')
       + this._evSection(rm)
-      + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className.replace(/\bgone\b/, '').trim()}" data-k="${a.k}">${a.box.innerHTML}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
+      + (rm.apps.length || rm.offApps.length ? `<div class="kth">Apparaten</div>${rm.apps.length ? `<div class="mstack">${rm.apps.map((a) => `<div class="${a.box.className.replace(/\bgone\b/, '').trim()}" data-k="${a.k}">${a.box.innerHTML.replace(/(id="|url\(#)([wv]x[A-Z])/g, '$1k$2')}</div>`).join('')}</div>` : ''}${rm.offApps.length ? `<div class="kglass klk koff"${rm.apps.length ? ' style="margin-top:10px"' : ''}>${rm.offApps.map((x) => `<div class="lk" data-id="${x.id}" data-k="${x.k}"><i>${RIC.svg(x.ic, 'off')}</i><div><b>${x.nm}</b><span>${x.txt}</span></div></div>`).join('')}</div>` : ''}` : '')
       + (rm.scenes.length ? `<div class="kth">Scènes</div><div class="ksc">${shown.map((x) => `<div class="mp${recent && x.id === recent.id && Date.now() - x.t < 12 * HOUR ? ' hot' : ''}" data-id="${x.id}" style="--c:#ffc83d"><b>${x.name}</b></div>`).join('')}${own.length < rm.scenes.length ? `<button class="kall">${this._rmAllSc ? 'Minder' : own.length ? 'Alle scènes ›' : 'Hue-scènes ›'}</button>` : ''}</div>` : '');
     if (html === this._rmKey) return;
     this._rmKey = html; B.innerHTML = html;
