@@ -233,6 +233,7 @@
 | v360 | Thuis (telefoon): agenda weggehaald (verjaardagen blijven werken). |
 | v361 | Wasmachinekaart (telefoon) in het ontwerp van de gebruiker: resterende tijd groot, rechts klaartijd en waterverbruik (of de fase). |
 | v362 | Wasmachinekaart (telefoon) exacter naar het ontwerp: vaste glanzende bellen en stofplooien in plaats van de bewegende bellen, maten en plaatsing zoals het voorbeeld. |
+| v363 | Wasmachinekaart: achtergrond met een zachte berg stof rechts, zoals in het voorbeeld. |
 
 ## Volgende stappen
 
