@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '369';
+const CARD_VERSION = '370';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4121,6 +4121,19 @@ const WXN = (() => {
   const spin = `<g>${spinT(0.35)}<circle cx="50" cy="60" r="12" fill="none" stroke="#ff8a98" stroke-width="5" stroke-dasharray="14 62" opacity=".85"/><circle cx="50" cy="60" r="12" fill="none" stroke="#ffd166" stroke-width="5" stroke-dasharray="12 64" stroke-dashoffset="-26" opacity=".85"/><circle cx="50" cy="60" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="12 64" stroke-dashoffset="-52" opacity=".85"/></g><g>${spinT(0.6)}<path d="M36 54a15 15 0 0 1 9-9M64 66a15 15 0 0 1-9 9" fill="none" stroke="#9fd7ff" stroke-width="1.6" stroke-linecap="round"/></g>`;
   return (mode) => body(mode === 1 ? wash : mode === 2 ? spin : '');
 })();
+// v366/v370: telefoonkaart voor wasmachine en vaatwasser (één indeling voor alle standen); sub = programma, big = resterende tijd, rechts statuslabel + regel, balk alleen bij pc != null
+const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
+  + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc}%"></i></div>`}</div>`;
+// v370: vaatwasser-icoon (telefoonkaart): witte kast, groen lampje, display, venster met borden; run = sproeiarm bovenin draait en spuit water omlaag
+const VXN = (run, disp = '', lamp = true) => {
+  const drop = (x, b, dx, len) => `<line x1="${x}" y1="40" x2="${x + dx * 0.15}" y2="43.2" stroke="#9fd7ff" stroke-width="1.6" stroke-linecap="round" opacity="0"><animateTransform attributeName="transform" type="translate" values="0 0;${dx} ${len}" dur=".7s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur=".7s" begin="${b}s" repeatCount="indefinite"/></line>`;
+  const water = !run ? '' : '<g transform="translate(50 0)"><g><rect x="-21" y="37" width="42" height="3" rx="1.5" fill="#d6dfeb"/><animateTransform attributeName="transform" type="scale" values="1 1;-1 1;1 1" dur="1.1s" repeatCount="indefinite"/></g></g><rect x="24" y="34" width="52" height="48" fill="#8fd3ff" opacity=".08"><animate attributeName="opacity" values=".04;.12;.04" dur="1.1s" repeatCount="indefinite"/></rect>'
+    + [[30, -5], [35, -3.5], [40, -2], [45, -1], [50, 0], [55, 1], [60, 2], [65, 3.5], [70, 5]].map(([x, dx], k) => drop(x, ((k * 0.16) % 0.7).toFixed(2), dx * 2.4, 36) + drop(x, ((k * 0.16 + 0.35) % 0.7).toFixed(2), dx * 1.6, 26)).join('');
+  const plates = '<rect x="29" y="70" width="42" height="2.4" rx="1.2" fill="#8a94a6"/>' + [33, 40, 47, 54, 61, 68].map((x, i) => `<ellipse cx="${x}" cy="60" rx="2.6" ry="${i % 2 ? 9 : 10.5}" fill="#eef3f9" stroke="#b9c4d4" stroke-width=".8"/>`).join('');
+  return `<svg viewBox="8 2 84 96"><defs><linearGradient id="vxB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#dfe4eb"/></linearGradient><linearGradient id="vxT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f5"/><stop offset="1" stop-color="#d9dee6"/></linearGradient><linearGradient id="vxG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2a40"/><stop offset="1" stop-color="#14203a"/></linearGradient><clipPath id="vxC"><rect x="24" y="34" width="52" height="48" rx="7"/></clipPath></defs>`
+    + `<rect x="15" y="6" width="70" height="88" rx="12" fill="url(#vxB)"/><path d="M15 26V18A12 12 0 0 1 27 6h46a12 12 0 0 1 12 12v8z" fill="url(#vxT)"/><path d="M15 26h70" stroke="#cfd5de" stroke-width="1.2"/><circle cx="25.5" cy="16" r="3.3" fill="${lamp ? '#3cc96b' : '#8a94a6'}"/><rect x="50" y="11.5" width="26" height="9" rx="3" fill="#1a2232"/>${disp ? `<text x="63" y="18.6" text-anchor="middle" font-size="7" font-weight="700" fill="#7cc4ff" font-family="-apple-system,system-ui,sans-serif">${disp}</text>` : ''}`
+    + `<rect x="22" y="32" width="56" height="52" rx="9" fill="#c9d0da"/><g clip-path="url(#vxC)"><rect x="24" y="34" width="52" height="48" rx="7" fill="url(#vxG)"/>${plates}${water}</g><path d="M66 38a8 8 0 0 1 6 6" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/><rect x="34" y="87" width="32" height="3" rx="1.5" fill="#b9c0cb"/></svg>`;
+};
 const washSvg = (mode) => `<svg viewBox="0 0 100 100">${RIC.draw('washer', 'on', mode)}</svg>`;
 const dishSvg = (run) => `<svg viewBox="0 0 100 100">${RIC.draw('dish', 'on', run ? 1 : 0)}</svg>`;
 const microSvg = (mode, disp) => `<svg viewBox="3 6 94 88">${RIC.draw('micro', 'on', mode, disp)}</svg>`;
@@ -4312,8 +4325,8 @@ const HPSTYLE = `
 /* v367: wasmachinekaart (telefoon), het voorbeeld van de gebruiker nagemaakt: diep donkerblauw met schuine lichtinval rechtsboven; links icoon, "Wasmachine" (schuin), programma, groot de resterende tijd; rechts effen statuslabel + klokregel; balk over de hele breedte */
 .wx { display: none; }
 @media (max-width: 600px) {
-  #was#was.was:has(.wx) { padding: 12px 19px 13px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  #was.was:has(.wx) > :not(.wx) { display: none !important; }
+  #was#was.was:has(.wx), #dish#dish.was:has(.wx) { padding: 12px 19px 13px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx) { display: none !important; }
   .was .wx { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
   .wx .wxi svg { width: 36px; height: 43px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -5657,14 +5670,23 @@ class ThuisCard extends HTMLElement {
       else if (ds === 'finished' && !done) save(done = { at: Date.now(), end: de || fmtTime(Date.now()) });
       if (done && (door?.state === 'open' || (door && Date.parse(door.last_changed) > done.at) || Date.now() - done.at > 12 * HOUR)) save(done = null);
       // v336: zachte stoomwolkjes achter de kaart tijdens het afwassen (telefoon, keuze A); vaste posities zodat de kaart niet steeds opnieuw wordt opgebouwd
+      const vx = (k, icon, pill, sub, big, line, pc) => wxCardH('Vaatwasser', icon, k, pill, sub, big, line, pc); // v370: telefoonkaart
+      const disp = dl != null ? (dl >= 60 ? `${Math.floor(dl / 60)}:${String(Math.round(dl % 60)).padStart(2, '0')}` : `${Math.round(dl)}′`) : '';
       const steam = `<div class="wst">${[[6, 6.4, 0.6], [26, 7.6, 3.3], [46, 5.8, 1.9], [66, 7.0, 4.8], [84, 6.6, 2.7]].map(([x, d, l]) => `<i style="left:${x}%;animation-duration:${d}s;animation-delay:-${l}s"></i>`).join('')}</div>`;
-      if (ds === 'run') put(dBox, 'dish run steam', steam + block(dishSvg(true), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Bezig', `${dp}${dpct != null ? ` · ${fmt(dpct)}%` : ''}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0, chips));
-      else if (ds === 'delayedstart') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', 'Gepland', 'Uitgesteld', `${dp}<br>${de ? `klaar ${de}` : ''}`, null, chips));
-      else if (ds === 'pause') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Gepauzeerd', `${dp}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0));
-      else if (done) put(dBox, 'done', block(dishSvg(false), 'Vaat is klaar', done.end, 'Klaar', 'deur nog dicht —<br>laat de stoom eruit', 100));
-      else if (['actionrequired', 'error'].includes(ds)) put(dBox, 'bad', block(dishSvg(false), 'Vaatwasser', '', ds === 'error' ? 'Storing' : 'Actie nodig', 'controleer de machine', null));
-      else if (st(`switch.${d}_inschakelen`) === 'on') put(dBox, 'ready', block(dishSvg(false), 'Vaatwasser', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || '—', 'Aan', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) ? 'klaar om te starten' : 'geen programma gekozen', null));
+      if (ds === 'run') put(dBox, 'dish run steam', steam + block(dishSvg(true), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Bezig', `${dp}${dpct != null ? ` · ${fmt(dpct)}%` : ''}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0, chips)
+        + vx('run', VXN(true, disp), 'Afwassen', dp, dl != null ? `${dur(dl)}<small>resterend</small>` : '', de ? `${WXI.clock}Klaar ${de}` : '', dpct ?? 0));
+      else if (ds === 'delayedstart') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', 'Gepland', 'Uitgesteld', `${dp}<br>${de ? `klaar ${de}` : ''}`, null, chips)
+        + vx('plan', VXN(false), 'Gepland', dp || 'Programma gekozen', '', de ? `${WXI.clock}Klaar ${de}` : '', null));
+      else if (ds === 'pause') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Gepauzeerd', `${dp}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0)
+        + vx('run', VXN(false, disp), 'Gepauzeerd', dp, dl != null ? `${dur(dl)}<small>resterend</small>` : '', de ? `${WXI.clock}Klaar ${de}` : '', dpct ?? 0));
+      else if (done) put(dBox, 'done', block(dishSvg(false), 'Vaat is klaar', done.end, 'Klaar', 'deur nog dicht —<br>laat de stoom eruit', 100)
+        + vx('ok', VXN(false), `${WXI.check}Vaat klaar`, 'Deur nog dicht', '', `${WXI.clock}Sinds ${done.end}`, 100));
+      else if (['actionrequired', 'error'].includes(ds)) put(dBox, 'bad', block(dishSvg(false), 'Vaatwasser', '', ds === 'error' ? 'Storing' : 'Actie nodig', 'controleer de machine', null)
+        + vx('warn', VXN(false, '', false), `${WXI.warn}${ds === 'error' ? 'Storing' : 'Actie nodig'}`, 'Controleer de vaatwasser', '', '<b>Bekijk details →</b>', null));
+      else if (st(`switch.${d}_inschakelen`) === 'on') put(dBox, 'ready', block(dishSvg(false), 'Vaatwasser', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || '—', 'Aan', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) ? 'klaar om te starten' : 'geen programma gekozen', null)
+        + vx('off', VXN(false), 'Aan', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || 'Geen programma gekozen', '', '', null));
       else put(dBox, '', '');
+      this._wxFit(dBox);
     }
     // oven
     const o = this._config.oven, os = st(`sensor.${o}_status`), oBox = this.$('oven'), temp = num(`sensor.${o}_huidige_temperatuur_in_de_oven`);
@@ -5961,8 +5983,7 @@ class ThuisCard extends HTMLElement {
     const temp = num('temperatuur'), sub = [progName, temp ? `${fmt(temp)}°` : ''].filter(Boolean).join(' · ');
     const ic = '<svg viewBox="0 0 100 100"><use href="#gWash"/></svg>';
     // v366: telefoonkaart (één indeling voor alle standen); em = programma · temperatuur, big = resterende tijd, rechts statuslabel + regel, balk alleen bij pc != null
-    const wxCard = (k, mode, pill, sub2, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${WXN(mode)}</div><div class="wxm"><b>Wasmachine</b>${sub2 ? `<em>${sub2}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
-      + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc}%"></i></div>`}</div>`;
+    const wxCard = (k, mode, pill, sub2, big, line, pc) => wxCardH('Wasmachine', WXN(mode), k, pill, sub2, big, line, pc);
     let cls, html;
     if (['in_use', 'pause', 'rinse_hold'].includes(status)) {
       const pct = left != null && done != null && left + done > 0 ? done / (left + done) * 100 : 0;
@@ -5999,12 +6020,18 @@ class ThuisCard extends HTMLElement {
     box.hidden = cls === 'idle'; // uit of klaar voor gebruik: niet tonen
     box.className = `was ${cls}`;
     box.innerHTML = html;
+    this._wxFit(box);
+  }
+
+  // v366/v370: kaart in wasmachine-stijl (telefoon): lange programmanaam en tijd passend maken
+  _wxFit(box) {
     // v366: lange programmanaam: letter kleiner tot hij past (min. 11 px),
     // en de resterende tijd kleiner (27→23 px) als een lange status de ruimte inneemt; past het dan nog niet, dan valt het icoon in het label weg (.tight)
     const tw = (el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; }; // breedte van de tekst zelf (scrollWidth rondt af)
     const fit = (el, f, min) => { while (el && el.clientWidth && tw(el) > el.clientWidth - 1 && f > min) { f -= 0.5; el.style.fontSize = `${f}px`; } };
-    if (box.querySelector('.wx')) requestAnimationFrame(() => {
-      const wx = box.querySelector('.wx'), big = wx.querySelector('.big'), num = big?.firstChild;
+    if (box?.querySelector('.wx')) requestAnimationFrame(() => {
+      const wx = box.querySelector('.wx'); if (!wx) return;
+      const big = wx.querySelector('.big'), num = big?.firstChild;
       fit(wx.querySelector('em'), 12, 10.5);
       if (!big || !num || num.nodeType !== 3) return;
       const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);

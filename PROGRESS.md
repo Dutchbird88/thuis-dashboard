@@ -240,6 +240,7 @@
 | v367 | Wasmachinekaart (telefoon) exact naar het voorbeeld: kleinere letters zodat niets meer over elkaar loopt, nieuwe wasmachine (witte kast, ronde deur; wassen = was draait rond in klotsend water, centrifugeren = wazige ring), effen label zonder icoon, Klaar met "Sinds". |
 | v368 | Wasmachinekaart: programmatekst even groot als "resterend" (12 px). |
 | v369 | Wasmachinekaart: "Klaar 21:14" in plaats van "Klaar om", rechterkolom smaller. |
+| v370 | Vaatwasserkaart (telefoon) in de stijl van de wasmachinekaart: nieuwe vaatwasser met borden in het venster, sproeiarm bovenin die water omlaag spuit (rustig tempo); standen Afwassen, Gepauzeerd, Gepland, Vaat klaar (Sinds), Storing, Aan. |
 
 ## Volgende stappen
 

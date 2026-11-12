@@ -17,7 +17,7 @@
 //   pv=1240                             opwek in W op het tabblad Nu
 //   alarm=water|rook                    een alarm op Thuis
 //   lx=340                              lux van de bewegingssensor
-//   vaat=1                              vaatwasser bezig (stoom)
+//   vaat=1|lang|pauze|plan|klaar|fout|aan  vaatwasser (bezig, lange naam, gepauzeerd, gepland, klaar, storing, aan)
 //   was=1                               wasmachine bezig (zeepbellen)
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
 //   scn=1 [&scnsrc=/test/out/] [&sun=-3]  Nu: scène met tekeningen voor dag/schemer/nacht (zonnehoogte in graden)
@@ -91,7 +91,7 @@ if (q.get('dup')) {
 
 // oven (Home Connect): oven=koel (uit, nog 109°) of oven=aan
 // vaatwasser: vaat=1 (bezig, met stoom op de telefoon)
-if (q.get('vaat')) { ent('sensor.vaatwasser_status', 'run', {}, { name: 'Vaatwasser' }); ent('sensor.vaatwasser_programmavoortgang', 7, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_resterende_programmaduur', new Date(Date.now() + 88 * 6e4).toISOString(), {}, {}); }
+if (q.get('vaat')) { const v = q.get('vaat'); ent('sensor.vaatwasser_status', ({ plan: 'delayedstart', klaar: 'finished', fout: 'error', aan: 'ready', pauze: 'pause' })[v] || 'run', {}, { name: 'Vaatwasser' }); ent('sensor.vaatwasser_programmavoortgang', 7, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_resterende_programmaduur', new Date(Date.now() + 88 * 6e4).toISOString(), {}, {}); ent('sensor.vaatwasser_programma_voortgang', 30, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_programma_eindtijd', new Date(Date.now() + 84 * 6e4).toISOString(), {}, {}); ent('select.vaatwasser_actieve_programma', v === 'lang' ? 'dishcare_dishwasher_program_machine_care' : 'dishcare_dishwasher_program_eco_50', {}, {}); if (v === 'aan') { ent('switch.vaatwasser_inschakelen', 'on', {}, {}); ent('select.vaatwasser_geselecteerd_programma', 'dishcare_dishwasher_program_eco_50', {}, {}); } }
 // wasmachine: was=1 (wast, met zeepbellen op de telefoon)
 if (q.get('was')) { ent('sensor.wasmachine', ({ klaar: 'program_ended', fout: 'failure', aan: 'on' })[q.get('was')] || 'in_use', {}, { name: 'Wasmachine' }); ent('sensor.wasmachine_programmafase', q.get('was') === 'spin' ? 'spin' : 'main_wash', {}, {}); ent('sensor.wasmachine_resterende_tijd', 39, {}, {}); ent('sensor.wasmachine_verstreken_tijd', 10, {}, {}); ent('sensor.wasmachine_temperatuur', 40, {}, {}); ent('sensor.wasmachine_programma', /^(2|spin)$/.test(q.get('was')) ? 'quick_power_wash' : 'cottons', {}, {}); if (q.get('was') === '2') ent('sensor.wasmachine_waterverbruik', 52, {}, {}); }
 if (q.get('oven')) { dev('d_ov', 'Oven', 'keuken', { model: 'Oven', manufacturer: 'Test' });
