@@ -238,6 +238,7 @@
 | v365 | Wasmachinekaart (telefoon) volgens het stijlblad: actief blauw met fase-pil en klaartijd, klaar groen, storing oranje, aan grijs. |
 | v366 | Wasmachinekaart (telefoon) naar het ontwerp van de gebruiker: diep donkerblauw met lichtinval rechtsboven, icoon + titel + programma + resterende tijd links, statuslabel (effen) + Klaar om rechts, balk over de hele breedte; geen scheidingslijn, bellen of gloed. Ook Gepland. |
 | v367 | Wasmachinekaart (telefoon) exact naar het voorbeeld: kleinere letters zodat niets meer over elkaar loopt, nieuwe wasmachine (witte kast, ronde deur; wassen = was draait rond in klotsend water, centrifugeren = wazige ring), effen label zonder icoon, Klaar met "Sinds". |
+| v368 | Wasmachinekaart: programmatekst even groot als "resterend" (12 px). |
 
 ## Volgende stappen
 

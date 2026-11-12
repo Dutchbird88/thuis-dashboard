@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '367';
+const CARD_VERSION = '368';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4317,7 +4317,7 @@ const HPSTYLE = `
   .was .wx { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
   .wx .wxi svg { width: 36px; height: 43px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .wx .wxm em { display: block; font-style: normal; font-size: 13.5px; font-weight: 400; color: #60B8F5; line-height: 1.35; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wx .wxm em { display: block; font-style: normal; font-size: 12px; font-weight: 400; color: #60B8F5; line-height: 1.35; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .wx .wxm .big { display: flex; align-items: baseline; gap: 7px; margin-top: 3px; white-space: nowrap; overflow: hidden; font-size: 27px; font-weight: 700; color: #F5F7FC; letter-spacing: -.025em; line-height: 1; } .wx .wxm .big .n { font-size: inherit; font-weight: 700; color: #F5F7FC !important; letter-spacing: inherit; opacity: 1; margin: 0; } .wx .wxm .big small { font-size: 12px; font-weight: 400; color: #A3B0C5; letter-spacing: 0; }
   .wx .wxs { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; min-width: 0; }
   .wx .pill.pill { display: inline-flex; align-items: center; gap: 7px; height: 22px; box-sizing: border-box; font-size: 12px; font-weight: 600; color: #fff !important; background: #3488F4; border-radius: 99px; padding: 0 12px; white-space: nowrap; } .wx .pill:has(svg) { padding-left: 9px; } .wx .pill svg { width: 15px; height: 15px; flex: none; }
@@ -6005,7 +6005,7 @@ class ThuisCard extends HTMLElement {
     const fit = (el, f, min) => { while (el && el.clientWidth && tw(el) > el.clientWidth - 1 && f > min) { f -= 0.5; el.style.fontSize = `${f}px`; } };
     if (box.querySelector('.wx')) requestAnimationFrame(() => {
       const wx = box.querySelector('.wx'), big = wx.querySelector('.big'), num = big?.firstChild;
-      fit(wx.querySelector('em'), 13.5, 11);
+      fit(wx.querySelector('em'), 12, 10.5);
       if (!big || !num || num.nodeType !== 3) return;
       const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);
       let f = 27; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > 23) { f -= 0.5; sp.style.fontSize = `${f}px`; }
