@@ -232,6 +232,7 @@
 | v359 | Thuis (telefoon): verjaardagkaart uit de agenda op de plek van de afvaltegel, weg te vegen zoals de muziekkaart. |
 | v360 | Thuis (telefoon): agenda weggehaald (verjaardagen blijven werken). |
 | v361 | Wasmachinekaart (telefoon) in het ontwerp van de gebruiker: resterende tijd groot, rechts klaartijd en waterverbruik (of de fase). |
+| v362 | Wasmachinekaart (telefoon) exacter naar het ontwerp: vaste glanzende bellen en stofplooien in plaats van de bewegende bellen, maten en plaatsing zoals het voorbeeld. |
 
 ## Volgende stappen
 
