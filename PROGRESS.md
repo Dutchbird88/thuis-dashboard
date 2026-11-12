@@ -236,6 +236,7 @@
 | v363 | Wasmachinekaart: achtergrond met een zachte berg stof rechts, zoals in het voorbeeld. |
 | v364 | Wasmachinekaart rustiger: geen overlappende tekst meer, stof weg (alleen zachte gloed en drie bellen), ondertitel zonder "Bezig". |
 | v365 | Wasmachinekaart (telefoon) volgens het stijlblad: actief blauw met fase-pil en klaartijd, klaar groen, storing oranje, aan grijs. |
+| v366 | Wasmachinekaart (telefoon) naar het ontwerp van de gebruiker: diep donkerblauw met lichtinval rechtsboven, icoon + titel + programma + resterende tijd links, statuslabel (effen) + Klaar om rechts, balk over de hele breedte; geen scheidingslijn, bellen of gloed. Ook Gepland. |
 
 ## Volgende stappen
 
