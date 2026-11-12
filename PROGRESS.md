@@ -234,6 +234,7 @@
 | v361 | Wasmachinekaart (telefoon) in het ontwerp van de gebruiker: resterende tijd groot, rechts klaartijd en waterverbruik (of de fase). |
 | v362 | Wasmachinekaart (telefoon) exacter naar het ontwerp: vaste glanzende bellen en stofplooien in plaats van de bewegende bellen, maten en plaatsing zoals het voorbeeld. |
 | v363 | Wasmachinekaart: achtergrond met een zachte berg stof rechts, zoals in het voorbeeld. |
+| v364 | Wasmachinekaart rustiger: geen overlappende tekst meer, stof weg (alleen zachte gloed en drie bellen), ondertitel zonder "Bezig". |
 
 ## Volgende stappen
 

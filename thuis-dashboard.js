@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '363';
+const CARD_VERSION = '364';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4110,7 +4110,7 @@ const shutterSvg = (pos, key) => {
 // apparaten: trommel draait en water klotst / sproeiarm en druppels / gloeiende ruit en warmte (stijl Rounded)
 const WXI = { wave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>', clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>', drop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/></svg>' };
 // v361: zachte stofplooien rechtsboven in de wasmachinekaart (telefoon)
-const WFAB = '<svg class="wfab" viewBox="0 0 166 104" preserveAspectRatio="xMaxYMin meet"><defs><radialGradient id="wfbb" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#9cc3ff" stop-opacity=".04"/><stop offset=".9" stop-color="#b9d4ff" stop-opacity=".35"/><stop offset="1" stop-color="#e0ecff" stop-opacity=".55"/></radialGradient><linearGradient id="wfa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34558a"/><stop offset=".55" stop-color="#22395f"/><stop offset="1" stop-color="#14233d" stop-opacity="0"/></linearGradient><radialGradient id="wfh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5b80b9" stop-opacity=".75"/><stop offset="1" stop-color="#5b80b9" stop-opacity="0"/></radialGradient><linearGradient id="wfl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".35" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="wfk"><rect width="166" height="104" fill="url(#wfl)"/></mask><filter id="wfs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter><filter id="wfs2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1"/></filter></defs><g mask="url(#wfk)"><path filter="url(#wfs)" d="M30 66 C46 50 62 30 86 26 C104 22 116 8 130 2 C142 -2 156 0 166 0 V80 C146 74 120 74 96 70 C72 66 50 70 30 66Z" fill="url(#wfa)"/><ellipse filter="url(#wfs)" cx="92" cy="34" rx="26" ry="15" fill="url(#wfh)"/><ellipse filter="url(#wfs)" cx="140" cy="20" rx="22" ry="12" fill="url(#wfh)" opacity=".8"/><g filter="url(#wfs2)" fill="none" stroke-linecap="round"><path d="M118 6 C128 24 140 40 160 50" stroke="#6386c0" stroke-width="3" opacity=".55"/><path d="M124 4 C134 22 146 38 166 46" stroke="#14233f" stroke-width="2.5" opacity=".7"/><path d="M132 2 C140 18 152 30 166 34" stroke="#6b8dc6" stroke-width="2.6" opacity=".5"/><path d="M138 0 C146 14 156 24 166 27" stroke="#14233f" stroke-width="2" opacity=".6"/><path d="M106 12 C114 30 124 48 140 60" stroke="#5f82bc" stroke-width="2.6" opacity=".45"/><path d="M112 10 C120 30 132 46 150 58" stroke="#16263f" stroke-width="2.2" opacity=".6"/><path d="M62 44 C76 34 90 30 104 30" stroke="#6a8fca" stroke-width="2" opacity=".45"/></g></g><circle cx="49" cy="22" r="5.4" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="47.1" cy="19.8" rx="1.7" ry="1.2" fill="#fff" opacity=".75"/><circle cx="30" cy="33" r="4.4" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="28.5" cy="31.2" rx="1.4" ry="1.0" fill="#fff" opacity=".75"/><circle cx="60" cy="31" r="1.8" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="59.4" cy="30.3" rx="0.6" ry="0.4" fill="#fff" opacity=".75"/><circle cx="41" cy="42" r="2.2" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="40.2" cy="41.1" rx="0.7" ry="0.5" fill="#fff" opacity=".75"/><circle cx="93" cy="16" r="3.6" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="91.7" cy="14.6" rx="1.2" ry="0.8" fill="#fff" opacity=".75"/><circle cx="104" cy="8" r="2.2" fill="url(#wfbb)" stroke="rgba(190,215,255,.55)" stroke-width=".7"/><ellipse cx="103.2" cy="7.1" rx="0.7" ry="0.5" fill="#fff" opacity=".75"/></svg>';
+const WFAB = '<svg class="wfab" viewBox="0 0 170 120" preserveAspectRatio="xMaxYMin slice"><defs><radialGradient id="wfbb" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#9cc3ff" stop-opacity=".04"/><stop offset=".9" stop-color="#b9d4ff" stop-opacity=".3"/><stop offset="1" stop-color="#e0ecff" stop-opacity=".5"/></radialGradient><radialGradient id="wfg" cx="1" cy="0" r="1"><stop offset="0" stop-color="#4f73ad" stop-opacity=".38"/><stop offset=".55" stop-color="#2c4a7c" stop-opacity=".14"/><stop offset="1" stop-color="#2c4a7c" stop-opacity="0"/></radialGradient></defs><rect width="170" height="120" fill="url(#wfg)"/><circle cx="40" cy="18" r="4.6" fill="url(#wfbb)" stroke="rgba(190,215,255,.45)" stroke-width=".7"/><ellipse cx="38.4" cy="16.2" rx="1.5" ry="1.0" fill="#fff" opacity=".6"/><circle cx="26" cy="27" r="3" fill="url(#wfbb)" stroke="rgba(190,215,255,.45)" stroke-width=".7"/><ellipse cx="24.9" cy="25.8" rx="1.0" ry="0.7" fill="#fff" opacity=".6"/><circle cx="62" cy="10" r="2.4" fill="url(#wfbb)" stroke="rgba(190,215,255,.45)" stroke-width=".7"/><ellipse cx="61.2" cy="9.0" rx="0.8" ry="0.5" fill="#fff" opacity=".6"/></svg>';
 const washSvg = (mode) => `<svg viewBox="0 0 100 100">${RIC.draw('washer', 'on', mode)}</svg>`;
 const dishSvg = (run) => `<svg viewBox="0 0 100 100">${RIC.draw('dish', 'on', run ? 1 : 0)}</svg>`;
 const microSvg = (mode, disp) => `<svg viewBox="3 6 94 88">${RIC.draw('micro', 'on', mode, disp)}</svg>`;
@@ -4299,21 +4299,20 @@ const HPI = {
 };
 const HPSTYLE = `
 
-/* v361/v362: wasmachinekaart (telefoon, bezig) exact naar het ontwerp van de gebruiker; maten op een kaart van 366 x 104 px, rechterdeel vast vanaf rechts */
+/* v361–v364: wasmachinekaart (telefoon, bezig) naar het ontwerp van de gebruiker; v364: weer in de normale doorloop (geen vaste hoogte), rustiger achtergrond */
 .wx, .wfab { display: none; }
 @media (max-width: 600px) {
-  .was.run:has(.wx) { padding: 0 !important; height: 104px; border-radius: 16px !important; border: 1px solid rgba(120,160,230,.32) !important; background: linear-gradient(180deg, #111d33, #0d172a) !important; }
+  .was.run:has(.wx) { padding: 14px 14px 14px 16px !important; border-radius: 18px !important; border: 1px solid rgba(120,160,230,.28) !important; background: linear-gradient(180deg, #111d33, #0d172a) !important; }
   .was.run:has(.wx) > .r, .was.run:has(.wx) > .bar, .was.run:has(.wx) > .wbb { display: none !important; }
-  .was.run .wfab { display: block; position: absolute; right: 0; top: 0; width: 166px; height: 104px; z-index: 0; pointer-events: none; }
-  .was.run .wx { display: block; position: absolute; inset: 0; z-index: 1; }
-  .wx > svg { position: absolute; left: 17px; top: 28px; width: 46px; height: 46px; }
-  .wx .wxt0 { position: absolute; left: 77px; right: 136px; top: 12px; }
-  .wx .wxt0 b { display: block; font-size: 16.5px; font-weight: 700; font-style: italic; color: #fff; letter-spacing: -.01em; line-height: 1.2; }
-  .wx .wxt0 em { display: block; font-style: normal; font-size: 13px; color: #8ab9ef; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .wx .wxt { display: flex; align-items: baseline; gap: 7px; margin-top: 5px; white-space: nowrap; } .wx .wxt span { font-size: 25px; font-weight: 700; color: #fff; letter-spacing: -.02em; line-height: 1; } .wx .wxt small { font-size: 12.5px; color: #a7b1c3; }
-  .wx .wxb { position: absolute; left: 14px; right: 138px; bottom: 12px; height: 8px; border-radius: 99px; background: rgba(120,150,210,.16); overflow: hidden; } .wx .wxb i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #7fc8ff, #4f8ff5); }
-  .wx .wxdv { position: absolute; right: 124px; top: 42px; bottom: 12px; width: 1px; background: rgba(200,215,240,.16); }
-  .wx .wxd { position: absolute; right: 4px; left: calc(100% - 112px); top: 50px; display: flex; flex-direction: column; gap: 9px; }
+  .was.run .wfab { display: block; position: absolute; right: 0; top: 0; width: 170px; height: 100%; z-index: 0; pointer-events: none; }
+  .was.run .wx { display: grid; grid-template-columns: minmax(0, 1fr) 1px 104px; column-gap: 12px; align-items: center; position: relative; z-index: 1; }
+  .wx .wxl { min-width: 0; } .wx .wxr { display: flex; align-items: center; gap: 12px; } .wx .wxr > svg { width: 46px; height: 46px; flex: none; } .wx .wxr > div { min-width: 0; }
+  .wx .wxr b { display: block; font-size: 16px; font-weight: 700; font-style: italic; color: #fff; line-height: 1.2; }
+  .wx .wxr em { display: block; font-style: normal; font-size: 13px; color: #8ab9ef; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wx .wxt { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; white-space: nowrap; } .wx .wxt span { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -.02em; line-height: 1.1; } .wx .wxt small { font-size: 12.5px; color: #a7b1c3; }
+  .wx .wxb { height: 8px; border-radius: 99px; background: rgba(120,150,210,.16); overflow: hidden; margin-top: 12px; } .wx .wxb i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #7fc8ff, #4f8ff5); }
+  .wx .wxdv { align-self: stretch; width: 1px; background: rgba(200,215,240,.14); margin: 30px 0 2px; }
+  .wx .wxd { display: flex; flex-direction: column; gap: 10px; padding-top: 26px; }
   .wx .wxd div { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #e8edf5; white-space: nowrap; } .wx .wxd svg { width: 16px; height: 16px; flex: none; color: #cfd7e4; }
 }
 
@@ -5960,8 +5959,8 @@ class ThuisCard extends HTMLElement {
         + (() => {
           const water = num('waterverbruik') ?? num('water_consumption') ?? num('waterconsumption');
           const sec = water != null ? `${WXI.drop}<span>Water: ${fmt(water)} l</span>` : `${WXI.wave}<span>${ph}</span>`;
-          return `<div class="wx">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div class="wxt0"><b>Wasmachine</b><em>${status === 'pause' ? 'Gepauzeerd' : 'Bezig'}${sub ? ` · ${sub}` : ''}</em><div class="wxt">${left != null ? `<span>${dur(left)}</span><small>resterend</small>` : '<span>—</span>'}</div></div>`
-            + `<div class="wxb"><i style="width:${pct.toFixed(1)}%"></i></div><i class="wxdv"></i><div class="wxd">${end ? `<div>${WXI.clock}<span>Klaar om ${end}</span></div>` : ''}<div>${sec}</div></div></div>`;
+          return `<div class="wx"><div class="wxl"><div class="wxr">${washSvg(status === 'pause' ? 0 : phase === 'spin' ? 2 : 1)}<div><b>Wasmachine</b><em>${status === 'pause' ? `Gepauzeerd${sub ? ` · ${sub}` : ''}` : sub || 'Bezig'}</em><div class="wxt">${left != null ? `<span>${dur(left)}</span><small>resterend</small>` : '<span>—</span>'}</div></div></div><div class="wxb"><i style="width:${pct.toFixed(1)}%"></i></div></div>`
+            + `<i class="wxdv"></i><div class="wxd">${end ? `<div>${WXI.clock}<span>Klaar om ${end}</span></div>` : ''}<div>${sec}</div></div></div>`;
         })();
     } else if (['programmed', 'waiting_to_start'].includes(status)) {
       cls = 'run';
