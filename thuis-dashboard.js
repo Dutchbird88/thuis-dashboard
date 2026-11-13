@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '373';
+const CARD_VERSION = '374';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4124,6 +4124,10 @@ const WXN = (() => {
 // v366/v370: telefoonkaart voor wasmachine en vaatwasser (één indeling voor alle standen); sub = programma, big = resterende tijd, rechts statuslabel + regel, balk alleen bij pc != null
 // v371: resterende tijd op de telefoonkaart: '45 min', '1 u' of '1 u 05' (niet '1:00', dat leest als 1 minuut)
 const wxDur = (m) => { m = Math.round(m); return m >= 60 ? `${Math.floor(m / 60)} u${m % 60 ? ` ${String(m % 60).padStart(2, '0')}` : ''}` : `${m} min`; };
+// v374: Picnic-afbeelding (eigen plaatje uit agenda_icons of /local/picnic.png); lukt laden niet, dan een getekend busje
+const PTRUCK = '<svg class="ptk" viewBox="0 0 120 80"><rect x="6" y="14" width="66" height="44" rx="6" fill="#f4f1ea"/><rect x="18" y="24" width="20" height="20" rx="3" fill="#d6363b"/><path d="M72 28h20l14 16v14H72z" fill="#f4f1ea"/><path d="M76 32h14l10 12H76z" fill="#2a3346"/><rect x="72" y="50" width="34" height="8" fill="#1d2433"/><circle cx="26" cy="60" r="8" fill="#2a2f3a"/><circle cx="26" cy="60" r="3.2" fill="#9aa3b2"/><circle cx="88" cy="60" r="8" fill="#2a2f3a"/><circle cx="88" cy="60" r="3.2" fill="#9aa3b2"/><rect x="4" y="66" width="104" height="4" rx="2" fill="#5aa04a" opacity=".8"/></svg>';
+const picImg = (src) => `<img class="pici" src="${src}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">${PTRUCK.replace('<svg class="ptk"', '<svg class="ptk" style="display:none"')}`;
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
   + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc}%"></i></div>`}</div>`;
 // v370: vaatwasser-icoon (telefoonkaart): witte kast, groen lampje, display, venster met borden; run = sproeiarm bovenin draait en spuit water omlaag
@@ -4327,8 +4331,8 @@ const HPSTYLE = `
 /* v367: wasmachinekaart (telefoon), het voorbeeld van de gebruiker nagemaakt: diep donkerblauw met schuine lichtinval rechtsboven; links icoon, "Wasmachine" (schuin), programma, groot de resterende tijd; rechts effen statuslabel + klokregel; balk over de hele breedte */
 .wx { display: none; }
 @media (max-width: 600px) {
-  #was#was.was:has(.wx), #dish#dish.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
+  #was#was.was:has(.wx), #dish#dish.was:has(.wx), #pic#pic.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), #pic.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
   .was .wx { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 14px; align-items: center; }
   .wx .wxi svg { width: 44px; height: 52px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -4343,6 +4347,12 @@ const HPSTYLE = `
   .wx.ok .pill.pill { background: #2E9E5B; } .wx.ok .wxb i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
   .wx.warn .pill.pill { background: rgba(245,158,11,.18); color: #fbbf6a !important; }
   .wx.off .pill.pill, .wx.plan .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; }
+}
+@media (max-width: 600px) {
+  /* v374: Picnic in dezelfde kaart: busje 56 px breed, label en balk in Picnic-rood (zacht bij Verwacht/Vandaag) */
+  .was .wx.pk { grid-template-columns: 56px minmax(0, 1fr) auto; } .wx.pk .wxi .pici, .wx.pk .wxi .ptk { width: 56px; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+  .wx.pk .pill.pill { background: #d6363b; } .wx.pk.vw .pill.pill { background: rgba(214,54,59,.18); color: #ffb3b3 !important; } .wx.pk.ok .pill.pill { background: #2E9E5B; color: #fff !important; }
+  .wx.pk .wxb i { background: linear-gradient(90deg, #ff9a9a, #d6363b); }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
 
@@ -6310,18 +6320,23 @@ class ThuisCard extends HTMLElement {
     let html = '';
     if (show && done) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
-      html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`;
+      html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`
+        + wxCardH('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, `Bezorgd om ${fmtTime(dt)}`, 'Bezorgd', `${WXI.clock}${cap(relTime(dt))}`, null);
     } else if (show) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
-      const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`);
+      const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`), pm = (m) => (m >= 90 ? `${Math.round(m / 60)} u` : `${Math.max(1, Math.round(m))} min`);
       const busy = now >= s, pct = busy ? Math.min(100, Math.round((now - s) / (e - s) * 100)) : null;
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic komt bezorgen</b><span class="tm" style="color:#fff">${fmtTime(s)} – ${fmtTime(e)}</span></div>`
         + `<div class="rt"><b>${busy || (arr && arr - now < 30 * 60000) ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag'}</b>${arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'elk moment' : `nog ${mins((arr - now) / 60000)}`) : busy ? 'elk moment' : `over ${mins((s - now) / 60000)}`}</div></div>`
-        + (busy ? `<div class="bar"><i style="width:${pct}%"></i></div>` : '');
+        + (busy ? `<div class="bar"><i style="width:${pct}%"></i></div>` : '')
+      // v374: telefoonkaart in de stijl van wasmachine/vaatwasser (optie A): tijdvak groot, label in Picnic-rood (zacht bij Verwacht/Vandaag, vol bij Onderweg)
+      const lab = busy || (arr && arr - now < 30 * 60000) ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag';
+      const ln = arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'Elk moment' : `Nog ${pm((arr - now) / 60000)}`) : busy ? 'Elk moment' : `Over ${pm((s - now) / 60000)}`;
+      html += wxCardH('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, busy ? pct : null);
     }
     box.hidden = !show;
     box.dataset.sig = show ? String(s) : '';
-    if (box.innerHTML !== html) box.innerHTML = html;
+    if (box._h !== html) { box._h = html; box.innerHTML = html; this._wxFit(box); }
     this._applyHidden();
     box.onclick = () => ids.eta_s && this._moreInfo(eta ? ids.eta_s : ids.slot_s);
   }

@@ -17,6 +17,7 @@
 //   pv=1240                             opwek in W op het tabblad Nu
 //   alarm=water|rook                    een alarm op Thuis
 //   lx=340                              lux van de bewegingssensor
+//   pic=1|weg|klaar                     Picnic (verwacht, onderweg, bezorgd)
 //   vaat=1|lang|pauze|plan|klaar|fout|aan  vaatwasser (bezig, lange naam, gepauzeerd, gepland, klaar, storing, aan)
 //   was=1                               wasmachine bezig (zeepbellen)
 //   oven=koel|aan                       oven die afkoelt (109°) of bezig is
@@ -92,6 +93,9 @@ if (q.get('dup')) {
 // oven (Home Connect): oven=koel (uit, nog 109°) of oven=aan
 // vaatwasser: vaat=1 (bezig, met stoom op de telefoon)
 if (q.get('vaat')) { const v = q.get('vaat'); ent('sensor.vaatwasser_status', ({ plan: 'delayedstart', klaar: 'finished', fout: 'error', aan: 'ready', pauze: 'pause' })[v] || 'run', {}, { name: 'Vaatwasser' }); ent('sensor.vaatwasser_programmavoortgang', 7, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_resterende_programmaduur', new Date(Date.now() + 88 * 6e4).toISOString(), {}, {}); ent('sensor.vaatwasser_programma_voortgang', 30, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_programma_eindtijd', new Date(Date.now() + 84 * 6e4).toISOString(), {}, {}); ent('select.vaatwasser_actieve_programma', v === 'lang' ? 'dishcare_dishwasher_program_machine_care' : 'dishcare_dishwasher_program_eco_50', {}, {}); if (v === 'aan') { ent('switch.vaatwasser_inschakelen', 'on', {}, {}); ent('select.vaatwasser_geselecteerd_programma', 'dishcare_dishwasher_program_eco_50', {}, {}); } }
+// picnic: pic=1 (verwacht, over 9 uur), pic=weg (onderweg, binnen het tijdvak), pic=klaar (net bezorgd)
+if (q.get('pic')) { const P = q.get('pic'), m6 = 6e4, t0 = P === '1' ? Date.now() + 9 * 60 * m6 : Date.now() - 6 * m6, ps = (k, v) => ent(`sensor.picnic_${k}`, new Date(v).toISOString(), { device_class: 'timestamp' }, { pl: 'picnic', tk: k });
+  ps('next_delivery_slot_start', t0); ps('next_delivery_slot_end', t0 + 20 * m6); ps('next_delivery_eta_start', t0); ps('next_delivery_eta_end', t0 + 20 * m6); if (P === 'klaar') ps('last_order_delivery_time', Date.now() - 3 * m6); }
 // wasmachine: was=1 (wast, met zeepbellen op de telefoon)
 if (q.get('was')) { ent('sensor.wasmachine', ({ klaar: 'program_ended', fout: 'failure', aan: 'on' })[q.get('was')] || 'in_use', {}, { name: 'Wasmachine' }); ent('sensor.wasmachine_programmafase', q.get('was') === 'spin' ? 'spin' : 'main_wash', {}, {}); ent('sensor.wasmachine_resterende_tijd', 39, {}, {}); ent('sensor.wasmachine_verstreken_tijd', 10, {}, {}); ent('sensor.wasmachine_temperatuur', 40, {}, {}); ent('sensor.wasmachine_programma', /^(2|spin)$/.test(q.get('was')) ? 'quick_power_wash' : 'cottons', {}, {}); if (q.get('was') === '2') ent('sensor.wasmachine_waterverbruik', 52, {}, {}); }
 if (q.get('oven')) { dev('d_ov', 'Oven', 'keuken', { model: 'Oven', manufacturer: 'Test' });
