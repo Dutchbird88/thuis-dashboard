@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '378';
+const CARD_VERSION = '379';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6333,8 +6333,10 @@ class ThuisCard extends HTMLElement {
         + (busy ? `<div class="bar"><i style="width:${pct}%"></i></div>` : '')
       // v374: telefoonkaart in de stijl van wasmachine/vaatwasser (optie A): tijdvak groot, label in Picnic-rood (zacht bij Verwacht/Vandaag, vol bij Onderweg)
       const lab = busy || (arr && arr - now < 30 * 60000) ? 'Onderweg' : eta ? 'Verwacht' : 'Vandaag';
+      // v379: met een live aankomsttijd loopt de balk naar die aankomst (laatste 30 min: 30 min = leeg, aankomst = vol), niet over het tijdvak
+      const livePct = arr && startOfDay(arr) === day0 && arr - now < 30 * 60000 ? Math.max(3, Math.min(100, Math.round((1 - Math.max(0, arr - now) / (30 * 60000)) * 100))) : null;
       const ln = arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'Elk moment' : `Nog ${pm((arr - now) / 60000)}`) : busy ? 'Elk moment' : `Over ${pm((s - now) / 60000)}`;
-      html += wxCardH('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, busy ? pct : null);
+      html += wxCardH('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, livePct ?? (busy ? pct : null));
     }
     box.hidden = !show;
     box.dataset.sig = show ? String(s) : '';
