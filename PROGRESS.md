@@ -245,6 +245,7 @@
 | v372 | Fix: in het kamervenster stonden de oude en de nieuwe apparaatkaart (vaatwasser/wasmachine) onder elkaar; nu alleen de nieuwe. |
 | v373 | Fix: weggeveegde verjaardag (en muziek/Picnic) kwam bij het openen van de app terug, omdat de agenda dan nog niet geladen was. |
 | v374 | Picnic-kaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A): tijdvak groot, label Verwacht (zacht rood) / Onderweg (rood) / Bezorgd (groen), "Over 9 u" / "Nog 12 min", rode balk tijdens het tijdvak. |
+| v375 | Picnic-kaart: tijdvak en "Bezorgd" 22 px in plaats van 27 px. |
 
 ## Volgende stappen
 

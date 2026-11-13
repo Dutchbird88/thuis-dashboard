@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '374';
+const CARD_VERSION = '375';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4353,6 +4353,7 @@ const HPSTYLE = `
   .was .wx.pk { grid-template-columns: 56px minmax(0, 1fr) auto; } .wx.pk .wxi .pici, .wx.pk .wxi .ptk { width: 56px; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
   .wx.pk .pill.pill { background: #d6363b; } .wx.pk.vw .pill.pill { background: rgba(214,54,59,.18); color: #ffb3b3 !important; } .wx.pk.ok .pill.pill { background: #2E9E5B; color: #fff !important; }
   .wx.pk .wxb i { background: linear-gradient(90deg, #ff9a9a, #d6363b); }
+  .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
 
@@ -6047,7 +6048,7 @@ class ThuisCard extends HTMLElement {
       fit(wx.querySelector('em'), 12, 10.5);
       if (!big || !num || num.nodeType !== 3) return;
       const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);
-      let f = 27; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > 23) { f -= 0.5; sp.style.fontSize = `${f}px`; }
+      let f = parseFloat(getComputedStyle(big).fontSize) || 27; const fMin = f - 4; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > fMin) { f -= 0.5; sp.style.fontSize = `${f}px`; }
       if (big.clientWidth && tw(big) > big.clientWidth - 1) wx.classList.add('tight');
     });
   }
