@@ -250,6 +250,7 @@
 | v377 | Fix: Picnic-busje bleef op de iPhone dicht op de tekst (bij krappe ruimte `.tight` werd de afstand 12 px); nu altijd 20 px. |
 | v378 | Fix: weggeveegde verjaardag kwam later op de dag terug (sig veranderde als een agenda een keer niet laadde of de namen in een andere volgorde kwamen). Nu alleen terug bij een nieuwe dag of een extra jarige. |
 | v379 | Picnic-balk volgt de live aankomsttijd ("Nog 3 min" = bijna vol) in plaats van het tijdvak. |
+| v380 | Picnic-balk pas zichtbaar bij "Nog 5 min" of minder (loopt in 5 min vol). |
 
 ## Volgende stappen
 
