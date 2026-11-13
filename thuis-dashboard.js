@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '377';
+const CARD_VERSION = '378';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5603,7 +5603,8 @@ class ThuisCard extends HTMLElement {
         + (two ? (ages.length ? `<span class="sub">${ages.join(' · ')} jaar</span>` : '') : L[0].age != null ? `<span class="sub">wordt ${L[0].age}</span>` : '');
     }
     box.hidden = !show;
-    box.dataset.sig = show ? `${day0}|${list.map((x) => x.nm).join(',')}` : '';
+    // v378: namen uniek en gesorteerd, zodat een agenda die een keer niet laadt of in een andere volgorde komt de sig niet verandert
+    box.dataset.sig = show ? `${day0}|${[...new Set(list.map((x) => x.nm))].sort().join(',')}` : '';
     if (box.innerHTML !== html) box.innerHTML = html;
     this._applyHidden();
   }
@@ -6365,7 +6366,9 @@ class ThuisCard extends HTMLElement {
       // v373: muziek, verjaardag en Picnic: alleen vergeten bij een nieuwe, andere inhoud. Bij het openen van de app is de agenda nog niet geladen
       // (kaart even verborgen, lege sig); dat mag het wegvegen niet wissen, anders komt de verjaardag steeds terug
       const sigKind = el.id === 'pic' || el.id === 'hpc' || el.id === 'bdc', sg = this._sig(el);
-      if (h[id] != null && (sigKind ? sg && h[id] !== sg : h[id] !== sg || el.hidden)) { delete h[id]; dirty = true; }
+      // v378: verjaardag alleen terug bij een nieuwe dag of een extra jarige (niet als een van de agenda's een keer ontbreekt)
+      const sameBday = id === 'bdc' && h[id] != null && sg && (() => { const [d0, n0 = ''] = String(h[id]).split('|'), [d1, n1 = ''] = sg.split('|'), had = new Set(n0.split(',')); return d0 === d1 && n1.split(',').every((n) => had.has(n)); })();
+      if (h[id] != null && !sameBday && (sigKind ? sg && h[id] !== sg : h[id] !== sg || el.hidden)) { delete h[id]; dirty = true; }
       el.classList.toggle('gone', h[id] != null);
     });
     if (dirty) try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
