@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '372';
+const CARD_VERSION = '373';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6346,7 +6346,10 @@ class ThuisCard extends HTMLElement {
     ['pic', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
       const el = this.$(id); if (!el) return;
       // toestand veranderd (of apparaat uit): het verbergen vergeten, zodat het blok bij de volgende keer weer verschijnt
-      if (h[id] != null && (h[id] !== this._sig(el) || el.hidden)) { delete h[id]; dirty = true; }
+      // v373: muziek, verjaardag en Picnic: alleen vergeten bij een nieuwe, andere inhoud. Bij het openen van de app is de agenda nog niet geladen
+      // (kaart even verborgen, lege sig); dat mag het wegvegen niet wissen, anders komt de verjaardag steeds terug
+      const sigKind = el.id === 'pic' || el.id === 'hpc' || el.id === 'bdc', sg = this._sig(el);
+      if (h[id] != null && (sigKind ? sg && h[id] !== sg : h[id] !== sg || el.hidden)) { delete h[id]; dirty = true; }
       el.classList.toggle('gone', h[id] != null);
     });
     if (dirty) try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
