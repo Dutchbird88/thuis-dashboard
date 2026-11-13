@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '376';
+const CARD_VERSION = '377';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4350,7 +4350,7 @@ const HPSTYLE = `
 }
 @media (max-width: 600px) {
   /* v374: Picnic in dezelfde kaart: busje 56 px breed, label en balk in Picnic-rood (zacht bij Verwacht/Vandaag) */
-  .was .wx.pk { grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 20px; } /* v376: meer ruimte tussen busje en tekst */ .wx.pk .wxi .pici, .wx.pk .wxi .ptk { width: 56px; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+  .was .wx.pk, .was .wx.pk.tight { grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 20px; } /* v377: ook als de tijd krap past (.tight) */ /* v376: meer ruimte tussen busje en tekst */ .wx.pk .wxi .pici, .wx.pk .wxi .ptk { width: 56px; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
   .wx.pk .pill.pill { background: #d6363b; } .wx.pk.vw .pill.pill { background: rgba(214,54,59,.18); color: #ffb3b3 !important; } .wx.pk.ok .pill.pill { background: #2E9E5B; color: #fff !important; }
   .wx.pk .wxb i { background: linear-gradient(90deg, #ff9a9a, #d6363b); }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */

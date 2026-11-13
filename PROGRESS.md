@@ -247,6 +247,7 @@
 | v374 | Picnic-kaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A): tijdvak groot, label Verwacht (zacht rood) / Onderweg (rood) / Bezorgd (groen), "Over 9 u" / "Nog 12 min", rode balk tijdens het tijdvak. |
 | v375 | Picnic-kaart: tijdvak en "Bezorgd" 22 px in plaats van 27 px. |
 | v376 | Picnic-kaart: meer ruimte tussen het busje en de tekst (20 px). |
+| v377 | Fix: Picnic-busje bleef op de iPhone dicht op de tekst (bij krappe ruimte `.tight` werd de afstand 12 px); nu altijd 20 px. |
 
 ## Volgende stappen
 
