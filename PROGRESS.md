@@ -252,6 +252,7 @@
 | v379 | Picnic-balk volgt de live aankomsttijd ("Nog 3 min" = bijna vol) in plaats van het tijdvak. |
 | v380 | Picnic-balk pas zichtbaar bij "Nog 5 min" of minder (loopt in 5 min vol). |
 | v381 | Lampen, rolluiken en kamers die uit staan krijgen dezelfde blauwgrijze rand als thermostaat, afval en de apparaatkaarten. |
+| v382 | Ovenkaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A, gloed): oranje label en balk, resterende tijd groot, Klaar groen; "Koelt af" niet meer op de telefoon. Magnetron in dezelfde kaart. |
 
 ## Volgende stappen
 

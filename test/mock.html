@@ -20,7 +20,7 @@
 //   pic=1|weg|klaar                     Picnic (verwacht, onderweg, bezorgd)
 //   vaat=1|lang|pauze|plan|klaar|fout|aan  vaatwasser (bezig, lange naam, gepauzeerd, gepland, klaar, storing, aan)
 //   was=1                               wasmachine bezig (zeepbellen)
-//   oven=koel|aan                       oven die afkoelt (109°) of bezig is
+//   oven=koel|aan|klaar                 oven die afkoelt (109°, op de telefoon verborgen), bezig is of klaar is
 //   scn=1 [&scnsrc=/test/out/] [&sun=-3]  Nu: scène met tekeningen voor dag/schemer/nacht (zonnehoogte in graden)
 //   tok=1                               thermostaat op temperatuur (niet aan het verwarmen)
 //   wol=1                               Wake on LAN: computer (uit) en server (aan) met Ping-sensoren
@@ -99,8 +99,9 @@ if (q.get('pic')) { const P = q.get('pic'), m6 = 6e4, t0 = P === '1' ? Date.now(
 // wasmachine: was=1 (wast, met zeepbellen op de telefoon)
 if (q.get('was')) { ent('sensor.wasmachine', ({ klaar: 'program_ended', fout: 'failure', aan: 'on' })[q.get('was')] || 'in_use', {}, { name: 'Wasmachine' }); ent('sensor.wasmachine_programmafase', q.get('was') === 'spin' ? 'spin' : 'main_wash', {}, {}); ent('sensor.wasmachine_resterende_tijd', 39, {}, {}); ent('sensor.wasmachine_verstreken_tijd', 10, {}, {}); ent('sensor.wasmachine_temperatuur', 40, {}, {}); ent('sensor.wasmachine_programma', /^(2|spin)$/.test(q.get('was')) ? 'quick_power_wash' : 'cottons', {}, {}); if (q.get('was') === '2') ent('sensor.wasmachine_waterverbruik', 52, {}, {}); }
 if (q.get('oven')) { dev('d_ov', 'Oven', 'keuken', { model: 'Oven', manufacturer: 'Test' });
-  ent('sensor.oven_status', q.get('oven') === 'aan' ? 'run' : 'inactive', {}, { dev: 'd_ov', hen: true, name: 'Status' });
+  ent('sensor.oven_status', ({ aan: 'run', klaar: 'finished' })[q.get('oven')] || 'inactive', {}, { dev: 'd_ov', hen: true, name: 'Status' });
   ent('sensor.oven_huidige_temperatuur_in_de_oven', q.get('oven') === 'aan' ? 180 : 109, { unit_of_measurement: '°C' }, { dev: 'd_ov', hen: true, name: 'Huidige temperatuur in de oven' });
+  if (q.get('oven') === 'aan') { ent('sensor.oven_programma_eindtijd', new Date(Date.now() + 8 * 6e4).toISOString(), {}, { reg: false }); ent('sensor.oven_programma_voortgang', 76, {}, { reg: false }); ent('select.oven_actieve_programma', 'cooking_oven_program_heating_mode_top_bottom_heating', {}, { reg: false }); }
   ent('switch.oven_inschakelen', 'off', {}, { dev: 'd_ov', hen: true, name: 'Inschakelen' }); }
 // Wake on LAN: wol=1 (computer uit, server aan, elk met een Ping-sensor in dezelfde ruimte)
 if (q.get('wol')) {

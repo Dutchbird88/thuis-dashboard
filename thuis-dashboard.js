@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '381';
+const CARD_VERSION = '382';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4142,6 +4142,11 @@ const VXN = (run, disp = '', lamp = true) => {
     + `<rect x="15" y="6" width="70" height="88" rx="12" fill="url(#vxB)"/><path d="M15 26V18A12 12 0 0 1 27 6h46a12 12 0 0 1 12 12v8z" fill="url(#vxT)"/><path d="M15 26h70" stroke="#cfd5de" stroke-width="1.2"/><circle cx="25.5" cy="16" r="3.3" fill="${lamp ? '#3cc96b' : '#8a94a6'}"/><rect x="50" y="11.5" width="26" height="9" rx="3" fill="#1a2232"/>${disp ? '<rect x="54" y="15" width="18" height="2" rx="1" fill="#7cc4ff"/>' : ''}`
     + `<rect x="22" y="32" width="56" height="52" rx="9" fill="#c9d0da"/><g clip-path="url(#vxC)"><rect x="24" y="34" width="52" height="48" rx="7" fill="url(#vxG)"/>${plates}${water}</g><path d="M66 38a8 8 0 0 1 6 6" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/><rect x="34" y="87" width="32" height="3" rx="1.5" fill="#b9c0cb"/></svg>`;
 };
+// v382: oven-icoon voor de telefoonkaart (optie A, gloed): witte kast, donker paneel met display, venster met ovenschaal; glow 0..1 (0 = koud), pulse = bakken
+const OXN = (glow, pulse, disp = '') => `<svg viewBox="8 2 84 96"><defs><linearGradient id="oxB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#dfe4eb"/></linearGradient><linearGradient id="oxT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3346"/><stop offset="1" stop-color="#1a2232"/></linearGradient><linearGradient id="oxG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2232"/><stop offset="1" stop-color="#151a26"/></linearGradient><radialGradient id="oxH" cx=".5" cy=".55" r=".65"><stop offset="0" stop-color="#FFD089"/><stop offset=".6" stop-color="#F29A45"/><stop offset="1" stop-color="#C9622A"/></radialGradient><clipPath id="oxC"><rect x="22" y="32" width="56" height="44" rx="7"/></clipPath></defs>`
+  + `<rect x="15" y="10" width="70" height="80" rx="12" fill="url(#oxB)"/><path d="M15 26V22A12 12 0 0 1 27 10h46a12 12 0 0 1 12 12v4z" fill="url(#oxT)"/><rect x="40" y="14.5" width="20" height="8" rx="2.5" fill="#0d121c"/>${disp ? `<text x="50" y="21" text-anchor="middle" font-size="6.2" font-weight="700" fill="#FFB27A" font-family="-apple-system,system-ui,sans-serif">${disp}</text>` : ''}<circle cx="70" cy="18.5" r="3" fill="#c9d0da"/><circle cx="78" cy="18.5" r="3" fill="#c9d0da"/>`
+  + `<rect x="20" y="30" width="60" height="48" rx="9" fill="#c9d0da"/><g clip-path="url(#oxC)"><rect x="22" y="32" width="56" height="44" rx="7" fill="url(#oxG)"/>${glow ? `<rect x="22" y="32" width="56" height="44" fill="url(#oxH)" opacity="${glow}">${pulse ? '<animate attributeName="opacity" values=".75;1;.75" dur="2.4s" repeatCount="indefinite"/>' : ''}</rect>` : ''}<rect x="26" y="62" width="48" height="2.2" rx="1.1" fill="#8a94a6"/><path d="M33 60h34l-3 6H36z" fill="#d9dee6"/><path d="M35 58h30v2.5H35z" fill="#c76b3a"/></g>`
+  + `<path d="M66 36a8 8 0 0 1 6 6" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/><rect x="30" y="82" width="40" height="3.2" rx="1.6" fill="#b9c0cb"/></svg>`;
 const washSvg = (mode) => `<svg viewBox="0 0 100 100">${RIC.draw('washer', 'on', mode)}</svg>`;
 const dishSvg = (run) => `<svg viewBox="0 0 100 100">${RIC.draw('dish', 'on', run ? 1 : 0)}</svg>`;
 const microSvg = (mode, disp) => `<svg viewBox="3 6 94 88">${RIC.draw('micro', 'on', mode, disp)}</svg>`;
@@ -4333,8 +4338,8 @@ const HPSTYLE = `
 /* v367: wasmachinekaart (telefoon), het voorbeeld van de gebruiker nagemaakt: diep donkerblauw met schuine lichtinval rechtsboven; links icoon, "Wasmachine" (schuin), programma, groot de resterende tijd; rechts effen statuslabel + klokregel; balk over de hele breedte */
 .wx { display: none; }
 @media (max-width: 600px) {
-  #was#was.was:has(.wx), #dish#dish.was:has(.wx), #pic#pic.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), #pic.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
+  #was#was.was:has(.wx), #dish#dish.was:has(.wx), #pic#pic.was:has(.wx), #oven#oven.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), #pic.was:has(.wx) > :not(.wx), #oven.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
   .was .wx { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 14px; align-items: center; }
   .wx .wxi svg { width: 44px; height: 52px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -4355,6 +4360,9 @@ const HPSTYLE = `
   .was .wx.pk, .was .wx.pk.tight { grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 20px; } /* v377: ook als de tijd krap past (.tight) */ /* v376: meer ruimte tussen busje en tekst */ .wx.pk .wxi .pici, .wx.pk .wxi .ptk { width: 56px; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
   .wx.pk .pill.pill { background: #d6363b; } .wx.pk.vw .pill.pill { background: rgba(214,54,59,.18); color: #ffb3b3 !important; } .wx.pk.ok .pill.pill { background: #2E9E5B; color: #fff !important; }
   .wx.pk .wxb i { background: linear-gradient(90deg, #ff9a9a, #d6363b); }
+  /* v382: oven in warm oranje; "koelt af" niet meer op de telefoon (de computer houdt de oude kaart) */
+  .wx.ov .pill.pill { background: #E8772E; } .wx.ov .wxb i { background: linear-gradient(90deg, #FFC48A, #E8772E); }
+  #oven#oven.was.cool { display: none !important; }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
@@ -5708,23 +5716,28 @@ class ThuisCard extends HTMLElement {
     const o = this._config.oven, os = st(`sensor.${o}_status`), oBox = this.$('oven'), temp = num(`sensor.${o}_huidige_temperatuur_in_de_oven`);
     if (oBox && os) {
       const op = prog(`select.${o}_actieve_programma`, OVEN_PROG), ol = left(`sensor.${o}_programma_eindtijd`), oe = end(`sensor.${o}_programma_eindtijd`), opct = num(`sensor.${o}_programma_voortgang`);
-      const lamp = '';
+      const lamp = '', ovx = (k, icon, pill, sub, big, line, pc, title = 'Oven') => wxCardH(title, icon, k, pill, sub, big, line, pc); // v382: telefoonkaart in wasmachine-stijl
       const tt = temp != null ? `${fmt(temp)}°` : '—', time = ol != null ? `nog ${dur(ol)}${oe ? ` · klaar ${oe}` : ''}` : '';
       // magnetron: eigen naam, icoon en vermogen in plaats van temperatuur
       const ap = (/microwave|cooking/.test(st(`select.${o}_actieve_programma`) || '') ? st(`select.${o}_actieve_programma`) : st(`select.${o}_geselecteerd_programma`)) || '', mw = /microwave/.test(ap) ? (ap.match(/microwave_(\d+)_watt/)?.[1] ? `${ap.match(/microwave_(\d+)_watt/)[1]} W` : 'Max') : null;
       if (mw && ['run', 'pause', 'finished', 'delayedstart'].includes(os)) {
         const ph = os === 'run' ? 'Bezig' : os === 'pause' ? 'Gepauzeerd' : os === 'finished' ? 'Klaar' : 'Uitgesteld';
-        put(oBox, os === 'finished' ? 'done' : 'oven run', block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
+        put(oBox, os === 'finished' ? 'done' : 'oven run', ovx(os === 'finished' ? 'ok' : os === 'run' ? 'run ov' : 'plan', microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : ''), os === 'finished' ? `${WXI.check}Klaar` : ph, mw, os === 'finished' ? '' : ol != null ? `${wxDur(ol)}<small>resterend</small>` : '', os === 'finished' ? '' : oe ? `${WXI.clock}Klaar ${oe}` : '', os === 'finished' ? 100 : ol != null ? opct ?? 0 : null, 'Magnetron') + block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
       } else
-      if (os === 'run') put(oBox, 'oven run', block(ovenSvg('run', temp), 'Oven', tt, 'Bezig', `${op}<br>${time}`, ol != null ? opct ?? 0 : null, lamp));
-      else if (os === 'pause') put(oBox, 'oven run', block(ovenSvg('hot', temp), 'Oven', tt, 'Gepauzeerd', `${op}<br>${time}`, opct));
-      else if (os === 'delayedstart') put(oBox, 'oven run', block(ovenSvg('', temp), 'Oven', 'Gepland', 'Uitgesteld', `${op}<br>${oe ? `klaar ${oe}` : ''}`, null));
-      else if (os === 'finished') put(oBox, 'done', block(ovenSvg('hot', temp), 'Oven is klaar', tt, 'Klaar', `${op}<br>baktijd voorbij`, 100));
-      else if (['actionrequired', 'error'].includes(os)) put(oBox, 'bad', block(ovenSvg('', temp), 'Oven', tt, os === 'error' ? 'Storing' : 'Actie nodig', 'controleer de oven', null));
+      if (os === 'run') put(oBox, 'oven run', block(ovenSvg('run', temp), 'Oven', tt, 'Bezig', `${op}<br>${time}`, ol != null ? opct ?? 0 : null, lamp)
+        + ovx('run ov', OXN(1, true, temp != null ? tt : ''), 'Bezig', ol != null ? [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · ') : op, ol != null ? `${wxDur(ol)}<small>resterend</small>` : `${tt}`, oe ? `${WXI.clock}Klaar ${oe}` : '', ol != null ? opct ?? 0 : null));
+      else if (os === 'pause') put(oBox, 'oven run', block(ovenSvg('hot', temp), 'Oven', tt, 'Gepauzeerd', `${op}<br>${time}`, opct)
+        + ovx('run ov', OXN(.55, false, temp != null ? tt : ''), 'Gepauzeerd', [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · '), ol != null ? `${wxDur(ol)}<small>resterend</small>` : tt, oe ? `${WXI.clock}Klaar ${oe}` : '', opct));
+      else if (os === 'delayedstart') put(oBox, 'oven run', block(ovenSvg('', temp), 'Oven', 'Gepland', 'Uitgesteld', `${op}<br>${oe ? `klaar ${oe}` : ''}`, null)
+        + ovx('plan', OXN(0, false), 'Gepland', op || 'Programma gekozen', '', oe ? `${WXI.clock}Klaar ${oe}` : '', null));
+      else if (os === 'finished') put(oBox, 'done', block(ovenSvg('hot', temp), 'Oven is klaar', tt, 'Klaar', `${op}<br>baktijd voorbij`, 100)
+        + ovx('ok', OXN(.45, false), `${WXI.check}Klaar`, op || 'Baktijd voorbij', '', `${WXI.clock}Sinds ${fmtTime(Date.parse(this._state(`sensor.${o}_status`)?.last_changed) || Date.now())}`, 100));
+      else if (['actionrequired', 'error'].includes(os)) put(oBox, 'bad', block(ovenSvg('', temp), 'Oven', tt, os === 'error' ? 'Storing' : 'Actie nodig', 'controleer de oven', null)
+        + ovx('warn', OXN(0, false), `${WXI.warn}${os === 'error' ? 'Storing' : 'Actie nodig'}`, 'Controleer de oven', '', '<b>Bekijk details →</b>', null));
       else if (st(`switch.${o}_inschakelen`) === 'on' && /microwave/.test(st(`select.${o}_geselecteerd_programma`) || '')) {
         const sp = st(`select.${o}_geselecteerd_programma`), w = sp.match(/microwave_(\d+)_watt/)?.[1];
-        put(oBox, 'ready', block(microSvg(''), 'Magnetron', w ? `${w} W` : 'Max', 'Aan', 'klaar om te starten', null)); }
-      else if (st(`switch.${o}_inschakelen`) === 'on') { const sel = prog(`select.${o}_geselecteerd_programma`, OVEN_PROG); put(oBox, 'ready', block(ovenSvg(temp >= 50 ? 'hot' : '', temp), 'Oven', tt, 'Aan', sel ? `${sel}<br>klaar om te starten` : 'geen programma gekozen', null)); }
+        put(oBox, 'ready', block(microSvg(''), 'Magnetron', w ? `${w} W` : 'Max', 'Aan', 'klaar om te starten', null) + ovx('off', microSvg(''), 'Aan', w ? `${w} W` : 'Max', '', '', null, 'Magnetron')); }
+      else if (st(`switch.${o}_inschakelen`) === 'on') { const sel = prog(`select.${o}_geselecteerd_programma`, OVEN_PROG); put(oBox, 'ready', block(ovenSvg(temp >= 50 ? 'hot' : '', temp), 'Oven', tt, 'Aan', sel ? `${sel}<br>klaar om te starten` : 'geen programma gekozen', null) + ovx('off', OXN(temp >= 50 ? .4 : 0, false), 'Aan', sel || 'Geen programma gekozen', '', '', null)); }
       else if (temp != null && temp >= 70) {
         // telefoon (v270): compact, met een schatting wanneer de oven koel is (onder 50°); de computer houdt de oude opmaak
         const ca = this._ovCoolAt(`sensor.${o}_huidige_temperatuur_in_de_oven`, temp);
@@ -5732,6 +5745,7 @@ class ThuisCard extends HTMLElement {
           .replace('</span></div><div class="rt">', `</span><span class="ocs">Uit · ${ca ? `koel rond ${fmtTime(ca)}` : 'nog warm'}</span></div><span class="ocb">${tt}</span><div class="rt">`));
       }
       else put(oBox, '', '');
+      this._wxFit(oBox);
     }
     this._updCharge();
     this._updNotices();
