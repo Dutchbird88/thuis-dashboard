@@ -253,6 +253,7 @@
 | v380 | Picnic-balk pas zichtbaar bij "Nog 5 min" of minder (loopt in 5 min vol). |
 | v381 | Lampen, rolluiken en kamers die uit staan krijgen dezelfde blauwgrijze rand als thermostaat, afval en de apparaatkaarten. |
 | v382 | Ovenkaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A, gloed): oranje label en balk, resterende tijd groot, Klaar groen; "Koelt af" niet meer op de telefoon. Magnetron in dezelfde kaart. |
+| v383 | Lamp-, computer- en servertegels: icoon in een ronde knop (optie B, aan = warm geel), en tik-reactie (tegel even iets kleiner) op lampen en rolluiken. |
 
 ## Volgende stappen
 

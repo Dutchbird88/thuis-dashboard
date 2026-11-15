@@ -1846,7 +1846,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '382';
+const CARD_VERSION = '383';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1953,6 +1953,12 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lb.on:not(.wol) { background: linear-gradient(135deg, color-mix(in srgb, #ffc83d 26%, rgba(28,38,60,.9)), color-mix(in srgb, #ffc83d 14%, rgba(20,28,46,.9))) !important; border-color: color-mix(in srgb, #ffc83d 30%, transparent) !important; } /* v357: geel vlak zoals de server (keuze A), voor alle lampen gelijk */
   :host(:not([data-th])) .lt.lb.on:not(.wol) .mi2 svg { opacity: calc(.6 + .4 * var(--k, 1)); filter: drop-shadow(0 0 calc(3px + 7px * var(--k, 1)) rgba(255,205,90,calc(.38 + .3 * var(--k, 1)))); } /* v356: gloed ~25% zachter */
   :host(:not([data-th])) .lt.lb.wol .mi2 svg { width: 38px; height: 38px; margin: 3px; } :host(:not([data-th])) .lt.lb.wol:not(.on) .mi2 svg { opacity: .7; } /* v356: computer/server in dezelfde opzet als de lampen */
+  /* v383: icoon in een ronde knop (optie B), zodat de tegel als bedienbare knop leest; aan = warm geel rondje. Plus tik-reactie op lampen en rolluiken */
+  :host(:not([data-th])) .lt.lt.lb .mi2.mi2 { left: 12px; top: calc(50% - 23px); width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.06) !important; box-shadow: inset 0 0 0 1px rgba(150,175,215,.16) !important; }
+  :host(:not([data-th])) .lt.lt.lb .mi2 svg { width: 32px !important; height: 32px !important; margin: 0 !important; }
+  :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .mi2.mi2 { background: rgba(255,200,80,.20) !important; box-shadow: inset 0 0 0 1px rgba(255,200,80,.28) !important; }
+  :host(:not([data-th])) .lt.lt.lb { padding-left: 70px; }
+  :host(:not([data-th])) .lt.lt.lb, :host(:not([data-th])) .cv.cv { transition: transform .12s ease; } :host(:not([data-th])) .lt.lt.lb:active, :host(:not([data-th])) .cv.cv:active { transform: scale(.97); }
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
 }
 `;
