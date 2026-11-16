@@ -1609,7 +1609,9 @@ class ZonnepanelenCard extends HTMLElement {
   // opgewekt vandaag: de ECU-teller, maar sommige omvormers zetten die na zonsondergang op 0 (of onbereikbaar);
   // dan de opwek uit de 5-minutenmetingen van vandaag (vermogen × tijd)
   _todayKwh() {
-    const t = this._num(this._config.solar_today), d0 = startOfDay(Date.now());
+    const d0 = startOfDay(Date.now()), st = this._hass?.states?.[this._config.solar_today];
+    // v384: de ECU meldt 's nachts niets; de teller houdt dan de waarde van gisteren. Niet veranderd sinds middernacht = vandaag nog 0
+    let t = this._num(this._config.solar_today); if (t != null && st && Date.parse(st.last_changed) < d0) t = 0;
     const calc = (this._todayPts || []).filter((p) => p.t >= d0).reduce((n, p) => n + (p.v || 0) * 300 / 3.6e6, 0);
     if (t != null && (t >= calc * 0.6 || calc < 0.05)) return t;
     return calc >= 0.05 ? Math.round(calc * 10) / 10 : t;
@@ -1846,7 +1848,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '383';
+const CARD_VERSION = '384';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

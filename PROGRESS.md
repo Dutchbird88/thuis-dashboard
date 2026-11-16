@@ -254,6 +254,7 @@
 | v381 | Lampen, rolluiken en kamers die uit staan krijgen dezelfde blauwgrijze rand als thermostaat, afval en de apparaatkaarten. |
 | v382 | Ovenkaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A, gloed): oranje label en balk, resterende tijd groot, Klaar groen; "Koelt af" niet meer op de telefoon. Magnetron in dezelfde kaart. |
 | v383 | Lamp-, computer- en servertegels: icoon in een ronde knop (optie B, aan = warm geel), en tik-reactie (tegel even iets kleiner) op lampen en rolluiken. |
+| v384 | Fix: 's ochtends stond bij Vandaag en in Opbrengst nog de opbrengst van gisteren (ECU-teller nog niet gereset); een teller die sinds middernacht niet veranderd is telt nu als 0. |
 
 ## Volgende stappen
 
