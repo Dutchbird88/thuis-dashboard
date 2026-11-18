@@ -285,3 +285,4 @@
 - Twee deur- of raamsensoren hebben nog geen ruimte in HA.
 - Zet de debug-logging van de Zaptec-integratie weer uit.
 - Bij HA 2026.11: koppel GitHub voor de Marketplace.
+| v386 | Telefoon, Nu: weer de tegel Mijn huis van v220–v228 (huis links; rechts Zonnepanelen, Huisverbruik en Net onder elkaar met stromende bolletjes; meters eronder). De scène met tekeningen alleen nog met `photo.scene: true`. Computer ongewijzigd. |

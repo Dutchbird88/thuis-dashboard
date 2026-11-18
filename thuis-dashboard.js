@@ -597,25 +597,19 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .th { margin-bottom: 8px; flex-wrap: nowrap; align-items: center; }
   .znu .th .label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
   .znu .th .aside { font-size: 12px; text-align: right; }
-  /* mijn huis: zon — huis — net op één lijn, kleuren zoals op de pagina Energie */
-  .znu .mfrow { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; min-height: 150px; margin-top: -8px; }
-  .znu .mfs { position: relative; z-index: 2; display: flex; justify-content: center; cursor: pointer; }
-  .znu .mnode { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #18243a; border: 1.5px solid color-mix(in srgb, var(--nc, #6b7385) 55%, transparent); }
-  .znu .mnode svg { width: 26px; height: 26px; } .znu .mnode.off { --nc: #6b7385; } .znu .mnode.off svg { filter: grayscale(1); opacity: .5; }
-  .znu #mnSun { --nc: var(--sun); } .znu #mnGrid { --nc: var(--grid-in); } .znu #mnGrid.exp { --nc: var(--exp); } .znu #mnSun.off, .znu #mnGrid.off { --nc: #6b7385; }
-  .znu .mval { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; }
-  .znu .mval b, .znu .mhv b { display: block; font-size: 16px; font-weight: 700; } .znu .mval b small, .znu .mhv b small { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; }
-  .znu .mval span, .znu .mhv span { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .znu .mval b.exp { color: var(--exp); } .znu .mval b.imp { color: var(--grid-in); }
-  .znu .mimg { position: relative; z-index: 1; cursor: pointer; } .znu .mimg img { display: block; width: calc(80% - 22px); max-height: 170px; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
-  .znu .mhv { text-align: center; margin-top: 12px; } .znu .mhv b { font-size: 22px; line-height: 1.05; color: var(--hc, var(--text)); } .znu .mhv span { margin-top: -1px; }
-  /* stroomlijnen: vast spoor met stromende bolletjes (meer vermogen = sneller); naar links als er stroom van het net komt */
-  .znu .mln { position: absolute; z-index: 0; top: 50%; height: 3px; margin-top: -1.5px; left: 47px; width: calc((100% - 88px) * .3 + 7px); border-radius: 99px;
-    background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) 0 center / 9px 3px repeat-x, rgba(255,255,255,.07); background-size: 0 0, auto; }
-  .znu .mln.mlr { left: auto; right: 47px; }
-  .znu .mln.on { background-size: 9px 3px, auto; animation: mflow 1s linear infinite; }
-  .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: var(--grid-in); } .znu .mln.rev { animation-direction: reverse; }
-  @keyframes mflow { to { background-position: 9px center, 0 0; } }
+  .znu .mhg { display: grid; grid-template-columns: minmax(0, 1fr) 1px 132px; gap: 12px; align-items: center; }
+  .znu .mimg { cursor: pointer; } .znu .mimg img { display: block; width: 100%; max-height: 190px; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .znu .msep { align-self: stretch; background: rgba(130,170,255,.12); margin: 6px 0; }
+  .znu .mvals { display: flex; flex-direction: column; }
+  .znu .mv { display: flex; align-items: center; gap: 10px; cursor: pointer; } .znu .mv > svg { width: 28px; height: 28px; flex: none; }
+  .znu .mv b { display: block; font-size: 18px; font-weight: 700; line-height: 1.15; } .znu .mv b small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+  .znu .mv span { display: block; font-size: 11.5px; color: var(--muted); }
+  /* stromende bolletjes tussen de iconen; omhoog als er stroom van het net komt */
+  .znu .mcon { display: block; width: 28px; height: 22px; margin: 2px 0;
+    background: radial-gradient(circle, var(--mc, #ffb547) 1.6px, transparent 2.1px) center 0 / 6px 7px repeat-y; opacity: .25; }
+  .znu .mcon.on { opacity: 1; animation: mflow 1s linear infinite; }
+  .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: var(--grid-in); } .znu .mcon.rev { animation-direction: reverse; }
+  @keyframes mflow { to { background-position: center 7px; } }
   .znu .mgauges { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .znu .mgt { cursor: pointer; } .znu .mgh { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; } .znu .mgh svg { width: 20px; height: 20px; }
   .znu .mgs { display: block; width: 100%; max-width: 150px; margin: 6px auto 0; overflow: visible; }
@@ -909,7 +903,7 @@ class ZonnepanelenCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${STYLE}${LIGHT}${GLASS2}${TIDY}</style>
       ${GLOSSY}
-      <div class="wrap znu${c.photo.night || c.photo.dusk ? ' scn' : ''}">
+      <div class="wrap znu${c.photo.scene && (c.photo.night || c.photo.dusk) ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
         <div class="mscn" id="mScn"><div class="msky" id="mSky"></div><img class="mimg2" id="mScImg" alt=""><div class="mpv" id="mPv"></div><div class="mgnd" id="mGnd"></div>
           <svg class="mcab" id="mCab"><path class="cb" id="mCb1"/><path class="cb" id="mCb3"/><path class="cf" id="mCf1"/><path class="cf" id="mCf3"/></svg>
@@ -922,15 +916,15 @@ class ZonnepanelenCard extends HTMLElement {
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
-            <!-- zon — huis — net: de rondjes staan op het midden van het huis, de stroomlijnen lopen het huis in -->
-            <div class="mfrow">
-              <div class="mfs" data-e="${c.solar_power}"><div class="mnode" id="mnSun"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg></div><div class="mval"><b class="num" id="mSun">—</b><span>Zon</span></div></div>
-              <i class="mln" id="mc1"></i>
-              <div class="mimg" id="mImg"><img src="${c.photo.image}" alt=""></div>
-              <i class="mln mlr" id="mc2"></i>
-              <div class="mfs"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><div class="mnode" id="mnGrid"><svg viewBox="0 0 100 100"><use id="mGridIc" href="#gPylon"/></svg></div><div class="mval"><b class="num" id="mGrid">—</b><span id="mGridL">Net</span></div></div>
-            </div>
-            <div class="mhv"><b class="num" id="mHomeW">—</b><span>Verbruik</span></div>
+            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.image}" alt=""></div><div class="msep"></div>
+              <div class="mvals">
+                <div class="mv" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span>Zonnepanelen</span></div></div>
+                <i class="mcon" id="mc1"></i>
+                <div class="mv"><svg viewBox="0 0 100 100"><use href="#gHouse"/></svg><div><b class="num" id="mHomeW">—</b><span>Huisverbruik</span></div></div>
+                <i class="mcon" id="mc2"></i>
+                <div class="mv"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><svg viewBox="0 0 100 100"><use id="mGridIc" href="#gPylon"/></svg><div><b class="num" id="mGrid">—</b><span id="mGridL">Net</span></div></div>
+              </div></div>
+          </div>
           </div>
           <div class="mob mgauges">
             ${[['1', 'Opwekking nu', 'gSun', c.solar_power, 'mgo'], ['2', 'Opgewekt vandaag', 'gSolarP', c.solar_today, 'mgg']].map(([k, t, ic, e, g]) => `
@@ -1362,12 +1356,8 @@ class ZonnepanelenCard extends HTMLElement {
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
     if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); }
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
-    set('mGridL', exporting ? 'Terug' : importing ? 'Van net' : 'Net');
-    this.$('mGrid').className = `num${exporting ? ' exp' : importing ? ' imp' : ''}`;
-    this.$('mnSun').classList.toggle('off', !(pv > 5)); this.$('mnGrid').classList.toggle('exp', exporting); this.$('mnGrid').classList.toggle('off', !(exporting || importing));
-    // verbruik in de kleur van de bron: groen alles zon, blauw zon + net, paars alles net
-    const selfS = home > 0 ? clamp((pv || 0) / home, 0, 1) : pv > 0 ? 1 : 0;
-    this.$('mHomeW').parentElement.style.setProperty('--hc', home == null ? 'var(--text)' : exporting || selfS >= 0.995 ? 'var(--exp)' : pv > 5 ? 'var(--home)' : 'var(--grid-in)');
+    set('mGridL', exporting ? 'Teruglevering' : importing ? 'Van het net' : 'Net');
+    this.$('mGridIc').setAttribute('href', exporting ? '#gPylonX' : '#gPylon');
     const m1 = this.$('mc1'), m2 = this.$('mc2');
     m1.classList.toggle('on', pv > 5); m1.style.animationDuration = speed(pv || 0);
     m2.classList.toggle('on', exporting || importing); m2.classList.toggle('rev', importing); m2.classList.toggle('imp', importing);
@@ -1848,7 +1838,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '385';
+const CARD_VERSION = '386';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

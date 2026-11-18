@@ -106,6 +106,7 @@ Lever drie tekeningen aan met precies dezelfde uitsnede (bijvoorbeeld 1672 × 94
 ```yaml
 type: custom:zonnepanelen-card
 photo:
+  scene: true                      # zet de scène aan (anders de tegel Mijn huis)
   image: /local/huis-dag.png       # overdag
   dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
   night: /local/huis-nacht.png     # nacht
@@ -113,7 +114,7 @@ photo:
   panels_box: [585, 210, 273, 80]  # optioneel: de zonnepanelen (x, y, breedte, hoogte in px)
 ```
 
-Afname en teruglevering van vandaag komen uit het Energie-dashboard van Home Assistant. Lukt dat niet, geef dan zelf de meters op met `grid_import` en `grid_export` (totaaltellers in kWh). Zonder `dusk` en `night` blijft de oude tegel "Mijn huis" staan.
+Afname en teruglevering van vandaag komen uit het Energie-dashboard van Home Assistant. Lukt dat niet, geef dan zelf de meters op met `grid_import` en `grid_export` (totaaltellers in kWh). Zonder `scene: true` (of zonder `dusk` en `night`) staat de tegel "Mijn huis": het huis met rechts zon, huisverbruik en net.
 
 ### Kamers
 
