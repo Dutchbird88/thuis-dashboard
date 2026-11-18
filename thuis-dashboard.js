@@ -1838,7 +1838,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '387';
+const CARD_VERSION = '388';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5445,14 +5445,16 @@ class ThuisCard extends HTMLElement {
   // v385: deur- of raamvenster (telefoon): open/dicht, aantal keer open, totaal en langst, tijdbalk en lijst van vandaag
   _updDoorSheet(kind) {
     const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
-    const room = this._moRoom(id), nm = String(this._nm(id) || '').replace(/\b\w*(sensor|contact)\w*\b/gi, '').replace(/\s+/g, ' ').trim() || (kind === 'door' ? 'Deur' : 'Raam'); // "Raamsensor Raam" → "Raam"
+    const room = this._moRoom(id), base = kind === 'door' ? 'Deur' : 'Raam';
+    // v388: naam opschonen: "…sensor/contact" weg, dubbele woorden weg ("Raam X Raam X" → "Raam X"), los "Deur"/"Raam" weg als een ander woord het al bevat ("Achterdeur Deur" → "Achterdeur")
+    const ws = String(this._nm(id) || '').replace(/\b\w*(sensor|contact)\w*\b/gi, '').split(/\s+/).filter(Boolean).filter((w, i, a) => a.findIndex((x) => x.toLowerCase() === w.toLowerCase()) === i);
+    const nm = ws.filter((w) => !/^(deur|raam)$/i.test(w) || !ws.some((x) => x !== w && new RegExp(reEsc(w), 'i').test(x))).join(' ') || base;
     const on = st.state === 'on', segs = this._moHistory(id), now = Date.now(), d0 = startOfDay(now), len = DAY;
     const du = (ms) => { const m = Math.round(ms / 60000); return ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : m < 60 ? `${m} min` : `${Math.floor(m / 60)} u ${m % 60} min`; };
     const ago = (t) => { const m = Math.round((now - t) / 60000); return m < 1 ? 'zojuist' : m < 60 ? `${m} min geleden` : `${Math.floor(m / 60)} u geleden`; };
     const last = (segs || []).slice(-1)[0], lastT = on ? Date.parse(st.last_changed) : last && !last[2] ? last[0] : null;
     const set = (k, h) => { const el = this.$(k); if (el && el.innerHTML !== h) el.innerHTML = h; };
-    set('moN', `${nm}${room && !new RegExp(reEsc(room), 'i').test(nm) ? ` · ${room}` : ''}`);
-    set('moS', on ? `Open · sinds ${fmtTime(Date.parse(st.last_changed))}` : `Dicht${lastT ? ` · laatst open ${fmtTime(lastT)}` : ''}`);
+    set('moN', nm); set('moS', room && !new RegExp(reEsc(room), 'i').test(nm) ? room : base); // v388: kamer als ondertitel (de stand staat al onder het icoon)
     const n = segs ? segs.length : null, tot = (segs || []).reduce((a, [x, y]) => a + (y - x), 0), lng = (segs || []).reduce((a, [x, y]) => Math.max(a, y - x), 0);
     const chips = segs ? `<div><b>${n} keer</b>open vandaag</div>${n ? `<div><b>${du(tot)}</b>totaal open</div><div><b>${du(lng)}</b>langst</div>` : ''}` : '';
     const top = `<div class="mobig${on ? ' dopen' : ' off'}">${RIC.svg(kind === 'door' ? 'contact' : 'windowS', on ? 'orange' : 'off')}</div><div class="most">${on ? 'Open' : 'Dicht'}<span>${on ? `open sinds ${ago(Date.parse(st.last_changed)).replace(' geleden', '')}` : lastT ? `laatst open ${ago(lastT)} · ${fmtTime(lastT)}` : 'vandaag niet open geweest'}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;

@@ -258,6 +258,7 @@
 | v385 | Kamervenster (telefoon): tik op de pil van een deur of raam, of op de lux-pil, opent een historievenster zoals bij Beweging (vandaag + klokje 7 dagen). Licht: grafiek met gewone schaal, hoogste, licht sinds, gemiddeld, wisselingen donker/schemerig/helder. |
 | v386 | Telefoon, Nu: weer de tegel Mijn huis van v220–v228 (huis links; rechts Zonnepanelen, Huisverbruik en Net onder elkaar met stromende bolletjes; meters eronder). De scène met tekeningen alleen nog met `photo.scene: true`. Computer ongewijzigd. |
 | v387 | Telefoon, Nu: tegel Mijn huis gebruikt `photo.house` (los huis) als die er is, anders `photo.image`. Meters Opwekking nu/Morgen verwacht en Opgewekt vandaag verborgen op de telefoon. |
+| v388 | Telefoon, venster deur/raam: titel opgeschoond (dubbele woorden weg, los "Deur"/"Raam" weg als de naam het al bevat) en de kamer als ondertitel in plaats van achter de titel; de stand staat al onder het icoon. |
 
 ## Volgende stappen
 
