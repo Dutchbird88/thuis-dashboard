@@ -610,7 +610,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mcon.on { opacity: 1; animation: mflow 1s linear infinite; }
   .znu #mc2 { --mc: var(--exp); } .znu #mc2.imp { --mc: var(--grid-in); } .znu .mcon.rev { animation-direction: reverse; }
   @keyframes mflow { to { background-position: center 7px; } }
-  .znu .mgauges { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .znu .mgauges { display: none !important; } /* v387: meters op de telefoon weg (gebruiker) */
   .znu .mgt { cursor: pointer; } .znu .mgh { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; } .znu .mgh svg { width: 20px; height: 20px; }
   .znu .mgs { display: block; width: 100%; max-width: 150px; margin: 6px auto 0; overflow: visible; }
   .znu .mgs .track { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 16; stroke-linecap: round; }
@@ -916,7 +916,7 @@ class ZonnepanelenCard extends HTMLElement {
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
-            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.image}" alt=""></div><div class="msep"></div>
+            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.house || c.photo.image}" alt=""></div><div class="msep"></div>
               <div class="mvals">
                 <div class="mv" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span>Zonnepanelen</span></div></div>
                 <i class="mcon" id="mc1"></i>
@@ -1838,7 +1838,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '386';
+const CARD_VERSION = '387';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

@@ -107,6 +107,7 @@ Lever drie tekeningen aan met precies dezelfde uitsnede (bijvoorbeeld 1672 × 94
 type: custom:zonnepanelen-card
 photo:
   scene: true                      # zet de scène aan (anders de tegel Mijn huis)
+  house: /local/huis.png           # optioneel: los huis (doorzichtig) voor de tegel Mijn huis
   image: /local/huis-dag.png       # overdag
   dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
   night: /local/huis-nacht.png     # nacht
