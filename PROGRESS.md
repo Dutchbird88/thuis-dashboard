@@ -256,6 +256,7 @@
 | v383 | Lamp-, computer- en servertegels: icoon in een ronde knop (optie B, aan = warm geel), en tik-reactie (tegel even iets kleiner) op lampen en rolluiken. |
 | v384 | Fix: 's ochtends stond bij Vandaag en in Opbrengst nog de opbrengst van gisteren (ECU-teller nog niet gereset); een teller die sinds middernacht niet veranderd is telt nu als 0. |
 | v385 | Kamervenster (telefoon): tik op de pil van een deur of raam, of op de lux-pil, opent een historievenster zoals bij Beweging (vandaag + klokje 7 dagen). Licht: grafiek met gewone schaal, hoogste, licht sinds, gemiddeld, wisselingen donker/schemerig/helder. |
+| v386 | Telefoon, Nu: weer de tegel Mijn huis van v220–v228 (huis links; rechts Zonnepanelen, Huisverbruik en Net onder elkaar met stromende bolletjes; meters eronder). De scène met tekeningen alleen nog met `photo.scene: true`. Computer ongewijzigd. |
 
 ## Volgende stappen
 
@@ -285,4 +286,3 @@
 - Twee deur- of raamsensoren hebben nog geen ruimte in HA.
 - Zet de debug-logging van de Zaptec-integratie weer uit.
 - Bij HA 2026.11: koppel GitHub voor de Marketplace.
-| v386 | Telefoon, Nu: weer de tegel Mijn huis van v220–v228 (huis links; rechts Zonnepanelen, Huisverbruik en Net onder elkaar met stromende bolletjes; meters eronder). De scène met tekeningen alleen nog met `photo.scene: true`. Computer ongewijzigd. |
