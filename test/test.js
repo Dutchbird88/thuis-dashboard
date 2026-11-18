@@ -36,8 +36,10 @@ const VIEWS = [
   ['venster-computer', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.computer_wekken')],
   ['venster-computer-historie', 'card=thuis&wol=1', 390, (c) => { c._openSheet('pc', 'button.computer_wekken'); c.shadowRoot.querySelector('#cvHb').click(); }],
   ['venster-server', 'card=thuis&wol=1', 390, (c) => c._openSheet('pc', 'button.server_wekken')],
-  ['venster-beweging', 'card=kamers', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills .mp[data-mo]').click(); }],
-  ['venster-beweging-historie', 'card=kamers', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills .mp[data-mo]').click(); c.shadowRoot.querySelector('#cvHb').click(); }],
+  ['venster-beweging', 'card=kamers', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills .mp[data-mo][data-id^="binary_sensor.beweging"]').click(); }],
+  ['venster-beweging-historie', 'card=kamers', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills .mp[data-mo][data-id^="binary_sensor.beweging"]').click(); c.shadowRoot.querySelector('#cvHb').click(); }],
+  ['venster-raam', 'card=kamers', 390, (c) => c._openSheet('mo', 'binary_sensor.raamsensor_raam')],
+  ['venster-licht', 'card=kamers', 390, (c) => c._openSheet('mo', 'sensor.bewegingssensor_verlichtingssterkte')],
   ['venster-kamer-wol', 'card=kamers&wol=1', 390, (c) => c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer'))],
   ['venster-kamer-wol-pc', 'card=kamers&wol=1', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills [data-wol]').click(); }],
 ].filter((v) => !ALLEEN || v[0].includes(ALLEEN));

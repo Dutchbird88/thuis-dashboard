@@ -255,6 +255,7 @@
 | v382 | Ovenkaart (telefoon) in de stijl van wasmachine en vaatwasser (optie A, gloed): oranje label en balk, resterende tijd groot, Klaar groen; "Koelt af" niet meer op de telefoon. Magnetron in dezelfde kaart. |
 | v383 | Lamp-, computer- en servertegels: icoon in een ronde knop (optie B, aan = warm geel), en tik-reactie (tegel even iets kleiner) op lampen en rolluiken. |
 | v384 | Fix: 's ochtends stond bij Vandaag en in Opbrengst nog de opbrengst van gisteren (ECU-teller nog niet gereset); een teller die sinds middernacht niet veranderd is telt nu als 0. |
+| v385 | Kamervenster (telefoon): tik op de pil van een deur of raam, of op de lux-pil, opent een historievenster zoals bij Beweging (vandaag + klokje 7 dagen). Licht: grafiek met gewone schaal, hoogste, licht sinds, gemiddeld, wisselingen donker/schemerig/helder. |
 
 ## Volgende stappen
 

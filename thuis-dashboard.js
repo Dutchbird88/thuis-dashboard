@@ -1848,7 +1848,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '384';
+const CARD_VERSION = '385';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4396,6 +4396,10 @@ const HPSTYLE = `
 .mos .mostrip { height: 34px; border-radius: 9px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
 .mos .modh { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; } .mos .modh span { font-weight: 500; }
 .mos .mostrip:not(.mostatic) { touch-action: none; cursor: pointer; } .mos .momk { display: none; position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; box-shadow: 0 0 6px rgba(255,255,255,.6); }
+/* v385: deur/raam (oranje = open) en licht */
+.mos .dstrip i, .mos .dlog i { background: #ff9f43 !important; } .mos .mobig.dopen { background: rgba(255,159,67,.14); }
+.mos .lxwrap { position: relative; margin: 6px 0 2px; touch-action: none; cursor: pointer; } .mos .lxsv { width: 100%; height: auto; display: block; } .mos .lxmk { top: 0; bottom: 0; }
+.mos .llog i.donker { background: #7f8aa0 !important; } .mos .llog i.schemerig { background: #c9a24a !important; } .mos .llog i.helder, .mos .llog i.zonnig { background: #ffc83d !important; }
 .mos .mostrip { overflow: visible; } .mos .mohint { font-size: 11.5px; color: #6b7385; margin-top: 6px; text-align: center; }
 #hBody.mos .molog { margin-top: 10px; } #hBody.mos .mostrip { height: 24px; border-radius: 7px; }
 .mos .molog { margin-top: 0; } .mos .molog div { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13.5px; color: var(--text); text-align: left; } .mos .molog div:first-child { border-top: 0; }
@@ -5422,8 +5426,135 @@ class ThuisCard extends HTMLElement {
     }).catch(() => { this._moH = { id, lc, t: Date.now(), busy: false, segs: [] }; if (this._sheet === 'mo') this._updMoSheet(); });
     return this._moH.segs;
   }
+  // v385: soort venster bij de pil: beweging, deur/raam of licht (lux)
+  _moKind(id) {
+    if (/^sensor\./.test(id)) return 'lux';
+    let k = 'motion'; (this._rooms() || []).some((rm) => { const x = (rm.sensors || []).find((y) => y.id === id); if (x) k = x.kind === 'door' || x.kind === 'window' ? x.kind : 'motion'; return !!x; });
+    return k;
+  }
+  _moRoom(id) { let r = null; (this._rooms() || []).some((rm) => { const hit = (rm.sensors || []).some((y) => y.id === id || y.luxId === id); if (hit) r = rm.name; return hit; }); return r; }
+  // tijdbalk: schuiven of tikken toont het tijdstip en de dichtstbijzijnde periode (zoals bij beweging, v333)
+  _moScrubBind(box, segs, d0, len, label) {
+    const strip = box.querySelector('.mostrip'); if (!strip || !segs) return;
+    const mk = document.createElement('b'); mk.className = 'momk'; strip.appendChild(mk);
+    const tot = this.$('moTot'), def = tot?.textContent;
+    const du = (ms) => { const m = Math.round(ms / 60000); return ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : m < 60 ? `${m} min` : `${Math.floor(m / 60)} u ${m % 60} min`; };
+    const show = (e) => {
+      const r0 = strip.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - r0.left) / r0.width)), t = d0 + f * len;
+      mk.style.left = `${(f * 100).toFixed(2)}%`; mk.style.display = 'block';
+      let best = null; for (const sg of segs) { const dd = t < sg[0] ? sg[0] - t : t > sg[1] ? t - sg[1] : 0; if (!best || dd < best.dd) best = { sg, dd }; }
+      const hit = best && best.dd <= 10 * 60000 ? best.sg : null;
+      if (tot) tot.textContent = hit ? `${label} ${fmtTime(hit[0])} · ${hit[2] ? 'nu' : du(hit[1] - hit[0])}` : `${fmtTime(t)} · dicht`;
+    };
+    const end = () => { this._moScrub = false; mk.style.display = 'none'; if (tot) tot.textContent = def; };
+    strip.addEventListener('pointerdown', (e) => { this._moScrub = true; strip.setPointerCapture?.(e.pointerId); show(e); });
+    strip.addEventListener('pointermove', (e) => { if (this._moScrub) show(e); });
+    strip.addEventListener('pointerup', () => setTimeout(end, 1800)); strip.addEventListener('pointercancel', end);
+    strip.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  }
+  // v385: deur- of raamvenster (telefoon): open/dicht, aantal keer open, totaal en langst, tijdbalk en lijst van vandaag
+  _updDoorSheet(kind) {
+    const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
+    const room = this._moRoom(id), nm = String(this._nm(id) || '').replace(/\b\w*(sensor|contact)\w*\b/gi, '').replace(/\s+/g, ' ').trim() || (kind === 'door' ? 'Deur' : 'Raam'); // "Raamsensor Raam" → "Raam"
+    const on = st.state === 'on', segs = this._moHistory(id), now = Date.now(), d0 = startOfDay(now), len = DAY;
+    const du = (ms) => { const m = Math.round(ms / 60000); return ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : m < 60 ? `${m} min` : `${Math.floor(m / 60)} u ${m % 60} min`; };
+    const ago = (t) => { const m = Math.round((now - t) / 60000); return m < 1 ? 'zojuist' : m < 60 ? `${m} min geleden` : `${Math.floor(m / 60)} u geleden`; };
+    const last = (segs || []).slice(-1)[0], lastT = on ? Date.parse(st.last_changed) : last && !last[2] ? last[0] : null;
+    const set = (k, h) => { const el = this.$(k); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('moN', `${nm}${room && !new RegExp(reEsc(room), 'i').test(nm) ? ` · ${room}` : ''}`);
+    set('moS', on ? `Open · sinds ${fmtTime(Date.parse(st.last_changed))}` : `Dicht${lastT ? ` · laatst open ${fmtTime(lastT)}` : ''}`);
+    const n = segs ? segs.length : null, tot = (segs || []).reduce((a, [x, y]) => a + (y - x), 0), lng = (segs || []).reduce((a, [x, y]) => Math.max(a, y - x), 0);
+    const chips = segs ? `<div><b>${n} keer</b>open vandaag</div>${n ? `<div><b>${du(tot)}</b>totaal open</div><div><b>${du(lng)}</b>langst</div>` : ''}` : '';
+    const top = `<div class="mobig${on ? ' dopen' : ' off'}">${RIC.svg(kind === 'door' ? 'contact' : 'windowS', on ? 'orange' : 'off')}</div><div class="most">${on ? 'Open' : 'Dicht'}<span>${on ? `open sinds ${ago(Date.parse(st.last_changed)).replace(' geleden', '')}` : lastT ? `laatst open ${ago(lastT)} · ${fmtTime(lastT)}` : 'vandaag niet open geweest'}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;
+    const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+    let hist;
+    if (!segs) hist = '<div class="pcard pnone">Laden…</div>';
+    else {
+      const bar = `<div class="pstrip mostrip dstrip">${segs.map(([a, b]) => `<i style="left:${((a - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (b - a) / len * 100).toFixed(2)}%"></i>`).join('')}</div>`;
+      const log = segs.slice(-6).reverse();
+      hist = `<div class="pcard"><div class="phh">Vandaag<b id="moTot">${n ? `${n} keer open` : 'niet open geweest'}</b></div>${bar}${ticks}<div class="mohint">Schuif over de balk voor het tijdstip</div></div>`
+        + (log.length ? `<div class="modh">Vandaag</div><div class="pcard molog dlog">${log.map(([a, b, live]) => `<div><i></i>Open<span>${fmtTime(a)} <em>· ${live ? 'nu' : du(b - a)}</em></span></div>`).join('')}</div>` : '');
+    }
+    const html = top + hist;
+    if (this._moScrub) return;
+    if (box._k === html) return; box._k = html; box.innerHTML = html;
+    this._moScrubBind(box, segs, d0, len, 'Open');
+  }
+  // v385: lichtsterkte vandaag (numerieke historie, 2 min cache of tot de waarde verandert)
+  _luxHistory(id, days = 0) {
+    const now = Date.now(), key = `${id}|${days}`, H = (this._lxH ||= {})[key], lc = this._state(id)?.last_changed;
+    if (H && (H.busy || (H.lc === lc && now - H.t < 120000))) return H.pts;
+    const from = dayAdd(startOfDay(now), -days);
+    this._lxH[key] = { lc, t: now, busy: true, pts: H?.pts || null };
+    this._hass.callApi('GET', `history/period/${new Date(from).toISOString()}?filter_entity_id=${id}&minimal_response&no_attributes&end_time=${encodeURIComponent(new Date(now).toISOString())}`).then((r) => {
+      const pts = (r?.[0] || []).map((x) => [Math.max(from, Date.parse(x.last_changed)), parseFloat(x.state)]).filter(([t, v]) => !isNaN(t) && !isNaN(v));
+      this._lxH[key] = { lc, t: Date.now(), busy: false, pts };
+      if (this._sheet === 'mo') { if (this._cvHist) this._moLog(); else this._updMoSheet(); }
+    }).catch(() => { this._lxH[key] = { lc, t: Date.now(), busy: false, pts: [] }; });
+    return this._lxH[key].pts;
+  }
+  _luxWord(v) { return v < 10 ? 'donker' : v < 100 ? 'schemerig' : v < 1000 ? 'helder' : 'zonnig'; }
+  // grafiek van één dag (0–24 uur), gewone schaal tot net boven de hoogste waarde; stippellijnen bij 10 (donker) en 100/1000 als die binnen bereik vallen
+  _luxSvg(pts, d0, now, big) {
+    const W = 320, H = big ? 120 : 64, mx0 = Math.max(10, ...pts.map((p) => p[1]));
+    const step = mx0 <= 20 ? 5 : mx0 <= 100 ? 25 : mx0 <= 500 ? 100 : mx0 <= 2000 ? 500 : 2500, mx = Math.ceil(mx0 * 1.05 / step) * step;
+    const x = (t) => ((t - d0) / DAY * W).toFixed(1), y = (v) => (H - v / mx * (H - 4)).toFixed(1), end = Math.min(now, dayAdd(d0, 1));
+    const P = pts.filter(([t]) => t < end); if (!P.length) return '';
+    const seg = [`M${x(Math.max(d0, P[0][0]))} ${y(P[0][1])}`]; for (let i = 1; i < P.length; i++) seg.push(`H${x(P[i][0])} V${y(P[i][1])}`); seg.push(`H${x(end)}`);
+    const line = seg.join(' '), last = P[P.length - 1];
+    const band = (v, t) => (v < mx ? `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.1)" stroke-dasharray="3 4"/>${big ? `<text x="${W - 2}" y="${+y(v) - 4}" text-anchor="end" font-size="10" fill="#7f8aa0">${t}</text>` : ''}` : '');
+    const ax = big ? [0, mx / 2, mx].map((v) => `<text x="0" y="${v ? +y(v) + 10 : H - 2}" font-size="9.5" fill="#6b7587">${fmt(v)}</text>`).join('') : '';
+    return `<svg class="lxsv" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="lxg${big ? 1 : 0}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc83d" stop-opacity=".32"/><stop offset="1" stop-color="#ffc83d" stop-opacity="0"/></linearGradient></defs>${band(10, 'donker ↓')}${band(100, 'helder ↑')}${band(1000, 'zonnig ↑')}${ax}<path d="${line} V${H} H${x(Math.max(d0, P[0][0]))}Z" fill="url(#lxg${big ? 1 : 0})"/><path d="${line}" fill="none" stroke="#ffc83d" stroke-width="${big ? 2 : 1.6}" stroke-linejoin="round"/>${big && now < dayAdd(d0, 1) ? `<circle cx="${x(end)}" cy="${y(last[1])}" r="4" fill="#ffc83d" stroke="#111827" stroke-width="2"/>` : ''}</svg>`;
+  }
+  // fases (donker/schemerig/helder/zonnig); korte uitschieters (< 10 min) tellen niet als wissel
+  _luxPhases(pts, d0, end) {
+    const out = []; let cur = null;
+    for (const [t, v] of pts) { const w = this._luxWord(v), tt = Math.max(d0, t); if (!cur || cur.w !== w) { cur = { w, a: tt }; out.push(cur); } }
+    out.forEach((p, i) => { p.b = i + 1 < out.length ? out[i + 1].a : end; });
+    const m = []; for (const p of out) { const q = m[m.length - 1]; if (q && (p.b - p.a < 10 * 60000 || q.w === p.w)) { q.b = p.b; } else if (q && q.b - q.a < 10 * 60000 && m.length > 1 && m[m.length - 2].w === p.w) { m.pop(); m[m.length - 1].b = p.b; } else m.push({ ...p }); }
+    return m;
+  }
+  // v385: lichtvenster (telefoon): nu, hoogste, licht sinds, gemiddeld; grafiek van vandaag en de wisselingen
+  _updLuxSheet() {
+    const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
+    const room = this._moRoom(id), v = parseFloat(st.state), now = Date.now(), d0 = startOfDay(now), pts = this._luxHistory(id);
+    const set = (k, h) => { const el = this.$(k); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    const word = isNaN(v) ? '' : this._luxWord(v);
+    set('moN', `Licht${room ? ` · ${room}` : ''}`); set('moS', isNaN(v) ? 'Onbekend' : `${fmt(v)} lux · ${word}`);
+    const du = (ms) => { const m = Math.round(ms / 60000); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} u${m % 60 ? ` ${String(m % 60).padStart(2, '0')}` : ''}`; };
+    let chips = '', hist;
+    if (!pts) hist = '<div class="pcard pnone">Laden…</div>';
+    else {
+      const P = pts.length ? pts : [[d0, v]];
+      const hi = P.reduce((m, p) => (p[1] > m[1] ? p : m), P[0]);
+      let sum = 0; for (let i = 0; i < P.length; i++) { const a = Math.max(d0, P[i][0]), b = i + 1 < P.length ? P[i + 1][0] : now; sum += P[i][1] * Math.max(0, b - a); }
+      const avg = sum / Math.max(1, now - Math.max(d0, P[0][0])), ph = this._luxPhases(P, d0, now), lightNow = v >= 10;
+      const firstLight = lightNow ? (() => { for (let i = ph.length - 1; i >= 0; i--) if (ph[i].w === 'donker') return ph[i + 1]?.a; return ph[0]?.a; })() : null;
+      chips = `<div><b>${fmt(hi[1])} lux</b>hoogste · ${fmtTime(hi[0])}</div>${firstLight ? `<div><b>${fmtTime(firstLight)}</b>licht sinds</div>` : !lightNow && ph.length ? `<div><b>${fmtTime(ph[ph.length - 1].a)}</b>donker sinds</div>` : ''}<div><b>${fmt(avg)} lux</b>gemiddeld</div>`;
+      const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+      hist = `<div class="pcard"><div class="phh">Vandaag<b id="moTot">hoogste ${fmt(hi[1])} lux</b></div><div class="lxwrap">${this._luxSvg(P, d0, now, true)}<b class="momk lxmk"></b></div>${ticks}<div class="mohint">Schuif over de lijn voor het tijdstip</div></div>`
+        + (ph.length ? `<div class="modh">Vandaag</div><div class="pcard molog llog">${ph.slice(-6).reverse().map((p, i) => `<div><i class="${p.w}"></i>${p.w[0].toUpperCase() + p.w.slice(1)}<span>${fmtTime(p.a)} <em>· ${i === 0 ? `nu · ${du(now - p.a)}` : du(p.b - p.a)}</em></span></div>`).join('')}</div>` : '');
+    }
+    const top = `<div class="mobig${v < 10 ? ' off' : ''}">${RIC.svg(v < 10 ? 'moon' : 'sun', 'on')}</div><div class="most">${isNaN(v) ? '—' : `${fmt(v)} lux`}<span>${word ? `${word} · nu` : ''}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;
+    const html = top + hist;
+    if (this._moScrub) return;
+    if (box._k === html) return; box._k = html; box.innerHTML = html;
+    // schuiven over de grafiek: waarde op dat tijdstip
+    const wrap = box.querySelector('.lxwrap'); if (!wrap || !pts) return;
+    const mk = wrap.querySelector('.lxmk'), tot = this.$('moTot'), def = tot?.textContent;
+    const show = (e) => { const r0 = wrap.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - r0.left) / r0.width)), t = Math.min(now, d0 + f * DAY);
+      mk.style.left = `${(f * 100).toFixed(2)}%`; mk.style.display = 'block';
+      let val = null; for (const [pt, pv] of pts) { if (pt <= t) val = pv; else break; }
+      if (tot) tot.textContent = val == null ? fmtTime(t) : `${fmtTime(t)} · ${fmt(val)} lux`; };
+    const end = () => { this._moScrub = false; mk.style.display = 'none'; if (tot) tot.textContent = def; };
+    wrap.addEventListener('pointerdown', (e) => { this._moScrub = true; wrap.setPointerCapture?.(e.pointerId); show(e); });
+    wrap.addEventListener('pointermove', (e) => { if (this._moScrub) show(e); });
+    wrap.addEventListener('pointerup', () => setTimeout(end, 1800)); wrap.addEventListener('pointercancel', end);
+    wrap.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  }
   _updMoSheet() {
     const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
+    const mkd = this._moKind(id); if (mkd === 'lux') return this._updLuxSheet(); if (mkd !== 'motion') return this._updDoorSheet(mkd); // v385: deur/raam en licht
     let sen = null, room = null; (this._rooms() || []).some((rm) => { const x = (rm.sensors || []).find((y) => y.id === id); if (x) { sen = x; room = rm.name; } return !!x; });
     const on = st.state === 'on', segs = this._moHistory(id), now = Date.now(), d0 = startOfDay(now), len = DAY;
     const du = (ms) => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? `${s} s` : `${Math.round(s / 60)} min`; };
@@ -5465,8 +5596,30 @@ class ThuisCard extends HTMLElement {
     strip.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
   }
   // v333: geschiedenis van een bewegingssensor (7 dagen), per dag een tijdbalk en de periodes met beweging (tussenpozen < 3 min samengevoegd)
+  // v385: lichtsterkte afgelopen 7 dagen: per dag een kleine grafiek en de hoogste waarde
+  _luxLog() {
+    const id = this._cvId, body = this.$('shBody'); if (!id) return;
+    if (!this._cvHist || !this.$('hBody')) {
+      this._cvHist = true;
+      const room = this.$('moN')?.textContent || 'Licht';
+      body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${room}</button></div>
+      <div class="hti"><b>Geschiedenis</b><span>Afgelopen 7 dagen</span></div><div id="hBody" class="mos"><div class="hnone">Laden…</div></div>`;
+      this.$('hBack').addEventListener('click', () => this._openSheet('mo', id));
+    }
+    const pts = this._luxHistory(id, 6); if (!pts) return;
+    const now = Date.now(), ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+    let html = '';
+    for (let k = 0; k < 7; k++) {
+      const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1), prev = pts.filter(([t]) => t < d0).slice(-1), dp = [...prev.map(([, v]) => [d0, v]), ...pts.filter(([t]) => t >= d0 && t < d1)];
+      const dn = k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
+      const hi = dp.reduce((m, p) => (!m || p[1] > m[1] ? p : m), null);
+      html += `<div class="modh">${dn}<span>${hi ? `hoogste ${fmt(hi[1])} lux · ${fmtTime(hi[0])}` : 'geen gegevens'}</span></div><div class="pcard" style="margin-top:0">${dp.length ? this._luxSvg(dp, d0, now, false) : ''}${ticks}</div>`;
+    }
+    this.$('hBody').innerHTML = html;
+  }
   async _moLog() {
     const id = this._cvId, body = this.$('shBody'); if (!id) return;
+    const kd = this._moKind(id); if (kd === 'lux') return this._luxLog(); const isD = kd !== 'motion', W1 = isD ? 'open' : 'beweging'; // v385
     this._cvHist = true;
     const room = this.$('moN')?.textContent || 'Beweging';
     body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${room}</button></div>
@@ -5484,8 +5637,8 @@ class ThuisCard extends HTMLElement {
       const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1), len = d1 - d0, ds = segs.filter(([a, b]) => b > d0 && a < d1);
       const dn = k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
       const per = []; for (const [a, b, live] of ds) { const p = per[per.length - 1]; if (p && a - p.b < 3 * 60000) { p.b = b; p.n++; p.live = live; } else per.push({ a, b, n: 1, live }); }
-      html += `<div class="modh">${dn}<span>${ds.length ? `${ds.length}× beweging` : 'geen beweging'}</span></div><div class="pcard" style="margin-top:0"><div class="pstrip mostrip mostatic">${ds.map(([a, b]) => `<i style="left:${((Math.max(a, d0) - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (Math.min(b, d1) - Math.max(a, d0)) / len * 100).toFixed(2)}%"></i>`).join('')}</div>${ticks}`
-        + (per.length ? `<div class="molog">${per.slice().reverse().map((p) => `<div><i></i>${p.n > 1 ? `${p.n}× beweging` : 'Beweging'}<span>${fmtTime(p.a)}${p.n > 1 || p.b - p.a > 90000 ? `–${p.live ? 'nu' : fmtTime(p.b)}` : ''} <em>· ${p.live ? 'nu' : du(p.b - p.a)}</em></span></div>`).join('')}</div>` : '') + '</div>';
+      html += `<div class="modh">${dn}<span>${ds.length ? `${ds.length}× ${W1}` : `geen ${W1}`}</span></div><div class="pcard" style="margin-top:0"><div class="pstrip mostrip mostatic${isD ? ' dstrip' : ''}">${ds.map(([a, b]) => `<i style="left:${((Math.max(a, d0) - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.5, (Math.min(b, d1) - Math.max(a, d0)) / len * 100).toFixed(2)}%"></i>`).join('')}</div>${ticks}`
+        + (per.length ? `<div class="molog${isD ? ' dlog' : ''}">${per.slice().reverse().map((p) => `<div><i></i>${p.n > 1 ? `${p.n}× ${W1}` : W1[0].toUpperCase() + W1.slice(1)}<span>${fmtTime(p.a)}${p.n > 1 || p.b - p.a > 90000 ? `–${p.live ? 'nu' : fmtTime(p.b)}` : ''} <em>· ${p.live ? 'nu' : du(p.b - p.a)}</em></span></div>`).join('')}</div>` : '') + '</div>';
     }
     this.$('hBody').innerHTML = html;
   }
@@ -7318,10 +7471,10 @@ class ThuisCard extends HTMLElement {
       // bewegingssensor: ook licht (lux) en, als de kamer een thermostaat heeft, de eigen temperatuur
       // telefoon: licht als eigen pil direct na de beweging (luxwaarde als titel, maan als het donker is)
       const luxP = phone && x.kind === 'motion' && !x.off && x.lux != null
-        ? `<div class="mp ksp" data-id="${x.luxId}"><i class="g">${RIC.svg(x.lux < 10 ? 'moon' : 'sun', 'on')}</i><div><b>${fmt(x.lux)} lux</b><span>${x.lux < 10 ? 'Donker' : x.lux < 100 ? 'Schemerig' : x.lux < 1000 ? 'Helder' : 'Zonnig'}</span></div></div>` : '';
+        ? `<div class="mp ksp" data-id="${x.luxId}" data-mo="1"><i class="g">${RIC.svg(x.lux < 10 ? 'moon' : 'sun', 'on')}</i><div><b>${fmt(x.lux)} lux</b><span>${x.lux < 10 ? 'Donker' : x.lux < 100 ? 'Schemerig' : x.lux < 1000 ? 'Helder' : 'Zonnig'}</span></div></div>` : '';
       const extra = x.kind === 'motion' && !x.off ? [x.lux != null && !luxP ? `${fmt(x.lux)} lux` : '', x.tmp != null && rm.r.climate ? `${fmt(x.tmp, 1)}°` : ''].filter(Boolean).join(' · ') : '';
       const v2 = extra ? `${v} · ${extra}` : v;
-      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${x.kind === 'motion' && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
+      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${(x.kind === 'motion' || x.kind === 'door' || x.kind === 'window') && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span class="mqw"><span>${m.txt}</span></span></div></div>`; }).join('');
