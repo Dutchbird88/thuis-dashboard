@@ -263,7 +263,7 @@ Verdere regels:
 
 | Sleutel | Waarvoor |
 |---|---|
-| `thuis-verborgen`, `thuis-verborgen-v` | weggeveegde kaarten |
+| `thuis-verborgen`, `thuis-verborgen-v` | weggeveegde kaarten (v389: ook in HA via `frontend/get_user_data`/`set_user_data`, `_hidPull`/`_hidPush`, omdat het adres thuis en het adres van buiten elk een eigen localStorage hebben) |
 | `thuis-meldingen`, `thuis-gezien` | meldingen |
 | `thuis-alarm` | weggeveegd alarm |
 | `thuis-laadstroom` | stroom vóór de pauze |

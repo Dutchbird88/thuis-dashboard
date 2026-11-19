@@ -1838,7 +1838,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '388';
+const CARD_VERSION = '389';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4583,7 +4583,7 @@ class ThuisCard extends HTMLElement {
     const first = !this._hass;
     this._hass = hass;
     this._update();
-    if (first) this._fetchAgenda();
+    if (first) { this._fetchAgenda(); this._hidPull(); }
     if (!this._unsubs && this.isConnected) this._subForecast();
     if (this._camEl) this._camEl.hass = hass;
     // camerascherm: alleen bijwerken als de camera zelf verandert (elke update laat beeld en geluid haperen)
@@ -6527,7 +6527,22 @@ class ThuisCard extends HTMLElement {
   _hide(id) {
     const h = this._hidden(); h[id] = this._sig(this.$(id));
     try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
-    this._applyHidden();
+    this._hidPush(); this._applyHidden();
+  }
+  // v389: weggeveegde kaarten ook in Home Assistant bewaren (gebruikersgegevens). De app wisselt tussen het adres thuis en het adres van buiten
+  // (wifi/mobiel); elk adres heeft een eigen localStorage, daardoor kwam een weggeveegde kaart onderweg terug. Zo geldt het overal.
+  async _hidPull() {
+    try {
+      const r = await this._hass?.connection?.sendMessagePromise({ type: 'frontend/get_user_data', key: 'thuis-verborgen' });
+      const rem = r && r.value && typeof r.value === 'object' && !Array.isArray(r.value) ? r.value : null; if (!rem) return;
+      const h = this._hidden(); let ch = false;
+      Object.keys(rem).forEach((k) => { if (h[k] == null && rem[k] != null) { h[k] = rem[k]; ch = true; } });
+      if (ch) { try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ } this._applyHidden(); }
+    } catch (e) { /* oude HA of geen verbinding: alleen lokaal */ }
+  }
+  _hidPush() {
+    clearTimeout(this._hidT);
+    this._hidT = setTimeout(() => { try { this._hass?.connection?.sendMessagePromise({ type: 'frontend/set_user_data', key: 'thuis-verborgen', value: this._hidden() }).catch(() => {}); } catch (e) { /* alleen lokaal */ } }, 400);
   }
   _applyHidden() {
     const h = this._hidden(); let dirty = false;
@@ -6542,7 +6557,7 @@ class ThuisCard extends HTMLElement {
       if (h[id] != null && !sameBday && (sigKind ? sg && h[id] !== sg : h[id] !== sg || el.hidden)) { delete h[id]; dirty = true; }
       el.classList.toggle('gone', h[id] != null);
     });
-    if (dirty) try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ }
+    if (dirty) { try { localStorage.setItem('thuis-verborgen', JSON.stringify(h)); } catch (e) { /* geen opslag */ } this._hidPush(); }
     // v359: muziek > verjaardag > afval: er staat steeds één tegel naast de thermostaat
     const vis = (e) => e && !e.hidden && !e.classList.contains('gone'), hc = this.$('hpc'), bc = this.$('bdc'), mus = vis(hc);
     bc?.classList.toggle('hpon', mus);

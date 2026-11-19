@@ -259,6 +259,7 @@
 | v386 | Telefoon, Nu: weer de tegel Mijn huis van v220–v228 (huis links; rechts Zonnepanelen, Huisverbruik en Net onder elkaar met stromende bolletjes; meters eronder). De scène met tekeningen alleen nog met `photo.scene: true`. Computer ongewijzigd. |
 | v387 | Telefoon, Nu: tegel Mijn huis gebruikt `photo.house` (los huis) als die er is, anders `photo.image`. Meters Opwekking nu/Morgen verwacht en Opgewekt vandaag verborgen op de telefoon. |
 | v388 | Telefoon, venster deur/raam: titel opgeschoond (dubbele woorden weg, los "Deur"/"Raam" weg als de naam het al bevat) en de kamer als ondertitel in plaats van achter de titel; de stand staat al onder het icoon. |
+| v389 | Weggeveegde kaarten (verjaardag, muziek, Picnic, apparaten) worden ook in Home Assistant bewaard (`frontend/set_user_data`, sleutel `thuis-verborgen`) en bij het openen samengevoegd. Oorzaak: de app wisselt tussen het adres thuis en het adres van buiten, elk met een eigen localStorage, waardoor een weggeveegde kaart onderweg terugkwam. |
 
 ## Volgende stappen
 
