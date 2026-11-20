@@ -274,6 +274,7 @@
 | v401 | Telefoon, Nu: de grafiek Vandaag toont weer het dagtotaal naast de titel en rechts de verwachting ("verwacht X kWh", na zonsondergang "morgen X kWh"). |
 | v402 | Telefoon, Nu: bij de grafiek Vandaag geen dagtotaal meer naast de titel (staat in de tegel erboven) en rechts altijd de verwachting van vandaag met het stippellijntje, ook na zonsondergang (niet meer "morgen"). |
 | v403 | Telefoon, Nu: Opbrengst met volle groene staven (vandaag amber), alleen de bovenkant afgerond, en "kWh" achter alle drie de cijfers. Computer ongewijzigd. |
+| v404 | Telefoon, Nu: Opbrengst bij Week compacter (grafiek 176 px, schaal tot net boven de hoogste dag, minder lege ruimte boven de staven) en de dag van vandaag vet en wit onder de staaf. |
 
 ## Volgende stappen
 

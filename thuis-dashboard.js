@@ -1831,7 +1831,8 @@ class ZonnepanelenCard extends HTMLElement {
     const el = this.$('chartDays');
     const W = el.clientWidth;
     if (!W) return;
-    const H = 220, pad = { l: 34, r: 6, t: 12, b: 26 };
+    const pad = { l: 34, r: 6, t: 12, b: 26 }, H = phone && (this._rng || 'week') === 'week' ? 176 : 220; // v404: week op de telefoon lager (geen as)
+    el.style.height = phone ? `${H}px` : '';
     const rng = window.matchMedia('(max-width: 600px)').matches ? this._rng || 'week' : 'maand';
     // v294 (telefoon): Week = maandag t/m zondag van deze week, Maand = de 1e t/m de laatste dag van deze maand (dagen die nog komen leeg)
     const cal = (from, to) => { const m = new Map(this._dayValues().map((d) => [d.t, d.v])), out = []; for (let t = from; t <= to; t = dayAdd(t, 1)) out.push({ t, v: m.get(t) ?? 0, fut: t > startOfDay(Date.now()) }); return out; };
@@ -1842,7 +1843,7 @@ class ZonnepanelenCard extends HTMLElement {
     const N = days.length;
     if (phone && rng === 'week') pad.l = 4; // v390: week zonder as, de waarden staan boven de staven
     const top = Math.max(2, ...days.map((d) => d.v)), st0 = (top * 1.08) / 4, e10 = 10 ** Math.floor(Math.log10(st0)), f10 = st0 / e10;
-    const ymax = window.matchMedia('(max-width: 600px)').matches ? 4 * e10 * [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((x) => x >= f10 - 1e-9) : niceMax(top);
+    const ymax = phone && rng === 'week' ? Math.max(1, top * 1.12) : window.matchMedia('(max-width: 600px)').matches ? 4 * e10 * [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((x) => x >= f10 - 1e-9) : niceMax(top);
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
     const band = iw / N, bw = Math.max(2, band * 0.64);
     const Y = (v) => pad.t + (1 - v / ymax) * ih;
@@ -1872,7 +1873,7 @@ class ZonnepanelenCard extends HTMLElement {
         const lbl = rng === 'jaar' ? (isToday ? 'Nu' : new Date(d.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', ''))
           : rng === 'week' ? new Date(d.t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')
           : isToday && !phone ? 'Vandaag' : new Date(d.t).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
-        bars += `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="${isToday && rng !== 'week' && !phone ? 'end' : 'middle'}">${lbl}</text>`;
+        bars += `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="${isToday && rng !== 'week' && !phone ? 'end' : 'middle'}"${isToday && phone && rng === 'week' ? ' style="fill:#eef2f8;font-weight:700"' : ''}>${lbl}</text>`;
       }
     });
     const avgLine = avg > 0 && !window.matchMedia('(max-width: 600px)').matches
@@ -1915,7 +1916,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '403';
+const CARD_VERSION = '404';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
