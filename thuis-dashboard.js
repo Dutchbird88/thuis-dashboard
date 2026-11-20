@@ -591,7 +591,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mos2 { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
   .znu .mzw { display: flex; align-items: center; gap: 10px; margin-top: 6px; } .znu .mzr { position: relative; width: 54px; height: 54px; flex: none; } .znu .mzr svg { width: 54px; height: 54px; }
   .znu .mzr b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; } .znu .mzr b small { font-size: 10px; font-weight: 600; }
-  .znu .mzx { min-width: 0; font-size: 12px; color: var(--muted); line-height: 1.6; } .znu .mzx span { display: block; white-space: nowrap; } .znu .mzx i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #6fe39a; margin-right: 6px; vertical-align: 1px; } .znu .mzx i.n { background: rgba(255,255,255,.25); }
+  .znu .mzx { min-width: 0; font-size: 12px; color: var(--muted); line-height: 1.6; } .znu .mzx span { display: block; white-space: nowrap; } .znu .mzx i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #6fe39a; margin-right: 6px; vertical-align: 1px; } .znu .mzx i.n { background: var(--grid-in); }
   .znu .mopg { font-size: 13px; color: var(--muted); } .znu .mopg b { font-size: 15px; color: var(--text); font-weight: 700; margin-right: 2px; }
   .znu .msum.ml.ml { display: flex; gap: 20px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
   .znu .mdst b, .znu .msum b { display: block; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; } .znu .mdst b small, .znu .msum b small { font-size: 12px; font-weight: 500; color: var(--muted); }
@@ -1784,7 +1784,7 @@ class ZonnepanelenCard extends HTMLElement {
       const h = `<div class="moh">Vandaag opgewekt</div><div class="mob2"><b class="num">${tk != null ? fmt(tk, 1) : '—'}<small> kWh</small></b>${dp != null ? `<span class="mdp${dp < 0 ? ' dn' : ''}">${dp < 0 ? '↓' : '↑'} ${dp > 0 ? '+' : ''}${dp}%</span>` : ''}</div>${yd != null ? `<div class="mos2">t.o.v. gisteren (${fmt(yd, 1)} kWh)</div>` : ''}`;
       if (oT.innerHTML !== h) oT.innerHTML = h; }
     if (zT) { const g = this._gDay, own = tk != null && g ? Math.max(0, tk - g.exp) : null, tot = own != null ? own + g.imp : 0, pc = tot > 0 ? Math.round(own / tot * 100) : null;
-      const C = 2 * Math.PI * 30, h = pc == null ? '' : `<div class="moh">Zelfvoorzienend</div><div class="mzw"><div class="mzr"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="8"/><circle cx="38" cy="38" r="30" fill="none" stroke="#6fe39a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pc / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/></svg><b class="num">${pc}<small>%</small></b></div><div class="mzx"><span><i></i>${fmt(own, 1)} kWh zon</span><span><i class="n"></i>${fmt(g.imp, 1)} kWh net</span></div></div>`;
+      const C = 2 * Math.PI * 30, h = pc == null ? '' : `<div class="moh">Zelfvoorzienend</div><div class="mzw"><div class="mzr"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" style="stroke:var(--grid-in)" stroke-width="8"/><circle cx="38" cy="38" r="30" fill="none" stroke="#6fe39a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pc / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/></svg><b class="num">${pc}<small>%</small></b></div><div class="mzx"><span><i></i>${fmt(own, 1)} kWh zon</span><span><i class="n"></i>${fmt(g.imp, 1)} kWh net</span></div></div>`;
       if (zT.innerHTML !== h) zT.innerHTML = h; zT.hidden = !h; }
     this.$('peak').innerHTML = (phone ? '' : (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : ''))
       + (tmrw && !phone ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
@@ -1916,7 +1916,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '405';
+const CARD_VERSION = '406';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

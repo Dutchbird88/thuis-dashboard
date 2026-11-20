@@ -276,6 +276,7 @@
 | v403 | Telefoon, Nu: Opbrengst met volle groene staven (vandaag amber), alleen de bovenkant afgerond, en "kWh" achter alle drie de cijfers. Computer ongewijzigd. |
 | v404 | Telefoon, Nu: Opbrengst bij Week compacter (grafiek 176 px, schaal tot net boven de hoogste dag, minder lege ruimte boven de staven) en de dag van vandaag vet en wit onder de staaf. |
 | v405 | Telefoon, Nu: tegel "Vandaag opgewekt" zonder zonnetje, gelijk aan de tegel "Zelfvoorzienend". |
+| v406 | Telefoon, Nu: ring Zelfvoorzienend toont het net in paars (`--grid-in`) in plaats van grijs; bolletje "net" ook paars. |
 
 ## Volgende stappen
 
