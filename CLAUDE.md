@@ -20,6 +20,7 @@ Dit project is een eigen Home Assistant-dashboard in **één JavaScript-bestand*
   - Een mockup is een HTML-pagina of screenshot met de echte stijl. Bied bij twijfel 2 tot 4 opties aan (A/B/C).
   - **Mockups standaard als afbeelding** (afspraak 10 november 2026, vervangt de Artifact-afspraak van dezelfde dag): een screenshot (PNG) van een HTML-mockup in de echte stijl. **Alleen als de gebruiker erom vraagt** een interactieve mockup als Artifact-link (claude.ai/artifact/…), met beweging (echte iconen uit `RIC`, echte animaties) en klikbare standen/varianten. Daarin geen persoonlijke gegevens (alleen voorbeeldwaarden, geen camerabeelden of eigen namen); de pagina is privé, delen doet de gebruiker zelf; een nieuwe versie voor hetzelfde onderwerp op dezelfde link.
 - **Na akkoord op de mockup: bouwen en daarna meteen publiceren.** Er is geen apart akkoord nodig voor het publiceren (afspraak van november 2026). De controles uit "Publiceren" gelden wel altijd.
+- **YAML altijd volledig** (afspraak 20 november 2026): geef bij een wijziging in de dashboard-YAML altijd de hele YAML, niet alleen het gewijzigde stuk. Die YAML bevat persoonlijke gegevens: alleen in de chat, nooit in de repo.
 - **Geef eerst een reactie of analyse als de gebruiker daarom vraagt** ("pas nog niks aan"), en verander dan nog niets.
 - **Telefoon en computer:** de telefoon (≤ 600px) heeft een eigen indeling. Laat de computerweergave ongewijzigd, tenzij de gebruiker daar expliciet om vraagt.
 - **Geef advies als de gebruiker erom vraagt.** Kies zelf, met een korte motivatie.
