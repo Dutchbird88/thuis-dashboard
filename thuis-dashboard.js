@@ -579,11 +579,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mdst b, .znu .msum b { display: block; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; } .znu .mdst b small, .znu .msum b small { font-size: 12px; font-weight: 500; color: var(--muted); }
   .znu .mpanels.mob.mob { display: block; } .znu .mside { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 2px 6px; } .znu .mpg + .mside { margin-top: 10px; }
   .znu .mpg { display: grid; grid-template-columns: repeat(var(--mc, 5), minmax(0, 1fr)); gap: 6px; }
-  .znu .mpanels .panel.panel { height: 60px; border-radius: 12px; background: #172238; border: 1px solid rgba(115,155,215,.16); box-shadow: none; }
-  .znu .mpanels .panel::before { display: none; }
-  .znu .mpanels .panel::after { top: auto; height: calc(var(--p) * 100%); opacity: 1; background: linear-gradient(180deg, rgba(255,181,71,.45), rgba(255,181,71,.12)); transition: height 1s; }
-  .znu .mpanels .pn { font-size: 10.5px; color: var(--muted); font-weight: 500; } .znu .mpanels .pw { left: 7px; right: auto; text-align: left; bottom: 7px; text-shadow: none; }
-  .znu .mpanels .panel.low { border: 1.5px solid rgba(245,158,75,.75); box-shadow: none; } .znu .mpanels .dev { background: none; color: #f5a35b; padding: 0; top: 5px; right: 6px; }
+
   .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
 }
 @media (max-width: 600px) {
@@ -1855,7 +1851,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '391';
+const CARD_VERSION = '392';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
