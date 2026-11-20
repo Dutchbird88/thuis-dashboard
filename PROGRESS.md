@@ -261,6 +261,7 @@
 | v388 | Telefoon, venster deur/raam: titel opgeschoond (dubbele woorden weg, los "Deur"/"Raam" weg als de naam het al bevat) en de kamer als ondertitel in plaats van achter de titel; de stand staat al onder het icoon. |
 | v389 | Weggeveegde kaarten (verjaardag, muziek, Picnic, apparaten) worden ook in Home Assistant bewaard (`frontend/set_user_data`, sleutel `thuis-verborgen`) en bij het openen samengevoegd. Oorzaak: de app wisselt tussen het adres thuis en het adres van buiten, elk met een eigen localStorage, waardoor een weggeveegde kaart onderweg terugkwam. |
 | v390 | Telefoon, Nu: kaarten onder Mijn huis verfijnd. Vandaag met dagcijfers (opgewekt, nu, teruggeleverd uit `_fetchGridDay`); Opbrengst met drie cijfers (totaal, gemiddeld, beste), week zonder as, ronde staven, lege dagen als laag streepje; Panelen per dakkant (`.mside`/`.mpg`), donkere tegels die van onderen vollopen met amber naar vermogen, zwak paneel met oranje rand. Computer pixelgelijk. |
+| v391 | Nu: een `</div>` te veel na de tegel Mijn huis (sinds v386) sloot het raster te vroeg af, waardoor de kaarten eronder zonder tussenruimte tegen elkaar stonden. Weggehaald: weer 10 px tussen de kaarten; computer weer gelijk aan v385. |
 
 ## Volgende stappen
 

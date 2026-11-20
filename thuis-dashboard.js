@@ -935,7 +935,6 @@ class ZonnepanelenCard extends HTMLElement {
                 <div class="mv"${c.grid_power ? ` data-e="${c.grid_power}"` : ''}><svg viewBox="0 0 100 100"><use id="mGridIc" href="#gPylon"/></svg><div><b class="num" id="mGrid">—</b><span id="mGridL">Net</span></div></div>
               </div></div>
           </div>
-          </div>
           <div class="mob mgauges">
             ${[['1', 'Opwekking nu', 'gSun', c.solar_power, 'mgo'], ['2', 'Opgewekt vandaag', 'gSolarP', c.solar_today, 'mgg']].map(([k, t, ic, e, g]) => `
             <div class="tile mgt" data-e="${e}"><div class="mgh"><svg viewBox="0 0 100 100"><use href="#${ic}"/></svg>${t}</div>
@@ -1856,7 +1855,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '390';
+const CARD_VERSION = '391';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
