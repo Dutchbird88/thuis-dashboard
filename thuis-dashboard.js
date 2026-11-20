@@ -886,6 +886,8 @@ class ZonnepanelenCard extends HTMLElement {
     const sides = {};
     for (const inv of c.inverters) (sides[inv.side] ||= []).push(inv);
     const first = (inv) => Math.min(...inv.panels.map((p) => p.n));
+    // v396: dezelfde foto als de computer (met de paneelvlakken uit photo.panels); bij scènetekeningen de standaardfoto
+    const photoSrc = c.photo.detail || (c.photo.dusk || c.photo.night ? DEFAULTS.photo.image : c.photo.image);
     const sidesHtml = Object.entries(sides).map(([side, invs]) => {
       invs = [...invs].sort((a, b) => first(a) - first(b));
       const groups = invs.map((inv) => `
@@ -925,7 +927,7 @@ class ZonnepanelenCard extends HTMLElement {
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
-            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.house || c.photo.image}" alt="">${this._hpSvg()}</div><div class="msep"></div>
+            <div class="mhg"><div class="mimg" id="mImg">${Array.isArray(c.photo.house_panels) ? `<img src="${c.photo.house || c.photo.image}" alt="">${this._hpSvg()}` : `<img src="${photoSrc}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=${JSON.stringify(c.photo.house || c.photo.image).replace(/"/g, '&quot;')};this.nextElementSibling.style.display='none'}"><svg class="mhp" id="mPs" viewBox="0 0 ${c.photo.width} ${c.photo.height}" preserveAspectRatio="xMidYMid meet"></svg>`}</div><div class="msep"></div>
               <div class="mvals">
                 <div class="mv" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span>Zonnepanelen</span></div></div>
                 <i class="mcon" id="mc1"></i>
@@ -952,7 +954,7 @@ class ZonnepanelenCard extends HTMLElement {
           <div class="tile photo s4">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="frontSum"></span></div>
             <div class="scene" id="scene">
-              <img src="${c.photo.detail || (c.photo.dusk || c.photo.night ? DEFAULTS.photo.image : c.photo.image)}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=${JSON.stringify(c.photo.image).replace(/"/g, '&quot;')};this.nextElementSibling.style.display='none'}">
+              <img src="${photoSrc}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=${JSON.stringify(c.photo.image).replace(/"/g, '&quot;')};this.nextElementSibling.style.display='none'}">
               <svg id="psvg" viewBox="0 0 ${c.photo.width} ${c.photo.height}" preserveAspectRatio="xMidYMid meet"></svg>
               <div class="tip" id="ptip"></div>
             </div>
@@ -1357,6 +1359,19 @@ class ZonnepanelenCard extends HTMLElement {
       this._gDay = { imp: sum(this._gIds.imp), exp: sum(this._gIds.exp) };
     } catch (er) { /* geen statistieken */ } finally { this._gdBusy = false; }
   }
+  // v396 (telefoon): de panelen lichten op het huis op zoals op de computer (zelfde vlakken en gloed, zonder labels)
+  _mPhoto() {
+    const svg = this.$('mPs'); if (!svg) return;
+    const c = this._config, ph = c.photo, out = [], key = [];
+    for (const inv of c.inverters) for (const p of inv.panels) {
+      const poly = ph.panels?.[p.n]; if (!poly) continue;
+      const r = Math.sqrt(clamp((this._power(p.entity) || 0) / c.panel_max, 0, 1)), P = poly.map((q) => q.join(',')).join(' ');
+      key.push(r.toFixed(2));
+      if (r > 0.02) out.push(`<polygon points="${P}" fill="none" stroke="#ffb53d" stroke-width="14" opacity="${(r * 0.8).toFixed(2)}" filter="url(#mpb)"/><polygon points="${P}" fill="#ffd27a" opacity="${(r * 0.3).toFixed(2)}" style="mix-blend-mode:screen"/><polygon points="${P}" fill="none" stroke="#ffd58a" stroke-width="4" stroke-linejoin="round" opacity="${(r * 0.95).toFixed(2)}"/>`);
+    }
+    const k = key.join(); if (k === this._mPsKey) return; this._mPsKey = k;
+    svg.innerHTML = `<defs><filter id="mpb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter></defs>${out.join('')}`;
+  }
   // v395: panelen op het losse huis als raster (photo.house_grid, standaard 3 × 2), elk vak licht op zoals het paneel zelf (--p van de paneeltegel)
   _hpSvg() {
     const c = this._config, q = c.photo.house_panels; if (!Array.isArray(q) || q.length !== 4) return '';
@@ -1378,6 +1393,7 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML); this._fetchGridDay();
+    this._mPhoto();
     this.shadowRoot.querySelectorAll('.hpc').forEach((g) => { const d = g.dataset.hpe && this.shadowRoot.querySelector(`[data-panel="${g.dataset.hpe}"]`); g.style.setProperty('--p', d ? d.style.getPropertyValue('--p') || 0 : clamp((pv || 0) / (c.max_power || 1), 0, 1)); });
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
     if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); }
@@ -1871,7 +1887,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '395';
+const CARD_VERSION = '396';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
