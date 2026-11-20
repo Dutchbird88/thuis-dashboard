@@ -265,6 +265,7 @@
 | v392 | Telefoon, Nu: panelen weer in de oude stijl (oranje tegels met rasterlijnen en gloed naar vermogen, oranje label bij een zwak paneel); de indeling per dakkant blijft. |
 | v393 | Nu: het venster bij tikken op het huis gebruikt `photo.detail`, en bij ingestelde scènetekeningen de standaardfoto (waar de paneelvlakken bij horen) in plaats van de dagtekening; lukt die niet, dan de dagtekening zonder paneelvlakken (die lagen ernaast). |
 | v394 | Telefoon, Nu: het huis in Mijn huis is niet meer aanklikbaar. Nieuw `photo.house_panels` (hoeken in % van het plaatje): de panelen op het losse huis lichten amber op, sterker naarmate het vermogen hoger is (`#mHp`, `--hp` = vermogen / `max_power`); zonder opwek uit. |
+| v395 | Telefoon, Nu: de panelen op het losse huis als raster van losse vakken (`photo.house_grid`, standaard 3 × 2; nummers uit `photo.panels` of `photo.house_numbers`), elk vak gloeit oranje zoals zijn paneeltegel (`--p`), met lichte randjes, zoals vroeger op de foto. |
 
 ## Volgende stappen
 

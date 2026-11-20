@@ -109,7 +109,8 @@ photo:
   scene: true                      # zet de scène aan (anders de tegel Mijn huis)
   house: /local/huis.png           # optioneel: los huis (doorzichtig) voor de tegel Mijn huis
   detail: /local/huis-foto.png     # optioneel: foto bij tikken op het huis (waar de panelen op oplichten)
-  house_panels: [[26, 5], [52, 4], [54.5, 14.3], [28, 15.7]]   # optioneel: hoeken van de panelen op het losse huis, in % (x, y); lichten op naar het vermogen
+  house_panels: [[26, 5], [52, 4], [54.5, 14.3], [28, 15.7]]   # optioneel: hoeken van de panelen op het losse huis, in % (x, y); elk paneel licht op naar zijn vermogen
+  house_grid: [3, 2]               # optioneel: kolommen × rijen panelen binnen dat vlak
   image: /local/huis-dag.png       # overdag
   dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
   night: /local/huis-nacht.png     # nacht
