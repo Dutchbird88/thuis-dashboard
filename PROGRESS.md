@@ -267,6 +267,7 @@
 | v394 | Telefoon, Nu: het huis in Mijn huis is niet meer aanklikbaar. Nieuw `photo.house_panels` (hoeken in % van het plaatje): de panelen op het losse huis lichten amber op, sterker naarmate het vermogen hoger is (`#mHp`, `--hp` = vermogen / `max_power`); zonder opwek uit. |
 | v395 | Telefoon, Nu: de panelen op het losse huis als raster van losse vakken (`photo.house_grid`, standaard 3 × 2; nummers uit `photo.panels` of `photo.house_numbers`), elk vak gloeit oranje zoals zijn paneeltegel (`--p`), met lichte randjes, zoals vroeger op de foto. |
 | v396 | Telefoon, Nu: zonder `house_panels` toont Mijn huis dezelfde foto als de computer (`photoSrc`: `detail`, bij scènetekeningen de standaardfoto) met dezelfde paneelvlakken uit `photo.panels` en dezelfde gloed (`_mPhoto`, `#mPs`, zonder labels). |
+| v397 | Telefoon, Kamers: kamerkaarten die uit staan in de kleur en rand van de tegels op Nu (`#132036`→`#0f1828`, rand `rgba(130,170,255,.12)`); lamp- en rolluiktegels blijven zoals ze waren. |
 
 ## Volgende stappen
 
