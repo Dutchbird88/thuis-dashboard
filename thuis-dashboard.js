@@ -583,7 +583,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .zvb { display: flex; height: 8px; border-radius: 8px; overflow: hidden; background: #a678ff; margin-top: 7px; } .znu .zvb i:first-child { background: linear-gradient(90deg, #3ddc97, #6fe39a); transition: width 1s; }
   .znu .zvl { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 6px; } .znu .zvl i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; margin-right: 5px; } .znu .zvl i.n { background: #a678ff; }
   /* v400: tegels onder het huis */
-  .znu .mhome .th .label { display: none; } .znu .mhome .th { justify-content: flex-end; margin-bottom: 4px; }
+  .znu .mhome .th .label { display: none; } .znu .mhome #mSt { visibility: hidden; } .znu .xhead #date .pstat { gap: 7px; padding-left: 49px; } .znu .xhead #date .dot { width: 7px; height: 7px; flex: none; } .znu .mhome .th { justify-content: flex-end; margin-bottom: 4px; }
   .znu .mduo.mob { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .znu .mduo .tile { padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; min-height: 104px; } .znu .mduo .tile[hidden] { display: none; }
   .znu .moh { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; } .znu .moh svg { width: 20px; height: 20px; flex: none; } .znu .mduo:has(.mzt[hidden]) .mopt { grid-column: 1 / -1; }
   .znu .mob2 { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; } .znu .mob2 b { font-size: 26px; font-weight: 700; line-height: 1; } .znu .mob2 b small { font-size: 14px; color: var(--muted); font-weight: 600; }
@@ -1105,7 +1105,8 @@ class ZonnepanelenCard extends HTMLElement {
     const root = this.shadowRoot;
     const set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
 
-    set('date', new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+    // telefoon: onder de titel de status van de panelen (in _updMob) in plaats van de datum (v407)
+    if (!window.matchMedia('(max-width: 600px)').matches) set('date', new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
 
     const n = c.inverters.length;
     // zon op / onder, onder de meter
@@ -1410,6 +1411,7 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML); this._fetchGridDay();
+    if (window.matchMedia('(max-width: 600px)').matches) { const fsum = this.$('frontSum').innerHTML.replace('Panelen in rust', 'In rust'); set('date', fsum || new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })); }
     this._mPhoto();
     this.shadowRoot.querySelectorAll('.hpc').forEach((g) => { const d = g.dataset.hpe && this.shadowRoot.querySelector(`[data-panel="${g.dataset.hpe}"]`); g.style.setProperty('--p', d ? d.style.getPropertyValue('--p') || 0 : clamp((pv || 0) / (c.max_power || 1), 0, 1)); });
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
@@ -1916,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '406';
+const CARD_VERSION = '407';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

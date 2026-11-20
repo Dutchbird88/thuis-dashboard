@@ -277,6 +277,7 @@
 | v404 | Telefoon, Nu: Opbrengst bij Week compacter (grafiek 176 px, schaal tot net boven de hoogste dag, minder lege ruimte boven de staven) en de dag van vandaag vet en wit onder de staaf. |
 | v405 | Telefoon, Nu: tegel "Vandaag opgewekt" zonder zonnetje, gelijk aan de tegel "Zelfvoorzienend". |
 | v406 | Telefoon, Nu: ring Zelfvoorzienend toont het net in paars (`--grid-in`) in plaats van grijs; bolletje "net" ook paars. |
+| v407 | Telefoon, Nu: onder de titel de status van de panelen (bolletje + "Alle panelen online"/"In rust"/aantal online, 14 px, uitgelijnd met "Zonnepanelen") in plaats van de datum; status rechtsboven in Mijn huis verborgen. |
 
 ## Volgende stappen
 
