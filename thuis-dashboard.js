@@ -578,7 +578,12 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mhp { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
   .znu .mhp .hpc { fill: url(#hpg); fill-opacity: min(1, calc(var(--p, 0) * 1.25)); stroke: #ffe3a0; stroke-width: .35; stroke-opacity: min(1, calc(var(--p, 0) * 1.5)); stroke-linejoin: round; filter: drop-shadow(0 0 2.5px rgba(255,160,40,calc(var(--p, 0) * .9))); transition: fill-opacity 1s, stroke-opacity 1s; }
   /* v390: dagcijfers (Vandaag, Opbrengst), panelen per dakkant */
-  .znu .mdst.ml.ml, .znu .msum.ml.ml { display: flex; gap: 20px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
+  .znu .mdst.ml.ml { display: block; margin: 0 0 12px; } .znu .mdst[hidden] { display: none !important; }
+  .znu .zvh { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--muted); } .znu .zvh b { font-size: 20px; font-weight: 700; color: #6fe39a; } .znu .zvh b small { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 1px; }
+  .znu .zvb { display: flex; height: 8px; border-radius: 8px; overflow: hidden; background: #a678ff; margin-top: 7px; } .znu .zvb i:first-child { background: linear-gradient(90deg, #3ddc97, #6fe39a); transition: width 1s; }
+  .znu .zvl { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 6px; } .znu .zvl i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; margin-right: 5px; } .znu .zvl i.n { background: #a678ff; }
+  .znu .mopg { font-size: 13px; color: var(--muted); } .znu .mopg b { font-size: 15px; color: var(--text); font-weight: 700; margin-right: 2px; }
+  .znu .msum.ml.ml { display: flex; gap: 20px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
   .znu .mdst b, .znu .msum b { display: block; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; } .znu .mdst b small, .znu .msum b small { font-size: 12px; font-weight: 500; color: var(--muted); }
   .znu .mpanels.mob.mob { display: block; } .znu .mside { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 2px 6px; } .znu .mpg + .mside { margin-top: 10px; }
   .znu .mpg { display: grid; grid-template-columns: repeat(var(--mc, 5), minmax(0, 1fr)); gap: 6px; }
@@ -1758,13 +1763,13 @@ class ZonnepanelenCard extends HTMLElement {
     const tmrw = matchMedia('(max-width: 600px)').matches && this._hass?.states[this._config.sun]?.state === 'below_horizon' && fc0.tomorrow != null;
     const tk = this._todayKwh(), lab = this.shadowRoot.querySelector('.tday .th .ml');
     if (lab && lab.textContent !== 'Vandaag') lab.textContent = 'Vandaag';
-    // v390 (telefoon): dagcijfers boven de grafiek: opgewekt, nu, teruggeleverd
+    // v399 (telefoon): zelfvoorzienend vandaag = eigen gebruik van de zon (opgewekt − teruggeleverd) gedeeld door het hele verbruik (+ afname van het net)
     const dst = this.$('mDst');
-    if (dst) { const gx = this._gDay?.exp, pwN = live != null ? fmtPower(Math.max(0, live)) : null;
-      const h = `<div><b class="num">${tk != null ? fmt(tk, 1) : '—'} <small>kWh</small></b>opgewekt</div>${pwN ? `<div><b class="num">${pwN.v} <small>${pwN.u}</small></b>nu</div>` : ''}${gx != null ? `<div><b class="num">${fmt(gx, 1)} <small>kWh</small></b>teruggeleverd</div>` : ''}`;
-      if (dst.innerHTML !== h) dst.innerHTML = h; }
-    this.$('peak').innerHTML = (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
-      + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
+    if (dst) { const g = this._gDay, own = tk != null && g ? Math.max(0, tk - g.exp) : null, tot = own != null ? own + g.imp : 0, pc = tot > 0 ? Math.round(own / tot * 100) : null;
+      const h = pc == null ? '' : `<div class="zvh">Zelfvoorzienend vandaag<b class="num">${pc}<small>%</small></b></div><div class="zvb"><i style="width:${pc}%"></i><i></i></div><div class="zvl"><span><i></i>Van de zon ${fmt(own, 1)} kWh</span><span><i class="n"></i>Van het net ${fmt(g.imp, 1)} kWh</span></div>`;
+      if (dst.innerHTML !== h) dst.innerHTML = h; dst.hidden = !h; }
+    this.$('peak').innerHTML = phone ? (tk != null ? `<span class="mopg"><b class="num">${fmt(tk, 1)}</b> kWh opgewekt</span>` : '') : ((peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
+      + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : ''));
 
     el.innerHTML = `
       <svg width="${W}" height="${H}">
@@ -1799,6 +1804,8 @@ class ZonnepanelenCard extends HTMLElement {
       tip.style.top = `${y}px`;
     };
     svg.onmouseleave = () => [cur, dot, tip].forEach((n) => n.classList.remove('on'));
+    // v399 (telefoon): met de vinger door de grafiek schuiven (opzij = schuiven, omhoog/omlaag = scrollen; geen tabbladwissel)
+    if (phone) { svg.style.touchAction = 'pan-y'; svg.onpointerdown = svg.onpointermove = (e) => { if (e.pointerType !== 'mouse') svg.onmousemove(e); }; svg.onpointerup = svg.onpointercancel = (e) => { if (e.pointerType !== 'mouse') setTimeout(() => svg.onmouseleave(), 1500); }; }
   }
 
   _drawDays() {
@@ -1887,7 +1894,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '398';
+const CARD_VERSION = '399';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

@@ -269,6 +269,7 @@
 | v396 | Telefoon, Nu: zonder `house_panels` toont Mijn huis dezelfde foto als de computer (`photoSrc`: `detail`, bij scènetekeningen de standaardfoto) met dezelfde paneelvlakken uit `photo.panels` en dezelfde gloed (`_mPhoto`, `#mPs`, zonder labels). |
 | v397 | Telefoon, Kamers: kamerkaarten die uit staan in de kleur en rand van de tegels op Nu (`#132036`→`#0f1828`, rand `rgba(130,170,255,.12)`); lamp- en rolluiktegels blijven zoals ze waren. |
 | v398 | Telefoon, Kamers: de statusregel toont alleen wat afwijkt: "1 aan" bij licht, geen "Uit" en geen "Open" (rolluiken) meer, een open raam of deur oranje vooraan (`.ko`); de helderheidsbalk en het opzij vegen om te dimmen zijn weg (geen `.ksl`/`.sl` op de telefoon). Computer ongewijzigd. |
+| v399 | Telefoon, Nu: Vandaag toont rechtsboven "3,8 kWh opgewekt" (geen verwacht/teruggeleverd/nu meer), daaronder "Zelfvoorzienend vandaag" met groen percentage, balk (groen = eigen zon, paars = net) en kWh van zon en net (opgewekt − teruggeleverd tegenover afname uit `_fetchGridDay`). Met de vinger door de grafiek schuiven (pointer-events, `touch-action: pan-y`). Computer ongewijzigd. |
 
 ## Volgende stappen
 
