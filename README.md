@@ -108,6 +108,7 @@ type: custom:zonnepanelen-card
 photo:
   scene: true                      # zet de scène aan (anders de tegel Mijn huis)
   house: /local/huis.png           # optioneel: los huis (doorzichtig) voor de tegel Mijn huis
+  detail: /local/huis-foto.png     # optioneel: foto bij tikken op het huis (waar de panelen op oplichten)
   image: /local/huis-dag.png       # overdag
   dusk: /local/huis-schemer.png    # zonsopkomst en -ondergang
   night: /local/huis-nacht.png     # nacht
