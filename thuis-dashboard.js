@@ -1411,7 +1411,7 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML); this._fetchGridDay();
-    if (window.matchMedia('(max-width: 600px)').matches) { const fsum = this.$('frontSum').innerHTML.replace('Panelen in rust', 'In rust'); set('date', fsum || new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })); }
+    if (window.matchMedia('(max-width: 600px)').matches) { const fsum = this.$('frontSum').innerHTML; set('date', fsum || new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })); }
     this._mPhoto();
     this.shadowRoot.querySelectorAll('.hpc').forEach((g) => { const d = g.dataset.hpe && this.shadowRoot.querySelector(`[data-panel="${g.dataset.hpe}"]`); g.style.setProperty('--p', d ? d.style.getPropertyValue('--p') || 0 : clamp((pv || 0) / (c.max_power || 1), 0, 1)); });
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '410';
+const CARD_VERSION = '411';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

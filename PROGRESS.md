@@ -281,6 +281,7 @@
 | v408 | Telefoon, Nu: minder ruimte bovenin: lege kopregel in Mijn huis weg, status 3 px onder de titel, 16 px tot de tegel. |
 | v409 | Telefoon, Nu: kop nog compacter (status direct onder de titel, regelhoogte 16 px, 12 px tot de tegel). |
 | v410 | Telefoon, Nu: status dichter onder de titel (`#date` margin-top −3 px). |
+| v411 | Telefoon, Nu: status 's avonds "Panelen in rust" (was "In rust"). |
 
 ## Volgende stappen
 
