@@ -278,6 +278,7 @@
 | v405 | Telefoon, Nu: tegel "Vandaag opgewekt" zonder zonnetje, gelijk aan de tegel "Zelfvoorzienend". |
 | v406 | Telefoon, Nu: ring Zelfvoorzienend toont het net in paars (`--grid-in`) in plaats van grijs; bolletje "net" ook paars. |
 | v407 | Telefoon, Nu: onder de titel de status van de panelen (bolletje + "Alle panelen online"/"In rust"/aantal online, 14 px, uitgelijnd met "Zonnepanelen") in plaats van de datum; status rechtsboven in Mijn huis verborgen. |
+| v408 | Telefoon, Nu: minder ruimte bovenin: lege kopregel in Mijn huis weg, status 3 px onder de titel, 16 px tot de tegel. |
 
 ## Volgende stappen
 

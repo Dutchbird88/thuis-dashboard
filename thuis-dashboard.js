@@ -583,7 +583,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .zvb { display: flex; height: 8px; border-radius: 8px; overflow: hidden; background: #a678ff; margin-top: 7px; } .znu .zvb i:first-child { background: linear-gradient(90deg, #3ddc97, #6fe39a); transition: width 1s; }
   .znu .zvl { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 6px; } .znu .zvl i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; margin-right: 5px; } .znu .zvl i.n { background: #a678ff; }
   /* v400: tegels onder het huis */
-  .znu .mhome .th .label { display: none; } .znu .mhome #mSt { visibility: hidden; } .znu .xhead #date .pstat { gap: 7px; padding-left: 49px; } .znu .xhead #date .dot { width: 7px; height: 7px; flex: none; } .znu .mhome .th { justify-content: flex-end; margin-bottom: 4px; }
+  .znu .mhome .th .label { display: none; } .znu .mhome .th.th { display: none; } .znu:not(.scn) .xhead { margin-bottom: 16px; } .znu .xhead #date { margin-top: 3px; } .znu .xhead #date .pstat { gap: 7px; padding-left: 49px; } .znu .xhead #date .dot { width: 7px; height: 7px; flex: none; } .znu .mhome .th { justify-content: flex-end; margin-bottom: 4px; }
   .znu .mduo.mob { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .znu .mduo .tile { padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; min-height: 104px; } .znu .mduo .tile[hidden] { display: none; }
   .znu .moh { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; } .znu .moh svg { width: 20px; height: 20px; flex: none; } .znu .mduo:has(.mzt[hidden]) .mopt { grid-column: 1 / -1; }
   .znu .mob2 { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; } .znu .mob2 b { font-size: 26px; font-weight: 700; line-height: 1; } .znu .mob2 b small { font-size: 14px; color: var(--muted); font-weight: 600; }
@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '407';
+const CARD_VERSION = '408';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
