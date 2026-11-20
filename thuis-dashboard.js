@@ -1781,7 +1781,7 @@ class ZonnepanelenCard extends HTMLElement {
     const dst = this.$('mDst'); if (dst) dst.hidden = true;
     const oT = this.$('mOpt'), zT = this.$('mZt');
     if (oT) { const yd = (this._dayValues() || []).find((d) => d.t === dayAdd(startOfDay(Date.now()), -1))?.v, dp = tk != null && yd > 0 ? Math.round((tk - yd) / yd * 100) : null;
-      const h = `<div class="moh"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg>Vandaag opgewekt</div><div class="mob2"><b class="num">${tk != null ? fmt(tk, 1) : '—'}<small> kWh</small></b>${dp != null ? `<span class="mdp${dp < 0 ? ' dn' : ''}">${dp < 0 ? '↓' : '↑'} ${dp > 0 ? '+' : ''}${dp}%</span>` : ''}</div>${yd != null ? `<div class="mos2">t.o.v. gisteren (${fmt(yd, 1)} kWh)</div>` : ''}`;
+      const h = `<div class="moh">Vandaag opgewekt</div><div class="mob2"><b class="num">${tk != null ? fmt(tk, 1) : '—'}<small> kWh</small></b>${dp != null ? `<span class="mdp${dp < 0 ? ' dn' : ''}">${dp < 0 ? '↓' : '↑'} ${dp > 0 ? '+' : ''}${dp}%</span>` : ''}</div>${yd != null ? `<div class="mos2">t.o.v. gisteren (${fmt(yd, 1)} kWh)</div>` : ''}`;
       if (oT.innerHTML !== h) oT.innerHTML = h; }
     if (zT) { const g = this._gDay, own = tk != null && g ? Math.max(0, tk - g.exp) : null, tot = own != null ? own + g.imp : 0, pc = tot > 0 ? Math.round(own / tot * 100) : null;
       const C = 2 * Math.PI * 30, h = pc == null ? '' : `<div class="moh">Zelfvoorzienend</div><div class="mzw"><div class="mzr"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="8"/><circle cx="38" cy="38" r="30" fill="none" stroke="#6fe39a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pc / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/></svg><b class="num">${pc}<small>%</small></b></div><div class="mzx"><span><i></i>${fmt(own, 1)} kWh zon</span><span><i class="n"></i>${fmt(g.imp, 1)} kWh net</span></div></div>`;
@@ -1916,7 +1916,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '404';
+const CARD_VERSION = '405';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
