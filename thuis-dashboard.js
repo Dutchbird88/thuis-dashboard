@@ -1774,7 +1774,8 @@ class ZonnepanelenCard extends HTMLElement {
     // v305 (telefoon): na zonsondergang de verwachting voor morgen in plaats van die van vandaag
     const tmrw = matchMedia('(max-width: 600px)').matches && this._hass?.states[this._config.sun]?.state === 'below_horizon' && fc0.tomorrow != null;
     const tk = this._todayKwh(), lab = this.shadowRoot.querySelector('.tday .th .ml');
-    if (lab && lab.textContent !== 'Vandaag') lab.textContent = 'Vandaag';
+    // v401: weer het dagtotaal naast "Vandaag" en rechts de verwachting (zoals vóór v399)
+    if (lab) { const h = `Vandaag${tk != null ? ` <b class="num tdk">${fmt(tk, 1)} kWh</b>` : ''}`; if (lab.innerHTML !== h) lab.innerHTML = h; }
     // v400 (telefoon): tegels Vandaag opgewekt (met gisteren) en Zelfvoorzienend (ring); eigen gebruik = opgewekt − teruggeleverd, tegenover afname van het net
     const dst = this.$('mDst'); if (dst) dst.hidden = true;
     const oT = this.$('mOpt'), zT = this.$('mZt');
@@ -1784,8 +1785,8 @@ class ZonnepanelenCard extends HTMLElement {
     if (zT) { const g = this._gDay, own = tk != null && g ? Math.max(0, tk - g.exp) : null, tot = own != null ? own + g.imp : 0, pc = tot > 0 ? Math.round(own / tot * 100) : null;
       const C = 2 * Math.PI * 30, h = pc == null ? '' : `<div class="moh">Zelfvoorzienend</div><div class="mzw"><div class="mzr"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="8"/><circle cx="38" cy="38" r="30" fill="none" stroke="#6fe39a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pc / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/></svg><b class="num">${pc}<small>%</small></b></div><div class="mzx"><span><i></i>${fmt(own, 1)} kWh zon</span><span><i class="n"></i>${fmt(g.imp, 1)} kWh net</span></div></div>`;
       if (zT.innerHTML !== h) zT.innerHTML = h; zT.hidden = !h; }
-    this.$('peak').innerHTML = phone ? '' : ((peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
-      + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : ''));
+    this.$('peak').innerHTML = (phone ? '' : (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : ''))
+      + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
 
     el.innerHTML = `
       <svg width="${W}" height="${H}">
@@ -1910,7 +1911,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '400';
+const CARD_VERSION = '401';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
