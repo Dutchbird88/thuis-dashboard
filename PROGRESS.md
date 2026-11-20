@@ -270,6 +270,7 @@
 | v397 | Telefoon, Kamers: kamerkaarten die uit staan in de kleur en rand van de tegels op Nu (`#132036`→`#0f1828`, rand `rgba(130,170,255,.12)`); lamp- en rolluiktegels blijven zoals ze waren. |
 | v398 | Telefoon, Kamers: de statusregel toont alleen wat afwijkt: "1 aan" bij licht, geen "Uit" en geen "Open" (rolluiken) meer, een open raam of deur oranje vooraan (`.ko`); de helderheidsbalk en het opzij vegen om te dimmen zijn weg (geen `.ksl`/`.sl` op de telefoon). Computer ongewijzigd. |
 | v399 | Telefoon, Nu: Vandaag toont rechtsboven "3,8 kWh opgewekt" (geen verwacht/teruggeleverd/nu meer), daaronder "Zelfvoorzienend vandaag" met groen percentage, balk (groen = eigen zon, paars = net) en kWh van zon en net (opgewekt − teruggeleverd tegenover afname uit `_fetchGridDay`). Met de vinger door de grafiek schuiven (pointer-events, `touch-action: pan-y`). Computer ongewijzigd. |
+| v400 | Telefoon, Nu (ontwerp van de gebruiker): Mijn huis zonder kopje; daaronder twee tegels: "Vandaag opgewekt" (kWh, label +/−% t.o.v. gisteren, gisteren in kWh) en "Zelfvoorzienend" (groene ring met %, kWh zon/net). De zelfvoorzienend-balk en "opgewekt" in de kop van Vandaag zijn weg; schuiven door de grafiek blijft. Computer ongewijzigd. |
 
 ## Volgende stappen
 
