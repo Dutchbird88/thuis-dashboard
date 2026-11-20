@@ -282,6 +282,7 @@
 | v409 | Telefoon, Nu: kop nog compacter (status direct onder de titel, regelhoogte 16 px, 12 px tot de tegel). |
 | v410 | Telefoon, Nu: status dichter onder de titel (`#date` margin-top −3 px). |
 | v411 | Telefoon, Nu: status 's avonds "Panelen in rust" (was "In rust"). |
+| v412 | Telefoon, Nu: iets meer ruimte tussen titel en status (3 px) en een witregel (24 px) tot de eerste kaart. |
 
 ## Volgende stappen
 
