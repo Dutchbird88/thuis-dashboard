@@ -1887,7 +1887,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '397';
+const CARD_VERSION = '398';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -1981,6 +1981,8 @@ const TIDY = `
   :host(:not([data-th])) .kr.kr.kr.kr:not(.lit), :host(:not([data-th])) .lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, color-mix(in srgb, #ffffff 4%, #132036), color-mix(in srgb, #ffffff 4%, #0f1828)) !important; }
   /* v381: tegels die uit staan krijgen dezelfde blauwgrijze rand als thermostaat, afval en de apparaatkaarten (actieve tegels houden hun eigen rand) */
   :host(:not([data-th])) .lt.lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv.cv:not(.on), :host(:not([data-th])) .kr.kr.kr.kr.kr:not(.lit) { border: 1px solid rgba(115,155,215,.30) !important; }
+  /* v398: open raam/deur op de kamerkaart */
+  .kr .ln .ko { color: #f5a35b !important; font-weight: 600; } .kr .ln .ko i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #f59e4b; box-shadow: 0 0 6px #f59e4b; margin-right: 6px; vertical-align: 1px; }
   /* v397: kamerkaarten die uit staan in de kleur en rand van de tegels op Nu (gebruiker) */
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr:not(.lit) { background: linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(130,170,255,.12) !important; }
   /* v331: apparaat klaar (was, vaat, oven) = zacht groen (keuze B) */
@@ -7442,9 +7444,13 @@ class ThuisCard extends HTMLElement {
     if (this._kOpt) { rooms.forEach((rm) => { if (opt[rm.i] != null && (rm.on > 0) === opt[rm.i]) delete opt[rm.i]; }); if (!Object.keys(opt).length) this._kOpt = null; }
     const BL = (p) => mBlind(p), fmtT = (v) => fmt(v, 1);
     const row = (rm) => {
-      const lit = rm.lights.length && (opt[rm.i] ?? rm.on > 0), l1 = rm.lights.length ? (lit ? `<span class="y">${MBULB}${opt[rm.i] != null ? '' : rm.on}${opt[rm.i] == null && this.hasAttribute('data-gl') && this._mq?.matches ? ' aan' : ''}</span>` : `<span>${MBULB}Uit</span>`) : '';
+      // v398 (telefoon): alleen wat afwijkt: "2 aan" bij licht, geen "Uit"/"Open", een open raam of deur oranje vooraan
+      const ph = !!this._mq?.matches;
+      const lit = rm.lights.length && (opt[rm.i] ?? rm.on > 0), l1 = rm.lights.length ? (lit ? `<span class="y">${MBULB}${opt[rm.i] != null ? '' : rm.on}${opt[rm.i] == null && (ph || this.hasAttribute('data-gl')) ? ' aan' : ''}</span>` : ph ? '' : `<span>${MBULB}Uit</span>`) : '';
       const l2 = [];
-      if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? (rm.apps.length && dn[0].pos > 1 && !dn[0].moving ? `${100 - dn[0].pos}%` : this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase())) : `${dn.length} dicht`}</span>` : `<span>${BL(100)}Open</span>`); }
+      if (ph) { const op = (rm.sensors || []).filter((x) => x.on && (x.kind === 'window' || x.kind === 'door')), w = op.filter((x) => x.kind === 'window').length, d = op.length - w;
+        if (op.length) l2.push(`<span class="ko"><i></i>${w ? (w > 1 ? `${w} ramen` : 'Raam') : (d > 1 ? `${d} deuren` : 'Deur')}${w && d ? ' en deur' : ''} open</span>`); }
+      if (rm.covers.length) { const dn = rm.covers.filter((c) => c.pos < 99); l2.push(dn.length ? `<span class="b">${BL(dn.length === 1 ? dn[0].pos : 0)}${rm.covers.length === 1 ? (rm.apps.length && dn[0].pos > 1 && !dn[0].moving ? `${100 - dn[0].pos}%` : this._coverTxt(dn[0]).replace(/^./, (c) => c.toUpperCase())) : `${dn.length} dicht`}</span>` : ph ? '' : `<span>${BL(100)}Open</span>`); }
       // apparaat: Rounded-icoon en wat er gebeurt ("Wast nog 42 min")
       const AP = { was: ['washer', 1, 'Wast', 'Wasmachine'], dish: ['dish', 1, 'Vaatwasser', 'Vaatwasser'], oven: ['ovenX', 'run', 'Oven', 'Oven'] };
       rm.apps.forEach((a) => {
@@ -7457,8 +7463,8 @@ class ThuisCard extends HTMLElement {
       // helderheid: gemiddelde van de lampen die aan zijn (of wat je net hebt ingesteld)
       const onL = rm.lights.filter((x) => x.state === 'on'), bo = this._kBri?.[rm.i];
       const bri = bo && Date.now() - bo.t < 8000 ? bo.v : onL.length ? Math.round(onL.reduce((a, x) => a + (x.attributes.brightness ?? 255), 0) / onL.length / 2.55) : 100;
-      const sl = lit ? `<div class="ksl" data-i="${rm.i}" role="slider" aria-label="Helderheid ${rm.name}" aria-valuenow="${bri}"><i style="width:${bri}%"></i><b style="left:${Math.max(bri, 2)}%"></b></div>` : '';
-      return `<div class="kr${lit ? ' lit sl' : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}${sl}</div>`;
+      const sl = lit && !ph ? `<div class="ksl" data-i="${rm.i}" role="slider" aria-label="Helderheid ${rm.name}" aria-valuenow="${bri}"><i style="width:${bri}%"></i><b style="left:${Math.max(bri, 2)}%"></b></div>` : '';
+      return `<div class="kr${lit ? (ph ? ' lit' : ' lit sl') : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}${sl}</div>`;
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
     const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f);

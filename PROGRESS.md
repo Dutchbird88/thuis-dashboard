@@ -268,6 +268,7 @@
 | v395 | Telefoon, Nu: de panelen op het losse huis als raster van losse vakken (`photo.house_grid`, standaard 3 × 2; nummers uit `photo.panels` of `photo.house_numbers`), elk vak gloeit oranje zoals zijn paneeltegel (`--p`), met lichte randjes, zoals vroeger op de foto. |
 | v396 | Telefoon, Nu: zonder `house_panels` toont Mijn huis dezelfde foto als de computer (`photoSrc`: `detail`, bij scènetekeningen de standaardfoto) met dezelfde paneelvlakken uit `photo.panels` en dezelfde gloed (`_mPhoto`, `#mPs`, zonder labels). |
 | v397 | Telefoon, Kamers: kamerkaarten die uit staan in de kleur en rand van de tegels op Nu (`#132036`→`#0f1828`, rand `rgba(130,170,255,.12)`); lamp- en rolluiktegels blijven zoals ze waren. |
+| v398 | Telefoon, Kamers: de statusregel toont alleen wat afwijkt: "1 aan" bij licht, geen "Uit" en geen "Open" (rolluiken) meer, een open raam of deur oranje vooraan (`.ko`); de helderheidsbalk en het opzij vegen om te dimmen zijn weg (geen `.ksl`/`.sl` op de telefoon). Computer ongewijzigd. |
 
 ## Volgende stappen
 
