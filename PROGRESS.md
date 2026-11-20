@@ -264,6 +264,7 @@
 | v391 | Nu: een `</div>` te veel na de tegel Mijn huis (sinds v386) sloot het raster te vroeg af, waardoor de kaarten eronder zonder tussenruimte tegen elkaar stonden. Weggehaald: weer 10 px tussen de kaarten; computer weer gelijk aan v385. |
 | v392 | Telefoon, Nu: panelen weer in de oude stijl (oranje tegels met rasterlijnen en gloed naar vermogen, oranje label bij een zwak paneel); de indeling per dakkant blijft. |
 | v393 | Nu: het venster bij tikken op het huis gebruikt `photo.detail`, en bij ingestelde scènetekeningen de standaardfoto (waar de paneelvlakken bij horen) in plaats van de dagtekening; lukt die niet, dan de dagtekening zonder paneelvlakken (die lagen ernaast). |
+| v394 | Telefoon, Nu: het huis in Mijn huis is niet meer aanklikbaar. Nieuw `photo.house_panels` (hoeken in % van het plaatje): de panelen op het losse huis lichten amber op, sterker naarmate het vermogen hoger is (`#mHp`, `--hp` = vermogen / `max_power`); zonder opwek uit. |
 
 ## Volgende stappen
 

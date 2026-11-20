@@ -574,6 +574,10 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mscrow b.zero, .znu.scn .mtop b.zero { opacity: .4; }
   .znu.scn .mgauges { display: none; } .znu.scn .mtop .st b { display: block; }
   .znu .tday .ml .tdk { font-weight: 500; color: var(--muted); font-size: .8em; margin-left: 6px; }
+  /* v394: panelen op het losse huis lichten op naar het vermogen (photo.house_panels, in % van het plaatje) */
+  .znu .mhp { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .znu .mhp polygon { fill: #ffc24a; fill-opacity: calc(.1 + var(--hp, 0) * .5); stroke: #ffe08a; stroke-width: .5; stroke-opacity: calc(.3 + var(--hp, 0) * .7); filter: drop-shadow(0 0 2px rgba(255,190,80,.9)); transition: fill-opacity 1s; }
+  .znu .mhp polygon.off { fill-opacity: 0; stroke-opacity: 0; filter: none; }
   /* v390: dagcijfers (Vandaag, Opbrengst), panelen per dakkant */
   .znu .mdst.ml.ml, .znu .msum.ml.ml { display: flex; gap: 20px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
   .znu .mdst b, .znu .msum b { display: block; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; } .znu .mdst b small, .znu .msum b small { font-size: 12px; font-weight: 500; color: var(--muted); }
@@ -604,7 +608,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .th .label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
   .znu .th .aside { font-size: 12px; text-align: right; }
   .znu .mhg { display: grid; grid-template-columns: minmax(0, 1fr) 1px 132px; gap: 12px; align-items: center; }
-  .znu .mimg { cursor: pointer; } .znu .mimg img { display: block; width: 100%; max-height: 190px; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .znu .mimg { position: relative; align-self: center; } .znu .mimg img { display: block; width: 100%; max-height: 190px; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
   .znu .msep { align-self: stretch; background: rgba(130,170,255,.12); margin: 6px 0; }
   .znu .mvals { display: flex; flex-direction: column; }
   .znu .mv { display: flex; align-items: center; gap: 10px; cursor: pointer; } .znu .mv > svg { width: 28px; height: 28px; flex: none; }
@@ -922,7 +926,7 @@ class ZonnepanelenCard extends HTMLElement {
           <!-- telefoon: mijn huis met de energiestroom, en twee meters -->
           <div class="tile mob mhome">
             <div class="th"><span class="label">Mijn huis</span><span class="aside" id="mSt"></span></div>
-            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.house || c.photo.image}" alt=""></div><div class="msep"></div>
+            <div class="mhg"><div class="mimg" id="mImg"><img src="${c.photo.house || c.photo.image}" alt="">${Array.isArray(c.photo.house_panels) && c.photo.house_panels.length > 2 ? `<svg class="mhp" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="mHp" points="${c.photo.house_panels.map((q) => q.join(',')).join(' ')}"/></svg>` : ''}</div><div class="msep"></div>
               <div class="mvals">
                 <div class="mv" data-e="${c.solar_power}"><svg viewBox="0 0 100 100"><use href="#gSun"/></svg><div><b class="num" id="mSun">—</b><span>Zonnepanelen</span></div></div>
                 <i class="mcon" id="mc1"></i>
@@ -1066,7 +1070,7 @@ class ZonnepanelenCard extends HTMLElement {
     psvg.addEventListener('pointerleave', () => ptip.classList.remove('on'));
     // telefoon: tik op het huis = foto met de panelen als venster; tik ernaast = sluiten
     const wrap = this.shadowRoot.querySelector('.wrap');
-    this.$('mImg').addEventListener('click', () => wrap.classList.add('mphoto'));
+    // v394: het huis in Mijn huis is niet meer aanklikbaar (gebruiker)
     this.$('mInv').addEventListener('click', () => wrap.classList.toggle('mdet'));
     this.shadowRoot.querySelectorAll('#dseg button').forEach((b) => b.addEventListener('click', () => {
       this._rng = b.dataset.r; this.shadowRoot.querySelectorAll('#dseg button').forEach((x) => x.classList.toggle('on', x === b));
@@ -1359,6 +1363,7 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
     set('mSt', this.$('frontSum').innerHTML); this._fetchGridDay();
+    const hp = this.$('mHp'); if (hp) { hp.style.setProperty('--hp', clamp((pv || 0) / (c.max_power || 1), 0, 1).toFixed(2)); hp.classList.toggle('off', !(pv > 5)); }
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
     if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); }
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
@@ -1851,7 +1856,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '393';
+const CARD_VERSION = '394';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
