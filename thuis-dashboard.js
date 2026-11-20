@@ -574,6 +574,16 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu.scn .mscrow b.zero, .znu.scn .mtop b.zero { opacity: .4; }
   .znu.scn .mgauges { display: none; } .znu.scn .mtop .st b { display: block; }
   .znu .tday .ml .tdk { font-weight: 500; color: var(--muted); font-size: .8em; margin-left: 6px; }
+  /* v390: dagcijfers (Vandaag, Opbrengst), panelen per dakkant */
+  .znu .mdst.ml.ml, .znu .msum.ml.ml { display: flex; gap: 20px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
+  .znu .mdst b, .znu .msum b { display: block; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; } .znu .mdst b small, .znu .msum b small { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .znu .mpanels.mob.mob { display: block; } .znu .mside { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 2px 6px; } .znu .mpg + .mside { margin-top: 10px; }
+  .znu .mpg { display: grid; grid-template-columns: repeat(var(--mc, 5), minmax(0, 1fr)); gap: 6px; }
+  .znu .mpanels .panel.panel { height: 60px; border-radius: 12px; background: #172238; border: 1px solid rgba(115,155,215,.16); box-shadow: none; }
+  .znu .mpanels .panel::before { display: none; }
+  .znu .mpanels .panel::after { top: auto; height: calc(var(--p) * 100%); opacity: 1; background: linear-gradient(180deg, rgba(255,181,71,.45), rgba(255,181,71,.12)); transition: height 1s; }
+  .znu .mpanels .pn { font-size: 10.5px; color: var(--muted); font-weight: 500; } .znu .mpanels .pw { left: 7px; right: auto; text-align: left; bottom: 7px; text-shadow: none; }
+  .znu .mpanels .panel.low { border: 1.5px solid rgba(245,158,75,.75); box-shadow: none; } .znu .mpanels .dev { background: none; color: #f5a35b; padding: 0; top: 5px; right: 6px; }
   .znu.scn .mscrow { display: flex; justify-content: space-between; padding: 0 12px 4px; color: #fff; } .znu.scn .mscrow .rr { text-align: right; }
 }
 @media (max-width: 600px) {
@@ -1015,6 +1025,7 @@ class ZonnepanelenCard extends HTMLElement {
 
           <div class="tile s8 tday">
             <div class="th"><span class="label"><span class="dl">Vermogen vandaag</span><span class="ml">Vandaag</span></span><span class="aside" id="peak"></span></div>
+            <div class="mdst ml" id="mDst"></div>
             <div class="chart" id="chartToday"></div>
           </div>
 
@@ -1028,7 +1039,7 @@ class ZonnepanelenCard extends HTMLElement {
           <div class="tile s12 tpan">
             <div class="th"><span class="label"><span class="dl">Panelen &amp; omvormers</span><span class="ml">Panelen</span></span><span class="aside dl" id="panelsNote"></span><span class="aside ml" id="mPanSum"></span></div>
             <div class="alert" id="alert" hidden></div>
-            <div class="mpanels mob">${c.inverters.flatMap((inv) => inv.panels).sort((a, b) => a.n - b.n).map((p) => `<div class="panel" data-mp="${p.entity}" data-e="${p.entity}"><div class="pn">${p.n}</div><div class="pw num">—</div></div>`).join('')}</div>
+            <div class="mpanels mob" style="--mc:${Math.min(6, Math.max(1, ...Object.values(sides).map((v) => v.flatMap((i) => i.panels).length)))}">${Object.entries(sides).sort((a, b) => Math.min(...a[1].map(first)) - Math.min(...b[1].map(first))).map(([sd, invs]) => `<div class="mside">${c.sides[sd] || sd}</div><div class="mpg">${invs.flatMap((inv) => inv.panels).sort((a, b) => a.n - b.n).map((p) => `<div class="panel" data-mp="${p.entity}" data-e="${p.entity}"><div class="pn">${p.n}</div><div class="pw num">—</div></div>`).join('')}</div>`).join('')}</div>
             <div class="minv mob" id="mInv"><span>Omvormers<span id="mInvT"></span></span><span class="chev">›</span><span class="ist" id="mIst"><i></i><span></span></span></div>
             <div class="sides">${sidesHtml}</div>
           </div>
@@ -1352,7 +1363,7 @@ class ZonnepanelenCard extends HTMLElement {
   _updMob(pv, grid, home, today, fc, best, speed) {
     const c = this._config, set = (id, html) => { const el = this.$(id); if (el && el.innerHTML !== html) el.innerHTML = html; };
     const pw = (w) => { if (w == null) return '—'; const f = fmtPower(Math.abs(w)); return `${f.v}<small>${f.u}</small>`; };
-    set('mSt', this.$('frontSum').innerHTML);
+    set('mSt', this.$('frontSum').innerHTML); this._fetchGridDay();
     set('mSun', pw(pv)); set('mHomeW', pw(home)); set('mGrid', pw(grid));
     if (this.$('mScn') && this.$('mScn').closest('.scn')) { this._updScene(pv, grid, today, speed); }
     const exporting = grid != null && grid < -5, importing = grid != null && grid > 5;
@@ -1715,7 +1726,12 @@ class ZonnepanelenCard extends HTMLElement {
     // v305 (telefoon): na zonsondergang de verwachting voor morgen in plaats van die van vandaag
     const tmrw = matchMedia('(max-width: 600px)').matches && this._hass?.states[this._config.sun]?.state === 'below_horizon' && fc0.tomorrow != null;
     const tk = this._todayKwh(), lab = this.shadowRoot.querySelector('.tday .th .ml');
-    if (lab) { const h = `Vandaag${tk != null ? ` <b class="num tdk">${fmt(tk, 1)} kWh</b>` : ''}`; if (lab.innerHTML !== h) lab.innerHTML = h; }
+    if (lab && lab.textContent !== 'Vandaag') lab.textContent = 'Vandaag';
+    // v390 (telefoon): dagcijfers boven de grafiek: opgewekt, nu, teruggeleverd
+    const dst = this.$('mDst');
+    if (dst) { const gx = this._gDay?.exp, pwN = live != null ? fmtPower(Math.max(0, live)) : null;
+      const h = `<div><b class="num">${tk != null ? fmt(tk, 1) : '—'} <small>kWh</small></b>opgewekt</div>${pwN ? `<div><b class="num">${pwN.v} <small>${pwN.u}</small></b>nu</div>` : ''}${gx != null ? `<div><b class="num">${fmt(gx, 1)} <small>kWh</small></b>teruggeleverd</div>` : ''}`;
+      if (dst.innerHTML !== h) dst.innerHTML = h; }
     this.$('peak').innerHTML = (peak && peak.pk > 0 ? `<span class="pkinfo">Piek <b class="num">${fmt(peak.pk)} W</b> om ${fmtTime(peak.t)}</span>` : '')
       + (tmrw ? `<span class="fcleg">morgen <b class="num">${fmt(fc0.tomorrow, 1)} kWh</b></span>` : fcLine ? `<span class="fcleg"><i></i>verwacht${fcToday != null ? ` <b class="num">${fmt(fcToday, 1)} kWh</b>` : ''}</span>` : '');
 
@@ -1768,6 +1784,7 @@ class ZonnepanelenCard extends HTMLElement {
       : rng === 'week' ? cal(mon, dayAdd(mon, 6)) : cal(new Date(d0.getFullYear(), d0.getMonth(), 1).getTime(), new Date(d0.getFullYear(), d0.getMonth() + 1, 0).getTime());
     if (!days.length) { el.innerHTML = ''; return; }
     const N = days.length;
+    if (phone && rng === 'week') pad.l = 4; // v390: week zonder as, de waarden staan boven de staven
     const top = Math.max(2, ...days.map((d) => d.v)), st0 = (top * 1.08) / 4, e10 = 10 ** Math.floor(Math.log10(st0)), f10 = st0 / e10;
     const ymax = window.matchMedia('(max-width: 600px)').matches ? 4 * e10 * [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((x) => x >= f10 - 1e-9) : niceMax(top);
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
@@ -1779,7 +1796,7 @@ class ZonnepanelenCard extends HTMLElement {
     const best = Math.max(...days.map((d) => d.v));
 
     let axes = '';
-    for (let i = 0; i <= 4; i++) {
+    for (let i = 0; i <= 4 && !(phone && rng === 'week'); i++) {
       const v = (ymax * i) / 4, y = Y(v).toFixed(1);
       axes += `<line class="gl" x1="${pad.l}" x2="${W - pad.r}" y1="${y}" y2="${y}"/>
         <text class="ax" x="${pad.l - 8}" y="${+y + 4}" text-anchor="end">${fmt(v, v % 1 ? 1 : 0)}</text>`;
@@ -1787,10 +1804,10 @@ class ZonnepanelenCard extends HTMLElement {
     let bars = '';
     days.forEach((d, i) => {
       const x = pad.l + i * band + (band - bw) / 2;
-      const h = Math.max(d.v > 0 ? 2 : 0, Y(0) - Y(d.v));
+      const h = Math.max(d.v > 0 ? 2 : phone && rng !== 'jaar' ? 4 : 0, Y(0) - Y(d.v)); // v390: lege dagen als laag streepje
       const isToday = i === lastI;
-      const fill = isToday ? 'url(#gbt)' : !phone && d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
-      bars += `<rect class="bar" data-i="${i}" x="${x.toFixed(1)}" y="${(Y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, bw / 2)}" fill="${fill}"/>`;
+      const fill = isToday ? 'url(#gbt)' : phone && !(d.v > 0) ? 'rgba(255,255,255,.07)' : !phone && d.v === best && best > 0 ? 'rgba(144,238,144,.9)' : 'rgba(144,238,144,.4)';
+      bars += `<rect class="bar" data-i="${i}" x="${x.toFixed(1)}" y="${(Y(0) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${phone ? Math.min(7, bw / 2, h / 2) : Math.min(4, bw / 2)}" fill="${fill}"/>`;
       if (rng === 'week' && d.v > 0) bars += `<text class="ax bv" x="${(x + bw / 2).toFixed(1)}" y="${(Y(0) - h - 6).toFixed(1)}" text-anchor="middle">${fmt(d.v, 1)}</text>`;
       if (rng === 'week' || (rng === 'jaar' && ((N - 1 - i) % 3 === 0)) || (rng === 'maand' && (phone ? i % 7 === 0 : (N - 1 - i) % 7 === 0 && (i === N - 1 || i < N - 5)))) {
         const lbl = rng === 'jaar' ? (isToday ? 'Nu' : new Date(d.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', ''))
@@ -1812,7 +1829,8 @@ class ZonnepanelenCard extends HTMLElement {
       </svg>
       <div class="tip"></div>`;
     const msum = this.$('msum');
-    if (msum) msum.innerHTML = `Totaal <b class="num">${fmt(days.reduce((s, d) => s + d.v, 0))} kWh</b> · gem. ${fmt(avg, 1)}${rng === 'jaar' ? ' per maand' : ' per dag'} · beste ${fmt(best, 1)}`;
+    // v390: drie cijfers boven de staven
+    if (msum) msum.innerHTML = `<div><b class="num">${fmt(days.reduce((s, d) => s + d.v, 0), rng === 'week' ? 1 : 0)} <small>kWh</small></b>${rng === 'week' ? 'deze week' : rng === 'maand' ? 'deze maand' : 'dit jaar'}</div><div><b class="num">${fmt(avg, 1)}</b>gem. per ${rng === 'jaar' ? 'maand' : 'dag'}</div><div><b class="num">${fmt(best, 1)}</b>beste ${rng === 'jaar' ? 'maand' : 'dag'}</div>`;
 
     const svg = el.querySelector('svg'), tip = el.querySelector('.tip');
     const rects = [...el.querySelectorAll('.bar')];
@@ -1838,7 +1856,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '389';
+const CARD_VERSION = '390';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
