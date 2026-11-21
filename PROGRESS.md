@@ -291,6 +291,7 @@
 | v418 | Telefoon, laadkaart naar het ontwerp van de gebruiker: getekende groene Seal van voren met breed dak en wallbox (`EVSEAL_ON`/`EVSEAL_OFF`, verlopen `evs*`), gloeiende rand en kabel met lichtpuls tijdens laden, grond-gloed; icoon 76 px; tijd lichtblauw; percentage 30 px. |
 | v419 | Telefoon, kamervenster met de laadpaal (Oprit): alleen de nieuwe laadkaart met de knoppen Laden/Pauze/Stop; de oude opmaak stond er dubbel boven (`.evone .was.xchg:has(> .wx)`). |
 | v420 | Telefoon, laadkaart: getekende Seal standaard in mint (lichte mintgrijze lak); `car_color: mint | wit | groen` (`evPaint`/`EVPAINT`). |
+| v421 | Telefoon, laadkaart: Seal opnieuw getekend naar foto's van de gebruiker (smalle scherpe koplampen met ledlijn, puntige inlaten met V-lichtstrepen, zwart glazen dak, dunnere stijlen, spoiler); laadkabel loopt achter de auto de flank in; onder de naam "8 u 44 resterend" (zoals de wasmachine). |
 
 ## Volgende stappen
 
