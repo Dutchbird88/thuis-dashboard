@@ -222,7 +222,7 @@ Verdere regels:
 - **Auto verversen** (`_carRefresh`): druk op `button.byd_seal_geforceerd_ophalen`, maar alleen als de auto aan de laadpaal hangt:
   - bij het openen van de app of als de app weer zichtbaar wordt, hooguit 1x per 2 min (`thuis-auto-ververst`);
   - elke 5 min tijdens het laden.
-- **Laadkaart op Thuis (telefoon, v413; v417: icoon = huidige auto met bliksem + laadkabel aan de zijkant met lichtpulsen (wallbox uit v416 weer weg), 44 px zoals de wasmachine; label `#12B5A2`, pil Auto = actieradius via `_carRange` zolang de kaart in beeld is):** `_evWx` = `wxCardH` (klasse `.wx.evx`, teal; `.off` grijs; v414: onder de naam "Nog X", geen "Laden · Thuis"; niet `.ev`, die klasse is van de agenda), huidige `RIC`-auto met twee ringen uit de bliksem + gloed (optie B uit bewegende mockup); naam `car_name` of apparaatnaam van `car_battery` (geen VIN). De oude opmaak hieronder geldt nog op de computer.
+- **Laadkaart op Thuis (telefoon, v413; v418: icoon = getekende groene Seal van voren met wallbox naar het ontwerp van de gebruiker (`EVSEAL_ON`/`EVSEAL_OFF`, 76 px, gloeiende rand en kabel met lichtpuls), tijd lichtblauw, percentage 30 px; label `#12B5A2`, pil Auto = actieradius via `_carRange` zolang de kaart in beeld is):** `_evWx` = `wxCardH` (klasse `.wx.evx`, teal; `.off` grijs; v414: onder de naam "Nog X", geen "Laden · Thuis"; niet `.ev`, die klasse is van de agenda), huidige `RIC`-auto met twee ringen uit de bliksem + gloed (optie B uit bewegende mockup); naam `car_name` of apparaatnaam van `car_battery` (geen VIN). De oude opmaak hieronder geldt nog op de computer.
 - **Laadkaart op Thuis:**
   - tik opent het kamerpaneel met de laadpaal en scrolt ernaartoe;
   - vegen verbergt de kaart;
