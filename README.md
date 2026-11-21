@@ -120,6 +120,15 @@ photo:
 
 Afname en teruglevering van vandaag komen uit het Energie-dashboard van Home Assistant. Lukt dat niet, geef dan zelf de meters op met `grid_import` en `grid_export` (totaaltellers in kWh). Zonder `scene: true` (of zonder `dusk` en `night`) staat de tegel "Mijn huis": het huis met rechts zon, huisverbruik en net.
 
+### Laadkaart (telefoon)
+
+Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het vermogen en wanneer de accu vol is. Als naam gebruikt de kaart de naam van het apparaat van de accusensor. Een eigen naam kan ook:
+
+```yaml
+- type: custom:thuis-card
+  car_name: Mijn auto
+```
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

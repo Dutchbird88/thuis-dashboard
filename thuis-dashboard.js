@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '412';
+const CARD_VERSION = '413';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4420,8 +4420,8 @@ const HPSTYLE = `
 /* v367: wasmachinekaart (telefoon), het voorbeeld van de gebruiker nagemaakt: diep donkerblauw met schuine lichtinval rechtsboven; links icoon, "Wasmachine" (schuin), programma, groot de resterende tijd; rechts effen statuslabel + klokregel; balk over de hele breedte */
 .wx { display: none; }
 @media (max-width: 600px) {
-  #was#was.was:has(.wx), #dish#dish.was:has(.wx), #pic#pic.was:has(.wx), #oven#oven.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  #was.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), #pic.was:has(.wx) > :not(.wx), #oven.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
+  #was#was.was:has(.wx), #evc#evc.was:has(.wx), #dish#dish.was:has(.wx), #pic#pic.was:has(.wx), #oven#oven.was:has(.wx), .mstack > .was[data-k].was.was:has(> .wx) { padding: 12px 19px 10px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), radial-gradient(50% 70% at 0% 0%, rgba(130,150,185,.06), rgba(130,150,185,0) 70%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #was.was:has(.wx) > :not(.wx), #evc.was:has(.wx) > :not(.wx), #dish.was:has(.wx) > :not(.wx), #pic.was:has(.wx) > :not(.wx), #oven.was:has(.wx) > :not(.wx), .mstack > .was[data-k]:has(> .wx) > :not(.wx) { display: none !important; } /* v372: ook de kopie in het kamervenster */
   .was .wx { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 14px; align-items: center; }
   .wx .wxi svg { width: 44px; height: 52px; display: block; }
   .wx .wxm { min-width: 0; } .wx .wxm b { display: block; font-size: 16px; font-weight: 700; font-style: italic; letter-spacing: -.01em; color: #F5F7FC; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -4445,6 +4445,7 @@ const HPSTYLE = `
   /* v382: oven in warm oranje; "koelt af" niet meer op de telefoon (de computer houdt de oude kaart) */
   .wx.ov .pill.pill { background: #E8772E; } .wx.ov .wxb i { background: linear-gradient(90deg, #FFC48A, #E8772E); }
   #oven#oven.was.cool { display: none !important; }
+  .wx.ev .pill.pill { background: #14a394; } .wx.ev .wxm em { color: #5ee1d0; } .wx.ev .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.ev.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.ev.off .wxm em { color: #A3B0C5; } .wx.ev.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
@@ -6216,11 +6217,28 @@ class ThuisCard extends HTMLElement {
     const pic = `<svg class="xi" viewBox="34 0 152 74"><g transform="translate(40 10) scale(.76)">${RIC.draw('car', live ? 'teal' : 'on').replace(/url\(#g-green\)/g, 'url(#g-teal)')}</g>
       <rect x="148" y="6" width="32" height="50" rx="10" fill="url(#g-white)"/><rect x="155.5" y="14" width="17" height="6.5" rx="3.2" fill="${live ? '#5ee1d0' : '#8a94a6'}"/><circle cx="163" cy="37" r="5.5" fill="url(#g-metal)"/><rect x="158" y="56" width="10" height="14" rx="3" fill="url(#g-metal)"/>
       <path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${live ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
-    const html = `<div class="xr"><div class="xl"><div class="xtop"><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xnx"><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`;
+    const html = `<div class="xr"><div class="xl"><div class="xtop"><div class="xbig">${pct != null ? `${pct}<small>%</small>` : '—'}</div><div class="xnx"><b>${ttl}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="xk">${live ? `${fmt(kw, 1)} kW${rem != null ? ` · nog ${dur(rem)}` : ''}` : starting ? 'wacht op vermogen…' : 'Aangesloten'}</div></div>${pic}</div><div class="bar"><i style="width:${pct ?? 0}%"></i></div>`
+      + this._evWx(live, starting, paused, pct, kw, rem, sched && /^\d\d:\d\d$/.test(st0) ? st0 : '');
     const cls = `was xchg ${live ? 'evon' : 'evwait'}`, key = cls + html;
     if (box._key === key) return;
     box._key = key; box.className = cls; box.hidden = false; box.innerHTML = html;
     this._applyHidden();
+  }
+
+  // v413: telefoonkaart voor laden in de opbouw van wasmachine/vaatwasser (ontwerp gebruiker): huidige auto-icoon, uit de bliksem gaan ringen (optie B), grond gloeit; naam = car_name, anders apparaatnaam van de accusensor
+  _evWx(live, starting, paused, pct, kw, rem, start) {
+    const c = this._config, dev = this._hass?.devices?.[this._hass?.entities?.[c.car_battery]?.device_id];
+    let name = c.car_name || dev?.name_by_user || dev?.name || '';
+    if (!name || /^[A-HJ-NPR-Z0-9]{17}$/i.test(name.replace(/\s/g, ''))) name = 'Auto'; // geen VIN tonen
+    const on = live || starting;
+    const icon = `<svg viewBox="4 6 94 90" style="overflow:visible"><defs><radialGradient id="evxg"><stop offset="0" stop-color="#5ee1d0" stop-opacity=".6"/><stop offset="1" stop-color="#5ee1d0" stop-opacity="0"/></radialGradient></defs>${on ? '<ellipse cx="50" cy="90" rx="44" ry="8" fill="url(#evxg)"><animate attributeName="opacity" values=".3;1;.3" dur="2s" repeatCount="indefinite"/></ellipse>' : ''}`
+      + RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, on ? 'url(#g-teal)' : 'url(#g-gray)')
+      + (on ? [0, 1].map((b) => `<circle cx="80" cy="22" r="14" fill="none" stroke="#5ee1d0" stroke-width="2.5" opacity="0"><animate attributeName="r" values="14;30" dur="2s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2s" begin="${b}s" repeatCount="indefinite"/></circle>`).join('') : '') + '</svg>';
+    const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Aangesloten';
+    const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
+    const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
+    const big = pct != null ? `<span class="n">${pct}%</span>${live && rem != null ? `<small>± ${wxDur(rem * 60)}</small>` : ''}` : '';
+    return wxCardH(name, icon, `ev ${on ? 'run' : 'off'}`, ttl, `${ttl} · Thuis`, big, lines.join('</span><span>'), pct);
   }
 
   // accu en laadtijd actueel houden: bij openen van de app (en elke 5 min tijdens het laden) de auto laten verversen
