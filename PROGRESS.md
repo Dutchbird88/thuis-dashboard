@@ -287,6 +287,7 @@
 | v414 | Telefoon, laadkaart rustiger: onder de naam "Nog 8 u 44" i.p.v. "Laden · Thuis", groot alleen het percentage; klasse `.wx.evx` (de klasse `.ev` van de agenda gaf extra ruimte), kaart even hoog als de wasmachine. |
 | v415 | Telefoon, laadkaart: icoon weer auto + laadpaal met lichtpuls door de kabel (`.evp`), kolom 56 px; label helderder teal `#12B5A2`; pil Auto toont met laadkaart in beeld de actieradius (`_carRange`, `car_range` of sensor in km bij het apparaat van `car_battery`). |
 | v416 | Telefoon, laadkaart: icoon = auto zonder bliksem-rondje + kleine wallbox dicht ernaast; tijdens laden stromen lichtbolletjes (`animateMotion`) door de kabel naar de laadpoort, die oplicht (optie B uit bewegende mockup). |
+| v417 | Telefoon, laadkaart: icoon = huidige auto met bliksem + laadkabel aan de zijkant met lichtpulsen (optie A); wallbox weg; icoon even groot als de wasmachine (44 px kolom), tekst lijnt uit. |
 
 ## Volgende stappen
 
