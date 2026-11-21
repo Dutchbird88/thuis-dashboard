@@ -127,6 +127,7 @@ Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het 
 ```yaml
 - type: custom:thuis-card
   car_name: Mijn auto
+  car_color: mint   # kleur van de getekende auto: mint (standaard), wit of groen
 ```
 
 Zolang de laadkaart in beeld is, toont de pil Auto bovenaan de actieradius. Die zoekt de kaart zelf (een sensor in km met range, bereik of actieradius bij je auto); geef anders `car_range: sensor.…` op.
