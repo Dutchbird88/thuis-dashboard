@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '415';
+const CARD_VERSION = '416';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6231,11 +6231,14 @@ class ThuisCard extends HTMLElement {
     let name = c.car_name || dev?.name_by_user || dev?.name || '';
     if (!name || /^[A-HJ-NPR-Z0-9]{17}$/i.test(name.replace(/\s/g, ''))) name = 'Auto'; // geen VIN tonen
     const on = live || starting;
-    // v415: auto + laadpaal met lichtpuls door de kabel (het effect van de oude kaart), even hoog als het wasmachine-icoon
-    const cab = 'M104 50c0 18-12 22-22 16';
-    const icon = `<svg viewBox="-2 6 120 86" style="overflow:visible"><g transform="translate(-2 8) scale(.84)">${RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, on ? 'url(#g-teal)' : 'url(#g-gray)')}</g>`
-      + `<rect x="92" y="14" width="24" height="66" rx="8" fill="url(#g-white)"/><rect x="97.5" y="21" width="13" height="5.5" rx="2.7" fill="${on ? '#5ee1d0' : '#8a94a6'}"/><circle cx="104" cy="44" r="4.5" fill="url(#g-metal)"/><rect x="99.5" y="80" width="9" height="10" rx="3" fill="url(#g-metal)"/>`
-      + `<path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${on ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
+    // v416: auto (zonder bliksem-rondje) met een kleine wallbox ernaast; tijdens laden stromen lichtbolletjes door de kabel naar de laadpoort, die oplicht
+    const cab = 'M87 51C90 70 83 80 76 72';
+    const carSvg = RIC.draw('car', 'on').replace(/<circle cx="80" cy="22" r="14"[^>]*\/?>(<\/circle>)?<path d="M82 13[\s\S]*?<\/path>/, '');
+    const icon = `<svg viewBox="-2 8 100 84" style="overflow:visible"><g transform="translate(-2 8) scale(.84)">${carSvg}</g>`
+      + `<rect x="80" y="28" width="15" height="24" rx="5" fill="url(#g-white)"/><rect x="83.5" y="32" width="8" height="3" rx="1.5" fill="${on ? '#5ee1d0' : '#8a94a6'}"/><circle cx="87.5" cy="43" r="2.6" fill="url(#g-metal)"/>`
+      + `<path d="${cab}" fill="none" stroke="#3a4558" stroke-width="4.4" stroke-linecap="round"/>`
+      + (on ? [0, 0.25, 0.5, 0.75].map((b) => `<circle r="2.4" fill="#8ff3e3"><animateMotion dur="1s" begin="-${b}s" repeatCount="indefinite" path="${cab}"/></circle>`).join('')
+        + '<circle cx="76" cy="72" r="3" fill="#5ee1d0"/><circle cx="76" cy="72" r="6.5" fill="#5ee1d0" opacity=".35"><animate attributeName="opacity" values=".1;.6;.1" dur=".9s" repeatCount="indefinite"/></circle>' : '') + '</svg>';
     const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Aangesloten';
     const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
     const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
