@@ -129,6 +129,8 @@ Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het 
   car_name: Mijn auto
 ```
 
+Zolang de laadkaart in beeld is, toont de pil Auto bovenaan de actieradius. Die zoekt de kaart zelf (een sensor in km met range, bereik of actieradius bij je auto); geef anders `car_range: sensor.…` op.
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

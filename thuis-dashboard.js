@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '414';
+const CARD_VERSION = '415';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4445,7 +4445,7 @@ const HPSTYLE = `
   /* v382: oven in warm oranje; "koelt af" niet meer op de telefoon (de computer houdt de oude kaart) */
   .wx.ov .pill.pill { background: #E8772E; } .wx.ov .wxb i { background: linear-gradient(90deg, #FFC48A, #E8772E); }
   #oven#oven.was.cool { display: none !important; }
-  .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; } .wx.evx .pill.pill { background: #14a394; } .wx.evx .wxm em { color: #5ee1d0; } .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
+  .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; } .wx.evx .pill.pill { background: #12B5A2; } .was .wx.evx { grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 10px; } .wx.evx .wxi svg { width: 56px; height: 52px; } .wx.evx .wxm em { color: #5ee1d0; } .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
@@ -6231,15 +6231,25 @@ class ThuisCard extends HTMLElement {
     let name = c.car_name || dev?.name_by_user || dev?.name || '';
     if (!name || /^[A-HJ-NPR-Z0-9]{17}$/i.test(name.replace(/\s/g, ''))) name = 'Auto'; // geen VIN tonen
     const on = live || starting;
-    const icon = `<svg viewBox="4 6 94 90" style="overflow:visible"><defs><radialGradient id="evxg"><stop offset="0" stop-color="#5ee1d0" stop-opacity=".6"/><stop offset="1" stop-color="#5ee1d0" stop-opacity="0"/></radialGradient></defs>${on ? '<ellipse cx="50" cy="90" rx="44" ry="8" fill="url(#evxg)"><animate attributeName="opacity" values=".3;1;.3" dur="2s" repeatCount="indefinite"/></ellipse>' : ''}`
-      + RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, on ? 'url(#g-teal)' : 'url(#g-gray)')
-      + (on ? [0, 1].map((b) => `<circle cx="80" cy="22" r="14" fill="none" stroke="#5ee1d0" stroke-width="2.5" opacity="0"><animate attributeName="r" values="14;30" dur="2s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2s" begin="${b}s" repeatCount="indefinite"/></circle>`).join('') : '') + '</svg>';
+    // v415: auto + laadpaal met lichtpuls door de kabel (het effect van de oude kaart), even hoog als het wasmachine-icoon
+    const cab = 'M104 50c0 18-12 22-22 16';
+    const icon = `<svg viewBox="-2 6 120 86" style="overflow:visible"><g transform="translate(-2 8) scale(.84)">${RIC.draw('car', on ? 'teal' : 'on').replace(/url\(#g-green\)/g, on ? 'url(#g-teal)' : 'url(#g-gray)')}</g>`
+      + `<rect x="92" y="14" width="24" height="66" rx="8" fill="url(#g-white)"/><rect x="97.5" y="21" width="13" height="5.5" rx="2.7" fill="${on ? '#5ee1d0' : '#8a94a6'}"/><circle cx="104" cy="44" r="4.5" fill="url(#g-metal)"/><rect x="99.5" y="80" width="9" height="10" rx="3" fill="url(#g-metal)"/>`
+      + `<path d="${cab}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>${on ? `<path class="evp" d="${cab}" fill="none" stroke="#5ee1d0" stroke-width="4.5" stroke-linecap="round" pathLength="100"/>` : ''}</svg>`;
     const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Aangesloten';
     const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
     const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
     const big = pct != null ? `<span class="n">${pct}%</span>` : '';
     const sub = live && rem != null ? `Nog ${wxDur(rem * 60)}` : ttl; // v414: resterende tijd i.p.v. "Laden · Thuis"
     return wxCardH(name, icon, `evx ${on ? 'run' : 'off'}`, ttl, sub, big, lines.join('</span><span>'), pct);
+  }
+
+  // v415: actieradius (km) van de auto: car_range, anders een sensor met range/bereik/actieradius in km bij hetzelfde apparaat als car_battery
+  _carRange() {
+    const c = this._config, S = this._hass?.states || {};
+    let id = c.car_range;
+    if (!id) { const dv = this._hass?.entities?.[c.car_battery]?.device_id; id = dv ? this._devEnts(dv).find((e) => /^sensor\./.test(e) && /range|bereik|actieradius|remaining_?mileage/i.test(e) && /km/i.test(S[e]?.attributes?.unit_of_measurement || '')) : null; }
+    const v = parseFloat(S[id]?.state); return isNaN(v) ? null : Math.round(v);
   }
 
   // accu en laadtijd actueel houden: bij openen van de app (en elke 5 min tijdens het laden) de auto laten verversen
@@ -7811,12 +7821,13 @@ class ThuisCard extends HTMLElement {
     const u = (id, st = '') => `<svg viewBox="0 0 100 100" style="${st}"><use href="#${id}"/></svg>`;
     const minPos = covers.reduce((m, s) => Math.min(m, s.attributes.current_position ?? (s.state === 'closed' ? 0 : 100)), 100);
     const night = this._state('sun.sun')?.state === 'below_horizon';
+    const km = this._carRange();
     const car = parseFloat(this._state(c.car_battery)?.state), chg = /charg|laden|laadt/i.test(this._state(c.car_charging)?.state || '');
     let html = (rNow || rm ? P('rain', '#38bdf8', u(rNow ? 'wRain' : 'gDrop'), rNow ? 'Het regent' : 'Regen', rNow ? 'nu' : `over ${rm[1]} min`, 1) : '')
       + (lights.length ? P('bed', '#ffc83d', gBulb(lOn > 0), 'Lampen', lOn ? `${lOn} aan` : 'alles uit', lOn > 0) : '')
       + (covers.length ? P('bed', '#5aa2ff', gBlind(minPos), 'Rolluiken', cDown ? `${cDown} dicht` : 'alles open', cDown > 0) : '')
       + P('nu', 'var(--sun)', pv > 5 ? u('gSun') : night ? u('wNight') : RIC.svg('sun', 'off'), 'Zon', pv > 5 ? pw : 'geen opwek', pv > 5)
-      + (!isNaN(car) ? P('auto', '#5ee1d0', RIC.svg('car', chg ? 'teal' : 'on'), 'Auto', `${Math.round(car)}%${chg ? ' · laadt' : ''}`, chg) : '');
+      + (!isNaN(car) ? P('auto', '#5ee1d0', RIC.svg('car', chg ? 'teal' : 'on'), 'Auto', chg && km != null && this.$('evc') && !this.$('evc').hidden ? `${fmt(km)} km` : `${Math.round(car)}%${chg ? ' · laadt' : ''}`, chg) : ''); // v415: met laadkaart in beeld de actieradius
     // v338 (telefoon): actieve pillen altijd vooraan, verder in de vaste volgorde
     if (this._mq?.matches) { const parts = html.split(/(?=<div class="mp)/); html = [...parts.filter((x) => x.startsWith('<div class="mp hot')), ...parts.filter((x) => !x.startsWith('<div class="mp hot'))].join(''); }
     if (html === this._pillKey) return;
