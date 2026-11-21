@@ -222,7 +222,7 @@ Verdere regels:
 - **Auto verversen** (`_carRefresh`): druk op `button.byd_seal_geforceerd_ophalen`, maar alleen als de auto aan de laadpaal hangt:
   - bij het openen van de app of als de app weer zichtbaar wordt, hooguit 1x per 2 min (`thuis-auto-ververst`);
   - elke 5 min tijdens het laden.
-- **Laadkaart op Thuis (telefoon, v413):** `_evWx` = `wxCardH` (klasse `.wx.ev`, teal; `.off` grijs), huidige `RIC`-auto met twee ringen uit de bliksem + gloed (optie B uit bewegende mockup); naam `car_name` of apparaatnaam van `car_battery` (geen VIN). De oude opmaak hieronder geldt nog op de computer.
+- **Laadkaart op Thuis (telefoon, v413):** `_evWx` = `wxCardH` (klasse `.wx.evx`, teal; `.off` grijs; v414: onder de naam "Nog X", geen "Laden · Thuis"; niet `.ev`, die klasse is van de agenda), huidige `RIC`-auto met twee ringen uit de bliksem + gloed (optie B uit bewegende mockup); naam `car_name` of apparaatnaam van `car_battery` (geen VIN). De oude opmaak hieronder geldt nog op de computer.
 - **Laadkaart op Thuis:**
   - tik opent het kamerpaneel met de laadpaal en scrolt ernaartoe;
   - vegen verbergt de kaart;

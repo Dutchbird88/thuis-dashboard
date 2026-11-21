@@ -284,6 +284,7 @@
 | v411 | Telefoon, Nu: status 's avonds "Panelen in rust" (was "In rust"). |
 | v412 | Telefoon, Nu: iets meer ruimte tussen titel en status (3 px) en een witregel (24 px) tot de eerste kaart. |
 | v413 | Telefoon, Thuis: laadkaart in de opbouw van wasmachine/vaatwasser (ontwerp gebruiker, teal): huidige auto-icoon met ringen uit de bliksem en gloed (optie B), naam (`car_name` of apparaatnaam), "Laden · Thuis", groot %, "± resterend", rechts label, kW en "Klaar"; gepauzeerd/aangesloten grijs. `_evWx`. |
+| v414 | Telefoon, laadkaart rustiger: onder de naam "Nog 8 u 44" i.p.v. "Laden · Thuis", groot alleen het percentage; klasse `.wx.evx` (de klasse `.ev` van de agenda gaf extra ruimte), kaart even hoog als de wasmachine. |
 
 ## Volgende stappen
 

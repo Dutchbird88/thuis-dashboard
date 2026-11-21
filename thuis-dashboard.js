@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '413';
+const CARD_VERSION = '414';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4445,7 +4445,7 @@ const HPSTYLE = `
   /* v382: oven in warm oranje; "koelt af" niet meer op de telefoon (de computer houdt de oude kaart) */
   .wx.ov .pill.pill { background: #E8772E; } .wx.ov .wxb i { background: linear-gradient(90deg, #FFC48A, #E8772E); }
   #oven#oven.was.cool { display: none !important; }
-  .wx.ev .pill.pill { background: #14a394; } .wx.ev .wxm em { color: #5ee1d0; } .wx.ev .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.ev.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.ev.off .wxm em { color: #A3B0C5; } .wx.ev.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
+  .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; } .wx.evx .pill.pill { background: #14a394; } .wx.evx .wxm em { color: #5ee1d0; } .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
@@ -6237,8 +6237,9 @@ class ThuisCard extends HTMLElement {
     const ttl = live ? 'Laden' : starting ? 'Laden start' : paused ? 'Gepauzeerd' : 'Aangesloten';
     const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
     const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
-    const big = pct != null ? `<span class="n">${pct}%</span>${live && rem != null ? `<small>± ${wxDur(rem * 60)}</small>` : ''}` : '';
-    return wxCardH(name, icon, `ev ${on ? 'run' : 'off'}`, ttl, `${ttl} · Thuis`, big, lines.join('</span><span>'), pct);
+    const big = pct != null ? `<span class="n">${pct}%</span>` : '';
+    const sub = live && rem != null ? `Nog ${wxDur(rem * 60)}` : ttl; // v414: resterende tijd i.p.v. "Laden · Thuis"
+    return wxCardH(name, icon, `evx ${on ? 'run' : 'off'}`, ttl, sub, big, lines.join('</span><span>'), pct);
   }
 
   // accu en laadtijd actueel houden: bij openen van de app (en elke 5 min tijdens het laden) de auto laten verversen
