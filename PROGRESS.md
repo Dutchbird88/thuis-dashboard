@@ -289,6 +289,7 @@
 | v416 | Telefoon, laadkaart: icoon = auto zonder bliksem-rondje + kleine wallbox dicht ernaast; tijdens laden stromen lichtbolletjes (`animateMotion`) door de kabel naar de laadpoort, die oplicht (optie B uit bewegende mockup). |
 | v417 | Telefoon, laadkaart: icoon = huidige auto met bliksem + laadkabel aan de zijkant met lichtpulsen (optie A); wallbox weg; icoon even groot als de wasmachine (44 px kolom), tekst lijnt uit. |
 | v418 | Telefoon, laadkaart naar het ontwerp van de gebruiker: getekende groene Seal van voren met breed dak en wallbox (`EVSEAL_ON`/`EVSEAL_OFF`, verlopen `evs*`), gloeiende rand en kabel met lichtpuls tijdens laden, grond-gloed; icoon 76 px; tijd lichtblauw; percentage 30 px. |
+| v419 | Telefoon, kamervenster met de laadpaal (Oprit): alleen de nieuwe laadkaart met de knoppen Laden/Pauze/Stop; de oude opmaak stond er dubbel boven (`.evone .was.xchg:has(> .wx)`). |
 
 ## Volgende stappen
 

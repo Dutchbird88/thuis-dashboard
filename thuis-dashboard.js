@@ -1918,7 +1918,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '418';
+const CARD_VERSION = '419';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4448,6 +4448,7 @@ const HPSTYLE = `
   /* v382: oven in warm oranje; "koelt af" niet meer op de telefoon (de computer houdt de oude kaart) */
   .wx.ov .pill.pill { background: #E8772E; } .wx.ov .wxb i { background: linear-gradient(90deg, #FFC48A, #E8772E); }
   #oven#oven.was.cool { display: none !important; }
+  .evone .was.xchg:has(> .wx) > :not(.wx):not(.evseg):not(.everr) { display: none !important; } .evone .was.xchg > .wx { margin-bottom: 2px; } /* v419: kamervenster Oprit: alleen de nieuwe laadkaart (oude opmaak verborgen), knoppen blijven */
   .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; font-size: 30px; } .was .wx.evx { grid-template-columns: 76px minmax(0, 1fr) auto; column-gap: 12px; } .wx.evx .wxi svg { width: 76px; height: auto; overflow: visible; } .wx.evx .pill.pill { background: #12B5A2; }  .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
