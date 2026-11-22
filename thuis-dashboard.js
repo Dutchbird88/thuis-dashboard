@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '424';
+const CARD_VERSION = '425';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6713,7 +6713,7 @@ class ThuisCard extends HTMLElement {
         + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`
         + (flying && f && f.altitude != null ? `<div class="frlv"><span>${FLTI.alt}${fmt(Math.round(f.altitude * 0.3048 / 100) * 100)} m</span><span>${FLTI.spd}${fmt(Math.round((f.ground_speed || 0) * 1.852))} km/u</span>${f.aircraft_model ? `<span>${String(f.aircraft_model).replace(/[<>&]/g, '').slice(0, 28)}</span>` : ''}</div>` : '');
       html = wxCardH(nice, ic, `flx ${st}${dl && !landed ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
-      show = true; sig = `${fno}|${startOfDay(x.s)}`; break;
+      show = true; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
     }
     box.hidden = !show;
     box.dataset.sig = sig;
