@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '431';
+const CARD_VERSION = '432';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6685,6 +6685,8 @@ class ThuisCard extends HTMLElement {
       // v426: laatste live gegevens bewaren; na de landing haalt Flightradar24 (auto-cleanup) de vlucht uit de lijst
       const KEEP = ['flight_number', 'airline_short', 'aircraft_model', 'airport_origin_code_iata', 'airport_origin_city', 'airport_origin_terminal', 'airport_destination_code_iata', 'airport_destination_city', 'time_scheduled_departure', 'time_scheduled_arrival', 'time_real_departure', 'time_estimated_departure', 'time_real_arrival', 'time_estimated_arrival', 'on_ground'];
       let kept = {}; try { kept = JSON.parse(localStorage.getItem('thuis-vlucht') || '{}'); } catch (e) { /* geen opslag */ }
+      // v432: na de landing stuurt Flightradar24 de vlucht soms zonder tijden; dan aanvullen met wat al bewaard was
+      if (f && kept[fno]?.day === day0) { const m = { ...f }; KEEP.forEach((n) => { if (m[n] == null && kept[fno][n] != null) m[n] = kept[fno][n]; }); f = m; }
       if (f) { const k = { day: day0 }; KEEP.forEach((n) => { if (f[n] != null) k[n] = f[n]; }); if (JSON.stringify(kept[fno]) !== JSON.stringify(k)) { kept = { [fno]: k }; try { localStorage.setItem('thuis-vlucht', JSON.stringify(kept)); } catch (e) { /* geen opslag */ } } }
       else if (kept[fno]?.day === day0) { f = { ...kept[fno], gone: true }; if (f.time_real_departure && !f.time_real_arrival && Date.now() > (+(f.time_estimated_arrival || f.time_scheduled_arrival) || 0) * 1000) f.time_real_arrival = f.time_estimated_arrival || f.time_scheduled_arrival; }
       if ((!f || (f.gone && !f.time_real_arrival)) && tid && this._state(tid) && x.s - now < 20 * HOUR && (!this._fltReq?.[fno] || now - this._fltReq[fno] > 10 * 60000)) {
