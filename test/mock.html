@@ -94,6 +94,14 @@ if (q.get('dup')) {
 // vaatwasser: vaat=1 (bezig, met stoom op de telefoon)
 if (q.get('vaat')) { const v = q.get('vaat'); ent('sensor.vaatwasser_status', ({ plan: 'delayedstart', klaar: 'finished', fout: 'error', aan: 'ready', pauze: 'pause' })[v] || 'run', {}, { name: 'Vaatwasser' }); ent('sensor.vaatwasser_programmavoortgang', 7, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_resterende_programmaduur', new Date(Date.now() + 88 * 6e4).toISOString(), {}, {}); ent('sensor.vaatwasser_programma_voortgang', 30, { unit_of_measurement: '%' }, {}); ent('sensor.vaatwasser_programma_eindtijd', new Date(Date.now() + 84 * 6e4).toISOString(), {}, {}); ent('select.vaatwasser_actieve_programma', v === 'lang' ? 'dishcare_dishwasher_program_machine_care' : 'dishcare_dishwasher_program_eco_50', {}, {}); if (v === 'aan') { ent('switch.vaatwasser_inschakelen', 'on', {}, {}); ent('select.vaatwasser_geselecteerd_programma', 'dishcare_dishwasher_program_eco_50', {}, {}); } }
 // picnic: pic=1 (verwacht, over 9 uur), pic=weg (onderweg, binnen het tijdvak), pic=klaar (net bezorgd)
+// vlucht vandaag: vl=1 (onderweg, live), vl=laat (vertraagd), vl=plan (nog niet vertrokken), vl=land (geland), vl=agenda (alleen agenda, geen live)
+if (q.get('vl')) { const V = q.get('vl'), m = 6e4, now = Date.now(), dep = V === 'plan' ? now + 165 * m : V === 'land' ? now - 200 * m : now - 70 * m, arr = dep + 200 * m, late = V === 'laat' ? 25 * m : 0;
+  window.VLUCHT = { dep, arr };
+  ent('text.flightradar24_add_track', '', {}, { pl: 'flightradar24' });
+  const f = { flight_number: 'KL1675', callsign: 'KLM1675', airline_short: 'KLM', aircraft_model: 'Boeing 737-800', airport_origin_code_iata: 'AMS', airport_origin_city: 'Amsterdam', airport_origin_terminal: '2', airport_destination_code_iata: 'BCN', airport_destination_city: 'Barcelona',
+    time_scheduled_departure: dep / 1000, time_scheduled_arrival: arr / 1000, time_real_departure: V === 'plan' ? null : (dep + late + 4 * m) / 1000, time_estimated_arrival: (arr + late) / 1000, time_real_arrival: V === 'land' ? (arr - 4 * m) / 1000 : null,
+    on_ground: V === 'plan' || V === 'land' ? 1 : 0, altitude: 35100, ground_speed: 454 };
+  ent('sensor.flightradar24_additional_tracked', V === 'agenda' ? 0 : 1, { flights: V === 'agenda' ? [] : [f] }, { pl: 'flightradar24' }); }
 if (q.get('pic')) { const P = q.get('pic'), m6 = 6e4, t0 = P === '1' ? Date.now() + 9 * 60 * m6 : Date.now() - 6 * m6, ps = (k, v) => ent(`sensor.picnic_${k}`, new Date(v).toISOString(), { device_class: 'timestamp' }, { pl: 'picnic', tk: k });
   ps('next_delivery_slot_start', t0); ps('next_delivery_slot_end', t0 + 20 * m6); ps('next_delivery_eta_start', t0); ps('next_delivery_eta_end', t0 + 20 * m6); if (P === 'klaar') ps('last_order_delivery_time', Date.now() - 3 * m6); }
 // wasmachine: was=1 (wast, met zeepbellen op de telefoon)
@@ -205,7 +213,7 @@ async function callApi(method, path) {
   }
   // logboek van de Wake on LAN-knop: computer vanochtend door een bewoner aangezet
   if (path.startsWith('logbook/') && path.includes('computer_wekken')) return [{ when: at(Date.now() - 4.3 * 36e5 - 50e3), entity_id: 'button.computer_wekken', context_user_id: 'u1' }];
-  if (path.startsWith('calendars/')) return [{ summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }, ...(q.get('bday') ? [{ summary: 'Sanne jarig (1986)', start: { date: dstr(0) }, end: { date: dstr(1) } }, ...(q.get('bday') === '2' ? [{ summary: 'Verjaardag Opa Piet (1948)', start: { date: dstr(0) }, end: { date: dstr(1) } }] : [])] : [])];
+  if (path.startsWith('calendars/')) return [...(window.VLUCHT ? [{ summary: 'KL1675 AMS - BCN', start: { dateTime: new Date(window.VLUCHT.dep).toISOString() }, end: { dateTime: new Date(window.VLUCHT.arr).toISOString() } }] : []), { summary: 'Verjaardag', start: { date: dstr(2) }, end: { date: dstr(3) } }, ...(q.get('bday') ? [{ summary: 'Sanne jarig (1986)', start: { date: dstr(0) }, end: { date: dstr(1) } }, ...(q.get('bday') === '2' ? [{ summary: 'Verjaardag Opa Piet (1948)', start: { date: dstr(0) }, end: { date: dstr(1) } }] : [])] : [])];
   return [];
 }
 const hass = {

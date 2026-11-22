@@ -132,6 +132,18 @@ Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het 
 
 Zolang de laadkaart in beeld is, toont de pil Auto bovenaan de actieradius. Die zoekt de kaart zelf (een sensor in km met range, bereik of actieradius bij je auto); geef anders `car_range: sensor.…` op.
 
+### Vluchtkaart (telefoon)
+
+Zet een vlucht in je agenda met het vluchtnummer in de titel, bijvoorbeeld `KL1675` (of `KL1675 AMS - BCN`), met vertrek als begin en aankomst als einde. Op de dag van de vlucht staat op Thuis een kaart met de route, de voortgang en de resterende tijd.
+
+Met de integratie [Flightradar24](https://github.com/AlexandrErohin/home-assistant-flightradar24) komen er live gegevens bij: echte vertrek- en landingstijd, vertraging, hoogte, snelheid en toestel. De kaart geeft het vluchtnummer zelf aan de integratie door ("Add to track"). Andere namen voor de entiteiten kun je opgeven:
+
+```yaml
+- type: custom:thuis-card
+  flight_sensor: sensor.flightradar24_additional_tracked
+  flight_track: text.flightradar24_add_track
+```
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

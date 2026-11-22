@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '422';
+const CARD_VERSION = '423';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4228,6 +4228,8 @@ const wxDur = (m) => { m = Math.round(m); return m >= 60 ? `${Math.floor(m / 60)
 const PTRUCK = '<svg class="ptk" viewBox="0 0 120 80"><rect x="6" y="14" width="66" height="44" rx="6" fill="#f4f1ea"/><rect x="18" y="24" width="20" height="20" rx="3" fill="#d6363b"/><path d="M72 28h20l14 16v14H72z" fill="#f4f1ea"/><path d="M76 32h14l10 12H76z" fill="#2a3346"/><rect x="72" y="50" width="34" height="8" fill="#1d2433"/><circle cx="26" cy="60" r="8" fill="#2a2f3a"/><circle cx="26" cy="60" r="3.2" fill="#9aa3b2"/><circle cx="88" cy="60" r="8" fill="#2a2f3a"/><circle cx="88" cy="60" r="3.2" fill="#9aa3b2"/><rect x="4" y="66" width="104" height="4" rx="2" fill="#5aa04a" opacity=".8"/></svg>';
 const picImg = (src) => `<img class="pici" src="${src}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">${PTRUCK.replace('<svg class="ptk"', '<svg class="ptk" style="display:none"')}`;
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+// v423: kleine iconen voor de vluchtkaart
+const FLTI = { gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V7l8-3 8 3v13M9 20v-6h6v6"/></svg>', alt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8M15 8h5v5"/></svg>', spd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 17a8 8 0 1 1 14 0M12 13l4-4"/></svg>' };
 const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
   + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc}%"></i></div>`}</div>`;
 // v418: laadkaart-icoon (telefoon): groene Seal van voren met wallbox, naar het ontwerp van de gebruiker; eigen verlopen evs*
@@ -4469,6 +4471,15 @@ const HPSTYLE = `
   #oven#oven.was.cool { display: none !important; }
   .evone .was.xchg:has(> .wx) > :not(.wx):not(.evseg):not(.everr) { display: none !important; } .evone .was.xchg > .wx { margin-bottom: 2px; } /* v419: kamervenster Oprit: alleen de nieuwe laadkaart (oude opmaak verborgen), knoppen blijven */
   .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; font-size: 30px; } .was .wx.evx { grid-template-columns: 76px minmax(0, 1fr) auto; column-gap: 12px; } .wx.evx .wxi svg { width: 76px; height: auto; overflow: visible; } .wx.evx .pill.pill { background: #12B5A2; }  .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
+  /* v423: vluchtkaart: routelijn AMS — vliegtuigje — BCN met tijden en live gegevens */
+  #flt#flt.was:has(.wx) { padding: 12px 19px 11px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; }
+  .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx.late .wxs > span b { color: #fbbf6a; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
+  .wx.flx .frt { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 12px; font-size: 12.5px; color: #DDE4EE; }
+  .wx.flx .frl { position: relative; height: 22px; } .wx.flx .frl::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; border-top: 2px dashed rgba(150,175,215,.30); }
+  .wx.flx .frl i { position: absolute; left: 0; top: 9px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #6FD0FB, #3A8EF6); } .wx.flx .frt.ok .frl i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
+  .wx.flx .frl svg { position: absolute; top: 0; width: 22px; height: 22px; margin-left: -11px; fill: #eef2f8; transform: rotate(90deg); }
+  .wx.flx .frtm { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 11px; color: #8b95a8; margin-top: 2px; } .wx.flx .frtm s { opacity: .6; }
+  .wx.flx .frlv { grid-column: 1 / -1; display: flex; gap: 14px; margin-top: 8px; font-size: 11.5px; color: #A3B0C5; white-space: nowrap; overflow: hidden; } .wx.flx .frlv span { display: inline-flex; align-items: center; gap: 5px; } .wx.flx .frlv svg { width: 13px; height: 13px; flex: none; }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
@@ -4585,7 +4596,7 @@ const HPSTYLE = `
   :host([data-gl]) .twrap .kr .ksl.drag i, :host([data-gl]) .twrap .kr .ksl.drag::before { height: 7px; }
 }
 #hpc, #bdc, .ksp.hpp, .kr .ksl, #oven .ocs, #oven .ocb { display: none; }
-@media (min-width: 601px) { .lt.wol { display: none; } }
+@media (min-width: 601px) { .lt.wol { display: none; } #flt { display: none !important; } }
 @media (max-width: 600px) {
   /* v297: apparaatkaarten in dezelfde kleur, rand en gloedrand als de andere tegels (Thuis en kamervenster) */
   .mstack > .was:not(.xchg):not(.pic), .was.run:not(.xchg), .was.done:not(.xchg), .was.ready:not(.xchg), .mstack > .was.was.was:not(.xchg):not(.pic), .sheet .mstack > .was.was.was:not(.xchg):not(.pic), #dish.was.was, #oven.was.was:not(.cool) { background: linear-gradient(rgb(19,32,54), rgb(15,24,40)) !important; border: 1px solid rgba(110,150,240,.2) !important; border-radius: 20px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 18px -10px rgba(110,150,240,.6) !important; }
@@ -4703,7 +4714,7 @@ class ThuisCard extends HTMLElement {
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); this._updBday(); }, 10000);
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); this._updBday(); this._updFlight(); }, 10000);
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); clearTimeout(this._camVt); this._camVt = setTimeout(() => { if (this._camEl && !this._camEl._snap && !this._camPlaying(this._camEl)) this._camRestart(0); }, 3000); } }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
@@ -4818,6 +4829,7 @@ class ThuisCard extends HTMLElement {
           <div class="tcol">
             <div class="alrt" id="alrt" hidden></div>
             <div class="was pic" id="pic" hidden></div>
+            <div class="was flt" id="flt" hidden></div>
             <div class="was xchg" id="evc" hidden></div>
             <div class="was" id="was" hidden></div>
             <div class="was" id="dish" hidden></div>
@@ -4860,7 +4872,7 @@ class ThuisCard extends HTMLElement {
     // telefoon: eigen indeling (kop, statuspillen, camera, apparaten, thermostaat + afval, bediening, agenda);
     // de bestaande vakken worden verplaatst en op de computer weer teruggezet
     this._mq = this._mq || window.matchMedia('(max-width: 600px)');
-    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
+    const MOVE = [['camTile', 'mA'], ['alrt', 'mA'], ['pic', 'mA'], ['flt', 'mA'], ['evc', 'mA'], ['was', 'mA'], ['dish', 'mA'], ['oven', 'mA'], ['notTile', 'mA'], ['bedTile', 'mB'], ['agTile', 'mB'], ['ppl', 'mPpl'], ['tPre', 'mPre']];
     const marks = MOVE.map(([id]) => { const el = this.$(id), m = document.createComment(id); el.before(m); return m; });
     const placeBins = () => {
       const m = this._mq.matches;
@@ -4871,7 +4883,7 @@ class ThuisCard extends HTMLElement {
     placeBins();
     this.$('tMin').addEventListener('click', () => this._tStep(-1));
     // telefoon: meldingen en apparaten naar links wegvegen (zoals Apple Mail)
-    ['pic', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
+    ['pic', 'flt', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => this._swipe(this.$(id), () => this._hide(id)));
     this.$('evc').addEventListener('click', () => {
       // naar het paneel van de kamer met de laadpaal (bediening); anders het tabblad Auto
       const ri = this._rooms().findIndex((r) => (r.r.apps || []).includes('evc'));
@@ -4995,6 +5007,7 @@ class ThuisCard extends HTMLElement {
     this._updWaste();
     this._updPills();
     this._updPicnic();
+    this._updFlight();
     this._updMedia();
     if (this._kmode) this._updRooms();
     this._updSheet();
@@ -5880,7 +5893,7 @@ class ThuisCard extends HTMLElement {
     this._applyHidden();
   }
   _drawAgenda() {
-    this._updBday();
+    this._updBday(); this._updFlight();
     const tile = this.$('agTile'), box = this.$('agenda');
     if (!this._events) { tile.hidden = true; return; }
     tile.hidden = false;
@@ -6647,9 +6660,71 @@ class ThuisCard extends HTMLElement {
     box.onclick = () => ids.eta_s && this._moreInfo(eta ? ids.eta_s : ids.slot_s);
   }
 
+  // v423: vluchtkaart (telefoon). Een afspraak met een vluchtnummer (bijv. "KL1675") vandaag; met de integratie Flightradar24 worden
+  // de live gegevens gebruikt (vlucht wordt zelf aan "Add to track" gegeven). Zonder live gegevens: tijden uit de agenda.
+  _fr24(kind) {
+    const c = this._config, E = this._hass?.entities || {}, S = this._hass?.states || {};
+    if (kind === 'sensor' && c.flight_sensor) return c.flight_sensor; if (kind === 'text' && c.flight_track) return c.flight_track;
+    const re = kind === 'sensor' ? /^sensor\..*additional_tracked/ : /^text\..*add_track/;
+    return Object.keys(E).find((id) => re.test(id) && (E[id].platform === 'flightradar24' || /flightradar/.test(id))) || Object.keys(S).find((id) => re.test(id) && /flightradar/.test(id)) || null;
+  }
+  _updFlight() {
+    const box = this.$('flt'); if (!box || !this._hass) return;
+    const now = Date.now(), day0 = startOfDay(now), FN = /\b([A-Z]{2}|[A-Z]\d|\d[A-Z])\s?(\d{1,4})\b/;
+    const pd = (d) => (d?.dateTime ? Date.parse(d.dateTime) : null);
+    const evs = (this._events || []).map((e) => ({ e, m: String(e.summary || '').toUpperCase().match(FN), s: pd(e.start), t: pd(e.end) }))
+      .filter((x) => x.m && x.s != null && (startOfDay(x.s) === day0 || (x.s < now && (x.t || x.s) > now - 3 * HOUR))).sort((a, b) => a.s - b.s);
+    let html = '', show = false, sig = '', sid = null;
+    for (const x of evs) {
+      const fno = x.m[1] + x.m[2], nice = `${x.m[1]} ${x.m[2]}`;
+      // live gegevens (Flightradar24)
+      sid = this._fr24('sensor'); const tid = this._fr24('text');
+      const list = this._state(sid)?.attributes?.flights || [];
+      const f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno));
+      if (!f && tid && this._state(tid) && x.s - now < 20 * HOUR && (!this._fltReq?.[fno] || now - this._fltReq[fno] > 10 * 60000)) {
+        (this._fltReq ||= {})[fno] = now; Promise.resolve(this._hass.callService('text', 'set_value', { entity_id: tid, value: fno }, undefined, false)).catch(() => {});
+      }
+      const T = (v) => (v ? +v * 1000 : null);
+      const sDep = T(f?.time_scheduled_departure) ?? x.s, sArr = T(f?.time_scheduled_arrival) ?? x.t;
+      const rDep = T(f?.time_real_departure), rArr = T(f?.time_real_arrival);
+      const dep = rDep ?? T(f?.time_estimated_departure) ?? sDep, arr = rArr ?? T(f?.time_estimated_arrival) ?? sArr;
+      if (!dep || !arr || arr <= dep) continue;
+      const landed = rArr != null || (f ? f.on_ground == 1 && rDep != null && now > arr - 20 * 60000 : now >= arr);
+      const flying = !landed && (rDep != null || (f ? f.on_ground == 0 : now >= dep));
+      if (landed && now - (rArr ?? arr) > HOUR) continue;
+      // route: codes en steden uit Flightradar24, anders uit de titel (AMS - BCN)
+      const codes = String(x.e.summary || '').toUpperCase().match(/\b([A-Z]{3})\b\s*(?:-|–|→|>|NAAR|TO)\s*\b([A-Z]{3})\b/);
+      const oc = f?.airport_origin_code_iata || codes?.[1] || '', dc = f?.airport_destination_code_iata || codes?.[2] || '';
+      const ocity = f?.airport_origin_city || oc, dcity = f?.airport_destination_city || dc;
+      const sub = ocity && dcity ? `${ocity} → ${dcity}` : f?.airline_short || f?.airline || 'Vlucht';
+      const delay = Math.round((arr - sArr) / 60000), dl = Math.abs(delay) >= 5;
+      const pc = landed ? 100 : flying ? Math.max(2, Math.min(98, (now - dep) / (arr - dep) * 100)) : 0;
+      const st = landed ? 'ok' : flying ? 'run' : 'off';
+      const ic = `<svg viewBox="0 0 100 100"><defs><linearGradient id="flw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d5dde8"/></linearGradient></defs><g transform="rotate(45 50 50)"><path d="M46 10Q50 4 54 10V40L88 60V68L54 57V80L64 88V94L50 90L36 94V88L46 80V57L12 68V60L46 40Z" fill="url(#flw)"/><path d="M47 14Q50 9 53 14V22H47Z" fill="${landed ? '#2E9E5B' : flying ? '#3A8EF6' : '#8a94a6'}"/></g></svg>`;
+      const pill = landed ? 'Geland' : flying ? 'Onderweg' : 'Gepland';
+      const big = landed ? `Geland<small>${fmtTime(rArr ?? arr)}</small>` : flying ? `<span class="n">${wxDur(Math.max(1, (arr - now) / 60000))}</span><small>resterend</small>` : `<span class="n">${fmtTime(dep)}</span><small>vertrek</small>`;
+      const late = (m) => `<b>${m > 0 ? '+' : '−'}${Math.abs(m)} min</b>`;
+      const line = landed ? `${WXI.clock}${dl ? `${Math.abs(delay)} min te ${delay > 0 ? 'laat' : 'vroeg'}` : 'Op tijd'}`
+        : flying ? `${WXI.clock}Landt ${fmtTime(arr)}${dl ? `</span><span class="fdl">${late(delay)}` : ''}`
+        : `${WXI.clock}${dep - now < 60000 ? 'Vertrekt nu' : `Over ${wxDur((dep - now) / 60000)}`}${Math.abs(dep - sDep) >= 5 * 60000 ? ` ${late(Math.round((dep - sDep) / 60000))}` : ''}`
+          + (f?.airport_origin_terminal ? `</span><span>${FLTI.gate}Terminal ${String(f.airport_origin_terminal).replace(/[<>&]/g, '')}` : '');
+      const planeAt = `left:clamp(11px, ${pc}%, calc(100% - 11px))`;
+      const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:${pc}%"></i><svg style="${planeAt}" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
+        + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`
+        + (flying && f && f.altitude != null ? `<div class="frlv"><span>${FLTI.alt}${fmt(Math.round(f.altitude * 0.3048 / 100) * 100)} m</span><span>${FLTI.spd}${fmt(Math.round((f.ground_speed || 0) * 1.852))} km/u</span>${f.aircraft_model ? `<span>${String(f.aircraft_model).replace(/[<>&]/g, '').slice(0, 28)}</span>` : ''}</div>` : '');
+      html = wxCardH(nice, ic, `flx ${st}${dl && !landed ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
+      show = true; sig = `${fno}|${startOfDay(x.s)}`; break;
+    }
+    box.hidden = !show;
+    box.dataset.sig = sig;
+    if (box._h !== html) { box._h = html; box.innerHTML = html; this._wxFit(box); }
+    this._applyHidden();
+    box.onclick = () => sid && this._state(sid) && this._moreInfo(sid);
+  }
+
   /* ---------- verbergen door te vegen (telefoon) ---------- */
   // een verborgen blok komt terug zodra de toestand verandert (bijv. van draaien naar klaar, of een nieuwe bezorging)
-  _sig(el) { return el.id === 'pic' || el.id === 'hpc' || el.id === 'bdc' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
+  _sig(el) { return el.id === 'pic' || el.id === 'flt' || el.id === 'hpc' || el.id === 'bdc' ? el.dataset.sig || '' : el.className.replace(/\b(gone|swiping)\b/g, '').trim(); }
   _hidden() {
     try {
       // eenmalig: oude verborgen blokken van vóór versie 120 vergeten (die bleven ten onrechte verborgen)
@@ -6679,12 +6754,12 @@ class ThuisCard extends HTMLElement {
   }
   _applyHidden() {
     const h = this._hidden(); let dirty = false;
-    ['pic', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
+    ['pic', 'flt', 'hpc', 'bdc', 'evc', 'was', 'dish', 'oven'].forEach((id) => {
       const el = this.$(id); if (!el) return;
       // toestand veranderd (of apparaat uit): het verbergen vergeten, zodat het blok bij de volgende keer weer verschijnt
       // v373: muziek, verjaardag en Picnic: alleen vergeten bij een nieuwe, andere inhoud. Bij het openen van de app is de agenda nog niet geladen
       // (kaart even verborgen, lege sig); dat mag het wegvegen niet wissen, anders komt de verjaardag steeds terug
-      const sigKind = el.id === 'pic' || el.id === 'hpc' || el.id === 'bdc', sg = this._sig(el);
+      const sigKind = el.id === 'pic' || el.id === 'flt' || el.id === 'hpc' || el.id === 'bdc', sg = this._sig(el);
       // v378: verjaardag alleen terug bij een nieuwe dag of een extra jarige (niet als een van de agenda's een keer ontbreekt)
       const sameBday = id === 'bdc' && h[id] != null && sg && (() => { const [d0, n0 = ''] = String(h[id]).split('|'), [d1, n1 = ''] = sg.split('|'), had = new Set(n0.split(',')); return d0 === d1 && n1.split(',').every((n) => had.has(n)); })();
       if (h[id] != null && !sameBday && (sigKind ? sg && h[id] !== sg : h[id] !== sg || el.hidden)) { delete h[id]; dirty = true; }

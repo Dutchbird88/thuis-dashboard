@@ -161,6 +161,11 @@ Verdere regels:
 - Voorrang: muziek > verjaardag > afval (`_applyHidden`: `#bdc.hpon` als muziek zichtbaar is, `#mAf.hpon` als muziek of verjaardag zichtbaar is). Wegvegen zoals de muziekkaart (`_swipe`/`_hide`, `dataset.sig` = dag + namen: weg voor die dag). v373: `_applyHidden` vergeet het wegvegen van `pic`/`hpc`/`bdc` alleen bij een niet-lege, andere sig (bij het openen is de agenda nog niet geladen: kaart even verborgen, lege sig). v378: sig = dag + unieke gesorteerde namen; weggeveegd blijft weg zolang het dezelfde dag is en er geen nieuwe naam bij komt. Testpagina `bday=1` of `bday=2`.
 - v360: de agenda-tegel (`#agTile`) is op de telefoon verborgen (in `TIDY`); `_fetchAgenda` loopt door, want de verjaardagkaart gebruikt `this._events`.
 
+**Vluchtkaart (v423, alleen telefoon)**
+
+- `#flt` (`.was.flt`, in `mA` na Picnic), `_updFlight()` (vanuit `_tick`, `_drawAgenda`, update): eerste afspraak vandaag met een vluchtnummer (`KL1675`, `HV 5131`) in de titel. Live via Flightradar24: `_fr24('sensor')` = `flight_sensor` of `sensor.*additional_tracked` (attribuut `flights`, tijden in seconden, hoogte in voet, snelheid in knopen), `_fr24('text')` = `flight_track` of `text.*add_track`; niet gevolgd → `text.set_value` met het vluchtnummer (hooguit elke 10 min, vanaf 20 uur voor vertrek). Zonder live: begin/einde van de afspraak, route uit de titel (`AMS - BCN`).
+- Kaart `wxCardH` met klasse `.wx.flx` (let op: `.fl` is al een klasse van de energiestroom). Standen: Gepland (grijs, vertrektijd groot, "Over …", terminal), Onderweg (blauw, resterende tijd, "Landt …", vertraging oranje `.late` + regel `.fdl`), Geland (groen, "X min te vroeg/laat"; 1 uur zichtbaar). Routelijn `.frt`/`.frl` met vliegtuigje (`clamp`), tijden `.frtm` (geplande tijd doorgestreept bij vertraging), live regel `.frlv` (hoogte m, km/u, toestel). Wegvegen: sig = vluchtnummer + dag. Op de computer verborgen. Testpagina `vl=1|laat|plan|land|agenda`.
+
 **Wake on LAN** (v271, alleen telefoon; op de computer verborgen via `@media (min-width: 601px)`)
 
 - `_wolList()`: knoppen met `platform: wake_on_lan` (of `wake_on_lan:` in de YAML: lijst van ids of `{button, ping, name, icon}`; `[]` = uit). Ping-sensor (`binary_sensor`, `platform: ping`): de enige in dezelfde ruimte als de knop, anders op gedeelde woorden in naam/id. Naam zonder "wekken/wake/wol" aan het eind.
