@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '434';
+const CARD_VERSION = '435';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6995,7 +6995,7 @@ class ThuisCard extends HTMLElement {
     this.$('hBack').addEventListener('click', () => this._openSheet(lamp ? 'lt' : 'cv', id));
     const now = Date.now(), from = new Date(now - 7 * DAY).toISOString();
     const [hist, log] = await Promise.all([
-      this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${id}&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []),
+      this._hass.callApi('GET', `history/period/${from}?filter_entity_id=${id}&significant_changes_only=0&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []), // v435: ook alleen-positiewijzigingen (rolluik blijft 'open' bij 28% dicht)
       this._hass.callApi('GET', `logbook/${from}?entity=${id}&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []),
     ]);
     if (!['cv', 'lt'].includes(this._sheet) || !this._cvHist || this._cvId !== id) return;
@@ -7008,6 +7008,8 @@ class ThuisCard extends HTMLElement {
       if (ev.length && ev[ev.length - 1].pos === pos) continue;
       ev.push({ t, pos });
     }
+    // v435: de huidige stand als laatste punt (de geschiedenis loopt soms achter)
+    { const cs = this._state(id); if (cs && !['opening', 'closing', 'unavailable', 'unknown'].includes(cs.state)) { const pos = lamp ? (cs.state === 'on' ? Math.max(1, Math.round((cs.attributes?.brightness ?? 255) / 2.55)) : 0) : cs.attributes?.current_position ?? (cs.state === 'closed' ? 0 : 100); if (!ev.length || ev[ev.length - 1].pos !== pos) ev.push({ t: Math.max(Date.parse(cs.last_updated || cs.last_changed) || now, ev.length ? ev[ev.length - 1].t + 1 : 0), pos }); } }
     // wie of wat: het logboekbericht vlak voor de wijziging
     const L = (Array.isArray(log) ? log : []).map((l) => ({ ...l, t: Date.parse(l.when) })).sort((a, b) => a.t - b.t);
     // bij een rolluik komt de eindstand (bv. 60% dicht) vaak van het apparaat zelf, zonder bron; neem dan de bron van de beweging ervoor ("gaat dicht" via de app)

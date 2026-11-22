@@ -305,6 +305,7 @@
 | v432 | Vluchtkaart: na de landing stuurt Flightradar24 de vlucht soms zonder tijden; ontbrekende velden worden aangevuld uit `thuis-vlucht`, zodat de kaart niet terugvalt op de agendatijden. |
 | v433 | Vluchtkaart: tijden in de lokale tijd van de luchthaven (vertrek/aankomst, `airport_*_timezone_offset`); bij Geland groot de landingstijd + "geland"; tik opent de vlucht in Flightradar24 (callsign). |
 | v434 | Thuis: pil Rolluiken telt alle rolluiken uit de kamers (net als Kamers), niet alleen de rolluiken onder Bediening (`covers` in de YAML). |
+| v435 | Geschiedenis rolluik/lamp: `significant_changes_only=0`, zodat ook positiewijzigingen zonder statuswissel (bv. 28% dicht met de handzender, status blijft open) in lijst en grafiek staan; huidige stand als laatste punt. |
 
 ## Volgende stappen
 
