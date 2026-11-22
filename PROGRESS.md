@@ -299,6 +299,7 @@
 | v426 | Vluchtkaart: laatste live gegevens bewaard (localStorage `thuis-vlucht`), zodat de kaart na de landing "Geland" met de echte tijd houdt als Flightradar24 de vlucht uit de lijst haalt (auto-cleanup). |
 | v427 | Vluchtkaart: alleen live gegevens van de vlucht die bij de afspraak hoort (geplande vertrektijd binnen 12 uur), niet die van een volgende dag met hetzelfde nummer. |
 | v428 | Vluchtkaart: logo van de maatschappij in een wit vlakje (`airline_logo`, standaard pics.avs.io, `{code}` = IATA), anders een opstijgend vliegtuig van opzij; regel met hoogte/snelheid/toestel weg; eerder landen groen (`b.fder`), vertraging oranje (`b.fdlt`). |
+| v429 | Vluchtkaart: logo's standaard van Google Flights (vierkant beeldmerk, bijv. KLM-kroontje) i.p.v. pics.avs.io (breed woordlogo, te klein in het vlakje); 5 px ruimte in het witte vlak. |
 
 ## Volgende stappen
 

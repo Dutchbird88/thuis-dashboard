@@ -142,10 +142,10 @@ Met de integratie [Flightradar24](https://github.com/AlexandrErohin/home-assista
 - type: custom:thuis-card
   flight_sensor: sensor.flightradar24_additional_tracked
   flight_track: text.flightradar24_add_to_track
-  airline_logo: https://pics.avs.io/160/160/{code}.png   # logo van de maatschappij ({code} = bijv. KL); of eigen logo's: /local/airlines/{code}.png
+  airline_logo: https://www.gstatic.com/flights/airline_logos/70px/{code}.png   # logo van de maatschappij ({code} = bijv. KL); of eigen logo's: /local/airlines/{code}.png
 ```
 
-Het logo wordt van internet geladen (standaard pics.avs.io). Lukt dat niet, dan staat er een vliegtuig.
+Het logo wordt van internet geladen (standaard de vierkante logo's van Google Flights). Lukt dat niet, dan staat er een vliegtuig.
 
 ### Kamers
 

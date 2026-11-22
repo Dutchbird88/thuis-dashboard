@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '428';
+const CARD_VERSION = '429';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4473,7 +4473,7 @@ const HPSTYLE = `
   .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; font-size: 30px; } .was .wx.evx { grid-template-columns: 76px minmax(0, 1fr) auto; column-gap: 12px; } .wx.evx .wxi svg { width: 76px; height: auto; overflow: visible; } .wx.evx .pill.pill { background: #12B5A2; }  .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   /* v423: vluchtkaart: routelijn AMS — vliegtuigje — BCN met tijden en live gegevens */
   #flt#flt.was:has(.wx) { padding: 12px 19px 11px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; }
-  .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx .wxs > span b.fdlt { color: #fbbf6a; } .wx.flx .wxs > span b.fder { color: #6EE7A0; } .wx.flx .flogo { display: block; width: 44px; height: 44px; border-radius: 12px; background: #fff; overflow: hidden; } .wx.flx .flogo img { width: 100%; height: 100%; object-fit: contain; display: block; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
+  .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx .wxs > span b.fdlt { color: #fbbf6a; } .wx.flx .wxs > span b.fder { color: #6EE7A0; } .wx.flx .flogo { display: block; width: 44px; height: 44px; border-radius: 12px; background: #fff; overflow: hidden; padding: 5px; box-sizing: border-box; } .wx.flx .flogo img { width: 100%; height: 100%; object-fit: contain; display: block; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
   .wx.flx .frt { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 12px; font-size: 12.5px; color: #DDE4EE; }
   .wx.flx .frl { position: relative; height: 22px; } .wx.flx .frl::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; border-top: 2px dashed rgba(150,175,215,.30); }
   .wx.flx .frl i { position: absolute; left: 0; top: 9px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #6FD0FB, #3A8EF6); } .wx.flx .frt.ok .frl i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
@@ -6707,7 +6707,7 @@ class ThuisCard extends HTMLElement {
       const pc = landed ? 100 : flying ? Math.max(2, Math.min(98, (now - dep) / (arr - dep) * 100)) : 0;
       const st = landed ? 'ok' : flying ? 'run' : 'off';
       // v428: logo van de maatschappij (wit vlakje), anders een opstijgend vliegtuig van opzij (optie A)
-      const al = String(f?.airline_iata || x.m[1]).toUpperCase(), lurl = String(this._config.airline_logo || 'https://pics.avs.io/160/160/{code}.png').replace('{code}', encodeURIComponent(al));
+      const al = String(f?.airline_iata || x.m[1]).toUpperCase(), lurl = String(this._config.airline_logo || 'https://www.gstatic.com/flights/airline_logos/70px/{code}.png').replace('{code}', encodeURIComponent(al));
       const lc = (this._logoC ||= {})[lurl];
       if (lc == null) { this._logoC[lurl] = 'wait'; const im = new Image(); im.onload = () => { this._logoC[lurl] = im.naturalWidth > 8 ? 'ok' : 'fail'; this._updFlight(); }; im.onerror = () => { this._logoC[lurl] = 'fail'; }; im.src = lurl; }
       const ac = landed ? '#2E9E5B' : flying ? '#3A8EF6' : '#8a94a6';
