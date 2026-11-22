@@ -141,7 +141,7 @@ Met de integratie [Flightradar24](https://github.com/AlexandrErohin/home-assista
 ```yaml
 - type: custom:thuis-card
   flight_sensor: sensor.flightradar24_additional_tracked
-  flight_track: text.flightradar24_add_track
+  flight_track: text.flightradar24_add_to_track
 ```
 
 ### Kamers

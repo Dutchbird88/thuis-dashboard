@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '423';
+const CARD_VERSION = '424';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6665,7 +6665,7 @@ class ThuisCard extends HTMLElement {
   _fr24(kind) {
     const c = this._config, E = this._hass?.entities || {}, S = this._hass?.states || {};
     if (kind === 'sensor' && c.flight_sensor) return c.flight_sensor; if (kind === 'text' && c.flight_track) return c.flight_track;
-    const re = kind === 'sensor' ? /^sensor\..*additional_tracked/ : /^text\..*add_track/;
+    const re = kind === 'sensor' ? /^sensor\..*additional_tracked/ : /^text\..*add_(to_)?track/; // v424: de integratie heet het text.flightradar24_add_to_track
     return Object.keys(E).find((id) => re.test(id) && (E[id].platform === 'flightradar24' || /flightradar/.test(id))) || Object.keys(S).find((id) => re.test(id) && /flightradar/.test(id)) || null;
   }
   _updFlight() {
