@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '425';
+const CARD_VERSION = '426';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6680,8 +6680,13 @@ class ThuisCard extends HTMLElement {
       // live gegevens (Flightradar24)
       sid = this._fr24('sensor'); const tid = this._fr24('text');
       const list = this._state(sid)?.attributes?.flights || [];
-      const f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno));
-      if (!f && tid && this._state(tid) && x.s - now < 20 * HOUR && (!this._fltReq?.[fno] || now - this._fltReq[fno] > 10 * 60000)) {
+      let f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno));
+      // v426: laatste live gegevens bewaren; na de landing haalt Flightradar24 (auto-cleanup) de vlucht uit de lijst
+      const KEEP = ['flight_number', 'airline_short', 'aircraft_model', 'airport_origin_code_iata', 'airport_origin_city', 'airport_origin_terminal', 'airport_destination_code_iata', 'airport_destination_city', 'time_scheduled_departure', 'time_scheduled_arrival', 'time_real_departure', 'time_estimated_departure', 'time_real_arrival', 'time_estimated_arrival', 'on_ground'];
+      let kept = {}; try { kept = JSON.parse(localStorage.getItem('thuis-vlucht') || '{}'); } catch (e) { /* geen opslag */ }
+      if (f) { const k = { day: day0 }; KEEP.forEach((n) => { if (f[n] != null) k[n] = f[n]; }); if (JSON.stringify(kept[fno]) !== JSON.stringify(k)) { kept = { [fno]: k }; try { localStorage.setItem('thuis-vlucht', JSON.stringify(kept)); } catch (e) { /* geen opslag */ } } }
+      else if (kept[fno]?.day === day0) { f = { ...kept[fno], gone: true }; if (f.time_real_departure && !f.time_real_arrival && Date.now() > (+(f.time_estimated_arrival || f.time_scheduled_arrival) || 0) * 1000) f.time_real_arrival = f.time_estimated_arrival || f.time_scheduled_arrival; }
+      if ((!f || (f.gone && !f.time_real_arrival)) && tid && this._state(tid) && x.s - now < 20 * HOUR && (!this._fltReq?.[fno] || now - this._fltReq[fno] > 10 * 60000)) {
         (this._fltReq ||= {})[fno] = now; Promise.resolve(this._hass.callService('text', 'set_value', { entity_id: tid, value: fno }, undefined, false)).catch(() => {});
       }
       const T = (v) => (v ? +v * 1000 : null);
@@ -6711,7 +6716,7 @@ class ThuisCard extends HTMLElement {
       const planeAt = `left:clamp(11px, ${pc}%, calc(100% - 11px))`;
       const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:${pc}%"></i><svg style="${planeAt}" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
         + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`
-        + (flying && f && f.altitude != null ? `<div class="frlv"><span>${FLTI.alt}${fmt(Math.round(f.altitude * 0.3048 / 100) * 100)} m</span><span>${FLTI.spd}${fmt(Math.round((f.ground_speed || 0) * 1.852))} km/u</span>${f.aircraft_model ? `<span>${String(f.aircraft_model).replace(/[<>&]/g, '').slice(0, 28)}</span>` : ''}</div>` : '');
+        + (flying && f && !f.gone && f.altitude != null ? `<div class="frlv"><span>${FLTI.alt}${fmt(Math.round(f.altitude * 0.3048 / 100) * 100)} m</span><span>${FLTI.spd}${fmt(Math.round((f.ground_speed || 0) * 1.852))} km/u</span>${f.aircraft_model ? `<span>${String(f.aircraft_model).replace(/[<>&]/g, '').slice(0, 28)}</span>` : ''}</div>` : '');
       html = wxCardH(nice, ic, `flx ${st}${dl && !landed ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
       show = true; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
     }

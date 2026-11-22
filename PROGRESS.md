@@ -296,6 +296,7 @@
 | v423 | Telefoon, Thuis: vluchtkaart `#flt` (`_updFlight`, ontwerp B): afspraak met vluchtnummer vandaag; routelijn met vliegtuigje, tijden, Onderweg/Gepland/Geland, vertraging oranje; live uit Flightradar24 (`_fr24`, `sensor.*additional_tracked`, vlucht automatisch via `text.*add_track`), anders agendatijden. Klasse `.wx.flx` (niet `.fl`). Testpagina `vl=1|laat|plan|land|agenda`. |
 | v424 | Vluchtkaart: het invoerveld van Flightradar24 heet `text.flightradar24_add_to_track`; werd niet gevonden, dus de vlucht werd nooit gevolgd en er kwamen geen live gegevens. |
 | v425 | Vluchtkaart: weggeveegd blijft weg tot de stand verandert (gepland → onderweg → geland); sig bevat nu de stand. |
+| v426 | Vluchtkaart: laatste live gegevens bewaard (localStorage `thuis-vlucht`), zodat de kaart na de landing "Geland" met de echte tijd houdt als Flightradar24 de vlucht uit de lijst haalt (auto-cleanup). |
 
 ## Volgende stappen
 

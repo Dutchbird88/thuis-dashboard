@@ -281,6 +281,7 @@ Verdere regels:
 | `thuis-auto-ververst` | wanneer de auto voor het laatst is ververst |
 | `thuis-vaat-klaar` | vaatwasser klaar |
 | `thuis-muziek` | luistersessie van de HomePod (start, einde, speler) |
+| `thuis-vlucht` | laatste live gegevens van de vlucht van vandaag (v426, voor na auto-cleanup) |
 
 ### Iconen: `RIC` (stijl "Rounded")
 
