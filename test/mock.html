@@ -172,6 +172,8 @@ function stat(id, period, t0, t1) {
     if (/gas/.test(id)) ch = ch * 0.25; if (/water/.test(id)) ch = ch * 0.02;
     sum += ch; out.push({ start: t, end: t + step, change: ch, state: sum, sum, mean: w, min: w * 0.8, max: period === 'day' ? ch : w * 1.1 });
   }
+  // dagteller van de ECU per uur: loopt per dag van 0 op (zoals de echte sensor), dagwaarde zoals bij period 'day'
+  if (/today/.test(id) && period === 'hour') { const dv = (t) => 9 * (0.6 + 0.4 * Math.abs(Math.sin(t / 3e8))); out.forEach((o) => { const d = new Date(o.start); const h = d.getHours(); d.setHours(0, 0, 0, 0); const f = Math.min(1, Math.max(0, (h + 1 - 7.6) / 10.2)); o.state = o.max = dv(+d) * (1 - Math.cos(Math.PI * f)) / 2; }); return out; }
   // meterstanden laten eindigen bij de huidige stand van de sensor (anders lijkt de hele stand verbruik van vandaag)
   const cur = parseFloat(states[id]?.state); if (!isNaN(cur) && states[id].attributes.state_class) out.forEach((o) => { o.state = o.sum = cur - (sum - o.sum); });
   return out;
