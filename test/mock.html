@@ -98,7 +98,7 @@ if (q.get('vaat')) { const v = q.get('vaat'); ent('sensor.vaatwasser_status', ({
 if (q.get('vl')) { const V = q.get('vl'), m = 6e4, now = Date.now(), dep = V === 'plan' ? now + 165 * m : V === 'land' ? now - 200 * m : now - 70 * m, arr = dep + 200 * m, late = V === 'laat' ? 25 * m : 0;
   window.VLUCHT = { dep, arr };
   ent('text.flightradar24_add_to_track', '', {}, { pl: 'flightradar24' });
-  const f = { flight_number: 'KL1675', callsign: 'KLM1675', airline_short: 'KLM', aircraft_model: 'Boeing 737-800', airport_origin_code_iata: 'AMS', airport_origin_city: 'Amsterdam', airport_origin_terminal: '2', airport_destination_code_iata: 'BCN', airport_destination_city: 'Barcelona',
+  const f = { flight_number: 'KL1675', callsign: 'KLM1675', airline_short: 'KLM', aircraft_model: 'Boeing 737-800', airport_origin_code_iata: 'AMS', airport_origin_city: 'Amsterdam', airport_origin_terminal: '2', airport_destination_code_iata: 'BCN', airport_destination_city: 'Barcelona', airport_origin_timezone_offset: 3600, airport_destination_timezone_offset: 3600,
     time_scheduled_departure: dep / 1000, time_scheduled_arrival: arr / 1000, time_real_departure: V === 'plan' ? null : (dep + late + 4 * m) / 1000, time_estimated_arrival: (arr + late) / 1000, time_real_arrival: V === 'land' ? (arr - 4 * m) / 1000 : null,
     on_ground: V === 'plan' || V === 'land' ? 1 : 0, altitude: 35100, ground_speed: 454 };
   ent('sensor.flightradar24_additional_tracked', V === 'agenda' ? 0 : 1, { flights: V === 'agenda' ? [] : [f] }, { pl: 'flightradar24' }); }

@@ -303,6 +303,7 @@
 | v430 | Vluchtkaart: vliegtuigje op de routelijn groter (28 px) en precies op de lijn gecentreerd. |
 | v431 | Vluchtkaart: vliegtuigje zonder CSS-rotatie (in de svg gedraaid en gecentreerd; Safari zette het te hoog), rand in de kaartkleur zodat de lijn er niet doorheen loopt, balk stopt bij de staart; bij Geland geen stippellijn. |
 | v432 | Vluchtkaart: na de landing stuurt Flightradar24 de vlucht soms zonder tijden; ontbrekende velden worden aangevuld uit `thuis-vlucht`, zodat de kaart niet terugvalt op de agendatijden. |
+| v433 | Vluchtkaart: tijden in de lokale tijd van de luchthaven (vertrek/aankomst, `airport_*_timezone_offset`); bij Geland groot de landingstijd + "geland"; tik opent de vlucht in Flightradar24 (callsign). |
 
 ## Volgende stappen
 

@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '432';
+const CARD_VERSION = '433';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6683,7 +6683,7 @@ class ThuisCard extends HTMLElement {
       // v427: alleen de vlucht van deze afspraak (niet die van morgen met hetzelfde nummer): geplande vertrektijd binnen 12 uur van de afspraak
       let f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno) && (!y.time_scheduled_departure || Math.abs(y.time_scheduled_departure * 1000 - x.s) < 12 * HOUR));
       // v426: laatste live gegevens bewaren; na de landing haalt Flightradar24 (auto-cleanup) de vlucht uit de lijst
-      const KEEP = ['flight_number', 'airline_short', 'aircraft_model', 'airport_origin_code_iata', 'airport_origin_city', 'airport_origin_terminal', 'airport_destination_code_iata', 'airport_destination_city', 'time_scheduled_departure', 'time_scheduled_arrival', 'time_real_departure', 'time_estimated_departure', 'time_real_arrival', 'time_estimated_arrival', 'on_ground'];
+      const KEEP = ['flight_number', 'callsign', 'airport_origin_timezone_offset', 'airport_destination_timezone_offset', 'airline_short', 'aircraft_model', 'airport_origin_code_iata', 'airport_origin_city', 'airport_origin_terminal', 'airport_destination_code_iata', 'airport_destination_city', 'time_scheduled_departure', 'time_scheduled_arrival', 'time_real_departure', 'time_estimated_departure', 'time_real_arrival', 'time_estimated_arrival', 'on_ground'];
       let kept = {}; try { kept = JSON.parse(localStorage.getItem('thuis-vlucht') || '{}'); } catch (e) { /* geen opslag */ }
       // v432: na de landing stuurt Flightradar24 de vlucht soms zonder tijden; dan aanvullen met wat al bewaard was
       if (f && kept[fno]?.day === day0) { const m = { ...f }; KEEP.forEach((n) => { if (m[n] == null && kept[fno][n] != null) m[n] = kept[fno][n]; }); f = m; }
@@ -6716,23 +6716,27 @@ class ThuisCard extends HTMLElement {
       const ic = lc === 'ok' ? `<span class="flogo"><img src="${lurl}" alt=""></span>`
         : `<svg viewBox="0 0 100 100"><defs><linearGradient id="flw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfd8e4"/></linearGradient></defs><g transform="rotate(-14 50 50)"><path d="M10 54Q10 46 20 46H74Q88 46 94 52Q88 58 74 58H20Q10 58 10 54Z" fill="url(#flw)"/><path d="M40 47L58 22H66L56 47Z" fill="${ac}"/><path d="M42 57L58 76H66L56 57Z" fill="${ac}" opacity=".8"/><path d="M12 47L8 32H15L24 47Z" fill="${ac}"/><path d="M80 49Q86 49 90 52H80Z" fill="#2b3a52"/>${[30, 38, 46, 54, 62, 70].map((cx) => `<circle cx="${cx}" cy="51" r="1.6" fill="#8fa3bd"/>`).join('')}</g></svg>`;
       const pill = landed ? 'Geland' : flying ? 'Onderweg' : 'Gepland';
-      const big = landed ? `Geland<small>${fmtTime(rArr ?? arr)}</small>` : flying ? `<span class="n">${wxDur(Math.max(1, (arr - now) / 60000))}</span><small>resterend</small>` : `<span class="n">${fmtTime(dep)}</span><small>vertrek</small>`;
+      // v433: tijden in de lokale tijd van de luchthaven (vertrek: vertrekluchthaven, aankomst: bestemming); zonder gegevens de tijd van de telefoon
+      const lt = (t, off) => { if (t == null) return ''; if (off == null || isNaN(+off)) return fmtTime(t); const d = new Date(t + +off * 1000); return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`; };
+      const oo = f?.airport_origin_timezone_offset, doff = f?.airport_destination_timezone_offset, ot = (t) => lt(t, oo), dt = (t) => lt(t, doff);
+      const big = landed ? `<span class="n">${dt(rArr ?? arr)}</span><small>geland</small>` : flying ? `<span class="n">${wxDur(Math.max(1, (arr - now) / 60000))}</span><small>resterend</small>` : `<span class="n">${ot(dep)}</span><small>vertrek</small>`;
       const late = (m) => `<b class="${m > 0 ? 'fdlt' : 'fder'}">${m > 0 ? '+' : '−'}${Math.abs(m)} min</b>`;
       const line = landed ? `${WXI.clock}${dl ? `${Math.abs(delay)} min te ${delay > 0 ? 'laat' : 'vroeg'}` : 'Op tijd'}`
-        : flying ? `${WXI.clock}Landt ${fmtTime(arr)}${dl ? `</span><span class="fdl">${late(delay)}` : ''}`
+        : flying ? `${WXI.clock}Landt ${dt(arr)}${dl ? `</span><span class="fdl">${late(delay)}` : ''}`
         : `${WXI.clock}${dep - now < 60000 ? 'Vertrekt nu' : `Over ${wxDur((dep - now) / 60000)}`}${Math.abs(dep - sDep) >= 5 * 60000 ? ` ${late(Math.round((dep - sDep) / 60000))}` : ''}`
           + (f?.airport_origin_terminal ? `</span><span>${FLTI.gate}Terminal ${String(f.airport_origin_terminal).replace(/[<>&]/g, '')}` : '');
       const planeAt = `left:clamp(14px, ${pc}%, calc(100% - 14px))`;
       const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))"></i><svg style="${planeAt}" viewBox="0 -0.5 24 24"><path transform="rotate(90 12 12)" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
-        + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`; // v428: geen regel met hoogte, snelheid en toestel meer (gebruiker)
+        + `<div class="frtm"><span>${ot(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${dt(sArr)}</s> ` : ''}${dt(rArr ?? arr)}</span></div>`; // v428: geen regel met hoogte, snelheid en toestel meer (gebruiker)
       html = wxCardH(nice, ic, `flx ${st}${dl && !landed && delay > 0 ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
-      show = true; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
+      show = true; this._fltUrl = `https://www.flightradar24.com/${encodeURIComponent(String(f?.callsign || fno).replace(/\s/g, ''))}`; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
     }
     box.hidden = !show;
     box.dataset.sig = sig;
     if (box._h !== html) { box._h = html; box.innerHTML = html; this._wxFit(box); }
     this._applyHidden();
-    box.onclick = () => sid && this._state(sid) && this._moreInfo(sid);
+    // v433: tik = de vlucht in Flightradar24 (app als die er is, anders de website)
+    box.onclick = () => { if (this._fltUrl) window.open(this._fltUrl, '_blank'); else if (sid && this._state(sid)) this._moreInfo(sid); };
   }
 
   /* ---------- verbergen door te vegen (telefoon) ---------- */
