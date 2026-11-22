@@ -292,6 +292,7 @@
 | v419 | Telefoon, kamervenster met de laadpaal (Oprit): alleen de nieuwe laadkaart met de knoppen Laden/Pauze/Stop; de oude opmaak stond er dubbel boven (`.evone .was.xchg:has(> .wx)`). |
 | v420 | Telefoon, laadkaart: getekende Seal standaard in mint (lichte mintgrijze lak); `car_color: mint | wit | groen` (`evPaint`/`EVPAINT`). |
 | v421 | Telefoon, laadkaart: Seal opnieuw getekend naar foto's van de gebruiker (smalle scherpe koplampen met ledlijn, puntige inlaten met V-lichtstrepen, zwart glazen dak, dunnere stijlen, spoiler); laadkabel loopt achter de auto de flank in; onder de naam "8 u 44 resterend" (zoals de wasmachine). |
+| v422 | Nu: opbrengst per dag (Opbrengst week/maand/jaar en "t.o.v. gisteren") uit uurstatistieken van de ECU-teller (`dayKwh`): hoogste punt nadat de teller die dag verandert. Eerder de stand aan het einde van de dag, die na een reset van de ECU na zonsondergang te laag was (za 0,1 i.p.v. 4,4 kWh). |
 
 ## Volgende stappen
 

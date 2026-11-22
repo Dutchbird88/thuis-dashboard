@@ -837,6 +837,22 @@ const LIGHT = `
 }
 `;
 
+// v422: opbrengst per dag uit uurstatistieken van de ECU-dagteller. De ECU zet de teller na zonsondergang soms op 0 (of een
+// restwaarde), of houdt de waarde van gisteren vast tot de eerste meting van de ochtend. Daarom niet de stand aan het einde
+// van de dag, maar het hoogste punt vanaf het moment dat de teller die dag voor het eerst verandert.
+const dayKwh = (rows, ts) => {
+  const by = new Map(); let carry = null;
+  for (const r of rows) {
+    const t = startOfDay(ts(r.start)); let d = by.get(t);
+    if (!d) { d = { carry, on: false, v: 0 }; by.set(t, d); }
+    const st = r.state ?? r.max ?? 0, mx = r.max ?? st;
+    if (!d.on && (d.carry == null || Math.abs(st - d.carry) > 1e-6)) { d.on = true; d.v = Math.max(d.v, d.carry == null ? mx : st); }
+    else if (d.on) d.v = Math.max(d.v, mx, st);
+    carry = st;
+  }
+  return [...by].map(([t, d]) => ({ t, v: d.v }));
+};
+
 class ZonnepanelenCard extends HTMLElement {
   setConfig(config) {
     this._config = { ...DEFAULTS, ...config }; applyTheme(this, config);
@@ -1599,7 +1615,7 @@ class ZonnepanelenCard extends HTMLElement {
           start_time: new Date(dayAdd(day0, -(c.days - 1))).toISOString(),
           end_time: new Date(now).toISOString(),
           statistic_ids: [c.solar_today],
-          period: 'day',
+          period: 'hour',
           types: ['state', 'max'],
         }),
         // hoogste vermogen ooit gemeten (per maand, 3 jaar terug)
@@ -1618,7 +1634,7 @@ class ZonnepanelenCard extends HTMLElement {
         v: (r.mean ?? r.max ?? 0) * kw,
         pk: (r.max ?? r.mean ?? 0) * kw,
       }));
-      this._days = (days[c.solar_today] || []).map((r) => ({ t: startOfDay(ts(r.start)), v: r.state ?? r.max ?? 0 }));
+      this._days = dayKwh(days[c.solar_today] || [], ts); // v422: per uur, zie dayKwh
       const pk = Math.max(0, ...(peaks?.[c.solar_power] || []).map((r) => (r.max || 0) * kw));
       this._peak = pk > 200 ? pk : null;
       // voorspelde opwekking per uur (zoals het Energie-dashboard die toont); optioneel
@@ -1685,8 +1701,8 @@ class ZonnepanelenCard extends HTMLElement {
     const c = this._config, now = new Date(), start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     try {
       const r = await this._hass.callWS({ type: 'recorder/statistics_during_period', start_time: start.toISOString(), end_time: now.toISOString(),
-        statistic_ids: [c.solar_today], period: 'day', types: ['state', 'max'] });
-      this._yearDays = (r?.[c.solar_today] || []).map((x) => ({ t: startOfDay(ts(x.start)), v: x.max ?? x.state ?? 0 }));
+        statistic_ids: [c.solar_today], period: 'hour', types: ['state', 'max'] });
+      this._yearDays = dayKwh(r?.[c.solar_today] || [], ts);
       this._yearAt = Date.now();
     } catch (e) { this._yearDays = this._yearDays || []; }
     this._yearBusy = false;
@@ -1918,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '421';
+const CARD_VERSION = '422';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
