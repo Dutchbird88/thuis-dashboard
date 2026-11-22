@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '427';
+const CARD_VERSION = '428';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4473,7 +4473,7 @@ const HPSTYLE = `
   .wx.evx .wxs { gap: 6px; } .wx.evx .wxm .big { margin-top: 2px; font-size: 30px; } .was .wx.evx { grid-template-columns: 76px minmax(0, 1fr) auto; column-gap: 12px; } .wx.evx .wxi svg { width: 76px; height: auto; overflow: visible; } .wx.evx .pill.pill { background: #12B5A2; }  .wx.evx .wxb i { background: linear-gradient(90deg, #7ff0df, #14a394); } .wx.evx.off .pill.pill { background: rgba(163,176,197,.16); color: #C9D3E3 !important; } .wx.evx.off .wxm em { color: #A3B0C5; } .wx.evx.off .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* v413: laden in teal */
   /* v423: vluchtkaart: routelijn AMS — vliegtuigje — BCN met tijden en live gegevens */
   #flt#flt.was:has(.wx) { padding: 12px 19px 11px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; }
-  .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx.late .wxs > span b { color: #fbbf6a; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
+  .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx .wxs > span b.fdlt { color: #fbbf6a; } .wx.flx .wxs > span b.fder { color: #6EE7A0; } .wx.flx .flogo { display: block; width: 44px; height: 44px; border-radius: 12px; background: #fff; overflow: hidden; } .wx.flx .flogo img { width: 100%; height: 100%; object-fit: contain; display: block; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
   .wx.flx .frt { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 12px; font-size: 12.5px; color: #DDE4EE; }
   .wx.flx .frl { position: relative; height: 22px; } .wx.flx .frl::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; border-top: 2px dashed rgba(150,175,215,.30); }
   .wx.flx .frl i { position: absolute; left: 0; top: 9px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #6FD0FB, #3A8EF6); } .wx.flx .frt.ok .frl i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
@@ -6706,19 +6706,24 @@ class ThuisCard extends HTMLElement {
       const delay = Math.round((arr - sArr) / 60000), dl = Math.abs(delay) >= 5;
       const pc = landed ? 100 : flying ? Math.max(2, Math.min(98, (now - dep) / (arr - dep) * 100)) : 0;
       const st = landed ? 'ok' : flying ? 'run' : 'off';
-      const ic = `<svg viewBox="0 0 100 100"><defs><linearGradient id="flw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d5dde8"/></linearGradient></defs><g transform="rotate(45 50 50)"><path d="M46 10Q50 4 54 10V40L88 60V68L54 57V80L64 88V94L50 90L36 94V88L46 80V57L12 68V60L46 40Z" fill="url(#flw)"/><path d="M47 14Q50 9 53 14V22H47Z" fill="${landed ? '#2E9E5B' : flying ? '#3A8EF6' : '#8a94a6'}"/></g></svg>`;
+      // v428: logo van de maatschappij (wit vlakje), anders een opstijgend vliegtuig van opzij (optie A)
+      const al = String(f?.airline_iata || x.m[1]).toUpperCase(), lurl = String(this._config.airline_logo || 'https://pics.avs.io/160/160/{code}.png').replace('{code}', encodeURIComponent(al));
+      const lc = (this._logoC ||= {})[lurl];
+      if (lc == null) { this._logoC[lurl] = 'wait'; const im = new Image(); im.onload = () => { this._logoC[lurl] = im.naturalWidth > 8 ? 'ok' : 'fail'; this._updFlight(); }; im.onerror = () => { this._logoC[lurl] = 'fail'; }; im.src = lurl; }
+      const ac = landed ? '#2E9E5B' : flying ? '#3A8EF6' : '#8a94a6';
+      const ic = lc === 'ok' ? `<span class="flogo"><img src="${lurl}" alt=""></span>`
+        : `<svg viewBox="0 0 100 100"><defs><linearGradient id="flw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfd8e4"/></linearGradient></defs><g transform="rotate(-14 50 50)"><path d="M10 54Q10 46 20 46H74Q88 46 94 52Q88 58 74 58H20Q10 58 10 54Z" fill="url(#flw)"/><path d="M40 47L58 22H66L56 47Z" fill="${ac}"/><path d="M42 57L58 76H66L56 57Z" fill="${ac}" opacity=".8"/><path d="M12 47L8 32H15L24 47Z" fill="${ac}"/><path d="M80 49Q86 49 90 52H80Z" fill="#2b3a52"/>${[30, 38, 46, 54, 62, 70].map((cx) => `<circle cx="${cx}" cy="51" r="1.6" fill="#8fa3bd"/>`).join('')}</g></svg>`;
       const pill = landed ? 'Geland' : flying ? 'Onderweg' : 'Gepland';
       const big = landed ? `Geland<small>${fmtTime(rArr ?? arr)}</small>` : flying ? `<span class="n">${wxDur(Math.max(1, (arr - now) / 60000))}</span><small>resterend</small>` : `<span class="n">${fmtTime(dep)}</span><small>vertrek</small>`;
-      const late = (m) => `<b>${m > 0 ? '+' : '−'}${Math.abs(m)} min</b>`;
+      const late = (m) => `<b class="${m > 0 ? 'fdlt' : 'fder'}">${m > 0 ? '+' : '−'}${Math.abs(m)} min</b>`;
       const line = landed ? `${WXI.clock}${dl ? `${Math.abs(delay)} min te ${delay > 0 ? 'laat' : 'vroeg'}` : 'Op tijd'}`
         : flying ? `${WXI.clock}Landt ${fmtTime(arr)}${dl ? `</span><span class="fdl">${late(delay)}` : ''}`
         : `${WXI.clock}${dep - now < 60000 ? 'Vertrekt nu' : `Over ${wxDur((dep - now) / 60000)}`}${Math.abs(dep - sDep) >= 5 * 60000 ? ` ${late(Math.round((dep - sDep) / 60000))}` : ''}`
           + (f?.airport_origin_terminal ? `</span><span>${FLTI.gate}Terminal ${String(f.airport_origin_terminal).replace(/[<>&]/g, '')}` : '');
       const planeAt = `left:clamp(11px, ${pc}%, calc(100% - 11px))`;
       const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:${pc}%"></i><svg style="${planeAt}" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
-        + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`
-        + (flying && f && !f.gone && f.altitude != null ? `<div class="frlv"><span>${FLTI.alt}${fmt(Math.round(f.altitude * 0.3048 / 100) * 100)} m</span><span>${FLTI.spd}${fmt(Math.round((f.ground_speed || 0) * 1.852))} km/u</span>${f.aircraft_model ? `<span>${String(f.aircraft_model).replace(/[<>&]/g, '').slice(0, 28)}</span>` : ''}</div>` : '');
-      html = wxCardH(nice, ic, `flx ${st}${dl && !landed ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
+        + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`; // v428: geen regel met hoogte, snelheid en toestel meer (gebruiker)
+      html = wxCardH(nice, ic, `flx ${st}${dl && !landed && delay > 0 ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
       show = true; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
     }
     box.hidden = !show;
