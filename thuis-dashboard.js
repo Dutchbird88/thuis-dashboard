@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '426';
+const CARD_VERSION = '427';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6680,7 +6680,8 @@ class ThuisCard extends HTMLElement {
       // live gegevens (Flightradar24)
       sid = this._fr24('sensor'); const tid = this._fr24('text');
       const list = this._state(sid)?.attributes?.flights || [];
-      let f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno));
+      // v427: alleen de vlucht van deze afspraak (niet die van morgen met hetzelfde nummer): geplande vertrektijd binnen 12 uur van de afspraak
+      let f = list.find((y) => [y.flight_number, y.callsign].some((v) => String(v || '').toUpperCase().replace(/\s/g, '') === fno) && (!y.time_scheduled_departure || Math.abs(y.time_scheduled_departure * 1000 - x.s) < 12 * HOUR));
       // v426: laatste live gegevens bewaren; na de landing haalt Flightradar24 (auto-cleanup) de vlucht uit de lijst
       const KEEP = ['flight_number', 'airline_short', 'aircraft_model', 'airport_origin_code_iata', 'airport_origin_city', 'airport_origin_terminal', 'airport_destination_code_iata', 'airport_destination_city', 'time_scheduled_departure', 'time_scheduled_arrival', 'time_real_departure', 'time_estimated_departure', 'time_real_arrival', 'time_estimated_arrival', 'on_ground'];
       let kept = {}; try { kept = JSON.parse(localStorage.getItem('thuis-vlucht') || '{}'); } catch (e) { /* geen opslag */ }

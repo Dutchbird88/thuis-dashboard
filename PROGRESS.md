@@ -297,6 +297,7 @@
 | v424 | Vluchtkaart: het invoerveld van Flightradar24 heet `text.flightradar24_add_to_track`; werd niet gevonden, dus de vlucht werd nooit gevolgd en er kwamen geen live gegevens. |
 | v425 | Vluchtkaart: weggeveegd blijft weg tot de stand verandert (gepland → onderweg → geland); sig bevat nu de stand. |
 | v426 | Vluchtkaart: laatste live gegevens bewaard (localStorage `thuis-vlucht`), zodat de kaart na de landing "Geland" met de echte tijd houdt als Flightradar24 de vlucht uit de lijst haalt (auto-cleanup). |
+| v427 | Vluchtkaart: alleen live gegevens van de vlucht die bij de afspraak hoort (geplande vertrektijd binnen 12 uur), niet die van een volgende dag met hetzelfde nummer. |
 
 ## Volgende stappen
 
