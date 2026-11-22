@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '429';
+const CARD_VERSION = '430';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4475,9 +4475,9 @@ const HPSTYLE = `
   #flt#flt.was:has(.wx) { padding: 12px 19px 11px 20px !important; border-radius: 20px !important; border: 1px solid rgba(115,155,215,.30) !important; background: linear-gradient(118deg, rgba(80,130,190,0) 68%, rgba(80,130,190,.16) 78%, rgba(80,130,190,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(36,70,106,.75), rgba(36,70,106,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; box-shadow: none !important; }
   .wx.flx .wxi svg { width: 44px; height: 44px; } .wx.flx .wxs > span b.fdlt { color: #fbbf6a; } .wx.flx .wxs > span b.fder { color: #6EE7A0; } .wx.flx .flogo { display: block; width: 44px; height: 44px; border-radius: 12px; background: #fff; overflow: hidden; padding: 5px; box-sizing: border-box; } .wx.flx .flogo img { width: 100%; height: 100%; object-fit: contain; display: block; } .wx.flx.late .wxs > span:not(.pill) { color: #fbbf6a; } .wx.flx .wxs > span.fdl { padding-left: 21px; }
   .wx.flx .frt { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 12px; font-size: 12.5px; color: #DDE4EE; }
-  .wx.flx .frl { position: relative; height: 22px; } .wx.flx .frl::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; border-top: 2px dashed rgba(150,175,215,.30); }
-  .wx.flx .frl i { position: absolute; left: 0; top: 9px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #6FD0FB, #3A8EF6); } .wx.flx .frt.ok .frl i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
-  .wx.flx .frl svg { position: absolute; top: 0; width: 22px; height: 22px; margin-left: -11px; fill: #eef2f8; transform: rotate(90deg); }
+  .wx.flx .frl { position: relative; height: 28px; } .wx.flx .frl::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; border-top: 2px dashed rgba(150,175,215,.30); }
+  .wx.flx .frl i { position: absolute; left: 0; top: 12px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #6FD0FB, #3A8EF6); } .wx.flx .frt.ok .frl i { background: linear-gradient(90deg, #6EE7A0, #2E9E5B); }
+  .wx.flx .frl svg { position: absolute; top: 0; width: 28px; height: 28px; margin-left: -14px; fill: #eef2f8; transform: rotate(90deg); }
   .wx.flx .frtm { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 11px; color: #8b95a8; margin-top: 2px; } .wx.flx .frtm s { opacity: .6; }
   .wx.flx .frlv { grid-column: 1 / -1; display: flex; gap: 14px; margin-top: 8px; font-size: 11.5px; color: #A3B0C5; white-space: nowrap; overflow: hidden; } .wx.flx .frlv span { display: inline-flex; align-items: center; gap: 5px; } .wx.flx .frlv svg { width: 13px; height: 13px; flex: none; }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
@@ -6720,8 +6720,8 @@ class ThuisCard extends HTMLElement {
         : flying ? `${WXI.clock}Landt ${fmtTime(arr)}${dl ? `</span><span class="fdl">${late(delay)}` : ''}`
         : `${WXI.clock}${dep - now < 60000 ? 'Vertrekt nu' : `Over ${wxDur((dep - now) / 60000)}`}${Math.abs(dep - sDep) >= 5 * 60000 ? ` ${late(Math.round((dep - sDep) / 60000))}` : ''}`
           + (f?.airport_origin_terminal ? `</span><span>${FLTI.gate}Terminal ${String(f.airport_origin_terminal).replace(/[<>&]/g, '')}` : '');
-      const planeAt = `left:clamp(11px, ${pc}%, calc(100% - 11px))`;
-      const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:${pc}%"></i><svg style="${planeAt}" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
+      const planeAt = `left:clamp(14px, ${pc}%, calc(100% - 14px))`;
+      const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:${pc}%"></i><svg style="${planeAt}" viewBox="0 0.5 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
         + `<div class="frtm"><span>${fmtTime(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${fmtTime(sArr)}</s> ` : ''}${fmtTime(rArr ?? arr)}</span></div>`; // v428: geen regel met hoogte, snelheid en toestel meer (gebruiker)
       html = wxCardH(nice, ic, `flx ${st}${dl && !landed && delay > 0 ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
       show = true; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)

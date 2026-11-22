@@ -300,6 +300,7 @@
 | v427 | Vluchtkaart: alleen live gegevens van de vlucht die bij de afspraak hoort (geplande vertrektijd binnen 12 uur), niet die van een volgende dag met hetzelfde nummer. |
 | v428 | Vluchtkaart: logo van de maatschappij in een wit vlakje (`airline_logo`, standaard pics.avs.io, `{code}` = IATA), anders een opstijgend vliegtuig van opzij; regel met hoogte/snelheid/toestel weg; eerder landen groen (`b.fder`), vertraging oranje (`b.fdlt`). |
 | v429 | Vluchtkaart: logo's standaard van Google Flights (vierkant beeldmerk, bijv. KLM-kroontje) i.p.v. pics.avs.io (breed woordlogo, te klein in het vlakje); 5 px ruimte in het witte vlak. |
+| v430 | Vluchtkaart: vliegtuigje op de routelijn groter (28 px) en precies op de lijn gecentreerd. |
 
 ## Volgende stappen
 
