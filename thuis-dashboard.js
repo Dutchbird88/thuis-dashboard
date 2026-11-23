@@ -1934,7 +1934,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '436';
+const CARD_VERSION = '437';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4500,7 +4500,7 @@ const HPSTYLE = `
 .mos .mobig { width: 96px; height: 96px; margin: 26px auto 4px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,200,61,.10); box-shadow: 0 0 0 1px rgba(255,200,61,.22); }
 .mos .tmnav { display: inline-flex; align-items: center; gap: 10px; } .mos .tmnav button { all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.07); text-align: center; line-height: 27px; font-size: 18px; color: #dbe4f0; } .mos .tmnav button[disabled] { opacity: .3; cursor: default; } .mos .mobig.tmp { background: rgba(90,162,255,.14); box-shadow: 0 0 0 1px rgba(110,166,255,.22); } .mos .mobig.off { background: rgba(255,255,255,.05); box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
 .mos .mobig svg { width: 58px; height: 58px; }
-.mos .most { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 10px; } .mos .most span { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.mos .most { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 10px; } .mos .most.tbig { font-size: 44px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; margin-top: 12px; } .mos .most.tbig small { font-size: 28px; font-weight: 600; vertical-align: top; margin-left: 1px; } .mos .most.tbig span { font-size: 13px; font-weight: 500; letter-spacing: 0; margin-top: 4px; } .mos .most span { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .mos .mochips { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; } .mos .mochips div { background: rgba(255,255,255,.05); border-radius: 12px; padding: 7px 11px; font-size: 12.5px; color: var(--muted); } .mos .mochips b { display: block; font-size: 15px; color: var(--text); }
 .mos .mostrip { height: 34px; border-radius: 9px; } .mos .mostrip i { background: #ffc83d; border-radius: 1px; opacity: .9; }
 .mos .modh { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; } .mos .modh span { font-weight: 500; }
@@ -5743,7 +5743,7 @@ class ThuisCard extends HTMLElement {
       hist = `<div class="pcard"><div class="phh">${nav}<b id="moTot">gemiddeld ${fmt(avg, 1)}°</b></div><div class="lxwrap">${this._tempSvg(Pd, d0, now, true)}<b class="momk lxmk"></b></div>${ticks}<div class="mohint">Schuif over de lijn voor het tijdstip</div></div>`;
       this._tmPts = Pd;
     }
-    const top = `<div class="mobig tmp">${RIC.svg('therm', 'sky')}</div><div class="most">${isNaN(v) ? '—' : `${fmt(v, 1)}°`}<span>${hum != null ? `${fmt(hum)}% vocht · nu` : 'nu'}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;
+    const top = `<div class="mobig tmp">${RIC.svg('therm', 'sky')}</div><div class="most tbig">${isNaN(v) ? '—' : `${fmt(v, 1)}<small>°</small>`}<span>${hum != null ? `${fmt(hum)}% vocht · nu` : 'nu'}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}`;
     const html = top + hist;
     if (this._moScrub) return;
     if (box._k === html) return; box._k = html; box.innerHTML = html;
