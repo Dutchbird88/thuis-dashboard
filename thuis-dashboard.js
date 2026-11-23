@@ -612,7 +612,7 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .mpanels.mob { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
   /* v438: panelen als echte zonnepanelen: zilveren lijst, blauwe cellen; per dakkant staand (1 : 1,65) of liggend (panel_orientation) */
   .znu .mpanels .panel { height: auto; aspect-ratio: 1 / 1.65; border-radius: 5px; border: 0; padding: 3px; background: linear-gradient(180deg, #b9c2cf, #7d8796); }
-  .znu .mpanels .mpg.ls .panel { aspect-ratio: 1.65 / 1; }
+  .znu .mpanels .mpg.ls .panel { aspect-ratio: 1.65 / 1; } .znu .mpanels .mpg.ls { grid-template-columns: repeat(auto-fill, calc((100% - 30px) / 6 * 1.65)); }
   .znu .mpanels .panel::after { inset: 3px; border-radius: 3px; }
   .znu .mpanels .panel::before { inset: 3px; border-radius: 3px; z-index: 0; background-color: #16294a; background-image: linear-gradient(160deg, rgba(255,255,255,.13), transparent 45%), linear-gradient(rgba(160,190,240,.26) 1px, transparent 1px), linear-gradient(90deg, rgba(160,190,240,.26) 1px, transparent 1px); background-size: 100% 100%, 33.34% 16.67%, 33.34% 16.67%; }
   .znu .mpanels .mpg.ls .panel::before { background-size: 100% 100%, 16.67% 33.34%, 16.67% 33.34%; }
@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '438';
+const CARD_VERSION = '439';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

@@ -309,6 +309,7 @@
 | v436 | Telefoon, kamervenster: tik op een losse temperatuursensor (`#rmTh[data-tmo]`) opent venster `mo` met temperatuur (`_updTempSheet`, `_tempSvg`): hoogste/laagste/vocht, lijngrafiek met schuiven, met ‹ › door de laatste 7 dagen bladeren; klokje = 7 dagen (`_tempLog`). `_moKind` = temp bij device_class temperature. |
 | v437 | Temperatuurvenster: huidige temperatuur groot (44 px, `.most.tbig`). |
 | v438 | Nu (telefoon): panelen als echte zonnepanelen (zilveren lijst, cellen); per dakkant staand of liggend via `panel_orientation`. |
+| v439 | Liggende panelen even groot als staande (gedraaid), 3 per rij. |
 
 ## Volgende stappen
 
