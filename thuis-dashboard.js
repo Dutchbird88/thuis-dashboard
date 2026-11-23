@@ -610,7 +610,15 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
   .znu .msum { font-size: 12px; color: var(--muted); margin: -2px 0 6px; } .znu .msum b { color: var(--text); font-weight: 600; }
   .znu .sides { display: none; } .znu.mdet .sides { display: grid; margin-top: 14px; }
   .znu .mpanels.mob { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-  .znu .mpanels .panel { aspect-ratio: auto; height: 50px; border-radius: 9px; }
+  /* v438: panelen als echte zonnepanelen: zilveren lijst, blauwe cellen; per dakkant staand (1 : 1,65) of liggend (panel_orientation) */
+  .znu .mpanels .panel { height: auto; aspect-ratio: 1 / 1.65; border-radius: 5px; border: 0; padding: 3px; background: linear-gradient(180deg, #b9c2cf, #7d8796); }
+  .znu .mpanels .mpg.ls .panel { aspect-ratio: 1.65 / 1; }
+  .znu .mpanels .panel::after { inset: 3px; border-radius: 3px; }
+  .znu .mpanels .panel::before { inset: 3px; border-radius: 3px; z-index: 0; background-color: #16294a; background-image: linear-gradient(160deg, rgba(255,255,255,.13), transparent 45%), linear-gradient(rgba(160,190,240,.26) 1px, transparent 1px), linear-gradient(90deg, rgba(160,190,240,.26) 1px, transparent 1px); background-size: 100% 100%, 33.34% 16.67%, 33.34% 16.67%; }
+  .znu .mpanels .mpg.ls .panel::before { background-size: 100% 100%, 16.67% 33.34%, 16.67% 33.34%; }
+  .znu .mpanels .panel::after { z-index: 1; opacity: calc(var(--p) * .85); mix-blend-mode: normal; }
+  .znu .mpanels .panel .pn { top: 7px; left: 8px; z-index: 2; font-size: 10.5px; font-weight: 700; color: #cfd8e6; }
+  .znu .mpanels .panel .pw { top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
   .znu .minv.mob { display: flex; justify-content: space-between; align-items: center; margin: 12px -14px -12px; padding: 11px 14px; border-top: 1px solid rgba(130,170,255,.12); font-size: 13px; color: var(--muted); cursor: pointer; }
   .znu .minv .chev { font-size: 17px; transition: transform .2s; } .znu.mdet .minv .chev { transform: rotate(90deg); }
   .znu .minv .ist { display: none; align-items: center; gap: 7px; color: var(--text); font-weight: 500; } .znu .minv.hasst .ist { display: inline-flex; } .znu .minv.hasst .chev { display: none; }
@@ -1072,7 +1080,7 @@ class ZonnepanelenCard extends HTMLElement {
           <div class="tile s12 tpan">
             <div class="th"><span class="label"><span class="dl">Panelen &amp; omvormers</span><span class="ml">Panelen</span></span><span class="aside dl" id="panelsNote"></span><span class="aside ml" id="mPanSum"></span></div>
             <div class="alert" id="alert" hidden></div>
-            <div class="mpanels mob" style="--mc:${Math.min(6, Math.max(1, ...Object.values(sides).map((v) => v.flatMap((i) => i.panels).length)))}">${Object.entries(sides).sort((a, b) => Math.min(...a[1].map(first)) - Math.min(...b[1].map(first))).map(([sd, invs]) => `<div class="mside">${c.sides[sd] || sd}</div><div class="mpg">${invs.flatMap((inv) => inv.panels).sort((a, b) => a.n - b.n).map((p) => `<div class="panel" data-mp="${p.entity}" data-e="${p.entity}"><div class="pn">${p.n}</div><div class="pw num">—</div></div>`).join('')}</div>`).join('')}</div>
+            <div class="mpanels mob" style="--mc:${Math.min(6, Math.max(1, ...Object.values(sides).map((v) => v.flatMap((i) => i.panels).length)))}">${Object.entries(sides).sort((a, b) => Math.min(...a[1].map(first)) - Math.min(...b[1].map(first))).map(([sd, invs]) => `<div class="mside">${c.sides[sd] || sd}</div>${(() => { const n = invs.flatMap((inv) => inv.panels).length, ls = /^(liggend|landscape|l)$/i.test(String((c.panel_orientation || {})[sd] || '')); return `<div class="mpg ${ls ? 'ls' : 'pt'}" style="--mc:${ls ? 4 : 6}">`; })()}${invs.flatMap((inv) => inv.panels).sort((a, b) => a.n - b.n).map((p) => `<div class="panel" data-mp="${p.entity}" data-e="${p.entity}"><div class="pn">${p.n}</div><div class="pw num">—</div></div>`).join('')}</div>`).join('')}</div>
             <div class="minv mob" id="mInv"><span>Omvormers<span id="mInvT"></span></span><span class="chev">›</span><span class="ist" id="mIst"><i></i><span></span></span></div>
             <div class="sides">${sidesHtml}</div>
           </div>
@@ -1934,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '437';
+const CARD_VERSION = '438';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {

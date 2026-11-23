@@ -120,6 +120,15 @@ photo:
 
 Afname en teruglevering van vandaag komen uit het Energie-dashboard van Home Assistant. Lukt dat niet, geef dan zelf de meters op met `grid_import` en `grid_export` (totaaltellers in kWh). Zonder `scene: true` (of zonder `dusk` en `night`) staat de tegel "Mijn huis": het huis met rechts zon, huisverbruik en net.
 
+### Panelen staand of liggend (telefoon)
+
+Op Nu zien de panelen eruit als echte zonnepanelen. Standaard staan ze rechtop (staand). Liggen ze op een dakkant dwars, zet dat dan per dakkant (de sleutel uit `sides`):
+
+```yaml
+panel_orientation:
+  voor: liggend
+```
+
 ### Laadkaart (telefoon)
 
 Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het vermogen en wanneer de accu vol is. Als naam gebruikt de kaart de naam van het apparaat van de accusensor. Een eigen naam kan ook:

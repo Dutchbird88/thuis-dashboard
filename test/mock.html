@@ -227,7 +227,7 @@ const hass = {
 const CONFIG = {
   'thuis-card': { persons: [{ entity: 'person.bewoner', name: 'Bewoner' }, { entity: 'person.bewoner2', name: 'Bewoner 2' }], weather_place: 'Plaats', covers: ['cover.rolluik_woonkamer', 'cover.rolluik_slaapkamer'], ...(q.get('hide') ? { hide_lights: q.get('hide').split(',') } : {}) },
   'kamers-card': {},
-  'zonnepanelen-card': { inverters, grid_power: 'sensor.p1_vermogen', photo: SCENE ? { ...SCENE, ground: 855, pipe: [559, 428], panels_box: [585, 210, 273, 80], panels: {} } : { image: HUIS, width: 400, height: 300, panels: {} } },
+  'zonnepanelen-card': { inverters, panel_orientation: { voor: 'liggend' }, grid_power: 'sensor.p1_vermogen', photo: SCENE ? { ...SCENE, ground: 855, pipe: [559, 428], panels_box: [585, 210, 273, 80], panels: {} } : { image: HUIS, width: 400, height: 300, panels: {} } },
   'verbruik-card': { power: 'sensor.p1_vermogen', import: 'sensor.stroom_afname', export: 'sensor.stroom_teruglevering', gas: 'sensor.gas_stand', water: 'sensor.water_stand' },
   'auto-card': { image: AUTO },
 }[CARD] || {};
