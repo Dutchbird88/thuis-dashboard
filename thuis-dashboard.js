@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '445';
+const CARD_VERSION = '446';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2760,7 +2760,9 @@ class VerbruikCard extends HTMLElement {
         if (P && rows(P).some((x) => x.mean != null)) sp = rows(P).filter((x) => x.mean != null && x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: x.mean }));
         else { const ex = new Map(rows(X).map((x) => [x.t, x.ch])); sp = rows(I).filter((x) => x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: (ok(x.ch, kw * sc) - ok(ex.get(x.t), kw * sc)) * 1000 / sc })); }
       }
-      if (R.x1 > now && P && this._num(P) != null) sp.push({ t: now, v: this._meter(P) ?? this._num(P), live: true });
+      if (per === 'nu' && P && this._num(P) != null) sp.push({ t: now, v: this._meter(P) ?? this._num(P), live: true });
+      // v446: dag: stroom licht gladstrijken (gemiddelde over 15 min), zoals de oude app; zonder losse live-piek aan het eind
+      if (per === 'dag' && slot < HOUR && sp.length > 3) sp = sp.map((p, k) => { const w = sp.slice(Math.max(0, k - 1), k + 2); return { ...p, v: w.reduce((a, q) => a + q.v, 0) / w.length }; });
       const gp = rows(G).filter((x) => x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: ok(x.ch, 6 * sc) }));
       // water: per uur (dag) of per 5 minuten (nu), in liters
       const wb = per === 'dag' ? 24 : 12, wslot = per === 'dag' ? HOUR : 5 * 60000, w0 = per === 'dag' ? R.x0 : Math.floor((now - HOUR) / wslot) * wslot + wslot;
@@ -2850,14 +2852,14 @@ class VerbruikCard extends HTMLElement {
     else for (const it of spec.items) { mx = Math.max(mx, it.v ?? it.a ?? 0); if (spec.mode === 'bars2') mn = Math.min(mn, -(it.b || 0)); }
     if (mx - mn <= 0) mx = line ? (u === 's' ? 500 : 0.05) : 1;
     // v444: schaal past strak om de gegevens (ca. 4 vakken, stappen 1-2-5), zoals de oude app: 360 en −380 W → 400 … −400
-    const e = 10 ** Math.floor(Math.log10((mx - mn) / 4));
-    let step = 10 * e, best = Infinity;
-    for (const m of [0.5, 1, 2, 5, 10, 20]) { const st = m * e, r = Math.ceil(mx / st) * st - Math.floor(mn / st) * st; if (r / st <= 6.001 && r < best - 1e-9) { best = r; step = st; } }
-    const top = Math.ceil(mx / step) * step || step, bot = Math.floor(mn / step) * step, Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
+    // v446: rustige schaal zoals de oude app: weinig hulplijnen (stap 1-2-5 voor ca. 3 vakken); de rand ligt op een hulplijn als die dichtbij is, anders net boven de gegevens
+    const e = 10 ** Math.floor(Math.log10((mx - mn) / 3)), step = [1, 2, 5, 10].map((m) => m * e).find((v) => v >= (mx - mn) / 3 - 1e-12);
+    const edge = (v) => { if (!v) return 0; const r = (v > 0 ? Math.ceil(v / step) : Math.floor(v / step)) * step; return Math.abs(r) <= Math.abs(v) * 1.5 + 1e-12 ? r : v * 1.08; };
+    const top = edge(mx) || step, bot = edge(mn), Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
     let dec = 0; while (dec < 4 && Math.abs(step * 10 ** dec - Math.round(step * 10 ** dec)) > 1e-6) dec++;
     const fy = (v) => (Math.abs(v) >= 1000 ? fmt(v) : fmt(Math.abs(v) < step / 2 ? 0 : v, dec));
     let s = '';
-    for (let v = bot; v <= top + step / 2; v += step) s += `<line x1="0" x2="${PW}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="rgba(255,255,255,${Math.abs(v) < step / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fy(v)}</text>`;
+    for (let v = Math.ceil(bot / step - 1e-9) * step; v <= top + 1e-9; v += step) s += `<line x1="0" x2="${PW}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="rgba(255,255,255,${Math.abs(v) < step / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fy(v)}</text>`;
     const q = `${u}${Math.random().toString(36).slice(2, 6)}`;
     let X;
     if (line) {
@@ -2867,7 +2869,13 @@ class VerbruikCard extends HTMLElement {
       if (P.length > 1) {
         let d = `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
         // v443: veel punten (5 minuten of fijner) = rechte stukjes, zodat pieken smal en scherp blijven; weinig punten = vloeiend
-        if (P.length > 40) for (let k = 1; k < P.length; k++) d += ` L${P[k][0].toFixed(1)} ${P[k][1].toFixed(1)}`;
+        if (P.length > 40) { // v446: monotone kromme: vloeiend, maar zonder over een piek heen te schieten
+          const n = P.length, dx = [], m = [], t = [];
+          for (let k = 0; k < n - 1; k++) { dx[k] = P[k + 1][0] - P[k][0] || 1e-6; m[k] = (P[k + 1][1] - P[k][1]) / dx[k]; }
+          t[0] = m[0]; t[n - 1] = m[n - 2];
+          for (let k = 1; k < n - 1; k++) t[k] = m[k - 1] * m[k] <= 0 ? 0 : (3 * (dx[k - 1] + dx[k])) / ((2 * dx[k] + dx[k - 1]) / m[k - 1] + (dx[k] + 2 * dx[k - 1]) / m[k]);
+          for (let k = 0; k < n - 1; k++) { const h = dx[k] / 3; d += ` C${(P[k][0] + h).toFixed(1)} ${(P[k][1] + t[k] * h).toFixed(1)} ${(P[k + 1][0] - h).toFixed(1)} ${(P[k + 1][1] - t[k + 1] * h).toFixed(1)} ${P[k + 1][0].toFixed(1)} ${P[k + 1][1].toFixed(1)}`; }
+        }
         else for (let k = 0; k < P.length - 1; k++) {
           const p0 = P[k - 1] || P[k], p1 = P[k], p2 = P[k + 1], p3 = P[k + 2] || p2;
           d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;

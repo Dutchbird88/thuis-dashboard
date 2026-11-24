@@ -316,6 +316,7 @@
 | v443 | Energie (telefoon): grafieken bijna over de hele kaartbreedte en scherpe lijnen bij 5-minutengegevens. |
 | v444 | Energie (telefoon): schaal van de grafieken past strak om de gegevens (zoals de oude app). |
 | v445 | Energie: schaal nog strakker (tot 6 vakken), bijv. 520/−500 W → 600 … −600 in plaats van 1.000 … −500. |
+| v446 | Energie: grafieken zoals de oude app: minder hulplijnen (500 · 0 · −500), stroom vloeiender (15 min gemiddeld), geen piek door de live waarde aan het eind. |
 
 ## Volgende stappen
 
