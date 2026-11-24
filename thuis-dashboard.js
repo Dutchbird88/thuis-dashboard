@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '451';
+const CARD_VERSION = '452';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2667,7 +2667,7 @@ class VerbruikCard extends HTMLElement {
         <div class="eseg" id="eSeg">${['nu', 'dag', 'week', 'maand', 'jaar'].map((p) => `<button data-p="${p}">${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}</div></div></div>
       <button class="eal" id="eAl" style="display:none"><i></i><span id="eAlT"></span>${ch}</button>
       ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
-      <div class="esec"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Deze maand</span><span>tik voor historie</span></div>
+      <div class="esec"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Kosten</span><span>tik voor historie</span></div>
       <button class="emon" id="eMon"><div class="emr"><div><div class="emt num" id="eMt">—</div><div class="ems" id="eMs"></div></div><div class="emp" id="eMp"></div></div>
         <div class="ebar" id="eMb"></div><div class="eleg" id="eMl"></div></button>
       <button class="ebw" id="eBw"><span>${gl('gPlug')}<b id="eBase">—</b>&nbsp;sluip</span><span>${gl('gGauge')}<b id="ePk">—</b>&nbsp;aansluiting</span>${ch}</button>
@@ -2830,6 +2830,12 @@ class VerbruikCard extends HTMLElement {
       this._egD = { ...d, key, at: Date.now() };
       if (!this.shadowRoot.querySelector('.ecw.scrub')) this._egHead();
       this._egDraw();
+      this._egCostBlock();
+      if (p !== 'nu' && !(p === 'maand' && o === 0)) {
+        const lc = (this._egLyC ||= {})[key];
+        if (lc && Date.now() - lc.at < 3600000) { this._egD.ly = lc.v; this._egCostBlock(); }
+        else this._egPeriodLy(d.R, p).then((v) => { this._egLyC[key] = { v, at: Date.now() }; if (this._egD?.key === key) { this._egD.ly = v; this._egCostBlock(); } }).catch(() => {});
+      }
     } catch (e) {
       console.warn('verbruik-card: periode ophalen mislukt', e);
     } finally { if (this._egBusy === key) this._egBusy = null; }
@@ -2965,19 +2971,49 @@ class VerbruikCard extends HTMLElement {
     const dIn = new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() + 1, 0).getDate(), dm = (now - ms) / DAY;
     const exp = dm >= 1 ? (tot / dm) * dIn : null;
     this._egCur = { e: cE, g: cG, w: cW, tot, exp, ms, ui: m.ui, ux: m.ux, ug: m.ug, uw: m.uw };
-    const eur = (v) => `€ ${fmt(v)}`, pc = (a, b) => { const d = Math.round(((a - b) / b) * 100); return `<span style="color:${d === 0 ? 'var(--muted)' : d < 0 ? EG.e : '#ffb547'}">${d > 0 ? '+' : d < 0 ? '−' : ''}${Math.abs(d)}%</span>`; };
-    this.$('eMt').textContent = eur(tot);
-    this.$('eMs').innerHTML = `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}`;
-    const ly = this._egLy, lyc = ly && this._egCost(ly.i, ly.x, ly.g, ly.w, ly.days);
-    const pm = this._egKh ? this._egMonthCost(new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() - 1, 1).getTime()) : null;
-    if (lyc && lyc.tot > 0) this.$('eMp').innerHTML = `${new Date(ly.t).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')} ${eur(lyc.tot)}<br>${pc(tot, lyc.tot)} <span style="font-size:11.5px">zelfde dagen</span>`;
-    else if (pm && pm.tot > 0 && exp != null) this.$('eMp').innerHTML = `${new Date(pm.t).toLocaleDateString('nl-NL', { month: 'long' })} ${eur(pm.tot)}<br>${pc(exp, pm.tot)}`;
-    else this.$('eMp').innerHTML = '';
-    const parts = [[Math.max(0, cE), EG.s, 'Stroom'], ...(pg != null ? [[Math.max(0, cG), EG.g, 'Gas']] : []), ...(pw != null ? [[Math.max(0, cW), EG.w, 'Water']] : [])];
-    this.$('eMb').innerHTML = tot > 0 ? parts.map(([v, c]) => (v > 0 ? `<i style="width:${(v / tot) * 100}%;background:${c}"></i>` : '')).join('') : '';
-    this.$('eMl').innerHTML = parts.map(([v, c, n]) => `<span><i style="background:${c}"></i>${n} ${eur(v)}</span>`).join('') + '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
+    void pg; void pw;
     if (!this._egKh && !this._egKhBusy && this._hass) this._egKhLoad();
     this._egLyLoad();
+    this._egCostBlock();
+  }
+
+  // v452: het kostenblok onderaan volgt de periodekiezer (vandaag, deze week, november, 2026 …), met vergelijking t.o.v. dezelfde periode vorig jaar
+  _egCostBlock() {
+    const d = this._egD; if (!this.$('eMt') || !d) return;
+    const now = Date.now(), R = d.R, per = d.per, cur = R.x1 > now;
+    const eur = (v) => `€ ${fmt(v, v < 100 ? 2 : 0)}`;
+    const days = Math.max(0, Math.min(R.x1, now) - (per === 'nu' ? now - HOUR : R.x0)) / DAY;
+    let c, exp = null, ly = null;
+    if (per === 'maand' && !d.off && this._egCur) {
+      const k = this._egCur; c = { e: Math.max(0, k.e), g: Math.max(0, k.g), w: Math.max(0, k.w), tot: k.tot }; exp = k.exp;
+      const l = this._egLy; ly = l ? this._egCost(l.i, l.x, l.g, l.w, l.days) : null;
+    } else {
+      const t = d.tot; c = this._egCost(t.i, t.x, t.g, t.w, days);
+      if (d.ly) ly = this._egCost(d.ly.i, d.ly.x, d.ly.g, d.ly.w, days);
+    }
+    this.$('eMn').textContent = `Kosten ${R.name}`;
+    this.$('eMt').textContent = eur(c.tot);
+    this.$('eMs').innerHTML = cur ? `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}` : { dag: 'hele dag', week: 'hele week', maand: 'hele maand', jaar: 'heel jaar' }[per] || '';
+    if (per !== 'nu' && ly && ly.tot > 0) {
+      const dd = Math.round(((c.tot - ly.tot) / ly.tot) * 100), col = dd === 0 ? 'var(--muted)' : dd < 0 ? EG.e : '#ffb547';
+      this.$('eMp').innerHTML = `<b style="color:${col};font-size:15px">${dd > 0 ? '+' : dd < 0 ? '−' : ''}${Math.abs(dd)}%</b><br>t.o.v. vorig jaar<br>dezelfde periode`;
+    } else this.$('eMp').innerHTML = '';
+    const pg = this._price('gas'), pw = this._price('water');
+    const parts = [[c.e, EG.s, 'Stroom'], ...(pg != null ? [[c.g, EG.g, 'Gas']] : []), ...(pw != null ? [[c.w, EG.w, 'Water']] : [])];
+    this.$('eMb').innerHTML = c.tot > 0 ? parts.map(([v, col]) => (v > 0 ? `<i style="width:${(v / c.tot) * 100}%;background:${col}"></i>` : '')).join('') : '';
+    this.$('eMl').innerHTML = parts.map(([v, col, n]) => `<span><i style="background:${col}"></i>${n} ${eur(v)}</span>`).join('') + '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
+  }
+
+  // verbruik in dezelfde periode vorig jaar (dag/week: 52 weken terug, zelfde weekdag; maand/jaar: zelfde datum); null zonder gegevens
+  async _egPeriodLy(R, per) {
+    const c = this._config, ids = [c.import, c.export, c.gas, c.water].filter(Boolean), now = Date.now(), end = Math.min(R.x1, now);
+    if (!ids.length || per === 'nu') return null;
+    const sh = (t) => { if (per === 'dag' || per === 'week') return dayAdd(t, -364); const x = new Date(t); x.setFullYear(x.getFullYear() - 1); return x.getTime(); };
+    const a = sh(R.x0), b = a + (end - R.x0), period = per === 'jaar' ? 'day' : 'hour', n = period === 'day' ? 24 : 1, kw = (c.fuse * c.voltage * c.phases) / 1000;
+    const r = await this._egStat(ids, period, a, b);
+    if (!ids.some((id) => (r[id] || []).length)) return null;
+    const sum = (id, cap) => (id ? (r[id] || []).reduce((s, x) => s + (x.change == null || x.change < 0 || x.change > cap * n ? 0 : x.change), 0) : 0);
+    return { i: sum(c.import, kw), x: sum(c.export, kw), g: c.gas ? sum(c.gas, 6) : null, w: c.water ? sum(c.water, 2) : null };
   }
 
   // maandstatistiek van de afgelopen jaren, voor het venster Kosten en verbruik

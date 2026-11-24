@@ -322,6 +322,7 @@
 | v449 | Energie: schuiven toont de waarde in de kop van de kaart in plaats van een vakje in de grafiek (keuze A). |
 | v450 | Kosten en verbruik rustiger (keuze A): één groot getal met één vergelijking, soorten eronder, Vergelijken ingeklapt. |
 | v451 | Apparaatkaarten (telefoon): bij klaar is de balk echt helemaal vol (stopte eerst net voor het eind). |
+| v452 | Energie: het kostenblok onderaan springt mee met de periodekiezer (vandaag, gisteren, deze week, maand, jaar) en vergelijkt met dezelfde periode vorig jaar. |
 
 ## Volgende stappen
 
