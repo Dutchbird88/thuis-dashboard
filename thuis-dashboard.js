@@ -4875,8 +4875,17 @@ const picImg = (src) => `<img class="pici" src="${src}" alt="" onerror="this.sty
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 // v423: kleine iconen voor de vluchtkaart
 const FLTI = { gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V7l8-3 8 3v13M9 20v-6h6v6"/></svg>', alt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8M15 8h5v5"/></svg>', spd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 17a8 8 0 1 1 14 0M12 13l4-4"/></svg>' };
-const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
-  + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc >= 100 ? '100%' : `max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))`}"></i></div>`}</div>`;
+// v456: indeling naar het ontwerp van de gebruiker: links naam, programma (grijs) en status (gekleurde tekst), rechts groot de tijd met de regel(s) eronder;
+// "resterend" valt weg ("1 u 24 min"), klaar zonder tijd = groot "Klaar", storing = volle oranje balk
+const wxCardH = (title, icon, k, pill, sub, big, line, pc) => {
+  const has = (c) => (' ' + k + ' ').includes(` ${c} `), plain = (h) => String(h || '').replace(/<[^>]*>/g, '').trim();
+  let b = String(big || '').replace(/<small>resterend<\/small>/, '').replace(/(\d+ u \d\d)(?=(<\/span>)?$)/, '$1 min');
+  if (!plain(b) && has('ok')) b = 'Klaar';
+  if (has('ok') && plain(pill) === 'Klaar') pill = pill.replace(/Klaar$/, `${title} klaar`);
+  if (has('warn') && pc == null) pc = 100;
+  return `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}<span class="st">${pill}</span></div>`
+    + `<div class="wxs">${plain(b) ? `<span class="big">${b}</span>` : ''}${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc >= 100 ? '100%' : `max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))`}"></i></div>`}</div>`;
+};
 // v418: laadkaart-icoon (telefoon): groene Seal van voren met wallbox, naar het ontwerp van de gebruiker; eigen verlopen evs*
 // v420: lakkleur van de getekende Seal: car_color groen | mint (standaard) | wit
 const EVPAINT = { mint: { pa: '<stop offset="0" stop-color="#cfe3dc"/><stop offset=".4" stop-color="#a9c6bd"/><stop offset=".75" stop-color="#7f9e95"/><stop offset="1" stop-color="#53706a"/>', hood: '<stop offset="0" stop-color="#e6f3ee"/><stop offset=".5" stop-color="#b9d3cb"/><stop offset="1" stop-color="#a9c6bd" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#d7e9e3"/><stop offset="1" stop-color="#8fb0a7"/>', bum: '<stop offset="0" stop-color="#94b2a9"/><stop offset="1" stop-color="#53706a"/>', mir: '#8fb0a7' }, wit: { pa: '<stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#e9edf2"/><stop offset=".75" stop-color="#c3cad4"/><stop offset="1" stop-color="#8f98a6"/>', hood: '<stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#f1f4f8"/><stop offset="1" stop-color="#dfe4eb" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d0da"/>', bum: '<stop offset="0" stop-color="#cfd5de"/><stop offset="1" stop-color="#7d8796"/>', mir: '#c9d0da' } };
@@ -5126,6 +5135,18 @@ const HPSTYLE = `
   .wx.flx .frtm { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 11px; color: #8b95a8; margin-top: 2px; } .wx.flx .frtm s { opacity: .6; }
   .wx.flx .frlv { grid-column: 1 / -1; display: flex; gap: 14px; margin-top: 8px; font-size: 11.5px; color: #A3B0C5; white-space: nowrap; overflow: hidden; } .wx.flx .frlv span { display: inline-flex; align-items: center; gap: 5px; } .wx.flx .frlv svg { width: 13px; height: 13px; flex: none; }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
+}
+@media (max-width: 600px) {
+  /* v456: nieuwe indeling: status als gekleurde tekst onder het programma, rechts groot de tijd (24 px), titel niet cursief */
+  .wx .wxm b { font-style: normal; font-weight: 650; letter-spacing: -.005em; } .wx .wxm em { color: #A3B0C5; }
+  .wx .wxm .st { display: flex; align-items: center; gap: 6px; margin-top: 4px; min-width: 0; font-size: 12.5px; font-weight: 600; color: #4BA8FF; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .wx .wxm .st svg { width: 14px; height: 14px; flex: none; }
+  .wx .wxs { align-items: flex-end; gap: 6px; text-align: right; }
+  .wx .wxs > span.big { display: flex; align-items: baseline; gap: 5px; font-size: 24px; font-weight: 700; color: #F5F7FC; letter-spacing: -.02em; line-height: 1; white-space: nowrap; } .wx .wxs > span.big .n { font-size: inherit; font-weight: 700; color: #F5F7FC !important; letter-spacing: inherit; opacity: 1; margin: 0; } .wx .wxs > span.big small { font-size: 12px; font-weight: 400; color: #A3B0C5; letter-spacing: 0; }
+  .wx .wxs > span:not(.big) { font-size: 12px; color: #C3CDDB; } .wx .wxs > span:not(.big) b { color: #fbbf6a; }
+  .wx.ok .wxm .st { color: #5BD98A; } .wx.warn .wxm .st { color: #fbbf6a; } .wx.off .wxm .st, .wx.plan .wxm .st { color: #C9D3E3; }
+  .wx.ov .wxm .st { color: #F59A55; } .wx.evx .wxm .st { color: #2FD4BD; } .wx.evx.off .wxm .st { color: #C9D3E3; } .wx.pk .wxm .st { color: #FF7A7E; } .wx.pk.vw .wxm .st { color: #FFB3B3; } .wx.pk.ok .wxm .st { color: #5BD98A; }
+  .wx.warn .wxb i { background: linear-gradient(90deg, #FFC48A, #F59E0B); }
+  .wx.evx .wxs > span.big { font-size: 26px; } .wx.pk .wxs > span.big { font-size: 20px; } .wx.flx.late .wxs > span.big { color: #F5F7FC; }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
 
@@ -6988,7 +7009,7 @@ class ThuisCard extends HTMLElement {
     const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
     const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
     const big = pct != null ? `<span class="n">${pct}%</span>` : '';
-    const sub = live && rem != null ? `${wxDur(rem * 60)} resterend` : ttl; // v421: zoals de wasmachine // v414: resterende tijd i.p.v. "Laden · Thuis"
+    const sub = live && rem != null ? `${wxDur(rem * 60)} resterend` : live ? 'Aan de laadpaal' : start ? `Start ${start}` : 'Aan de laadpaal'; // v456: niet dubbel met de status // v421: zoals de wasmachine // v414: resterende tijd i.p.v. "Laden · Thuis"
     return wxCardH(name, icon, `evx ${on ? 'run' : 'off'}`, ttl, sub, big, lines.join('</span><span>'), pct);
   }
 
@@ -7075,12 +7096,13 @@ class ThuisCard extends HTMLElement {
     const fit = (el, f, min) => { while (el && el.clientWidth && tw(el) > el.clientWidth - 1 && f > min) { f -= 0.5; el.style.fontSize = `${f}px`; } };
     if (box?.querySelector('.wx')) requestAnimationFrame(() => {
       const wx = box.querySelector('.wx'); if (!wx) return;
-      const big = wx.querySelector('.big'), num = big?.firstChild;
+      const big = wx.querySelector('.wxs > .big'), m = wx.querySelector('.wxm');
       fit(wx.querySelector('em'), 12, 10.5);
-      if (!big || !num || num.nodeType !== 3) return;
-      const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);
-      let f = parseFloat(getComputedStyle(big).fontSize) || 27; const fMin = f - 4; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > fMin) { f -= 0.5; sp.style.fontSize = `${f}px`; }
-      if (big.clientWidth && tw(big) > big.clientWidth - 1) wx.classList.add('tight');
+      if (!big || !m) return;
+      // v456: de tijd staat rechts; is links de naam, het programma of de status afgekapt, dan de tijd kleiner (hooguit 5 px)
+      const cut = () => [...m.children].some((el) => el.clientWidth && tw(el) > el.clientWidth + 0.5);
+      let f = parseFloat(getComputedStyle(big).fontSize) || 24; const fMin = f - 5; while (cut() && f > fMin) { f -= 0.5; big.style.fontSize = `${f}px`; }
+      if (cut()) wx.classList.add('tight');
     });
   }
 
@@ -7353,7 +7375,7 @@ class ThuisCard extends HTMLElement {
     if (show && done) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`
-        + wxCardH('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, `Bezorgd om ${fmtTime(dt)}`, 'Bezorgd', `${WXI.clock}${cap(relTime(dt))}`, null);
+        + wxCardH('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, 'Bezorging vandaag', fmtTime(dt), `${WXI.clock}${cap(relTime(dt))}`, null);
     } else if (show) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`), pm = (m) => (m >= 90 ? `${Math.round(m / 60)} u` : `${Math.max(1, Math.round(m))} min`);
