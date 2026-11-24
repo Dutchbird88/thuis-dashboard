@@ -320,6 +320,7 @@
 | v447 | Energie: afname/teruglevering benoemd, grafieken compacter met eenheden, waarden bij de gekozen staaf en vergelijken op twee regels. |
 | v448 | Energie: vakje bij het schuiven staat naast de lijn en bedekt het rondje niet meer. |
 | v449 | Energie: schuiven toont de waarde in de kop van de kaart in plaats van een vakje in de grafiek (keuze A). |
+| v450 | Kosten en verbruik rustiger (keuze A): één groot getal met één vergelijking, soorten eronder, Vergelijken ingeklapt. |
 
 ## Volgende stappen
 

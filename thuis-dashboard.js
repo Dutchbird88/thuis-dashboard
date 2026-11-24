@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '449';
+const CARD_VERSION = '450';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2228,6 +2228,14 @@ const EGSTYLE = `
   .krow .ku { color: var(--muted); font-size: 12px; text-align: right; } .krow b { min-width: 62px; text-align: right; }
   .kc2 { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
   .kc2:last-of-type { border-bottom: 0; } .kc2 span { font-size: 14px; } .kc2 b { text-align: right; font-size: 14.5px; font-weight: 700; } .kc2 small { font-size: 12px; color: var(--muted); } .kc2 em { text-align: right; font-style: normal; font-size: 12px; font-weight: 600; }
+  .ktop { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; } .ktop .eseg { flex: 0 0 172px; margin: 0; }
+  .ktg { display: flex; gap: 6px; margin-left: auto; } .ktg button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 99px; color: var(--muted); border: 1px solid rgba(130,170,255,.14); } .ktg button.on { color: #fff; background: rgba(255,255,255,.1); }
+  .kbig { font-size: 34px; font-weight: 700; letter-spacing: -.6px; line-height: 1.1; } .ksub { font-size: 13.5px; color: var(--muted); margin-top: 2px; } .ksub b { color: var(--text); }
+  .kpill { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 99px; margin-top: 8px; }
+  .krs { display: grid; gap: 9px; margin-top: 8px; } .krs .krow { grid-template-columns: 10px 1fr auto; } .krs .krow span .ku { margin-left: 6px; }
+  .kmore { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.04); font-size: 14px; color: var(--text); }
+  .kmore small { flex: 1; text-align: right; color: var(--muted); font-size: 12.5px; } .kmore i { font-style: normal; color: var(--muted); transition: transform .2s; } .kmore.open i { transform: rotate(90deg); }
+  #kCmp { margin-top: 4px; }
   .khint { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
   .egsh .check:first-child { padding-top: 14px; }
 }
@@ -3036,11 +3044,12 @@ class VerbruikCard extends HTMLElement {
   _egCostSheet() {
     const eur = (v) => `€ ${fmt(v)}`;
     this._egOpen('Kosten en verbruik', '<svg class="gl3 sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2bc4a6"/><path d="M15.4 8.4A4.4 4.4 0 0 0 8.6 10m6.8 5.6A4.4 4.4 0 0 1 8.6 14M7.2 10.7h5.8M7.2 13.3h5.8" stroke="#06352d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
-      `<div class="eseg" id="kMode"><button data-v="k" class="on">Kosten</button><button data-v="v">Verbruik</button></div>
-      <div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
+      `<div class="ktop"><div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
+        <div class="ktg" id="kMode"><button data-v="k" class="on">€</button><button data-v="v">kWh · m³</button></div></div>
       <div class="kchips" id="kU" style="display:none">${[['s', 'Stroom'], ['g', 'Gas'], ['w', 'Water']].map(([k, n]) => `<button data-u="${k}" style="--c:${EG[k]}" class="${k === 'g' ? 'on' : ''}">${n}</button>`).join('')}</div>
-      <div class="ksum" id="kSum"></div>
-      <div class="khw"><svg id="kSv" viewBox="0 0 330 182"></svg></div><div class="kdet" id="kDet"></div><div id="kCmp"></div>`);
+      <div class="kbig num" id="kBig"></div><div class="ksub" id="kSub"></div><div id="kPill"></div>
+      <div class="khw"><svg id="kSv" viewBox="0 0 330 182"></svg></div><div class="krs" id="kDet"></div>
+      <button class="kmore" id="kMore"><span>Vergelijken</span><small>vorig jaar, vorige maand, gemiddelde</small><i>›</i></button><div id="kCmp" style="display:none"></div>`);
     const cur = this._egCur || { e: 0, g: 0, w: 0, tot: 0, exp: null, ms: startOfDay(Date.now()) };
     const d0 = new Date(cur.ms), Y = d0.getFullYear(), M = d0.getMonth(), today = new Date();
     const curE = { t: cur.ms, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w), tot: cur.tot, ui: cur.ui, ux: cur.ux, ug: cur.ug, uw: cur.uw, now: true };
@@ -3089,15 +3098,22 @@ class VerbruikCard extends HTMLElement {
       });
       const svg = this.$('kSv'); svg.innerHTML = o;
       svg.querySelectorAll('.kh').forEach((r) => r.addEventListener('click', () => { sel = +r.dataset.i; draw(); }));
-      const x = L[sel], nm = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) + (x.now ? ' (tot nu)' : '') : `${x.y}${x.now ? ' (tot nu)' : ''}`;
-      const use = (k) => (k === 'e' ? (x.ui != null ? `${fu(x.ui, 's').replace(' kWh', '')} kWh af${x.ux ? ` · ${fmt(x.ux, x.ux >= 100 ? 0 : 1)} terug` : ''}` : '') : k === 'g' ? (x.ug != null ? fu(x.ug, 'g') : '') : x.uw != null ? fu(x.uw, 'w') : '');
-      const part = (k, c, nmm) => `<div class="krow"><i style="background:${c}"></i><span>${nmm}</span><small class="ku">${use(k)}</small><b class="num">€ ${fmt(x[k], 2)}</b></div>`;
-      this.$('kDet').innerHTML = x.none ? `<div class="kdh"><span>${nm}</span><b>—</b></div><div class="khint" style="margin:0">Geen gegevens voor deze maand.</div>`
-        : `<div class="kdh"><span>${nm}</span><b class="num">${kost ? `€ ${fmt(x.tot)}` : fu(x[key], u)}</b></div>${part('e', EG.s, 'Stroom')}${part('g', EG.g, 'Gas')}${part('w', EG.w, 'Water')}`;
-      // samenvatting en vergelijking
+      // v450 (keuze A): één groot getal met één vergelijking; daaronder de soorten; vergelijken ingeklapt
+      const x = L[sel], dt = new Date(x.t), nm = mode === 'm' ? dt.toLocaleDateString('nl-NL', dt.getFullYear() === Y ? { month: 'long' } : { month: 'long', year: 'numeric' }) : String(x.y);
+      const use = (k) => (k === 'e' ? (x.ui != null ? `${fmt(x.ui, x.ui >= 100 ? 0 : 1)} kWh af${x.ux ? ` · ${fmt(x.ux, x.ux >= 100 ? 0 : 1)} terug` : ''}` : '') : k === 'g' ? (x.ug != null ? fu(x.ug, 'g') : '') : x.uw != null ? fu(x.uw, 'w') : '');
+      const parts = [['g', EG.g, 'Gas'], ['e', EG.s, 'Stroom'], ['w', EG.w, 'Water']].filter(([k]) => x[k] > 0 || use(k)).sort((p1, p2) => x[p2[0]] - x[p1[0]]);
+      this.$('kDet').innerHTML = x.none ? '<div class="khint" style="margin:0">Geen gegevens voor deze periode.</div>' : parts.map(([k, c, nmm]) => `<div class="krow"><i style="background:${c}"></i><span>${nmm}<small class="ku">${use(k)}</small></span><b class="num">€ ${fmt(x[k], 2)}</b></div>`).join('');
+      const kost0 = view === 'k', gv = (q) => (q == null ? null : kost0 ? q.tot : q[key]), fv = (v) => (v == null ? '—' : kost0 ? eur(v) : fu(v, u));
+      this.$('kBig').textContent = x.none ? '—' : fv(gv(x));
+      this.$('kSub').innerHTML = `${nm}${x.now ? ' tot nu' : ''}${x.now && kost0 && mode === 'm' && cur.exp != null ? ` · verwacht <b>${eur(cur.exp)}</b>` : ''}${!kost0 ? ` · ${U[u].n.toLowerCase()}` : ''}`;
+      let ref = null, rn = '';
+      if (x.now) { ref = mode === 'm' ? lyM : lyY; rn = `${mode === 'm' ? new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '') : Y - 1} (zelfde dagen)`; }
+      else if (mode === 'm') { ref = this._egMonthCost(new Date(dt.getFullYear() - 1, dt.getMonth(), 1).getTime()); rn = new Date(dt.getFullYear() - 1, dt.getMonth(), 1).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', ''); }
+      else { ref = years.find((q) => q.y === x.y - 1); rn = String(x.y - 1); }
+      const a1 = gv(x), b1 = gv(ref);
+      if (!x.none && a1 != null && b1) { const dd = Math.round(((a1 - b1) / b1) * 100), c = dd === 0 ? 'var(--muted)' : dd < 0 ? EG.e : '#ffb547'; this.$('kPill').innerHTML = `<span class="kpill" style="color:${c};background:color-mix(in srgb, ${dd === 0 ? '#8a97ab' : c} 14%, transparent)">${dd === 0 ? 'Gelijk aan' : `${Math.abs(dd)}% ${dd < 0 ? 'minder' : 'meer'} dan`} ${rn}</span>`; } else this.$('kPill').innerHTML = '';
       const lyP = mode === 'm' ? lyM : lyY, curP = mode === 'm' ? curE : years.find((q) => q.now), pname = mode === 'm' ? `${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')} t/m ${dayTxt}` : `${Y - 1} t/m ${dayTxt}`;
       const get = (q) => (q == null ? null : kost ? q.tot : q[key]), f = (v) => (kost ? eur(v) : fu(v, u));
-      this.$('kSum').innerHTML = `<div><b class="num">${f(get(curP))}</b>${mode === 'm' ? 'deze maand' : String(Y)} tot nu</div>` + (lyP && get(lyP) != null ? `<div><b class="num">${f(get(lyP))}</b>vorig jaar, zelfde dagen</div><div><b>${pc(get(curP), get(lyP))}</b>verschil</div>` : '');
       const rows = [];
       if (lyP && get(lyP) != null) rows.push(['Zelfde periode vorig jaar', get(lyP), pc(get(curP), get(lyP)), mode === 'm' ? `1 t/m ${today.getDate()} ${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}` : `1 januari t/m ${dayTxt} ${Y - 1}`]);
       if (mode === 'm') {
@@ -3107,11 +3123,11 @@ class VerbruikCard extends HTMLElement {
         if (!prev.none && get(prev) != null) rows.push(['Vorige maand', get(prev), '', new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })]);
         if (past.length) rows.push(['Gemiddeld per maand', past.reduce((s, q) => s + get(q), 0) / past.length, '', `afgelopen ${past.length} maanden`]);
       } else years.filter((q) => !q.now).reverse().forEach((q) => rows.push([String(q.y), get(q), '', 'heel jaar']));
-      const hint = (kost ? 'Kosten berekend met je huidige prijzen, inclusief vaste kosten. ' : u === 's' ? 'Stroom: afname omhoog, teruglevering omlaag (groen). ' : '') + 'Vergeleken wordt met dezelfde dagen vorig jaar, omdat het seizoen veel uitmaakt. Tik op een staaf voor de verdeling.';
-      this.$('kCmp').innerHTML = `${rows.length ? `<div class="klbl">Vergelijken<span>${kost ? 'kosten' : U[u].n.toLowerCase()}</span></div>${rows.map(([nn, v, p, sub]) => `<div class="kc2"><span>${nn}</span><b class="num">${f(v)}</b><small>${sub || ''}</small><em>${p || ''}</em></div>`).join('')}` : ''}<div class="khint">${hint}</div>`;
+      this.$('kCmp').innerHTML = `${rows.map(([nn, v, pp, sub]) => `<div class="kc2"><span>${nn}</span><b class="num">${f(v)}</b><small>${sub || ''}</small><em>${pp || ''}</em></div>`).join('')}<div class="khint">${kost ? 'Berekend met je huidige prijzen, inclusief vaste kosten.' : ''}</div>`;
     };
     const tog = (id, attr, fn) => this.shadowRoot.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => { fn(b.dataset[attr]); this.shadowRoot.querySelectorAll(`#${id} button`).forEach((q) => q.classList.toggle('on', q === b)); draw(); }));
     tog('kMode', 'v', (v) => { view = v; this.$('kU').style.display = v === 'v' ? '' : 'none'; });
+    this.$('kMore').addEventListener('click', () => { const c = this.$('kCmp'), o = c.style.display === 'none'; c.style.display = o ? '' : 'none'; this.$('kMore').classList.toggle('open', o); });
     tog('kSeg', 'k', (k) => { mode = k; sel = (k === 'm' ? months : years).length - 1; });
     tog('kU', 'u', (k) => { u = k; });
     draw();
