@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '441';
+const CARD_VERSION = '442';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -3037,6 +3037,8 @@ class VerbruikCard extends HTMLElement {
     const U = { s: { k: 'ui', n: 'Stroom', u: 'kWh' }, g: { k: 'ug', n: 'Gas', u: 'm³' }, w: { k: 'uw', n: 'Water', u: 'm³' } };
     const fu = (v, u) => (v == null ? '—' : `${fmt(v, u === 's' ? (v >= 100 ? 0 : 1) : v >= 100 ? 0 : 1)} ${U[u].u}`);
     const pc = (a, b) => { if (a == null || !b) return '<span></span>'; const dd = Math.round(((a - b) / b) * 100); return `<span style="color:${dd === 0 ? 'var(--muted)' : dd < 0 ? EG.e : '#ffb547'}">${dd > 0 ? '+' : dd < 0 ? '−' : ''}${Math.abs(dd)}%</span>`; };
+    // staaf met alleen de buitenste hoeken afgerond (rt boven, rb onder); overgangen blijven recht
+    const rr = (x, y, w, h, rt, rb) => { rt = Math.min(rt, w / 2, h); rb = Math.min(rb, w / 2, h - rt); return `M${x},${y + rt}Q${x},${y} ${x + rt},${y}H${x + w - rt}Q${x + w},${y} ${x + w},${y + rt}V${y + h - rb}Q${x + w},${y + h} ${x + w - rb},${y + h}H${x + rb}Q${x},${y + h} ${x},${y + h - rb}Z`; };
     let view = 'k', mode = 'm', u = 'g', sel = 11;
     const draw = () => {
       const L = mode === 'm' ? months : years, n = L.length; if (!n) return;
@@ -3053,10 +3055,10 @@ class VerbruikCard extends HTMLElement {
       L.forEach((x, k) => {
         const bx = k * bw + (bw - w) / 2, dim = k === sel ? 1 : 0.45;
         if (x.now && fc) { const f = Yp(fc); o += `<rect x="${bx}" y="${f}" width="${w}" height="${z - f}" rx="4" fill="none" stroke="rgba(200,215,240,.35)" stroke-dasharray="3 3"/>`; }
-        if (kost) { let y = z; [['w', EG.w], ['e', EG.s], ['g', EG.g]].forEach(([kk, c], j) => { const h = (x[kk] / (mx + mn)) * (bot - top); if (h <= 0) return; y -= h; o += `<rect x="${bx}" y="${y}" width="${w}" height="${Math.max(h - 1, 0.5)}" rx="${j === 2 ? 4 : 1}" fill="${c}" opacity="${dim}"/>`; }); }
+        if (kost) { const seg = [['w', EG.w], ['e', EG.s], ['g', EG.g]].filter(([kk]) => x[kk] > 0); let y = z; seg.forEach(([kk, c], j) => { const h = (x[kk] / (mx + mn)) * (bot - top); y -= h; o += `<path d="${rr(bx, y, w, Math.max(h - (j ? 1 : 0), 0.5), j === seg.length - 1 ? 4 : 0, 0)}" fill="${c}" opacity="${dim}"/>`; }); }
         else {
-          const h = Math.max(0, z - Yp(val(x))); if (h > 0) o += `<rect x="${bx}" y="${z - h}" width="${w}" height="${h}" rx="4" fill="${EG[u]}" opacity="${dim}"/>`;
-          const hn = Math.max(0, Yp(-neg(x)) - z); if (hn > 0) o += `<rect x="${bx}" y="${z + 1}" width="${w}" height="${hn}" rx="4" fill="${EG.e}" opacity="${dim}"/>`;
+          const h = Math.max(0, z - Yp(val(x))); if (h > 0) o += `<path d="${rr(bx, z - h, w, h, 4, 0)}" fill="${EG[u]}" opacity="${dim}"/>`;
+          const hn = Math.max(0, Yp(-neg(x)) - z); if (hn > 0) o += `<path d="${rr(bx, z + 1, w, hn, 0, 4)}" fill="${EG.e}" opacity="${dim}"/>`;
         }
         const lab = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : String(x.y);
         o += `<text x="${bx + w / 2}" y="176" text-anchor="middle" style="${k === sel ? 'fill:#fff;font-weight:700' : ''}">${lab}</text><rect class="kh" data-i="${k}" x="${k * bw}" y="0" width="${bw}" height="182" fill="transparent"/>`;

@@ -312,6 +312,7 @@
 | v439 | Liggende panelen even groot als staande (gedraaid), 3 per rij. |
 | v440 | Energie (telefoon) opnieuw: ontwerp G met periodekiezer bovenin (Nu/Dag/Week/Maand/Jaar, terug in de tijd), per soort een kaart met grafiek om door te schuiven, maandblok met kostenhistorie, exacte kleuren; geen Net nu. Computer ongewijzigd. |
 | v441 | Energie (telefoon): vergelijken met dezelfde dagen vorig jaar; venster "Kosten en verbruik" met schakelaar Kosten/Verbruik (per soort, maanden en jaren) en verbruik in de verdeling. |
+| v442 | Kosten en verbruik: staven niet meer afgerond op de overgangen (gestapeld en bij de nullijn). |
 
 ## Volgende stappen
 
