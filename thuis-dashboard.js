@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '452';
+const CARD_VERSION = '453';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2205,8 +2205,9 @@ const EGSTYLE = `
   .ebar { display: flex; height: 10px; border-radius: 99px; overflow: hidden; gap: 2px; margin: 12px 0 10px; background: rgba(255,255,255,.05); } .ebar i { display: block; height: 100%; }
   .eleg { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); align-items: center; } .eleg i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
   .eleg .ch { margin-left: auto; color: var(--faint); }
-  .ebw { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 14px; width: 100%; font-size: 13px; color: var(--faint); padding: 6px 6px 10px; cursor: pointer; }
-  .ebw span { display: inline-flex; align-items: center; gap: 5px; } .ebw .gl3 { width: 16px; height: 16px; } .ebw .ch { margin-left: auto; }
+  .ebw { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr 1px 1fr 14px; gap: 12px; align-items: center; width: 100%; padding: 12px 14px 12px 16px; margin-bottom: 10px; border-radius: 20px; background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); cursor: pointer; color: var(--text); }
+  .ebc { display: flex; align-items: center; gap: 10px; min-width: 0; } .ebc .gl3 { width: 28px; height: 28px; } .ebc b { display: block; font-size: 19px; font-weight: 700; } .ebc small { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .ebs { display: block; width: 1px; height: 34px; background: rgba(255,255,255,.08); } .ebw .ch { color: var(--muted); }
   .ch svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
   .egbg { display: block; position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .25s; }
   .egbg.up { opacity: 1; pointer-events: auto; }
@@ -2228,7 +2229,7 @@ const EGSTYLE = `
   .krow .ku { color: var(--muted); font-size: 12px; text-align: right; } .krow b { min-width: 62px; text-align: right; }
   .kc2 { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
   .kc2:last-of-type { border-bottom: 0; } .kc2 span { font-size: 14px; } .kc2 b { text-align: right; font-size: 14.5px; font-weight: 700; } .kc2 small { font-size: 12px; color: var(--muted); } .kc2 em { text-align: right; font-style: normal; font-size: 12px; font-weight: 600; }
-  .ktop { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; } .ktop .eseg { flex: 0 0 172px; margin: 0; }
+  .ktop { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; } .ktop .eseg { flex: 0 0 160px; margin: 0; }
   .ktg { display: flex; gap: 6px; margin-left: auto; } .ktg button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 99px; color: var(--muted); border: 1px solid rgba(130,170,255,.14); } .ktg button.on { color: #fff; background: rgba(255,255,255,.1); }
   .kbig { font-size: 34px; font-weight: 700; letter-spacing: -.6px; line-height: 1.1; } .ksub { font-size: 13.5px; color: var(--muted); margin-top: 2px; } .ksub b { color: var(--text); }
   .kpill { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 99px; margin-top: 8px; }
@@ -2666,11 +2667,11 @@ class VerbruikCard extends HTMLElement {
         <button class="epb" id="eNow" aria-label="Naar nu"><svg viewBox="0 0 24 24"><path d="m6 5 7 7-7 7M18 5v14"/></svg></button></div>
         <div class="eseg" id="eSeg">${['nu', 'dag', 'week', 'maand', 'jaar'].map((p) => `<button data-p="${p}">${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}</div></div></div>
       <button class="eal" id="eAl" style="display:none"><i></i><span id="eAlT"></span>${ch}</button>
-      ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
       <div class="esec"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Kosten</span><span>tik voor historie</span></div>
       <button class="emon" id="eMon"><div class="emr"><div><div class="emt num" id="eMt">—</div><div class="ems" id="eMs"></div></div><div class="emp" id="eMp"></div></div>
         <div class="ebar" id="eMb"></div><div class="eleg" id="eMl"></div></button>
-      <button class="ebw" id="eBw"><span>${gl('gPlug')}<b id="eBase">—</b>&nbsp;sluip</span><span>${gl('gGauge')}<b id="ePk">—</b>&nbsp;aansluiting</span>${ch}</button>
+      ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
+      <button class="ebw" id="eBw"><span class="ebc">${gl('gPlug', 'sm')}<span><b class="num" id="eBase">—</b><small>Sluipverbruik</small></span></span><i class="ebs"></i><span class="ebc">${gl('gGauge', 'sm')}<span><b class="num" id="ePk">—</b><small>Aansluiting</small></span></span>${ch}</button>
     </div>
     <div class="egbg" id="egBg"></div><div class="egsh" id="egSh"></div>`;
   }
@@ -3081,7 +3082,7 @@ class VerbruikCard extends HTMLElement {
     const eur = (v) => `€ ${fmt(v)}`;
     this._egOpen('Kosten en verbruik', '<svg class="gl3 sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2bc4a6"/><path d="M15.4 8.4A4.4 4.4 0 0 0 8.6 10m6.8 5.6A4.4 4.4 0 0 1 8.6 14M7.2 10.7h5.8M7.2 13.3h5.8" stroke="#06352d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
       `<div class="ktop"><div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
-        <div class="ktg" id="kMode"><button data-v="k" class="on">€</button><button data-v="v">kWh · m³</button></div></div>
+        <div class="ktg" id="kMode"><button data-v="k" class="on">Kosten</button><button data-v="v">Verbruik</button></div></div>
       <div class="kchips" id="kU" style="display:none">${[['s', 'Stroom'], ['g', 'Gas'], ['w', 'Water']].map(([k, n]) => `<button data-u="${k}" style="--c:${EG[k]}" class="${k === 'g' ? 'on' : ''}">${n}</button>`).join('')}</div>
       <div class="kbig num" id="kBig"></div><div class="ksub" id="kSub"></div><div id="kPill"></div>
       <div class="khw"><svg id="kSv" viewBox="0 0 330 182"></svg></div><div class="krs" id="kDet"></div>
