@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '448';
+const CARD_VERSION = '449';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2194,7 +2194,7 @@ const EGSTYLE = `
   .ecw { position: relative; margin-top: 8px; touch-action: pan-y; } .ecw svg { display: block; width: 100%; height: 152px; overflow: visible; }
   .ev2 { display: inline-block; margin-right: 18px; vertical-align: top; } .ev2 b { display: block; font-weight: 700; } .ev2 em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-top: 2px; }
   .ecl:empty { display: none; }
-  .etip { position: absolute; top: 0; transform: none; background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
+  .etip { display: none !important; position: absolute; top: 0; transform: none; background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
   .etip b { display: block; font-size: 14px; font-weight: 700; margin-top: 1px; } .ecw.scrub .etip { opacity: 1; }
   .ecw text { font-size: 11px; fill: #6f7d92; font-family: inherit; }
   .esec { font-size: 15px; font-weight: 700; margin: 6px 4px 8px; display: flex; justify-content: space-between; align-items: baseline; } .esec span { font-size: 12px; color: var(--faint); font-weight: 500; }
@@ -2820,7 +2820,8 @@ class VerbruikCard extends HTMLElement {
       const d = await this._egFetch(p, o);
       if (`${this._ep}|${this._eo}` !== key) return;
       this._egD = { ...d, key, at: Date.now() };
-      this._egHead(); this._egDraw();
+      if (!this.shadowRoot.querySelector('.ecw.scrub')) this._egHead();
+      this._egDraw();
     } catch (e) {
       console.warn('verbruik-card: periode ophalen mislukt', e);
     } finally { if (this._egBusy === key) this._egBusy = null; }
@@ -2915,41 +2916,38 @@ class VerbruikCard extends HTMLElement {
     wrap._g = { W, X, Y, line };
   }
 
+  // v449: schuiven toont de waarde in de kop van de kaart (zoals Aandelen op de iPhone); loslaten zet de totalen terug
   _egPick(u, ev) {
-    const wrap = this.$('eW' + u), spec = this._egD?.[u], g = wrap?._g, tip = wrap?.querySelector('.etip'), cur = wrap?.querySelector('.cur');
+    const wrap = this.$('eW' + u), spec = this._egD?.[u], g = wrap?._g, cur = wrap?.querySelector('.cur');
     if (!spec || !g || !cur) return;
-    if (!ev) { wrap.classList.remove('scrub'); cur.style.display = 'none'; wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = '')); return; }
+    if (!ev) { if (wrap.classList.contains('scrub')) { wrap.classList.remove('scrub'); this._egHead(); } cur.style.display = 'none'; wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = '')); return; }
     clearTimeout(wrap._t);
-    const rc = wrap.getBoundingClientRect(), xs = ((ev.clientX - rc.left) / rc.width) * g.W;
-    let x, y = null, lab, val;
-    const colr = EG[u];
+    const rc = wrap.getBoundingClientRect(), xs = ((ev.clientX - rc.left) / rc.width) * g.W, colr = EG[u];
+    const blk = (c, v, unit, sub) => `<span class="ev2"><b style="color:${c}">${v}<small>${unit}</small></b><em>${sub}</em></span>`;
+    let x, y = null, head, lab = '';
     if (g.line) {
       if (!spec.pts.length) return;
       const p = spec.pts.reduce((b, q) => (Math.abs(g.X(q.t) - xs) < Math.abs(g.X(b.t) - xs) ? q : b), spec.pts[0]);
       x = g.X(p.t); y = g.Y(p.v);
-      lab = p.live ? 'Nu' : fmtTime(p.t0 ?? p.t);
-      if (u === 's') val = `<b style="color:${p.v < 0 ? EG.e : EG.s}">${p.v < 0 ? '↑' : '↓'} ${fmt(Math.abs(p.v))} W</b>`;
-      else val = `<b style="color:${colr}">↓ ${fmt(p.v, spec.slot >= HOUR ? 2 : 2)} m³</b>`;
+      const tm = p.live ? 'nu' : fmtTime(p.t0 ?? p.t);
+      if (u === 's') head = blk(p.v < 0 ? EG.e : EG.s, fmt(Math.abs(p.v)), 'W', `${p.v < 0 ? '↑ teruggeleverd' : '↓ van het net'} · ${tm}`);
+      else { head = `<span style="color:${colr}">${fmt(p.v, 2)}</span><small>m³</small>`; lab = `${tm} · per ${spec.slot >= HOUR ? 'uur' : '5 minuten'}`; }
       cur.querySelector('circle').setAttribute('fill', u === 's' && p.v < 0 ? EG.e : colr);
     } else {
       const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 46) / n)), 0, n - 1), it = spec.items[k];
-      x = g.X(k); lab = it.full;
+      x = g.X(k);
       wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = +b.dataset.i === k ? 1 : 0.3));
-      if (spec.mode === 'bars2') val = it.a == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b><span style="color:${EG.s}">↓ ${fmt(it.a, it.a >= 100 ? 0 : 1)}</span> <span style="color:${EG.e}">↑ ${fmt(it.b || 0, (it.b || 0) >= 100 ? 0 : 1)}</span> kWh</b>`;
-      else val = it.v == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b style="color:${colr}">↓ ${fmt(it.v, spec.dec)} ${spec.unit}</b>`;
+      if (spec.mode === 'bars2') head = it.a == null ? blk('#6f7d92', '—', '', `${it.full} · nog geen gegevens`) : blk(EG.s, fmt(it.a, it.a >= 100 ? 0 : 1), 'kWh', `↓ ${it.full}`) + blk(EG.e, fmt(it.b || 0, (it.b || 0) >= 100 ? 0 : 1), 'kWh', '↑ teruggeleverd');
+      else { head = it.v == null ? '<span style="color:#6f7d92">—</span>' : `<span style="color:${colr}">${fmt(it.v, spec.dec)}</span><small>${spec.unit}</small>`; lab = it.full; }
     }
     wrap.classList.add('scrub');
+    this.$('eV' + u).innerHTML = head;
+    this.$('eL' + u).textContent = lab;
+    this.$('eE' + u).textContent = '';
     cur.style.display = '';
     const ln = cur.querySelector('line'), ci = cur.querySelector('circle');
     ln.setAttribute('x1', x); ln.setAttribute('x2', x);
     ci.style.display = y == null ? 'none' : ''; if (y != null) { ci.setAttribute('cx', x); ci.setAttribute('cy', y); }
-    tip.innerHTML = `<span>${lab}</span>${val}`;
-    const svgH = 152;
-    // v448: vakje naast de lijn (rechts ervan, of links als er rechts geen plek is) en boven of onder, zodat het de lijn en het rondje niet bedekt
-    const sx = (x / g.W) * rc.width, tw2 = tip.offsetWidth || 110, th2 = tip.offsetHeight || 44, right = sx + 14 + tw2 <= rc.width - 46;
-    tip.style.left = `${right ? sx + 14 : Math.max(0, sx - 14 - tw2)}px`;
-    const sy = y == null ? null : (y / 152) * (svgH || 152), ph = svgH || 152;
-    tip.style.top = `${sy != null && sy < (ph - 24) / 2 ? Math.max(0, ph - 24 - th2) : 0}px`;
   }
 
   // maandblok (vanuit _update); v441: vergelijken met dezelfde dagen vorig jaar

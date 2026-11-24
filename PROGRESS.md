@@ -319,6 +319,7 @@
 | v446 | Energie: grafieken zoals de oude app: minder hulplijnen (500 · 0 · −500), stroom vloeiender (15 min gemiddeld), geen piek door de live waarde aan het eind. |
 | v447 | Energie: afname/teruglevering benoemd, grafieken compacter met eenheden, waarden bij de gekozen staaf en vergelijken op twee regels. |
 | v448 | Energie: vakje bij het schuiven staat naast de lijn en bedekt het rondje niet meer. |
+| v449 | Energie: schuiven toont de waarde in de kop van de kaart in plaats van een vakje in de grafiek (keuze A). |
 
 ## Volgende stappen
 
