@@ -270,6 +270,15 @@ Verdere regels:
 - v277: lukt een tekening niet (`onerror`), dan de volgende uit night/dusk/image (`_scFail`), anders alleen de lucht in de kleur van de fase; de tekening is onzichtbaar tot hij geladen is.
 - De eigen tekeningen (met huisnummer) staan alleen in `/config/www` van de gebruiker, nooit in de repo. Test: `test/mock.html?card=nu&scn=1` (getekend testhuis, `sun=` zonnehoogte).
 
+**Energie op de telefoon (v440, ontwerp G; computer ongewijzigd)**
+
+- Op de telefoon is `.vwrap .grid` verborgen; `_egHtml()` (`.eg`) staat eronder. Kleuren `EG`: stroom `#a31ff3`, terug `#63d979`, gas `#d22d68`, water `#5fb7f5` (exact uit de oude app van de gebruiker). Stijl in `EGSTYLE`. Geen "Net nu" (gebruiker).
+- Bovenin (sticky) de periodekiezer: ‹ label › ⇥ en Nu/Dag/Week/Maand/Jaar (`this._ep`, `this._eo` = verschuiving ≤ 0; `_egRange` geeft x0/x1/label/naam). `_egLoad` → `_egFetch(per, off)`: Nu = afgelopen uur (`history/history_during_period` van `power`, per 20 s gemiddeld; gas/water per 5 min), Dag = 5-minutenstatistiek (te oud → per uur), water per uur in staven; Week/Maand = `period: 'day'`, Jaar = `period: 'month'`; lopende dag/maand via `_sum`. Verversen: Nu 30 s, huidige periode 60 s, eerdere 30 min.
+- Per soort een kaart (`eV/eL/eE` + `eW`-grafiek): icoon, totaal in kleur, kosten rechts. `_egChart`: lijn (Nu/Dag stroom en gas, stroom boven 0 paars en onder 0 groen) of staven (`bars2` = afname omhoog, teruglevering omlaag); y-as rechts met ronde stappen. Schuiven: `_egPick` (vakje met tijd en waarde, stippellijn, rondje met witte rand; verdwijnt 2,5 s na loslaten).
+- Oranje regel `#eAl` alleen bij waterlek of piek ≥ 80% (tik = venster Bewaking). Onderaan `#eBw` sluipverbruik/aansluiting (tik = Bewaking, kopie van de computertegel).
+- Maandblok `#eMon` (`_egMonth` vanuit `_update`): tot nu, verwacht (tot nu ÷ verstreken dagen × dagen in de maand), vorige maand met % t.o.v. verwacht, balk. Tik = venster Kosten (`_egCostSheet`): Maanden (12) / Jaren (tot 4), gestapelde staven, verdeling van de gekozen staaf, vergelijken. Historie: `_egKhLoad` (maandstatistiek van 3 jaar terug), `_egMonthCost` met de huidige prijzen en vaste kosten.
+- Vensters: `#egSh`/`#egBg` (`_egOpen`/`_egClose`, omlaag vegen sluit).
+
 **localStorage-sleutels** (allemaal met try/catch):
 
 | Sleutel | Waarvoor |

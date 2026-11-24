@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '439';
+const CARD_VERSION = '440';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2165,6 +2165,66 @@ h1.v svg:not(.hi) { stroke: var(--home); filter: drop-shadow(0 0 10px rgba(120,1
 
 
 
+// v440: Energie op de telefoon (ontwerp G): periodekiezer bovenin, per soort een kaart met grafiek, maandblok met historie
+const EG = { s: '#a31ff3', e: '#63d979', g: '#d22d68', w: '#5fb7f5' };
+const EGSTYLE = `
+.eg, .egsh, .egbg { display: none; }
+@media (max-width: 600px) {
+  .vwrap .grid { display: none !important; }
+  .eg { display: block; }
+  .enavw { position: sticky; top: 0; z-index: 5; padding: 2px 0 12px; background: linear-gradient(var(--bg) 82%, transparent); }
+  .enav { background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); border-radius: 22px; padding: 8px 6px 6px; }
+  .enh { display: grid; grid-template-columns: 1fr 44px auto 44px 1fr; align-items: center; margin-bottom: 6px; }
+  .enh b { grid-column: 3; font-size: 17px; font-weight: 600; text-align: center; min-width: 150px; }
+  #ePrev { grid-column: 2; } #eNext { grid-column: 4; } #eNow { grid-column: 5; justify-self: end; margin-right: 8px; }
+  .epb { all: unset; width: 40px; height: 36px; display: grid; place-items: center; color: var(--text); border-radius: 10px; cursor: pointer; }
+  .epb svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .epb[disabled] { opacity: .3; cursor: default; }
+  .eseg { display: flex; background: rgba(0,0,0,.28); border-radius: 99px; padding: 3px; gap: 2px; }
+  .eseg button { all: unset; flex: 1; text-align: center; font-size: 13.5px; font-weight: 500; color: var(--muted); padding: 8px 4px; border-radius: 99px; cursor: pointer; }
+  .eseg button.on { background: rgba(255,255,255,.11); color: #fff; }
+  .eal { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; font-size: 14px; font-weight: 600; color: #ffb547; background: rgba(255,181,71,.08); border: 1px solid rgba(255,181,71,.25); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; cursor: pointer; }
+  .eal > i { width: 8px; height: 8px; border-radius: 50%; background: #ffb547; box-shadow: 0 0 6px #ffb547; flex: none; } .eal #eAlT { flex: 1; }
+  .ec { display: block; box-sizing: border-box; width: 100%; background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); border-radius: 20px; padding: 14px 14px 10px 16px; margin-bottom: 12px; color: var(--text); text-align: left; font: inherit; }
+  .ech { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: start; }
+  .ech .gl3 { width: 30px; height: 30px; margin-top: 2px; }
+  .ecv { font-size: 26px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; white-space: nowrap; } .ecv small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; letter-spacing: 0; }
+  .ecl { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .ece { font-size: 15px; font-weight: 600; padding-top: 5px; white-space: nowrap; }
+  .ecw { position: relative; margin-top: 4px; touch-action: pan-y; } .ecw svg { display: block; width: 100%; height: 190px; overflow: visible; }
+  .etip { position: absolute; top: 0; transform: translateX(-50%); background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
+  .etip b { display: block; font-size: 14px; font-weight: 700; margin-top: 1px; } .ecw.scrub .etip { opacity: 1; }
+  .ecw text { font-size: 11px; fill: #6f7d92; font-family: inherit; }
+  .esec { font-size: 15px; font-weight: 700; margin: 6px 4px 8px; display: flex; justify-content: space-between; align-items: baseline; } .esec span { font-size: 12px; color: var(--faint); font-weight: 500; }
+  .emon { all: unset; display: block; box-sizing: border-box; width: 100%; background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); border-radius: 20px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; }
+  .emr { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+  .emt { font-size: 30px; font-weight: 700; letter-spacing: -.6px; } .ems { font-size: 13px; color: var(--muted); margin-top: 2px; } .ems b { color: var(--text); }
+  .emp { font-size: 13px; color: var(--muted); text-align: right; line-height: 1.4; }
+  .ebar { display: flex; height: 10px; border-radius: 99px; overflow: hidden; gap: 2px; margin: 12px 0 10px; background: rgba(255,255,255,.05); } .ebar i { display: block; height: 100%; }
+  .eleg { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); align-items: center; } .eleg i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .eleg .ch { margin-left: auto; color: var(--faint); }
+  .ebw { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 14px; width: 100%; font-size: 13px; color: var(--faint); padding: 6px 6px 10px; cursor: pointer; }
+  .ebw span { display: inline-flex; align-items: center; gap: 5px; } .ebw .gl3 { width: 16px; height: 16px; } .ebw .ch { margin-left: auto; }
+  .ch svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .egbg { display: block; position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .egbg.up { opacity: 1; pointer-events: auto; }
+  .egsh { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; max-height: calc(100vh - env(safe-area-inset-top, 0px) - 40px); overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; background: #111827; color: var(--text); border-radius: 26px 26px 0 0; border-top: 1px solid rgba(255,255,255,.08); padding: 8px 16px calc(28px + env(safe-area-inset-bottom, 0px)); transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1); visibility: hidden; }
+  .egsh.up { transform: none; visibility: visible; } .egsh::-webkit-scrollbar { display: none; }
+  .egrab { width: 40px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.2); margin: 0 auto 10px; }
+  .eshh { display: grid; grid-template-columns: 34px 1fr 36px; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 18px; } .eshh .gl3 { width: 30px; height: 30px; }
+  .ex { all: unset; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.06); color: var(--muted); cursor: pointer; font-size: 14px; }
+  .egsh .eseg { margin-bottom: 14px; }
+  .khw svg { display: block; width: 100%; height: auto; cursor: pointer; } .khw text { font-size: 10.5px; fill: #6f7d92; font-family: inherit; }
+  .kdet { margin-top: 10px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 10px 12px; display: grid; gap: 6px; }
+  .kdh { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); } .kdh b { color: var(--text); font-size: 16px; }
+  .krow { display: grid; grid-template-columns: 10px 1fr auto 40px; gap: 8px; align-items: center; font-size: 13.5px; } .krow i { width: 9px; height: 9px; border-radius: 3px; } .krow small { color: var(--muted); text-align: right; }
+  .klbl { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; letter-spacing: .6px; color: var(--muted); text-transform: uppercase; margin: 16px 0 2px; } .klbl span { text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .kc { display: grid; grid-template-columns: 1fr auto 48px; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13.5px; } .kc > :last-child { text-align: right; font-weight: 600; }
+  .khint { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  .egsh .check:first-child { padding-top: 14px; }
+}
+`;
+
 class VerbruikCard extends HTMLElement {
   setConfig(config) {
     applyTheme(this, config);
@@ -2217,10 +2277,11 @@ class VerbruikCard extends HTMLElement {
                 <div class="fc" id="fc${k}"></div>
               </div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}${TIDY}</style>
+      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}${TIDY}${EGSTYLE}</style>
       ${GLOSSY}
       <div class="wrap vwrap"><div class="inner">
         ${headerHtml('verbruik')}
+        ${this._egHtml()}
         <div class="grid">
           <div class="tile s8">
             <div class="th"><span class="label">Vandaag</span><span class="aside" id="upto"></span></div>
@@ -2304,9 +2365,10 @@ class VerbruikCard extends HTMLElement {
       el.addEventListener('pointerleave', () => this._hover(el, null));
     });
     bindNav(this.shadowRoot);
+    this._egBind();
     this._ro?.disconnect();
-    this._ro = new ResizeObserver(() => this._draw());
-    this._ro.observe(this.$('fcS'));
+    this._ro = new ResizeObserver(() => { this._draw(); this._egDraw(); });
+    this._ro.observe(this.$('fcS')); this._ro.observe(this.$('eWs'));
   }
 
   /* ---------- data ---------- */
@@ -2389,6 +2451,7 @@ class VerbruikCard extends HTMLElement {
       this._fetchedAt = Date.now();
       this._update();
       this._draw();
+      if (!this._eo) this._egLoad(true);
     }
   }
 
@@ -2538,6 +2601,12 @@ class VerbruikCard extends HTMLElement {
     set('peakR', pkPct == null ? '—' : `<span style="color:${ampCol(pkPct)}">${fmt(pkPct * 100)}%</span>`);
     set('peakS', pk ? `piek vandaag ${fmt(pkA, 1)} A rond ${fmtTime(pk.t)}` : 'nog geen piek gemeten');
     const issues = (leak ? 1 : 0) + (pkPct >= 0.8 ? 1 : 0);
+    if (this.$('eBase')) {
+      this.$('eBase').textContent = base == null ? '—' : `${fmt(base)} W`;
+      this.$('ePk').textContent = pkPct == null ? '—' : `${fmt(pkPct * 100)}%`;
+      const al = [leak && 'Mogelijk waterlek vannacht', pkPct >= 0.8 && 'Hoge piek op je aansluiting vandaag'].filter(Boolean);
+      this.$('eAl').style.display = al.length ? '' : 'none'; this.$('eAlT').textContent = al.join(' · ');
+    }
     set('watchNote', issues ? `<span style="color:var(--sun)">${issues} aandachtspunt${issues > 1 ? 'en' : ''}</span>` : 'alles in orde');
 
     // deze maand
@@ -2561,9 +2630,422 @@ class VerbruikCard extends HTMLElement {
     ring += `<text x="21" y="20" text-anchor="middle" style="font-size:6.2px;font-weight:600;fill:#fff">€ ${fmt(tot)}</text><text x="21" y="26" text-anchor="middle" style="font-size:3.4px;fill:var(--muted)">totaal</text>`;
     set('donut', ring);
     const mSol = this._solarKwh(ms, now + 1);
+    this._egMonth({ cE, cG, cW, ms, now, pg, pw });
+    this._egLoad();
     set('mSelf', mSol > 0.5 ? `${fmt(clamp((mSol - mExp) / mSol, 0, 1) * 100)}%` : '—');
 
     if (Date.now() - (this._drawnAt || 0) > 60000) this._draw();
+  }
+
+  /* ---------- v440: telefoon (ontwerp G) ---------- */
+
+  _egHtml() {
+    const ch = '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
+    const card = (u, ic) => `<div class="ec" data-u="${u}"><div class="ech">${gl(ic, 'sm')}<div><div class="ecv num" id="eV${u}">—</div><div class="ecl" id="eL${u}"></div></div><span class="ece num" id="eE${u}"></span></div>
+      <div class="ecw" id="eW${u}"><div class="etip"></div><svg></svg></div></div>`;
+    return `<div class="eg">
+      <div class="enavw"><div class="enav"><div class="enh">
+        <button class="epb" id="ePrev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><b id="eLab"></b>
+        <button class="epb" id="eNext" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button>
+        <button class="epb" id="eNow" aria-label="Naar nu"><svg viewBox="0 0 24 24"><path d="m6 5 7 7-7 7M18 5v14"/></svg></button></div>
+        <div class="eseg" id="eSeg">${['nu', 'dag', 'week', 'maand', 'jaar'].map((p) => `<button data-p="${p}">${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}</div></div></div>
+      <button class="eal" id="eAl" style="display:none"><i></i><span id="eAlT"></span>${ch}</button>
+      ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
+      <div class="esec"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Deze maand</span><span>tik voor historie</span></div>
+      <button class="emon" id="eMon"><div class="emr"><div><div class="emt num" id="eMt">—</div><div class="ems" id="eMs"></div></div><div class="emp" id="eMp"></div></div>
+        <div class="ebar" id="eMb"></div><div class="eleg" id="eMl"></div></button>
+      <button class="ebw" id="eBw"><span>${gl('gPlug')}<b id="eBase">—</b>&nbsp;sluip</span><span>${gl('gGauge')}<b id="ePk">—</b>&nbsp;aansluiting</span>${ch}</button>
+    </div>
+    <div class="egbg" id="egBg"></div><div class="egsh" id="egSh"></div>`;
+  }
+
+  _egBind() {
+    this._ep = this._ep || 'dag'; this._eo = this._eo || 0;
+    const go = () => { this._egNav(); this._egLoad(true); };
+    this.shadowRoot.querySelectorAll('#eSeg button').forEach((b) => b.addEventListener('click', () => { this._ep = b.dataset.p; this._eo = 0; go(); }));
+    this.$('ePrev').addEventListener('click', () => { if (this._ep !== 'nu') { this._eo--; go(); } });
+    this.$('eNext').addEventListener('click', () => { if (this._eo < 0) { this._eo++; go(); } });
+    this.$('eNow').addEventListener('click', () => { this._eo = 0; go(); });
+    this.$('eMon').addEventListener('click', () => this._egCostSheet());
+    this.$('eBw').addEventListener('click', () => this._egWatchSheet());
+    this.$('eAl').addEventListener('click', () => this._egWatchSheet());
+    const bg = this.$('egBg'), sh = this.$('egSh');
+    bg.addEventListener('click', () => this._egClose());
+    let y0 = null, dy = 0;
+    sh.addEventListener('touchstart', (e) => { y0 = sh.scrollTop <= 0 && !e.target.closest('.khw') ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+    sh.addEventListener('touchmove', (e) => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) { e.preventDefault(); sh.style.transition = 'none'; sh.style.transform = `translateY(${dy}px)`; } }, { passive: false });
+    sh.addEventListener('touchend', () => { if (y0 == null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 90) this._egClose(); y0 = null; });
+    ['s', 'g', 'w'].forEach((u) => {
+      const w = this.$('eW' + u), svg = w.querySelector('svg');
+      svg.addEventListener('pointerdown', (e) => this._egPick(u, e));
+      svg.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || e.buttons) this._egPick(u, e); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => svg.addEventListener(t, () => { clearTimeout(w._t); w._t = setTimeout(() => this._egPick(u, null), 2500); }));
+    });
+    this._egNav();
+  }
+
+  _egRange(per, off) {
+    const now = Date.now(), day0 = startOfDay(now), d = new Date(day0), cap = (s) => s[0].toUpperCase() + s.slice(1);
+    const mon = (t, o) => new Date(t).toLocaleDateString('nl-NL', o);
+    if (per === 'nu') return { x0: now - HOUR, x1: now, label: 'Afgelopen uur', name: 'afgelopen uur' };
+    if (per === 'dag') {
+      const x0 = dayAdd(day0, off), nm = off === 0 ? 'vandaag' : off === -1 ? 'gisteren' : mon(x0, { weekday: 'short', day: 'numeric', month: 'long' }).replace('.', '');
+      return { x0, x1: dayAdd(x0, 1), label: cap(nm), name: nm };
+    }
+    if (per === 'week') {
+      const x0 = dayAdd(day0, -((d.getDay() + 6) % 7) + 7 * off), wd = new Date(x0); wd.setDate(wd.getDate() + 3);
+      const w1 = new Date(wd.getFullYear(), 0, 4), wk = 1 + Math.round(((wd - w1) / DAY - 3 + ((w1.getDay() + 6) % 7)) / 7);
+      const nm = off === 0 ? 'deze week' : off === -1 ? 'vorige week' : `week ${wk}`;
+      return { x0, x1: dayAdd(x0, 7), label: cap(nm), name: nm };
+    }
+    if (per === 'maand') {
+      const a = new Date(d.getFullYear(), d.getMonth() + off, 1), nm = mon(a, { month: 'long' }) + (a.getFullYear() !== d.getFullYear() ? ` ${a.getFullYear()}` : '');
+      return { x0: a.getTime(), x1: new Date(a.getFullYear(), a.getMonth() + 1, 1).getTime(), label: cap(nm), name: nm };
+    }
+    const y = d.getFullYear() + off;
+    return { x0: new Date(y, 0, 1).getTime(), x1: new Date(y + 1, 0, 1).getTime(), label: String(y), name: String(y) };
+  }
+
+  _egNav() {
+    const p = this._ep, o = this._eo, lim = { dag: -400, week: -110, maand: -60, jaar: -12 }[p] ?? 0;
+    this.shadowRoot.querySelectorAll('#eSeg button').forEach((b) => b.classList.toggle('on', b.dataset.p === p));
+    this.$('eLab').textContent = this._egRange(p, o).label;
+    this.$('ePrev').disabled = p === 'nu' || o <= lim;
+    this.$('eNext').disabled = this.$('eNow').disabled = o >= 0;
+  }
+
+  _ws(msg, ms = 15000) {
+    return Promise.race([this._hass.callWS(msg), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + msg.type)), ms))]);
+  }
+
+  async _egStat(ids, period, a, b) {
+    ids = ids.filter(Boolean);
+    if (!ids.length || b <= a) return {};
+    return this._ws({ type: 'recorder/statistics_during_period', start_time: new Date(a).toISOString(), end_time: new Date(b).toISOString(),
+      statistic_ids: ids, period, types: ['change', 'mean'], units: STAT_UNITS }, 20000);
+  }
+
+  // gegevens van één periode: stroom (lijn of staven), gas en water, plus totalen
+  async _egFetch(per, off) {
+    const c = this._config, now = Date.now(), R = this._egRange(per, off), day0 = startOfDay(now);
+    const I = c.import, X = c.export, G = c.gas, Wt = c.water, P = c.power;
+    const kw = (c.fuse * c.voltage * c.phases) / 1000;
+    const ok = (v, cap) => (v == null || v < 0 || v > cap ? 0 : v);
+    const out = { per, off, R, tot: {} };
+    if (per === 'nu' || per === 'dag') {
+      const a = per === 'nu' ? now - HOUR - 5 * 60000 : R.x0, b = Math.min(R.x1, now);
+      let slot = 5 * 60000, r = await this._egStat([I, X, G, Wt, P], '5minute', a, b);
+      if (per === 'dag' && R.x1 <= now && !(r[P]?.length || r[I]?.length || r[G]?.length)) { slot = HOUR; r = await this._egStat([I, X, G, Wt, P], 'hour', a, b); }
+      const rows = (id) => (r[id] || []).map((x) => ({ t: ts(x.start), ch: x.change, mean: x.mean }));
+      const sc = slot / HOUR, from = per === 'nu' ? now - HOUR : R.x0;
+      const sum = (id, cap) => rows(id).filter((x) => x.t >= from - 1).reduce((s, x) => s + ok(x.ch, cap), 0);
+      // stroom: vermogen (W)
+      let sp = [];
+      if (per === 'nu' && P) {
+        try {
+          const h = await this._ws({ type: 'history/history_during_period', start_time: new Date(now - HOUR).toISOString(), end_time: new Date(now).toISOString(),
+            entity_ids: [P], minimal_response: true, no_attributes: true, significant_changes_only: false }, 15000);
+          const u = this._state(P)?.attributes?.unit_of_measurement, raw = (h[P] || []).map((x) => ({ t: x.lu != null ? x.lu * 1000 : ts(x.last_updated || x.last_changed), v: toStatUnit(parseFloat(x.s ?? x.state), u) }))
+            .filter((x) => !isNaN(x.v) && x.t != null);
+          const bk = new Map();
+          for (const q of raw) { const k = Math.floor(Math.max(q.t, now - HOUR) / 20000); const e = bk.get(k) || { t: k * 20000 + 10000, s: 0, n: 0 }; e.s += q.v; e.n++; bk.set(k, e); }
+          sp = [...bk.values()].map((e) => ({ t: e.t, v: e.s / e.n }));
+        } catch (e) { /* valt terug op 5-minutenwaarden */ }
+      }
+      if (!sp.length) {
+        if (P && rows(P).some((x) => x.mean != null)) sp = rows(P).filter((x) => x.mean != null && x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: x.mean }));
+        else { const ex = new Map(rows(X).map((x) => [x.t, x.ch])); sp = rows(I).filter((x) => x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: (ok(x.ch, kw * sc) - ok(ex.get(x.t), kw * sc)) * 1000 / sc })); }
+      }
+      if (R.x1 > now && P && this._num(P) != null) sp.push({ t: now, v: this._meter(P) ?? this._num(P), live: true });
+      const gp = rows(G).filter((x) => x.t >= from - slot).map((x) => ({ t: x.t + slot / 2, t0: x.t, v: ok(x.ch, 6 * sc) }));
+      // water: per uur (dag) of per 5 minuten (nu), in liters
+      const wb = per === 'dag' ? 24 : 12, wslot = per === 'dag' ? HOUR : 5 * 60000, w0 = per === 'dag' ? R.x0 : Math.floor((now - HOUR) / wslot) * wslot + wslot;
+      const wv = Array.from({ length: wb }, (_, k) => (w0 + k * wslot > now ? null : 0));
+      for (const x of rows(Wt)) { const k = Math.floor((x.t - w0) / wslot); if (k >= 0 && k < wb && wv[k] != null) wv[k] += ok(x.ch, 2 * sc) * 1000; }
+      const items = wv.map((v, k) => { const t = w0 + k * wslot; return { lab: fmtTime(t), full: per === 'dag' ? `${fmtTime(t)} – ${fmtTime(t + wslot)}` : fmtTime(t), v }; });
+      const live = per === 'dag' && off === 0;
+      out.tot = live ? { i: this._sum(I, day0, now + 1, now), x: this._sum(X, day0, now + 1, now), g: this._sum(G, day0, now + 1, now), w: this._sum(Wt, day0, now + 1, now) }
+        : { i: sum(I, kw * sc), x: sum(X, kw * sc), g: sum(G, 6 * sc), w: sum(Wt, 2 * sc) };
+      const x0 = per === 'nu' ? now - HOUR : R.x0, x1 = per === 'nu' ? now : R.x1;
+      const ticks = per === 'nu' ? Array.from({ length: 4 }, (_, k) => { const t = Math.ceil(x0 / 900000) * 900000 + k * 900000; return { t, lab: fmtTime(t) }; }).filter((q) => q.t < x1)
+        : [4, 8, 12, 16, 20].map((h) => { const t = new Date(R.x0); t.setHours(h); return { t: t.getTime(), lab: `${String(h).padStart(2, '0')}:00` }; });
+      out.s = { mode: 'line', pts: sp, x0, x1, ticks, signed: true, slot };
+      out.g = { mode: 'line', pts: gp, x0, x1, ticks, slot };
+      out.w = { mode: 'bars', items, every: per === 'dag' ? 4 : 3, first: per === 'dag' ? 4 : 0, unit: 'L', dec: 0, lab: false };
+      out.unitW = 'L';
+      return out;
+    }
+    // week, maand, jaar: staven per dag of per maand
+    const yr = per === 'jaar', slots = [];
+    if (yr) { const y = new Date(R.x0).getFullYear(); for (let m = 0; m < 12; m++) slots.push(new Date(y, m, 1).getTime()); } else for (let t = R.x0; t < R.x1; t = dayAdd(t, 1)) slots.push(t);
+    const end = (t) => (yr ? new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 1).getTime() : dayAdd(t, 1));
+    const r = await this._egStat([I, X, G, Wt], yr ? 'month' : 'day', R.x0, Math.min(R.x1, now));
+    const n = yr ? 31 * 24 : 24;
+    const col = (id, cap) => {
+      const mp = new Map((r[id] || []).map((x) => [startOfDay(ts(x.start)), x.change]));
+      return slots.map((t) => { if (!id || t > now) return null; if (end(t) > now) return this._sum(id, t, now + 1, now); return ok(mp.get(startOfDay(t)), cap * n) || 0; });
+    };
+    const im = col(I, kw), ex = col(X, kw), gs = col(G, 6), wt = col(Wt, 2), s0 = (a) => a.reduce((s, v) => s + (v || 0), 0);
+    out.tot = { i: s0(im), x: s0(ex), g: s0(gs), w: s0(wt) };
+    const lab = (t) => (yr ? new Date(t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : per === 'week' ? new Date(t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : String(new Date(t).getDate()));
+    const full = (t) => (yr ? new Date(t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }));
+    const todayI = slots.findIndex((t) => t <= now && end(t) > now);
+    const mk = (vals, mul = 1) => slots.map((t, k) => ({ lab: lab(t), full: full(t), v: vals[k] == null ? null : vals[k] * mul }));
+    const every = per === 'maand' ? 5 : 1;
+    out.s = { mode: 'bars2', items: slots.map((t, k) => ({ lab: lab(t), full: full(t), a: im[k], b: ex[k] })), every, todayI, dec: 1, unit: 'kWh' };
+    out.g = { mode: 'bars', items: mk(gs), every, todayI, dec: yr ? 0 : 2, unit: 'm³' };
+    out.w = { mode: 'bars', items: mk(wt, yr ? 1 : 1000), every, todayI, dec: yr ? 1 : 0, unit: yr ? 'm³' : 'L' };
+    out.unitW = yr ? 'm³' : 'L';
+    return out;
+  }
+
+  async _egLoad(force = false) {
+    if (!this._hass || !this.$('eWs')) return;
+    const p = this._ep || 'dag', o = this._eo || 0, key = `${p}|${o}`, now = Date.now();
+    const fresh = p === 'nu' ? 30000 : o === 0 ? 60000 : 30 * 60000;
+    if (!force && this._egD?.key === key && now - this._egD.at < fresh) return;
+    if (this._egBusy === key) return;
+    this._egBusy = key;
+    try {
+      const d = await this._egFetch(p, o);
+      if (`${this._ep}|${this._eo}` !== key) return;
+      this._egD = { ...d, key, at: Date.now() };
+      this._egHead(); this._egDraw();
+    } catch (e) {
+      console.warn('verbruik-card: periode ophalen mislukt', e);
+    } finally { if (this._egBusy === key) this._egBusy = null; }
+  }
+
+  _egHead() {
+    const d = this._egD; if (!d) return;
+    const pi = this._price('import'), pe = this._price('export'), pg = this._price('gas'), pw = this._price('water');
+    const eur = (v) => (v == null ? '' : `${v < -0.004 ? '− ' : ''}€ ${fmt(Math.abs(v), 2)}`), dg = (v) => (v >= 100 ? 0 : v < 1 ? 2 : 1);
+    const { i, x, g, w } = d.tot, nm = d.R.name;
+    this.$('eVs').innerHTML = `<span style="color:${EG.s}">${fmt(i, dg(i))}</span> <span style="color:${EG.e}">${fmt(x, dg(x))}</span><small>kWh</small>`;
+    this.$('eLs').textContent = `Stroom ${nm}`;
+    this.$('eEs').textContent = pi != null ? eur(i * pi - (pe != null ? x * pe : 0)) : '';
+    this.$('eVg').innerHTML = `<span style="color:${EG.g}">${fmt(g, g >= 100 ? 0 : 2)}</span><small>m³</small>`;
+    this.$('eLg').textContent = `Gas ${nm}`;
+    this.$('eEg').textContent = pg != null ? eur(g * pg) : '';
+    const m3 = d.unitW === 'm³';
+    this.$('eVw').innerHTML = `<span style="color:${EG.w}">${m3 ? fmt(w, 1) : fmt(w * 1000)}</span><small>${m3 ? 'm³' : 'L'}</small>`;
+    this.$('eLw').textContent = `Water ${nm}`;
+    this.$('eEw').textContent = pw != null ? eur(w * pw) : '';
+  }
+
+  _egDraw() { ['s', 'g', 'w'].forEach((u) => { this._egChart(u); this._egPick(u, null); }); }
+
+  _egChart(u) {
+    const wrap = this.$('eW' + u), spec = this._egD?.[u];
+    if (!wrap) return;
+    const svg = wrap.querySelector('svg'), W = wrap.clientWidth;
+    if (!W || !spec) { if (!spec) svg.innerHTML = ''; return; }
+    const H = 190, pt = 44, pb = 24, pr = 44, PW = W - pr, ih = H - pt - pb, colr = EG[u], line = spec.mode === 'line';
+    let mx = 0, mn = 0;
+    if (line) for (const q of spec.pts) { mx = Math.max(mx, q.v); mn = Math.min(mn, q.v); }
+    else for (const it of spec.items) { mx = Math.max(mx, it.v ?? it.a ?? 0); if (spec.mode === 'bars2') mn = Math.min(mn, -(it.b || 0)); }
+    if (mx - mn <= 0) mx = line ? (u === 's' ? 500 : 0.05) : 1;
+    const e = 10 ** Math.floor(Math.log10((mx - mn) / 3)), step = [1, 2, 2.5, 5, 10].map((m) => m * e).find((v) => v >= (mx - mn) / 3);
+    const top = Math.ceil(mx / step) * step || step, bot = Math.floor(mn / step) * step, Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
+    let dec = 0; while (dec < 4 && Math.abs(step * 10 ** dec - Math.round(step * 10 ** dec)) > 1e-6) dec++;
+    const fy = (v) => (Math.abs(v) >= 1000 ? fmt(v) : fmt(Math.abs(v) < step / 2 ? 0 : v, dec));
+    let s = '';
+    for (let v = bot; v <= top + step / 2; v += step) s += `<line x1="0" x2="${PW}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="rgba(255,255,255,${Math.abs(v) < step / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fy(v)}</text>`;
+    const q = `${u}${Math.random().toString(36).slice(2, 6)}`;
+    let X;
+    if (line) {
+      X = (t) => clamp((t - spec.x0) / (spec.x1 - spec.x0), 0, 1) * PW;
+      for (const tk of spec.ticks) s += `<text x="${X(tk.t).toFixed(1)}" y="${H - 5}" text-anchor="middle">${tk.lab}</text>`;
+      const P = spec.pts.map((p) => [X(p.t), Y(p.v)]);
+      if (P.length > 1) {
+        let d = `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
+        for (let k = 0; k < P.length - 1; k++) {
+          const p0 = P[k - 1] || P[k], p1 = P[k], p2 = P[k + 1], p3 = P[k + 2] || p2;
+          d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+        }
+        const L = P[P.length - 1], area = `${d} L${L[0].toFixed(1)} ${y0.toFixed(1)} L${P[0][0].toFixed(1)} ${y0.toFixed(1)} Z`;
+        s += `<defs><linearGradient id="a${q}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colr}" stop-opacity=".45"/><stop offset="1" stop-color="${colr}" stop-opacity=".04"/></linearGradient>
+          <linearGradient id="b${q}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${EG.e}" stop-opacity=".45"/><stop offset="1" stop-color="${EG.e}" stop-opacity=".04"/></linearGradient>
+          <clipPath id="u${q}"><rect x="0" y="0" width="${W}" height="${y0.toFixed(1)}"/></clipPath><clipPath id="n${q}"><rect x="0" y="${y0.toFixed(1)}" width="${W}" height="${H}"/></clipPath></defs>
+          <g clip-path="url(#u${q})"><path d="${area}" fill="url(#a${q})"/><path d="${d}" stroke="${colr}" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/></g>`;
+        if (spec.signed) s += `<g clip-path="url(#n${q})"><path d="${area}" fill="url(#b${q})"/><path d="${d}" stroke="${EG.e}" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/></g>`;
+      }
+    } else {
+      const n = spec.items.length, bw = PW / n, g = Math.max(1.5, bw * (n > 20 ? 0.28 : 0.34)), w = bw - g, r = Math.min(5, w / 2);
+      X = (k) => k * bw + bw / 2;
+      const up = (x, y, h) => (h < 0.5 ? '' : `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`);
+      const dn = (x, y, h) => (h < 0.5 ? '' : `M${x},${y}V${y + h - r}Q${x},${y + h} ${x + r},${y + h}H${x + w - r}Q${x + w},${y + h} ${x + w},${y + h - r}V${y}Z`);
+      const sc = ih / (top - bot);
+      s += `<defs><linearGradient id="a${q}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colr}"/><stop offset="1" stop-color="${colr}" stop-opacity=".55"/></linearGradient><linearGradient id="b${q}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${EG.e}"/><stop offset="1" stop-color="${EG.e}" stop-opacity=".55"/></linearGradient></defs>`;
+      spec.items.forEach((it, k) => {
+        const x = k * bw + g / 2, a = spec.mode === 'bars2' ? it.a : it.v;
+        const fi = spec.first || 0, near = spec.todayI >= 0 && k !== spec.todayI && Math.abs(k - spec.todayI) < Math.max(2, spec.every - 2);
+        if ((k >= fi && (k - fi) % spec.every === 0 && !near) || k === spec.todayI) s += `<text x="${X(k).toFixed(1)}" y="${H - 5}" text-anchor="middle"${k === spec.todayI ? ' style="fill:#fff;font-weight:700"' : ''}>${it.lab}</text>`;
+        if (a == null) { s += `<rect x="${x.toFixed(1)}" y="${(y0 - 1.5).toFixed(1)}" width="${w.toFixed(1)}" height="3" rx="1.5" fill="rgba(255,255,255,.08)"/>`; return; }
+        s += `<path class="br" data-i="${k}" d="${up(x, y0 - a * sc, a * sc)}" fill="url(#a${q})"/>`;
+        if (spec.mode === 'bars2') s += `<path class="br" data-i="${k}" d="${dn(x, y0 + 1, (it.b || 0) * sc)}" fill="url(#b${q})"/>`;
+      });
+    }
+    s += `<g class="cur" style="display:none"><line y1="${pt - 8}" y2="${H - pb}" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-dasharray="2 4"/><circle r="6" fill="${colr}" stroke="#fff" stroke-width="2.5"/></g>`;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = s;
+    wrap._g = { W, X, Y, line };
+  }
+
+  _egPick(u, ev) {
+    const wrap = this.$('eW' + u), spec = this._egD?.[u], g = wrap?._g, tip = wrap?.querySelector('.etip'), cur = wrap?.querySelector('.cur');
+    if (!spec || !g || !cur) return;
+    if (!ev) { wrap.classList.remove('scrub'); cur.style.display = 'none'; wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = '')); return; }
+    clearTimeout(wrap._t);
+    const rc = wrap.getBoundingClientRect(), xs = ((ev.clientX - rc.left) / rc.width) * g.W;
+    let x, y = null, lab, val;
+    const colr = EG[u];
+    if (g.line) {
+      if (!spec.pts.length) return;
+      const p = spec.pts.reduce((b, q) => (Math.abs(g.X(q.t) - xs) < Math.abs(g.X(b.t) - xs) ? q : b), spec.pts[0]);
+      x = g.X(p.t); y = g.Y(p.v);
+      lab = p.live ? 'Nu' : fmtTime(p.t0 ?? p.t);
+      if (u === 's') val = `<b style="color:${p.v < 0 ? EG.e : EG.s}">${p.v < 0 ? '↑' : '↓'} ${fmt(Math.abs(p.v))} W</b>`;
+      else val = `<b style="color:${colr}">↓ ${fmt(p.v, spec.slot >= HOUR ? 2 : 2)} m³</b>`;
+      cur.querySelector('circle').setAttribute('fill', u === 's' && p.v < 0 ? EG.e : colr);
+    } else {
+      const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 44) / n)), 0, n - 1), it = spec.items[k];
+      x = g.X(k); lab = it.full;
+      wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = +b.dataset.i === k ? 1 : 0.3));
+      if (spec.mode === 'bars2') val = it.a == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b><span style="color:${EG.s}">↓ ${fmt(it.a, it.a >= 100 ? 0 : 1)}</span> <span style="color:${EG.e}">↑ ${fmt(it.b || 0, (it.b || 0) >= 100 ? 0 : 1)}</span> kWh</b>`;
+      else val = it.v == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b style="color:${colr}">↓ ${fmt(it.v, spec.dec)} ${spec.unit}</b>`;
+    }
+    wrap.classList.add('scrub');
+    cur.style.display = '';
+    const ln = cur.querySelector('line'), ci = cur.querySelector('circle');
+    ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+    ci.style.display = y == null ? 'none' : ''; if (y != null) { ci.setAttribute('cx', x); ci.setAttribute('cy', y); }
+    tip.style.left = `${clamp((x / g.W) * rc.width, 70, rc.width - 70)}px`;
+    tip.innerHTML = `<span>${lab}</span>${val}`;
+  }
+
+  // maandblok (vanuit _update)
+  _egMonth(m) {
+    if (!this.$('eMt')) return;
+    const { cE, cG, cW, ms, now, pg, pw } = m, tot = Math.max(0, cE) + Math.max(0, cG) + Math.max(0, cW);
+    const dIn = new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() + 1, 0).getDate(), dm = (now - ms) / DAY;
+    const exp = dm >= 1 ? (tot / dm) * dIn : null;
+    this._egCur = { e: cE, g: cG, w: cW, tot, exp, ms };
+    const eur = (v) => `€ ${fmt(v)}`;
+    this.$('eMn').textContent = 'Deze maand';
+    this.$('eMt').textContent = eur(tot);
+    this.$('eMs').innerHTML = `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}`;
+    const pm = this._egKh ? this._egMonthCost(new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() - 1, 1).getTime()) : null;
+    if (pm && pm.tot > 0) {
+      const ref = exp ?? tot, pc = Math.round(((ref - pm.tot) / pm.tot) * 100);
+      this.$('eMp').innerHTML = `${new Date(pm.t).toLocaleDateString('nl-NL', { month: 'long' })} ${eur(pm.tot)}${exp != null ? `<br><span style="color:${pc <= 0 ? EG.e : '#ffb547'}">${pc > 0 ? '+' : '−'}${Math.abs(pc)}%</span>` : ''}`;
+    } else this.$('eMp').innerHTML = '';
+    const parts = [[Math.max(0, cE), EG.s, 'Stroom'], ...(pg != null ? [[Math.max(0, cG), EG.g, 'Gas']] : []), ...(pw != null ? [[Math.max(0, cW), EG.w, 'Water']] : [])];
+    this.$('eMb').innerHTML = tot > 0 ? parts.map(([v, c]) => (v > 0 ? `<i style="width:${(v / tot) * 100}%;background:${c}"></i>` : '')).join('') : '';
+    this.$('eMl').innerHTML = parts.map(([v, c, n]) => `<span><i style="background:${c}"></i>${n} ${eur(v)}</span>`).join('') + '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
+    if (!this._egKh && !this._egKhBusy && this._hass) this._egKhLoad();
+  }
+
+  // maandstatistiek van de afgelopen jaren, voor het kostenvenster
+  async _egKhLoad() {
+    const c = this._config, ids = [c.import, c.export, c.gas, c.water].filter(Boolean);
+    if (!ids.length) return;
+    this._egKhBusy = true;
+    try {
+      const y0 = new Date(new Date().getFullYear() - 3, 0, 1).getTime();
+      const r = await this._egStat(ids, 'month', y0, Date.now());
+      const kw = (c.fuse * c.voltage * c.phases) / 1000 * 24 * 31, cap = { [c.import]: kw, [c.export]: kw, [c.gas]: 6 * 24 * 31, [c.water]: 2 * 24 * 31 };
+      this._egKh = Object.fromEntries(ids.map((id) => [id, new Map((r[id] || []).map((x) => { const d = new Date(ts(x.start)); return [new Date(d.getFullYear(), d.getMonth(), 1).getTime(), x.change == null || x.change < 0 || x.change > cap[id] ? 0 : x.change]; }))]));
+      this._update();
+    } catch (e) { console.warn('verbruik-card: maandhistorie mislukt', e); } finally { this._egKhBusy = false; }
+  }
+
+  // kosten van een afgelopen maand met de huidige prijzen, incl. vaste kosten; null zonder gegevens
+  _egMonthCost(t) {
+    const c = this._config, kh = this._egKh; if (!kh) return null;
+    const v = (id) => (id && kh[id]?.has(t) ? kh[id].get(t) : null), im = v(c.import), ex = v(c.export), g = v(c.gas), w = v(c.water);
+    if (im == null && g == null && w == null) return null;
+    const pi = this._price('import') ?? 0, pe = this._price('export') ?? 0, pg = this._price('gas'), pw = this._price('water'), fx = c.fixed;
+    const dIn = new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate();
+    const e = (im || 0) * pi - (ex || 0) * pe + dIn * (fx.electricity_day || 0) + (dIn * (fx.export_year || 0)) / 365;
+    const gg = pg != null ? (g || 0) * pg + (g != null ? dIn * (fx.gas_day || 0) : 0) : 0, ww = pw != null ? (w || 0) * pw : 0;
+    return { t, e: Math.max(0, e), g: Math.max(0, gg), w: Math.max(0, ww), tot: Math.max(0, e) + Math.max(0, gg) + Math.max(0, ww) };
+  }
+
+  _egOpen(title, icon, html) {
+    const sh = this.$('egSh');
+    sh.innerHTML = `<div class="egrab"></div><div class="eshh">${icon}<b>${title}</b><button class="ex" id="egX" aria-label="Sluiten">✕</button></div>${html}`;
+    sh.scrollTop = 0;
+    this.$('egBg').classList.add('up'); sh.classList.add('up');
+    this.$('egX').addEventListener('click', () => this._egClose());
+  }
+
+  _egClose() { this.$('egBg')?.classList.remove('up'); this.$('egSh')?.classList.remove('up'); }
+
+  _egWatchSheet() {
+    const t = this.$('baseS')?.closest('.tile');
+    this._egOpen('Bewaking', gl('gGauge', 'sm'), `<div>${t ? t.querySelector('.th + div')?.innerHTML || '' : ''}</div>`);
+  }
+
+  _egCostSheet() {
+    const eur = (v) => `€ ${fmt(v)}`;
+    this._egOpen('Kosten', '<svg class="gl3 sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2bc4a6"/><path d="M15.4 8.4A4.4 4.4 0 0 0 8.6 10m6.8 5.6A4.4 4.4 0 0 1 8.6 14M7.2 10.7h5.8M7.2 13.3h5.8" stroke="#06352d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
+      `<div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
+      <div class="khw"><svg id="kSv" viewBox="0 0 330 182"></svg></div><div class="kdet" id="kDet"></div><div id="kCmp"></div>`);
+    const cur = this._egCur || { e: 0, g: 0, w: 0, tot: 0, exp: null, ms: startOfDay(Date.now()) };
+    const d0 = new Date(cur.ms), Y = d0.getFullYear(), M = d0.getMonth();
+    const months = Array.from({ length: 12 }, (_, k) => { const t = new Date(Y, M - 11 + k, 1).getTime(); return k === 11 ? { t, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w), tot: cur.tot, now: true } : (this._egMonthCost(t) || { t, e: 0, g: 0, w: 0, tot: 0, none: true }); });
+    const years = [];
+    for (let y = Y - 3; y <= Y; y++) {
+      const ms = Array.from({ length: 12 }, (_, m) => (y === Y && m === M ? { ...cur, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w) } : y === Y && m > M ? null : this._egMonthCost(new Date(y, m, 1).getTime()))).filter(Boolean);
+      if (!ms.length) continue;
+      years.push({ t: y, y, e: ms.reduce((s, x) => s + x.e, 0), g: ms.reduce((s, x) => s + x.g, 0), w: ms.reduce((s, x) => s + x.w, 0), tot: ms.reduce((s, x) => s + x.tot, 0), now: y === Y });
+    }
+    let mode = 'm', sel = 11;
+    const draw = () => {
+      const L = mode === 'm' ? months : years, n = L.length; if (!n) return;
+      if (sel >= n) sel = n - 1;
+      const fc = mode === 'm' ? cur.exp : null, mx = Math.max(1, ...L.map((x) => x.tot), fc || 0) * 1.08;
+      const W = 330, PW = 290, top = 12, bot = 158, bw = PW / n, w = Math.min(34, bw * 0.62), Yp = (v) => bot - (v / mx) * (bot - top);
+      const e = 10 ** Math.floor(Math.log10(mx / 3)), st = [1, 2, 2.5, 5, 10].map((m) => m * e).find((v) => v >= mx / 3);
+      let o = '';
+      for (let v = 0; v <= mx; v += st) o += `<line x1="0" x2="${PW}" y1="${Yp(v)}" y2="${Yp(v)}" stroke="rgba(255,255,255,${v ? 0.06 : 0.14})"/><text x="${W - 2}" y="${Yp(v) + 4}" text-anchor="end">€ ${fmt(v)}</text>`;
+      L.forEach((x, k) => {
+        const bx = k * bw + (bw - w) / 2, dim = k === sel ? 1 : 0.45; let y = bot;
+        if (x.now && fc) { const f = Yp(fc); o += `<rect x="${bx}" y="${f}" width="${w}" height="${bot - f}" rx="4" fill="none" stroke="rgba(200,215,240,.35)" stroke-dasharray="3 3"/>`; }
+        [['w', EG.w], ['e', EG.s], ['g', EG.g]].forEach(([kk, c], j) => { const h = (x[kk] / mx) * (bot - top); if (h <= 0) return; y -= h; o += `<rect x="${bx}" y="${y}" width="${w}" height="${Math.max(h - 1, 0.5)}" rx="${j === 2 ? 4 : 1}" fill="${c}" opacity="${dim}"/>`; });
+        const lab = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : String(x.y);
+        o += `<text x="${bx + w / 2}" y="176" text-anchor="middle" style="${k === sel ? 'fill:#fff;font-weight:700' : ''}">${lab}</text><rect class="kh" data-i="${k}" x="${k * bw}" y="0" width="${bw}" height="182" fill="transparent"/>`;
+      });
+      const svg = this.$('kSv'); svg.innerHTML = o;
+      svg.querySelectorAll('.kh').forEach((r) => r.addEventListener('click', () => { sel = +r.dataset.i; draw(); }));
+      const x = L[sel], part = (k, c, nm) => `<div class="krow"><i style="background:${c}"></i><span>${nm}</span><b class="num">€ ${fmt(x[k], 2)}</b><small>${x.tot > 0 ? Math.round((x[k] / x.tot) * 100) : 0}%</small></div>`;
+      const nm = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) + (x.now ? ' (tot nu)' : '') : `${x.y}${x.now ? ' (tot nu)' : ''}`;
+      this.$('kDet').innerHTML = x.none ? `<div class="kdh"><span>${nm}</span><b>—</b></div><div class="khint" style="margin:0">Geen gegevens voor deze maand.</div>` : `<div class="kdh"><span>${nm}</span><b class="num">€ ${fmt(x.tot)}</b></div>${part('e', EG.s, 'Stroom')}${part('g', EG.g, 'Gas')}${part('w', EG.w, 'Water')}`;
+      const pc = (a, b) => { if (!b) return '<span></span>'; const dd = Math.round(((a - b) / b) * 100); return `<span style="color:${dd <= 0 ? EG.e : '#ffb547'}">${dd > 0 ? '+' : '−'}${Math.abs(dd)}%</span>`; };
+      let rows = [], head = '', hint = '';
+      if (mode === 'm') {
+        const ref = cur.exp ?? cur.tot, prev = months[10], ly = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), past = months.slice(0, 11).filter((q) => !q.none);
+        if (!prev.none) rows.push([`Vorige maand · ${new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long' })}`, prev.tot, ref]);
+        if (ly) rows.push([`Zelfde maand vorig jaar · ${new Date(ly.t).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')}`, ly.tot, ref]);
+        if (past.length) rows.push([`Gemiddeld per maand (${past.length} mnd)`, past.reduce((s, q) => s + q.tot, 0) / past.length, ref]);
+        head = cur.exp != null ? `met verwachting ${eur(cur.exp)} deze maand` : '';
+      } else {
+        const ly = years.find((q) => q.y === Y - 1);
+        if (ly) {
+          const part2 = Array.from({ length: M }, (_, m) => this._egMonthCost(new Date(Y - 1, m, 1).getTime())).filter(Boolean).reduce((s, q) => s + q.tot, 0);
+          const pm = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), dIn = new Date(Y, M + 1, 0).getDate(), frac = (Date.now() - cur.ms) / DAY / dIn;
+          rows.push([`Vorig jaar t/m ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '')}`, part2 + (pm ? pm.tot * frac : 0), years[years.length - 1].tot]);
+          rows.push(['Vorig jaar totaal', ly.tot, null]);
+        }
+        years.filter((q) => q.y < Y - 1).reverse().forEach((q) => rows.push([String(q.y), q.tot, null]));
+        head = `${Y} tot nu ${eur(years[years.length - 1]?.tot || 0)}`;
+      }
+      hint = 'Berekend met je huidige prijzen, inclusief vaste kosten. Tik op een staaf voor de verdeling.';
+      this.$('kCmp').innerHTML = rows.length ? `<div class="klbl">Vergelijken<span>${head}</span></div>${rows.map(([n, v, ref]) => `<div class="kc"><span>${n}</span><b class="num">${eur(v)}</b>${ref != null ? pc(ref, v) : '<span></span>'}</div>`).join('')}<div class="khint">${hint}</div>` : `<div class="khint">${hint}</div>`;
+    };
+    this.shadowRoot.querySelectorAll('#kSeg button').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.k; sel = (mode === 'm' ? months : years).length - 1; this.shadowRoot.querySelectorAll('#kSeg button').forEach((x) => x.classList.toggle('on', x === b)); draw(); }));
+    draw();
   }
 
   /* ---------- grafieken ---------- */

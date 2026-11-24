@@ -310,6 +310,7 @@
 | v437 | Temperatuurvenster: huidige temperatuur groot (44 px, `.most.tbig`). |
 | v438 | Nu (telefoon): panelen als echte zonnepanelen (zilveren lijst, cellen); per dakkant staand of liggend via `panel_orientation`. |
 | v439 | Liggende panelen even groot als staande (gedraaid), 3 per rij. |
+| v440 | Energie (telefoon) opnieuw: ontwerp G met periodekiezer bovenin (Nu/Dag/Week/Maand/Jaar, terug in de tijd), per soort een kaart met grafiek om door te schuiven, maandblok met kostenhistorie, exacte kleuren; geen Net nu. Computer ongewijzigd. |
 
 ## Volgende stappen
 
