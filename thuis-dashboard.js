@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '450';
+const CARD_VERSION = '451';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4806,7 +4806,7 @@ const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 // v423: kleine iconen voor de vluchtkaart
 const FLTI = { gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V7l8-3 8 3v13M9 20v-6h6v6"/></svg>', alt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8M15 8h5v5"/></svg>', spd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 17a8 8 0 1 1 14 0M12 13l4-4"/></svg>' };
 const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
-  + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))"></i></div>`}</div>`;
+  + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc >= 100 ? '100%' : `max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))`}"></i></div>`}</div>`;
 // v418: laadkaart-icoon (telefoon): groene Seal van voren met wallbox, naar het ontwerp van de gebruiker; eigen verlopen evs*
 // v420: lakkleur van de getekende Seal: car_color groen | mint (standaard) | wit
 const EVPAINT = { mint: { pa: '<stop offset="0" stop-color="#cfe3dc"/><stop offset=".4" stop-color="#a9c6bd"/><stop offset=".75" stop-color="#7f9e95"/><stop offset="1" stop-color="#53706a"/>', hood: '<stop offset="0" stop-color="#e6f3ee"/><stop offset=".5" stop-color="#b9d3cb"/><stop offset="1" stop-color="#a9c6bd" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#d7e9e3"/><stop offset="1" stop-color="#8fb0a7"/>', bum: '<stop offset="0" stop-color="#94b2a9"/><stop offset="1" stop-color="#53706a"/>', mir: '#8fb0a7' }, wit: { pa: '<stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#e9edf2"/><stop offset=".75" stop-color="#c3cad4"/><stop offset="1" stop-color="#8f98a6"/>', hood: '<stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#f1f4f8"/><stop offset="1" stop-color="#dfe4eb" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d0da"/>', bum: '<stop offset="0" stop-color="#cfd5de"/><stop offset="1" stop-color="#7d8796"/>', mir: '#c9d0da' } };
