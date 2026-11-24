@@ -314,6 +314,7 @@
 | v441 | Energie (telefoon): vergelijken met dezelfde dagen vorig jaar; venster "Kosten en verbruik" met schakelaar Kosten/Verbruik (per soort, maanden en jaren) en verbruik in de verdeling. |
 | v442 | Kosten en verbruik: staven niet meer afgerond op de overgangen (gestapeld en bij de nullijn). |
 | v443 | Energie (telefoon): grafieken bijna over de hele kaartbreedte en scherpe lijnen bij 5-minutengegevens. |
+| v444 | Energie (telefoon): schaal van de grafieken past strak om de gegevens (zoals de oude app). |
 
 ## Volgende stappen
 
