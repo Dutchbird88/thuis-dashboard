@@ -278,6 +278,7 @@ Verdere regels:
 - Oranje regel `#eAl` alleen bij waterlek of piek ≥ 80% (tik = venster Bewaking). Onderaan `#eBw` sluipverbruik/aansluiting (tik = Bewaking, kopie van de computertegel).
 - Maandblok `#eMon` (`_egMonth` vanuit `_update`): tot nu, verwacht (tot nu ÷ verstreken dagen × dagen in de maand), vorige maand met % t.o.v. verwacht, balk. Tik = venster Kosten (`_egCostSheet`): Maanden (12) / Jaren (tot 4), gestapelde staven, verdeling van de gekozen staaf, vergelijken. Historie: `_egKhLoad` (maandstatistiek van 3 jaar terug), `_egMonthCost` met de huidige prijzen en vaste kosten.
 - Vensters: `#egSh`/`#egBg` (`_egOpen`/`_egClose`, omlaag vegen sluit).
+- v441: vergelijken met **dezelfde dagen vorig jaar** (advies: seizoen), niet met vorige maand. `_egLyLoad` (uurstatistiek van de 1e van deze maand vorig jaar tot hetzelfde moment, hooguit 1× per uur) → `this._egLy`; `_egCost(i, x, g, w, dagen)` rekent kosten met de huidige prijzen + vaste kosten. Maandblok: "nov 2025 € … · ±% zelfde dagen" (zonder gegevens van vorig jaar: vorige maand t.o.v. verwacht). Venster "Kosten en verbruik": schakelaar Kosten | Verbruik (chips Stroom/Gas/Water; stroom = afname omhoog, teruglevering omlaag groen), Maanden | Jaren, samenvatting tot nu / vorig jaar zelfde dagen / verschil, verdeling met verbruik per soort, Vergelijken: zelfde periode vorig jaar (met %), dezelfde maand vorig jaar heel, vorige maand, gemiddelde (zonder %).
 
 **localStorage-sleutels** (allemaal met try/catch):
 

@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '440';
+const CARD_VERSION = '441';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2217,9 +2217,13 @@ const EGSTYLE = `
   .khw svg { display: block; width: 100%; height: auto; cursor: pointer; } .khw text { font-size: 10.5px; fill: #6f7d92; font-family: inherit; }
   .kdet { margin-top: 10px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 10px 12px; display: grid; gap: 6px; }
   .kdh { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); } .kdh b { color: var(--text); font-size: 16px; }
-  .krow { display: grid; grid-template-columns: 10px 1fr auto 40px; gap: 8px; align-items: center; font-size: 13.5px; } .krow i { width: 9px; height: 9px; border-radius: 3px; } .krow small { color: var(--muted); text-align: right; }
+  .krow { display: grid; grid-template-columns: 10px auto 1fr auto; gap: 8px; align-items: center; font-size: 13.5px; } .krow i { width: 9px; height: 9px; border-radius: 3px; } .krow small { color: var(--muted); text-align: right; }
   .klbl { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; letter-spacing: .6px; color: var(--muted); text-transform: uppercase; margin: 16px 0 2px; } .klbl span { text-transform: none; letter-spacing: 0; font-weight: 500; }
-  .kc { display: grid; grid-template-columns: 1fr auto 48px; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13.5px; } .kc > :last-child { text-align: right; font-weight: 600; }
+  .kc { display: grid; grid-template-columns: 1fr auto minmax(44px, auto); min-height: 20px; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13.5px; } .kc > :last-child { text-align: right; font-weight: 600; }
+  .kchips { display: flex; gap: 6px; margin: -4px 0 10px; } .kchips button { all: unset; font-size: 12.5px; font-weight: 600; border-radius: 99px; padding: 6px 12px; border: 1px solid rgba(130,170,255,.14); color: var(--muted); cursor: pointer; }
+  .kchips button.on { color: var(--c); border-color: color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .ksum { display: flex; gap: 18px; margin: 0 0 6px; flex-wrap: wrap; } .ksum div { font-size: 11.5px; color: var(--muted); } .ksum b { display: block; font-size: 18px; color: var(--text); font-weight: 700; }
+  .krow .ku { color: var(--muted); font-size: 12px; text-align: right; } .krow b { min-width: 62px; text-align: right; }
   .khint { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
   .egsh .check:first-child { padding-top: 14px; }
 }
@@ -2630,7 +2634,7 @@ class VerbruikCard extends HTMLElement {
     ring += `<text x="21" y="20" text-anchor="middle" style="font-size:6.2px;font-weight:600;fill:#fff">€ ${fmt(tot)}</text><text x="21" y="26" text-anchor="middle" style="font-size:3.4px;fill:var(--muted)">totaal</text>`;
     set('donut', ring);
     const mSol = this._solarKwh(ms, now + 1);
-    this._egMonth({ cE, cG, cW, ms, now, pg, pw });
+    this._egMonth({ cE, cG, cW, ms, now, pg, pw, ui: mImp, ux: mExp, ug: c.gas ? mGas : null, uw: c.water ? mWat : null });
     this._egLoad();
     set('mSelf', mSol > 0.5 ? `${fmt(clamp((mSol - mExp) / mSol, 0, 1) * 100)}%` : '—');
 
@@ -2924,29 +2928,29 @@ class VerbruikCard extends HTMLElement {
     tip.innerHTML = `<span>${lab}</span>${val}`;
   }
 
-  // maandblok (vanuit _update)
+  // maandblok (vanuit _update); v441: vergelijken met dezelfde dagen vorig jaar
   _egMonth(m) {
     if (!this.$('eMt')) return;
     const { cE, cG, cW, ms, now, pg, pw } = m, tot = Math.max(0, cE) + Math.max(0, cG) + Math.max(0, cW);
     const dIn = new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() + 1, 0).getDate(), dm = (now - ms) / DAY;
     const exp = dm >= 1 ? (tot / dm) * dIn : null;
-    this._egCur = { e: cE, g: cG, w: cW, tot, exp, ms };
-    const eur = (v) => `€ ${fmt(v)}`;
-    this.$('eMn').textContent = 'Deze maand';
+    this._egCur = { e: cE, g: cG, w: cW, tot, exp, ms, ui: m.ui, ux: m.ux, ug: m.ug, uw: m.uw };
+    const eur = (v) => `€ ${fmt(v)}`, pc = (a, b) => { const d = Math.round(((a - b) / b) * 100); return `<span style="color:${d === 0 ? 'var(--muted)' : d < 0 ? EG.e : '#ffb547'}">${d > 0 ? '+' : d < 0 ? '−' : ''}${Math.abs(d)}%</span>`; };
     this.$('eMt').textContent = eur(tot);
     this.$('eMs').innerHTML = `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}`;
+    const ly = this._egLy, lyc = ly && this._egCost(ly.i, ly.x, ly.g, ly.w, ly.days);
     const pm = this._egKh ? this._egMonthCost(new Date(new Date(ms).getFullYear(), new Date(ms).getMonth() - 1, 1).getTime()) : null;
-    if (pm && pm.tot > 0) {
-      const ref = exp ?? tot, pc = Math.round(((ref - pm.tot) / pm.tot) * 100);
-      this.$('eMp').innerHTML = `${new Date(pm.t).toLocaleDateString('nl-NL', { month: 'long' })} ${eur(pm.tot)}${exp != null ? `<br><span style="color:${pc <= 0 ? EG.e : '#ffb547'}">${pc > 0 ? '+' : '−'}${Math.abs(pc)}%</span>` : ''}`;
-    } else this.$('eMp').innerHTML = '';
+    if (lyc && lyc.tot > 0) this.$('eMp').innerHTML = `${new Date(ly.t).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')} ${eur(lyc.tot)}<br>${pc(tot, lyc.tot)} <span style="font-size:11.5px">zelfde dagen</span>`;
+    else if (pm && pm.tot > 0 && exp != null) this.$('eMp').innerHTML = `${new Date(pm.t).toLocaleDateString('nl-NL', { month: 'long' })} ${eur(pm.tot)}<br>${pc(exp, pm.tot)}`;
+    else this.$('eMp').innerHTML = '';
     const parts = [[Math.max(0, cE), EG.s, 'Stroom'], ...(pg != null ? [[Math.max(0, cG), EG.g, 'Gas']] : []), ...(pw != null ? [[Math.max(0, cW), EG.w, 'Water']] : [])];
     this.$('eMb').innerHTML = tot > 0 ? parts.map(([v, c]) => (v > 0 ? `<i style="width:${(v / tot) * 100}%;background:${c}"></i>` : '')).join('') : '';
     this.$('eMl').innerHTML = parts.map(([v, c, n]) => `<span><i style="background:${c}"></i>${n} ${eur(v)}</span>`).join('') + '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
     if (!this._egKh && !this._egKhBusy && this._hass) this._egKhLoad();
+    this._egLyLoad();
   }
 
-  // maandstatistiek van de afgelopen jaren, voor het kostenvenster
+  // maandstatistiek van de afgelopen jaren, voor het venster Kosten en verbruik
   async _egKhLoad() {
     const c = this._config, ids = [c.import, c.export, c.gas, c.water].filter(Boolean);
     if (!ids.length) return;
@@ -2960,16 +2964,36 @@ class VerbruikCard extends HTMLElement {
     } catch (e) { console.warn('verbruik-card: maandhistorie mislukt', e); } finally { this._egKhBusy = false; }
   }
 
-  // kosten van een afgelopen maand met de huidige prijzen, incl. vaste kosten; null zonder gegevens
+  // verbruik van dezelfde dagen vorig jaar (1e van de maand tot hetzelfde moment), uit de uurstatistiek; hooguit eens per uur
+  async _egLyLoad() {
+    const c = this._config, ids = [c.import, c.export, c.gas, c.water].filter(Boolean), n = new Date();
+    const key = `${n.getFullYear()}-${n.getMonth()}-${n.getDate()}-${n.getHours()}`;
+    if (!ids.length || this._egLyK === key || !this._hass) return;
+    this._egLyK = key;
+    try {
+      const a = new Date(n.getFullYear() - 1, n.getMonth(), 1).getTime(), b = new Date(n.getFullYear() - 1, n.getMonth(), n.getDate(), n.getHours(), n.getMinutes()).getTime();
+      const r = await this._egStat(ids, 'hour', a, b), kw = (c.fuse * c.voltage * c.phases) / 1000;
+      const sum = (id, cap) => (id ? (r[id] || []).reduce((s, x) => s + (x.change == null || x.change < 0 || x.change > cap ? 0 : x.change), 0) : null);
+      const has = ids.some((id) => (r[id] || []).length);
+      this._egLy = has ? { t: a, to: b, days: (b - a) / DAY, i: sum(c.import, kw), x: sum(c.export, kw), g: c.gas && (r[c.gas] || []).length ? sum(c.gas, 6) : null, w: c.water && (r[c.water] || []).length ? sum(c.water, 2) : null } : null;
+      this._update();
+    } catch (e) { this._egLyK = null; }
+  }
+
+  // kosten met de huidige prijzen, incl. vaste kosten over `days` dagen
+  _egCost(im, ex, g, w, days) {
+    const c = this._config, fx = c.fixed, pi = this._price('import') ?? 0, pe = this._price('export') ?? 0, pg = this._price('gas'), pw = this._price('water');
+    const e = (im || 0) * pi - (ex || 0) * pe + days * (fx.electricity_day || 0) + (days * (fx.export_year || 0)) / 365;
+    const gg = pg != null ? (g || 0) * pg + (g != null ? days * (fx.gas_day || 0) : 0) : 0, ww = pw != null ? (w || 0) * pw : 0;
+    return { e: Math.max(0, e), g: Math.max(0, gg), w: Math.max(0, ww), tot: Math.max(0, e) + Math.max(0, gg) + Math.max(0, ww), ui: im, ux: ex, ug: g, uw: w };
+  }
+
+  // kosten en verbruik van een afgelopen maand; null zonder gegevens
   _egMonthCost(t) {
     const c = this._config, kh = this._egKh; if (!kh) return null;
     const v = (id) => (id && kh[id]?.has(t) ? kh[id].get(t) : null), im = v(c.import), ex = v(c.export), g = v(c.gas), w = v(c.water);
     if (im == null && g == null && w == null) return null;
-    const pi = this._price('import') ?? 0, pe = this._price('export') ?? 0, pg = this._price('gas'), pw = this._price('water'), fx = c.fixed;
-    const dIn = new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate();
-    const e = (im || 0) * pi - (ex || 0) * pe + dIn * (fx.electricity_day || 0) + (dIn * (fx.export_year || 0)) / 365;
-    const gg = pg != null ? (g || 0) * pg + (g != null ? dIn * (fx.gas_day || 0) : 0) : 0, ww = pw != null ? (w || 0) * pw : 0;
-    return { t, e: Math.max(0, e), g: Math.max(0, gg), w: Math.max(0, ww), tot: Math.max(0, e) + Math.max(0, gg) + Math.max(0, ww) };
+    return { t, ...this._egCost(im, ex, g, w, new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate()) };
   }
 
   _egOpen(title, icon, html) {
@@ -2989,62 +3013,80 @@ class VerbruikCard extends HTMLElement {
 
   _egCostSheet() {
     const eur = (v) => `€ ${fmt(v)}`;
-    this._egOpen('Kosten', '<svg class="gl3 sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2bc4a6"/><path d="M15.4 8.4A4.4 4.4 0 0 0 8.6 10m6.8 5.6A4.4 4.4 0 0 1 8.6 14M7.2 10.7h5.8M7.2 13.3h5.8" stroke="#06352d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
-      `<div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
+    this._egOpen('Kosten en verbruik', '<svg class="gl3 sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2bc4a6"/><path d="M15.4 8.4A4.4 4.4 0 0 0 8.6 10m6.8 5.6A4.4 4.4 0 0 1 8.6 14M7.2 10.7h5.8M7.2 13.3h5.8" stroke="#06352d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
+      `<div class="eseg" id="kMode"><button data-v="k" class="on">Kosten</button><button data-v="v">Verbruik</button></div>
+      <div class="eseg" id="kSeg"><button data-k="m" class="on">Maanden</button><button data-k="y">Jaren</button></div>
+      <div class="kchips" id="kU" style="display:none">${[['s', 'Stroom'], ['g', 'Gas'], ['w', 'Water']].map(([k, n]) => `<button data-u="${k}" style="--c:${EG[k]}" class="${k === 'g' ? 'on' : ''}">${n}</button>`).join('')}</div>
+      <div class="ksum" id="kSum"></div>
       <div class="khw"><svg id="kSv" viewBox="0 0 330 182"></svg></div><div class="kdet" id="kDet"></div><div id="kCmp"></div>`);
     const cur = this._egCur || { e: 0, g: 0, w: 0, tot: 0, exp: null, ms: startOfDay(Date.now()) };
-    const d0 = new Date(cur.ms), Y = d0.getFullYear(), M = d0.getMonth();
-    const months = Array.from({ length: 12 }, (_, k) => { const t = new Date(Y, M - 11 + k, 1).getTime(); return k === 11 ? { t, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w), tot: cur.tot, now: true } : (this._egMonthCost(t) || { t, e: 0, g: 0, w: 0, tot: 0, none: true }); });
+    const d0 = new Date(cur.ms), Y = d0.getFullYear(), M = d0.getMonth(), today = new Date();
+    const curE = { t: cur.ms, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w), tot: cur.tot, ui: cur.ui, ux: cur.ux, ug: cur.ug, uw: cur.uw, now: true };
+    const months = Array.from({ length: 12 }, (_, k) => { const t = new Date(Y, M - 11 + k, 1).getTime(); return k === 11 ? curE : (this._egMonthCost(t) || { t, e: 0, g: 0, w: 0, tot: 0, none: true }); });
+    const sumL = (L) => ['e', 'g', 'w', 'tot', 'ui', 'ux', 'ug', 'uw'].reduce((o, k) => { const v = L.filter((x) => x[k] != null); o[k] = v.length ? v.reduce((s, x) => s + x[k], 0) : null; return o; }, {});
     const years = [];
     for (let y = Y - 3; y <= Y; y++) {
-      const ms = Array.from({ length: 12 }, (_, m) => (y === Y && m === M ? { ...cur, e: Math.max(0, cur.e), g: Math.max(0, cur.g), w: Math.max(0, cur.w) } : y === Y && m > M ? null : this._egMonthCost(new Date(y, m, 1).getTime()))).filter(Boolean);
-      if (!ms.length) continue;
-      years.push({ t: y, y, e: ms.reduce((s, x) => s + x.e, 0), g: ms.reduce((s, x) => s + x.g, 0), w: ms.reduce((s, x) => s + x.w, 0), tot: ms.reduce((s, x) => s + x.tot, 0), now: y === Y });
+      const L = Array.from({ length: 12 }, (_, m) => (y === Y && m === M ? curE : y === Y && m > M ? null : this._egMonthCost(new Date(y, m, 1).getTime()))).filter(Boolean);
+      if (L.length) years.push({ y, t: new Date(y, 0, 1).getTime(), ...sumL(L), now: y === Y });
     }
-    let mode = 'm', sel = 11;
+    // dezelfde periode vorig jaar: maand t/m nu, en jaar t/m nu
+    const ly = this._egLy, lyM = ly ? { ...this._egCost(ly.i, ly.x, ly.g, ly.w, ly.days) } : null;
+    const lyYparts = Array.from({ length: M }, (_, m) => this._egMonthCost(new Date(Y - 1, m, 1).getTime())).filter(Boolean);
+    const lyY = lyM && years.some((q) => q.y === Y - 1) ? sumL([...lyYparts, lyM]) : null;
+    const dayTxt = today.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+    const U = { s: { k: 'ui', n: 'Stroom', u: 'kWh' }, g: { k: 'ug', n: 'Gas', u: 'm³' }, w: { k: 'uw', n: 'Water', u: 'm³' } };
+    const fu = (v, u) => (v == null ? '—' : `${fmt(v, u === 's' ? (v >= 100 ? 0 : 1) : v >= 100 ? 0 : 1)} ${U[u].u}`);
+    const pc = (a, b) => { if (a == null || !b) return '<span></span>'; const dd = Math.round(((a - b) / b) * 100); return `<span style="color:${dd === 0 ? 'var(--muted)' : dd < 0 ? EG.e : '#ffb547'}">${dd > 0 ? '+' : dd < 0 ? '−' : ''}${Math.abs(dd)}%</span>`; };
+    let view = 'k', mode = 'm', u = 'g', sel = 11;
     const draw = () => {
       const L = mode === 'm' ? months : years, n = L.length; if (!n) return;
       if (sel >= n) sel = n - 1;
-      const fc = mode === 'm' ? cur.exp : null, mx = Math.max(1, ...L.map((x) => x.tot), fc || 0) * 1.08;
-      const W = 330, PW = 290, top = 12, bot = 158, bw = PW / n, w = Math.min(34, bw * 0.62), Yp = (v) => bot - (v / mx) * (bot - top);
-      const e = 10 ** Math.floor(Math.log10(mx / 3)), st = [1, 2, 2.5, 5, 10].map((m) => m * e).find((v) => v >= mx / 3);
+      const kost = view === 'k', key = U[u].k;
+      const val = (x) => (kost ? x.tot : x[key] || 0), neg = (x) => (!kost && u === 's' ? x.ux || 0 : 0);
+      const fc = kost && mode === 'm' ? cur.exp : null;
+      const mx = Math.max(0.1, ...L.map(val), fc || 0) * 1.08, mn = Math.max(0, ...L.map(neg)) * 1.08;
+      const W = 330, PW = 290, top = 12, bot = 158, bw = PW / n, w = Math.min(34, bw * 0.62), z = top + (bot - top) * (mx / (mx + mn)), Yp = (v) => z - (v / (mx + mn)) * (bot - top);
+      const e = 10 ** Math.floor(Math.log10((mx + mn) / 3)), st = [1, 2, 2.5, 5, 10].map((m) => m * e).find((v) => v >= (mx + mn) / 3);
+      const ylab = (v) => (kost ? `€ ${fmt(v)}` : fmt(v, st < 1 ? 1 : 0));
       let o = '';
-      for (let v = 0; v <= mx; v += st) o += `<line x1="0" x2="${PW}" y1="${Yp(v)}" y2="${Yp(v)}" stroke="rgba(255,255,255,${v ? 0.06 : 0.14})"/><text x="${W - 2}" y="${Yp(v) + 4}" text-anchor="end">€ ${fmt(v)}</text>`;
+      for (let v = -Math.floor(mn / st) * st; v <= mx; v += st) o += `<line x1="0" x2="${PW}" y1="${Yp(v)}" y2="${Yp(v)}" stroke="rgba(255,255,255,${Math.abs(v) < st / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${Yp(v) + 4}" text-anchor="end">${ylab(Math.abs(v) < st / 2 ? 0 : v)}</text>`;
       L.forEach((x, k) => {
-        const bx = k * bw + (bw - w) / 2, dim = k === sel ? 1 : 0.45; let y = bot;
-        if (x.now && fc) { const f = Yp(fc); o += `<rect x="${bx}" y="${f}" width="${w}" height="${bot - f}" rx="4" fill="none" stroke="rgba(200,215,240,.35)" stroke-dasharray="3 3"/>`; }
-        [['w', EG.w], ['e', EG.s], ['g', EG.g]].forEach(([kk, c], j) => { const h = (x[kk] / mx) * (bot - top); if (h <= 0) return; y -= h; o += `<rect x="${bx}" y="${y}" width="${w}" height="${Math.max(h - 1, 0.5)}" rx="${j === 2 ? 4 : 1}" fill="${c}" opacity="${dim}"/>`; });
+        const bx = k * bw + (bw - w) / 2, dim = k === sel ? 1 : 0.45;
+        if (x.now && fc) { const f = Yp(fc); o += `<rect x="${bx}" y="${f}" width="${w}" height="${z - f}" rx="4" fill="none" stroke="rgba(200,215,240,.35)" stroke-dasharray="3 3"/>`; }
+        if (kost) { let y = z; [['w', EG.w], ['e', EG.s], ['g', EG.g]].forEach(([kk, c], j) => { const h = (x[kk] / (mx + mn)) * (bot - top); if (h <= 0) return; y -= h; o += `<rect x="${bx}" y="${y}" width="${w}" height="${Math.max(h - 1, 0.5)}" rx="${j === 2 ? 4 : 1}" fill="${c}" opacity="${dim}"/>`; }); }
+        else {
+          const h = Math.max(0, z - Yp(val(x))); if (h > 0) o += `<rect x="${bx}" y="${z - h}" width="${w}" height="${h}" rx="4" fill="${EG[u]}" opacity="${dim}"/>`;
+          const hn = Math.max(0, Yp(-neg(x)) - z); if (hn > 0) o += `<rect x="${bx}" y="${z + 1}" width="${w}" height="${hn}" rx="4" fill="${EG.e}" opacity="${dim}"/>`;
+        }
         const lab = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : String(x.y);
         o += `<text x="${bx + w / 2}" y="176" text-anchor="middle" style="${k === sel ? 'fill:#fff;font-weight:700' : ''}">${lab}</text><rect class="kh" data-i="${k}" x="${k * bw}" y="0" width="${bw}" height="182" fill="transparent"/>`;
       });
       const svg = this.$('kSv'); svg.innerHTML = o;
       svg.querySelectorAll('.kh').forEach((r) => r.addEventListener('click', () => { sel = +r.dataset.i; draw(); }));
-      const x = L[sel], part = (k, c, nm) => `<div class="krow"><i style="background:${c}"></i><span>${nm}</span><b class="num">€ ${fmt(x[k], 2)}</b><small>${x.tot > 0 ? Math.round((x[k] / x.tot) * 100) : 0}%</small></div>`;
-      const nm = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) + (x.now ? ' (tot nu)' : '') : `${x.y}${x.now ? ' (tot nu)' : ''}`;
-      this.$('kDet').innerHTML = x.none ? `<div class="kdh"><span>${nm}</span><b>—</b></div><div class="khint" style="margin:0">Geen gegevens voor deze maand.</div>` : `<div class="kdh"><span>${nm}</span><b class="num">€ ${fmt(x.tot)}</b></div>${part('e', EG.s, 'Stroom')}${part('g', EG.g, 'Gas')}${part('w', EG.w, 'Water')}`;
-      const pc = (a, b) => { if (!b) return '<span></span>'; const dd = Math.round(((a - b) / b) * 100); return `<span style="color:${dd <= 0 ? EG.e : '#ffb547'}">${dd > 0 ? '+' : '−'}${Math.abs(dd)}%</span>`; };
-      let rows = [], head = '', hint = '';
+      const x = L[sel], nm = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) + (x.now ? ' (tot nu)' : '') : `${x.y}${x.now ? ' (tot nu)' : ''}`;
+      const use = (k) => (k === 'e' ? (x.ui != null ? `${fu(x.ui, 's').replace(' kWh', '')} kWh af${x.ux ? ` · ${fmt(x.ux, x.ux >= 100 ? 0 : 1)} terug` : ''}` : '') : k === 'g' ? (x.ug != null ? fu(x.ug, 'g') : '') : x.uw != null ? fu(x.uw, 'w') : '');
+      const part = (k, c, nmm) => `<div class="krow"><i style="background:${c}"></i><span>${nmm}</span><small class="ku">${use(k)}</small><b class="num">€ ${fmt(x[k], 2)}</b></div>`;
+      this.$('kDet').innerHTML = x.none ? `<div class="kdh"><span>${nm}</span><b>—</b></div><div class="khint" style="margin:0">Geen gegevens voor deze maand.</div>`
+        : `<div class="kdh"><span>${nm}</span><b class="num">${kost ? `€ ${fmt(x.tot)}` : fu(x[key], u)}</b></div>${part('e', EG.s, 'Stroom')}${part('g', EG.g, 'Gas')}${part('w', EG.w, 'Water')}`;
+      // samenvatting en vergelijking
+      const lyP = mode === 'm' ? lyM : lyY, curP = mode === 'm' ? curE : years.find((q) => q.now), pname = mode === 'm' ? `${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')} t/m ${dayTxt}` : `${Y - 1} t/m ${dayTxt}`;
+      const get = (q) => (q == null ? null : kost ? q.tot : q[key]), f = (v) => (kost ? eur(v) : fu(v, u));
+      this.$('kSum').innerHTML = `<div><b class="num">${f(get(curP))}</b>${mode === 'm' ? 'deze maand' : String(Y)} tot nu</div>` + (lyP && get(lyP) != null ? `<div><b class="num">${f(get(lyP))}</b>vorig jaar, zelfde dagen</div><div><b>${pc(get(curP), get(lyP))}</b>verschil</div>` : '');
+      const rows = [];
+      if (lyP && get(lyP) != null) rows.push([`Zelfde periode vorig jaar · ${pname}`, get(lyP), pc(get(curP), get(lyP))]);
       if (mode === 'm') {
-        const ref = cur.exp ?? cur.tot, prev = months[10], ly = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), past = months.slice(0, 11).filter((q) => !q.none);
-        if (!prev.none) rows.push([`Vorige maand · ${new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long' })}`, prev.tot, ref]);
-        if (ly) rows.push([`Zelfde maand vorig jaar · ${new Date(ly.t).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')}`, ly.tot, ref]);
-        if (past.length) rows.push([`Gemiddeld per maand (${past.length} mnd)`, past.reduce((s, q) => s + q.tot, 0) / past.length, ref]);
-        head = cur.exp != null ? `met verwachting ${eur(cur.exp)} deze maand` : '';
-      } else {
-        const ly = years.find((q) => q.y === Y - 1);
-        if (ly) {
-          const part2 = Array.from({ length: M }, (_, m) => this._egMonthCost(new Date(Y - 1, m, 1).getTime())).filter(Boolean).reduce((s, q) => s + q.tot, 0);
-          const pm = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), dIn = new Date(Y, M + 1, 0).getDate(), frac = (Date.now() - cur.ms) / DAY / dIn;
-          rows.push([`Vorig jaar t/m ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '')}`, part2 + (pm ? pm.tot * frac : 0), years[years.length - 1].tot]);
-          rows.push(['Vorig jaar totaal', ly.tot, null]);
-        }
-        years.filter((q) => q.y < Y - 1).reverse().forEach((q) => rows.push([String(q.y), q.tot, null]));
-        head = `${Y} tot nu ${eur(years[years.length - 1]?.tot || 0)}`;
-      }
-      hint = 'Berekend met je huidige prijzen, inclusief vaste kosten. Tik op een staaf voor de verdeling.';
-      this.$('kCmp').innerHTML = rows.length ? `<div class="klbl">Vergelijken<span>${head}</span></div>${rows.map(([n, v, ref]) => `<div class="kc"><span>${n}</span><b class="num">${eur(v)}</b>${ref != null ? pc(ref, v) : '<span></span>'}</div>`).join('')}<div class="khint">${hint}</div>` : `<div class="khint">${hint}</div>`;
+        const lyFull = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), prev = months[10], past = months.slice(0, 11).filter((q) => !q.none && get(q) != null);
+        if (lyFull && get(lyFull) != null) rows.push([`${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })} (hele maand)`, get(lyFull), kost && cur.exp != null ? `<span style="font-size:11.5px;color:var(--muted)">verwacht ${eur(cur.exp)}</span>` : '<span></span>']);
+        if (!prev.none && get(prev) != null) rows.push([`Vorige maand · ${new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long' })}`, get(prev), '<span></span>']);
+        if (past.length) rows.push([`Gemiddeld per maand (${past.length} mnd)`, past.reduce((s, q) => s + get(q), 0) / past.length, '<span></span>']);
+      } else years.filter((q) => !q.now).reverse().forEach((q) => rows.push([`${q.y} (heel jaar)`, get(q), '<span></span>']));
+      const hint = (kost ? 'Kosten berekend met je huidige prijzen, inclusief vaste kosten. ' : u === 's' ? 'Stroom: afname omhoog, teruglevering omlaag (groen). ' : '') + 'Vergeleken wordt met dezelfde dagen vorig jaar, omdat het seizoen veel uitmaakt. Tik op een staaf voor de verdeling.';
+      this.$('kCmp').innerHTML = `${rows.length ? `<div class="klbl">Vergelijken<span>${kost ? 'kosten' : U[u].n.toLowerCase()}</span></div>${rows.map(([nn, v, p]) => `<div class="kc"><span>${nn}</span><b class="num">${f(v)}</b>${p}</div>`).join('')}` : ''}<div class="khint">${hint}</div>`;
     };
-    this.shadowRoot.querySelectorAll('#kSeg button').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.k; sel = (mode === 'm' ? months : years).length - 1; this.shadowRoot.querySelectorAll('#kSeg button').forEach((x) => x.classList.toggle('on', x === b)); draw(); }));
+    const tog = (id, attr, fn) => this.shadowRoot.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => { fn(b.dataset[attr]); this.shadowRoot.querySelectorAll(`#${id} button`).forEach((q) => q.classList.toggle('on', q === b)); draw(); }));
+    tog('kMode', 'v', (v) => { view = v; this.$('kU').style.display = v === 'v' ? '' : 'none'; });
+    tog('kSeg', 'k', (k) => { mode = k; sel = (k === 'm' ? months : years).length - 1; });
+    tog('kU', 'u', (k) => { u = k; });
     draw();
   }
 
