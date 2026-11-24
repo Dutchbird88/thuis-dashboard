@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '446';
+const CARD_VERSION = '447';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2191,7 +2191,9 @@ const EGSTYLE = `
   .ecv { font-size: 26px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; white-space: nowrap; } .ecv small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; letter-spacing: 0; }
   .ecl { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
   .ece { font-size: 15px; font-weight: 600; padding-top: 5px; white-space: nowrap; }
-  .ecw { position: relative; margin-top: 4px; touch-action: pan-y; } .ecw svg { display: block; width: 100%; height: 190px; overflow: visible; }
+  .ecw { position: relative; margin-top: 8px; touch-action: pan-y; } .ecw svg { display: block; width: 100%; height: 152px; overflow: visible; }
+  .ev2 { display: inline-block; margin-right: 18px; vertical-align: top; } .ev2 b { display: block; font-weight: 700; } .ev2 em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-top: 2px; }
+  .ecl:empty { display: none; }
   .etip { position: absolute; top: 0; transform: translateX(-50%); background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
   .etip b { display: block; font-size: 14px; font-weight: 700; margin-top: 1px; } .ecw.scrub .etip { opacity: 1; }
   .ecw text { font-size: 11px; fill: #6f7d92; font-family: inherit; }
@@ -2224,6 +2226,8 @@ const EGSTYLE = `
   .kchips button.on { color: var(--c); border-color: color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); }
   .ksum { display: flex; gap: 18px; margin: 0 0 6px; flex-wrap: wrap; } .ksum div { font-size: 11.5px; color: var(--muted); } .ksum b { display: block; font-size: 18px; color: var(--text); font-weight: 700; }
   .krow .ku { color: var(--muted); font-size: 12px; text-align: right; } .krow b { min-width: 62px; text-align: right; }
+  .kc2 { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .kc2:last-of-type { border-bottom: 0; } .kc2 span { font-size: 14px; } .kc2 b { text-align: right; font-size: 14.5px; font-weight: 700; } .kc2 small { font-size: 12px; color: var(--muted); } .kc2 em { text-align: right; font-style: normal; font-size: 12px; font-weight: 600; }
   .khint { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
   .egsh .check:first-child { padding-top: 14px; }
 }
@@ -2827,8 +2831,9 @@ class VerbruikCard extends HTMLElement {
     const pi = this._price('import'), pe = this._price('export'), pg = this._price('gas'), pw = this._price('water');
     const eur = (v) => (v == null ? '' : `${v < -0.004 ? '− ' : ''}€ ${fmt(Math.abs(v), 2)}`), dg = (v) => (v >= 100 ? 0 : v < 1 ? 2 : 1);
     const { i, x, g, w } = d.tot, nm = d.R.name;
-    this.$('eVs').innerHTML = `<span style="color:${EG.s}">${fmt(i, dg(i))}</span> <span style="color:${EG.e}">${fmt(x, dg(x))}</span><small>kWh</small>`;
-    this.$('eLs').textContent = `Stroom ${nm}`;
+    // v447: afname en teruglevering benoemd
+    this.$('eVs').innerHTML = `<span class="ev2"><b style="color:${EG.s}">${fmt(i, dg(i))}<small>kWh</small></b><em>↓ van het net</em></span><span class="ev2"><b style="color:${EG.e}">${fmt(x, dg(x))}<small>kWh</small></b><em>↑ teruggeleverd</em></span>`;
+    this.$('eLs').textContent = '';
     this.$('eEs').textContent = pi != null ? eur(i * pi - (pe != null ? x * pe : 0)) : '';
     this.$('eVg').innerHTML = `<span style="color:${EG.g}">${fmt(g, g >= 100 ? 0 : 2)}</span><small>m³</small>`;
     this.$('eLg').textContent = `Gas ${nm}`;
@@ -2846,7 +2851,7 @@ class VerbruikCard extends HTMLElement {
     if (!wrap) return;
     const svg = wrap.querySelector('svg'), W = wrap.clientWidth;
     if (!W || !spec) { if (!spec) svg.innerHTML = ''; return; }
-    const H = 190, pt = 44, pb = 24, pr = 36, PW = W - pr, ih = H - pt - pb, colr = EG[u], line = spec.mode === 'line';
+    const H = 152, pt = 12, pb = 24, pr = 46, PW = W - pr, ih = H - pt - pb, colr = EG[u], line = spec.mode === 'line';
     let mx = 0, mn = 0;
     if (line) for (const q of spec.pts) { mx = Math.max(mx, q.v); mn = Math.min(mn, q.v); }
     else for (const it of spec.items) { mx = Math.max(mx, it.v ?? it.a ?? 0); if (spec.mode === 'bars2') mn = Math.min(mn, -(it.b || 0)); }
@@ -2857,9 +2862,10 @@ class VerbruikCard extends HTMLElement {
     const edge = (v) => { if (!v) return 0; const r = (v > 0 ? Math.ceil(v / step) : Math.floor(v / step)) * step; return Math.abs(r) <= Math.abs(v) * 1.5 + 1e-12 ? r : v * 1.08; };
     const top = edge(mx) || step, bot = edge(mn), Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
     let dec = 0; while (dec < 4 && Math.abs(step * 10 ** dec - Math.round(step * 10 ** dec)) > 1e-6) dec++;
-    const fy = (v) => (Math.abs(v) >= 1000 ? fmt(v) : fmt(Math.abs(v) < step / 2 ? 0 : v, dec));
+    const fy = (v) => (Math.abs(v) < step / 2 ? '0' : Math.abs(v) >= 1000 ? fmt(v) : fmt(v, dec));
+    const unit = line ? (u === 's' ? 'W' : 'm³') : spec.mode === 'bars2' ? 'kWh' : spec.unit;
     let s = '';
-    for (let v = Math.ceil(bot / step - 1e-9) * step; v <= top + 1e-9; v += step) s += `<line x1="0" x2="${PW}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="rgba(255,255,255,${Math.abs(v) < step / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fy(v)}</text>`;
+    for (let v = Math.ceil(bot / step - 1e-9) * step; v <= top + 1e-9; v += step) s += `<line x1="0" x2="${PW}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="rgba(255,255,255,${Math.abs(v) < step / 2 ? 0.14 : 0.06})"/><text x="${W - 2}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fy(v)}${Math.abs(v) > step / 2 && (v + step > top + 1e-9 || v - step < bot - 1e-9) ? ` ${unit}` : ''}</text>`;
     const q = `${u}${Math.random().toString(36).slice(2, 6)}`;
     let X;
     if (line) {
@@ -2926,7 +2932,7 @@ class VerbruikCard extends HTMLElement {
       else val = `<b style="color:${colr}">↓ ${fmt(p.v, spec.slot >= HOUR ? 2 : 2)} m³</b>`;
       cur.querySelector('circle').setAttribute('fill', u === 's' && p.v < 0 ? EG.e : colr);
     } else {
-      const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 36) / n)), 0, n - 1), it = spec.items[k];
+      const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 46) / n)), 0, n - 1), it = spec.items[k];
       x = g.X(k); lab = it.full;
       wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = +b.dataset.i === k ? 1 : 0.3));
       if (spec.mode === 'bars2') val = it.a == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b><span style="color:${EG.s}">↓ ${fmt(it.a, it.a >= 100 ? 0 : 1)}</span> <span style="color:${EG.e}">↑ ${fmt(it.b || 0, (it.b || 0) >= 100 ? 0 : 1)}</span> kWh</b>`;
@@ -3073,6 +3079,8 @@ class VerbruikCard extends HTMLElement {
           const h = Math.max(0, z - Yp(val(x))); if (h > 0) o += `<path d="${rr(bx, z - h, w, h, 4, 0)}" fill="${EG[u]}" opacity="${dim}"/>`;
           const hn = Math.max(0, Yp(-neg(x)) - z); if (hn > 0) o += `<path d="${rr(bx, z + 1, w, hn, 0, 4)}" fill="${EG.e}" opacity="${dim}"/>`;
         }
+        // v447: waarden bij de gekozen staaf
+        if (k === sel && !x.none) { const tv = val(x), nv = neg(x), dg2 = (v) => fmt(v, v >= 100 ? 0 : 1); if (kost || tv > 0) o += `<text x="${bx + w / 2}" y="${Math.max(10, Yp(kost ? x.tot : tv) - 5)}" text-anchor="middle" style="fill:#fff;font-weight:700;font-size:11px">${kost ? `€ ${fmt(x.tot)}` : dg2(tv)}</text>`; if (nv > 0) o += `<text x="${bx + w / 2}" y="${Yp(-nv) + 13}" text-anchor="middle" style="fill:#fff;font-weight:700;font-size:11px">${dg2(nv)}</text>`; }
         const lab = mode === 'm' ? new Date(x.t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : String(x.y);
         o += `<text x="${bx + w / 2}" y="176" text-anchor="middle" style="${k === sel ? 'fill:#fff;font-weight:700' : ''}">${lab}</text><rect class="kh" data-i="${k}" x="${k * bw}" y="0" width="${bw}" height="182" fill="transparent"/>`;
       });
@@ -3088,15 +3096,16 @@ class VerbruikCard extends HTMLElement {
       const get = (q) => (q == null ? null : kost ? q.tot : q[key]), f = (v) => (kost ? eur(v) : fu(v, u));
       this.$('kSum').innerHTML = `<div><b class="num">${f(get(curP))}</b>${mode === 'm' ? 'deze maand' : String(Y)} tot nu</div>` + (lyP && get(lyP) != null ? `<div><b class="num">${f(get(lyP))}</b>vorig jaar, zelfde dagen</div><div><b>${pc(get(curP), get(lyP))}</b>verschil</div>` : '');
       const rows = [];
-      if (lyP && get(lyP) != null) rows.push([`Zelfde periode vorig jaar · ${pname}`, get(lyP), pc(get(curP), get(lyP))]);
+      if (lyP && get(lyP) != null) rows.push(['Zelfde periode vorig jaar', get(lyP), pc(get(curP), get(lyP)), mode === 'm' ? `1 t/m ${today.getDate()} ${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}` : `1 januari t/m ${dayTxt} ${Y - 1}`]);
       if (mode === 'm') {
         const lyFull = this._egMonthCost(new Date(Y - 1, M, 1).getTime()), prev = months[10], past = months.slice(0, 11).filter((q) => !q.none && get(q) != null);
-        if (lyFull && get(lyFull) != null) rows.push([`${new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })} (hele maand)`, get(lyFull), kost && cur.exp != null ? `<span style="font-size:11.5px;color:var(--muted)">verwacht ${eur(cur.exp)}</span>` : '<span></span>']);
-        if (!prev.none && get(prev) != null) rows.push([`Vorige maand · ${new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long' })}`, get(prev), '<span></span>']);
-        if (past.length) rows.push([`Gemiddeld per maand (${past.length} mnd)`, past.reduce((s, q) => s + get(q), 0) / past.length, '<span></span>']);
-      } else years.filter((q) => !q.now).reverse().forEach((q) => rows.push([`${q.y} (heel jaar)`, get(q), '<span></span>']));
+        const mn0 = new Date(Y - 1, M, 1).toLocaleDateString('nl-NL', { month: 'long' });
+        if (lyFull && get(lyFull) != null) rows.push([`${mn0[0].toUpperCase() + mn0.slice(1)} vorig jaar`, get(lyFull), kost && cur.exp != null ? `<span style="color:var(--muted)">verwacht ${eur(cur.exp)}</span>` : '', 'volledige maand']);
+        if (!prev.none && get(prev) != null) rows.push(['Vorige maand', get(prev), '', new Date(prev.t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })]);
+        if (past.length) rows.push(['Gemiddeld per maand', past.reduce((s, q) => s + get(q), 0) / past.length, '', `afgelopen ${past.length} maanden`]);
+      } else years.filter((q) => !q.now).reverse().forEach((q) => rows.push([String(q.y), get(q), '', 'heel jaar']));
       const hint = (kost ? 'Kosten berekend met je huidige prijzen, inclusief vaste kosten. ' : u === 's' ? 'Stroom: afname omhoog, teruglevering omlaag (groen). ' : '') + 'Vergeleken wordt met dezelfde dagen vorig jaar, omdat het seizoen veel uitmaakt. Tik op een staaf voor de verdeling.';
-      this.$('kCmp').innerHTML = `${rows.length ? `<div class="klbl">Vergelijken<span>${kost ? 'kosten' : U[u].n.toLowerCase()}</span></div>${rows.map(([nn, v, p]) => `<div class="kc"><span>${nn}</span><b class="num">${f(v)}</b>${p}</div>`).join('')}` : ''}<div class="khint">${hint}</div>`;
+      this.$('kCmp').innerHTML = `${rows.length ? `<div class="klbl">Vergelijken<span>${kost ? 'kosten' : U[u].n.toLowerCase()}</span></div>${rows.map(([nn, v, p, sub]) => `<div class="kc2"><span>${nn}</span><b class="num">${f(v)}</b><small>${sub || ''}</small><em>${p || ''}</em></div>`).join('')}` : ''}<div class="khint">${hint}</div>`;
     };
     const tog = (id, attr, fn) => this.shadowRoot.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => { fn(b.dataset[attr]); this.shadowRoot.querySelectorAll(`#${id} button`).forEach((q) => q.classList.toggle('on', q === b)); draw(); }));
     tog('kMode', 'v', (v) => { view = v; this.$('kU').style.display = v === 'v' ? '' : 'none'; });
