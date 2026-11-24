@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '442';
+const CARD_VERSION = '443';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2185,8 +2185,8 @@ const EGSTYLE = `
   .eseg button.on { background: rgba(255,255,255,.11); color: #fff; }
   .eal { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; font-size: 14px; font-weight: 600; color: #ffb547; background: rgba(255,181,71,.08); border: 1px solid rgba(255,181,71,.25); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; cursor: pointer; }
   .eal > i { width: 8px; height: 8px; border-radius: 50%; background: #ffb547; box-shadow: 0 0 6px #ffb547; flex: none; } .eal #eAlT { flex: 1; }
-  .ec { display: block; box-sizing: border-box; width: 100%; background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); border-radius: 20px; padding: 14px 14px 10px 16px; margin-bottom: 12px; color: var(--text); text-align: left; font: inherit; }
-  .ech { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: start; }
+  .ec { display: block; box-sizing: border-box; width: 100%; background: linear-gradient(180deg, #132036, #0f1828); border: 1px solid rgba(130,170,255,.12); border-radius: 20px; padding: 14px 6px 8px 4px; margin-bottom: 12px; color: var(--text); text-align: left; font: inherit; }
+  .ech { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: start; padding: 0 8px 0 12px; }
   .ech .gl3 { width: 30px; height: 30px; margin-top: 2px; }
   .ecv { font-size: 26px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; white-space: nowrap; } .ecv small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; letter-spacing: 0; }
   .ecl { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
@@ -2844,7 +2844,7 @@ class VerbruikCard extends HTMLElement {
     if (!wrap) return;
     const svg = wrap.querySelector('svg'), W = wrap.clientWidth;
     if (!W || !spec) { if (!spec) svg.innerHTML = ''; return; }
-    const H = 190, pt = 44, pb = 24, pr = 44, PW = W - pr, ih = H - pt - pb, colr = EG[u], line = spec.mode === 'line';
+    const H = 190, pt = 44, pb = 24, pr = 36, PW = W - pr, ih = H - pt - pb, colr = EG[u], line = spec.mode === 'line';
     let mx = 0, mn = 0;
     if (line) for (const q of spec.pts) { mx = Math.max(mx, q.v); mn = Math.min(mn, q.v); }
     else for (const it of spec.items) { mx = Math.max(mx, it.v ?? it.a ?? 0); if (spec.mode === 'bars2') mn = Math.min(mn, -(it.b || 0)); }
@@ -2863,7 +2863,9 @@ class VerbruikCard extends HTMLElement {
       const P = spec.pts.map((p) => [X(p.t), Y(p.v)]);
       if (P.length > 1) {
         let d = `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
-        for (let k = 0; k < P.length - 1; k++) {
+        // v443: veel punten (5 minuten of fijner) = rechte stukjes, zodat pieken smal en scherp blijven; weinig punten = vloeiend
+        if (P.length > 40) for (let k = 1; k < P.length; k++) d += ` L${P[k][0].toFixed(1)} ${P[k][1].toFixed(1)}`;
+        else for (let k = 0; k < P.length - 1; k++) {
           const p0 = P[k - 1] || P[k], p1 = P[k], p2 = P[k + 1], p3 = P[k + 2] || p2;
           d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
         }
@@ -2913,7 +2915,7 @@ class VerbruikCard extends HTMLElement {
       else val = `<b style="color:${colr}">↓ ${fmt(p.v, spec.slot >= HOUR ? 2 : 2)} m³</b>`;
       cur.querySelector('circle').setAttribute('fill', u === 's' && p.v < 0 ? EG.e : colr);
     } else {
-      const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 44) / n)), 0, n - 1), it = spec.items[k];
+      const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 36) / n)), 0, n - 1), it = spec.items[k];
       x = g.X(k); lab = it.full;
       wrap.querySelectorAll('.br').forEach((b) => (b.style.opacity = +b.dataset.i === k ? 1 : 0.3));
       if (spec.mode === 'bars2') val = it.a == null ? '<b style="color:#6f7d92">nog geen gegevens</b>' : `<b><span style="color:${EG.s}">↓ ${fmt(it.a, it.a >= 100 ? 0 : 1)}</span> <span style="color:${EG.e}">↑ ${fmt(it.b || 0, (it.b || 0) >= 100 ? 0 : 1)}</span> kWh</b>`;
