@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '447';
+const CARD_VERSION = '448';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2194,7 +2194,7 @@ const EGSTYLE = `
   .ecw { position: relative; margin-top: 8px; touch-action: pan-y; } .ecw svg { display: block; width: 100%; height: 152px; overflow: visible; }
   .ev2 { display: inline-block; margin-right: 18px; vertical-align: top; } .ev2 b { display: block; font-weight: 700; } .ev2 em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-top: 2px; }
   .ecl:empty { display: none; }
-  .etip { position: absolute; top: 0; transform: translateX(-50%); background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
+  .etip { position: absolute; top: 0; transform: none; background: rgba(10,13,20,.94); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 5px 14px 6px; font-size: 12.5px; color: #cfd6e2; white-space: nowrap; text-align: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 2; }
   .etip b { display: block; font-size: 14px; font-weight: 700; margin-top: 1px; } .ecw.scrub .etip { opacity: 1; }
   .ecw text { font-size: 11px; fill: #6f7d92; font-family: inherit; }
   .esec { font-size: 15px; font-weight: 700; margin: 6px 4px 8px; display: flex; justify-content: space-between; align-items: baseline; } .esec span { font-size: 12px; color: var(--faint); font-weight: 500; }
@@ -2943,8 +2943,13 @@ class VerbruikCard extends HTMLElement {
     const ln = cur.querySelector('line'), ci = cur.querySelector('circle');
     ln.setAttribute('x1', x); ln.setAttribute('x2', x);
     ci.style.display = y == null ? 'none' : ''; if (y != null) { ci.setAttribute('cx', x); ci.setAttribute('cy', y); }
-    tip.style.left = `${clamp((x / g.W) * rc.width, 70, rc.width - 70)}px`;
     tip.innerHTML = `<span>${lab}</span>${val}`;
+    const svgH = 152;
+    // v448: vakje naast de lijn (rechts ervan, of links als er rechts geen plek is) en boven of onder, zodat het de lijn en het rondje niet bedekt
+    const sx = (x / g.W) * rc.width, tw2 = tip.offsetWidth || 110, th2 = tip.offsetHeight || 44, right = sx + 14 + tw2 <= rc.width - 46;
+    tip.style.left = `${right ? sx + 14 : Math.max(0, sx - 14 - tw2)}px`;
+    const sy = y == null ? null : (y / 152) * (svgH || 152), ph = svgH || 152;
+    tip.style.top = `${sy != null && sy < (ph - 24) / 2 ? Math.max(0, ph - 24 - th2) : 0}px`;
   }
 
   // maandblok (vanuit _update); v441: vergelijken met dezelfde dagen vorig jaar

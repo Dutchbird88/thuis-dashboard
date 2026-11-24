@@ -318,6 +318,7 @@
 | v445 | Energie: schaal nog strakker (tot 6 vakken), bijv. 520/−500 W → 600 … −600 in plaats van 1.000 … −500. |
 | v446 | Energie: grafieken zoals de oude app: minder hulplijnen (500 · 0 · −500), stroom vloeiender (15 min gemiddeld), geen piek door de live waarde aan het eind. |
 | v447 | Energie: afname/teruglevering benoemd, grafieken compacter met eenheden, waarden bij de gekozen staaf en vergelijken op twee regels. |
+| v448 | Energie: vakje bij het schuiven staat naast de lijn en bedekt het rondje niet meer. |
 
 ## Volgende stappen
 
