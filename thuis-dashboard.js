@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '453';
+const CARD_VERSION = '454';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2873,10 +2873,11 @@ class VerbruikCard extends HTMLElement {
     else for (const it of spec.items) { mx = Math.max(mx, it.v ?? it.a ?? 0); if (spec.mode === 'bars2') mn = Math.min(mn, -(it.b || 0)); }
     if (mx - mn <= 0) mx = line ? (u === 's' ? 500 : 0.05) : 1;
     // v444: schaal past strak om de gegevens (ca. 4 vakken, stappen 1-2-5), zoals de oude app: 360 en −380 W → 400 … −400
-    // v446: rustige schaal zoals de oude app: weinig hulplijnen (stap 1-2-5 voor ca. 3 vakken); de rand ligt op een hulplijn als die dichtbij is, anders net boven de gegevens
-    const e = 10 ** Math.floor(Math.log10((mx - mn) / 3)), step = [1, 2, 5, 10].map((m) => m * e).find((v) => v >= (mx - mn) / 3 - 1e-12);
-    const edge = (v) => { if (!v) return 0; const r = (v > 0 ? Math.ceil(v / step) : Math.floor(v / step)) * step; return Math.abs(r) <= Math.abs(v) * 1.5 + 1e-12 ? r : v * 1.08; };
-    const top = edge(mx) || step, bot = edge(mn), Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
+    // v454: weer de strak meeschalende schaal van v445 (gebruiker): stap 1-2-5, hooguit 6 vakken, kleinste bereik dat past
+    const e = 10 ** Math.floor(Math.log10((mx - mn) / 4));
+    let step = 10 * e, best = Infinity;
+    for (const m of [0.5, 1, 2, 5, 10, 20]) { const st = m * e, r = Math.ceil(mx / st) * st - Math.floor(mn / st) * st; if (r / st <= 6.001 && r < best - 1e-9) { best = r; step = st; } }
+    const top = Math.ceil(mx / step) * step || step, bot = Math.floor(mn / step) * step, Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
     let dec = 0; while (dec < 4 && Math.abs(step * 10 ** dec - Math.round(step * 10 ** dec)) > 1e-6) dec++;
     const fy = (v) => (Math.abs(v) < step / 2 ? '0' : Math.abs(v) >= 1000 ? fmt(v) : fmt(v, dec));
     const unit = line ? (u === 's' ? 'W' : 'm³') : spec.mode === 'bars2' ? 'kWh' : spec.unit;
