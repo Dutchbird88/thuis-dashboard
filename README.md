@@ -129,6 +129,27 @@ panel_orientation:
   voor: liggend
 ```
 
+### Energieprijzen per periode
+
+De Energie-kaart rekent met `prices` (per kWh en m³) en `fixed` (vaste kosten per dag, terugleverkosten per jaar). Wisselen je tarieven, bijvoorbeeld bij een nieuw contract, een nieuw belastingjaar of het einde van salderen, zet ze dan per datum in `tariffs`. Elke dag, maand en de vergelijking met vorig jaar wordt zo met de prijzen van dat moment berekend. Vóór de eerste datum gelden de tarieven van de eerste periode.
+
+```yaml
+- type: custom:verbruik-card
+  tariffs:
+    - from: '2026-01-01'
+      import: 0.30          # stroom per kWh, incl. energiebelasting en btw
+      export: 0.30          # teruglevering per kWh (met salderen gelijk aan import)
+      gas: 1.35             # per m³
+      electricity_day: -0.22  # vaste kosten stroom per dag (incl. netbeheer en vermindering energiebelasting)
+      gas_day: 0.95         # vaste kosten gas per dag
+      export_year: 0        # vaste terugleverkosten per jaar
+    - from: '2027-01-01'
+      export: 0.002         # zonder salderen: vergoeding min terugleverkosten per kWh
+      export_year: 0
+```
+
+Wat in een periode ontbreekt, komt uit `prices` en `fixed`.
+
 ### Laadkaart (telefoon)
 
 Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het vermogen en wanneer de accu vol is. Als naam gebruikt de kaart de naam van het apparaat van de accusensor. Een eigen naam kan ook:

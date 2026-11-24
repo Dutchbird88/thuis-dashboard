@@ -325,6 +325,7 @@
 | v452 | Energie: het kostenblok onderaan springt mee met de periodekiezer (vandaag, gisteren, deze week, maand, jaar) en vergelijkt met dezelfde periode vorig jaar. |
 | v453 | Energie: kostenblok bovenaan, sluipverbruik/aansluiting als duidelijke kaart, schakelaar "Kosten | Verbruik" in het venster. |
 | v454 | Energie: weer de strak meeschalende grafiekschaal (zoals v445). |
+| v455 | Energie: tarieven per datum (`tariffs`), zodat vorig jaar met de prijzen van toen en 2027 zonder salderen wordt berekend. |
 
 ## Volgende stappen
 

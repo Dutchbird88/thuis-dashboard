@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '454';
+const CARD_VERSION = '455';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2018,6 +2018,8 @@ const VDEFAULTS = {
   prices: { import: 0.243706, export: 0.243706, gas: 1.322966, water: null },
   // vaste kosten: stroom en gas per dag, terugleverkosten per jaar
   fixed: { electricity_day: -0.121406, gas_day: 1.014447, export_year: 231 },
+  // v455: tarieven per periode: [{ from: 'JJJJ-MM-DD', import, export, gas, water, electricity_day, gas_day, export_year }]; leeg = prices/fixed hierboven
+  tariffs: [],
 };
 
 // Energie rekent in kWh, m³ en W: vraag de statistieken van HA in die eenheden op (ook als een meter Wh of liters geeft)
@@ -2253,6 +2255,11 @@ class VerbruikCard extends HTMLElement {
     this._mono = {};
     this._fetchedAt = 0;
     this._prefPrices = {};
+    // v455: tarieven per datum (lokale middernacht), gesorteerd; vóór de eerste datum gelden de tarieven van de eerste periode
+    this._tarL = (Array.isArray(config.tariffs) ? config.tariffs : []).map((x) => {
+      const m = String(x?.from instanceof Date ? x.from.toISOString() : x?.from ?? '').match(/(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);
+      return m ? { ...x, t: new Date(+m[1], +m[2] - 1, +(m[3] || 1)).getTime() } : null;
+    }).filter(Boolean).sort((a, b) => a.t - b.t);
     this._mode = this._mode || 'stroom';
     this._build();
     if (this._hass) this._update();
@@ -2280,7 +2287,9 @@ class VerbruikCard extends HTMLElement {
     if (v != null) (this._lastCur ||= {})[id] = v;
     return v ?? this._lastCur?.[id] ?? null;
   }
-  _price(k) { return this._config.prices[k] ?? this._prefPrices[k] ?? null; }
+  _tar(t = Date.now()) { const L = this._tarL; if (!L?.length) return null; let r = L[0]; for (const x of L) if (x.t <= t) r = x; return r; }
+  _price(k, t) { return this._tar(t)?.[k] ?? this._config.prices[k] ?? this._prefPrices[k] ?? null; }
+  _fx(t) { const r = this._tar(t), f = this._config.fixed; return r ? { ...f, ...Object.fromEntries(['electricity_day', 'gas_day', 'export_year'].filter((k) => r[k] != null).map((k) => [k, r[k]])) } : f; }
   _moreInfo(entityId) { if (entityId && entityId !== 'null' && entityId !== 'undefined') this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })); }
 
   /* ---------- markup ---------- */
@@ -2548,7 +2557,7 @@ class VerbruikCard extends HTMLElement {
     const eur = (v) => (v == null ? '—' : `${v < -0.004 ? '− ' : ''}€ ${fmt(Math.abs(v), 2)}`);
     const now = Date.now(), day0 = startOfDay(now), frac = (now - day0) / DAY;
     const pi = this._price('import'), pe = this._price('export'), pg = this._price('gas'), pw = this._price('water');
-    const fx = c.fixed;
+    const fx = this._fx();
 
     set('date', new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
 
@@ -2785,6 +2794,7 @@ class VerbruikCard extends HTMLElement {
       const live = per === 'dag' && off === 0;
       out.tot = live ? { i: this._sum(I, day0, now + 1, now), x: this._sum(X, day0, now + 1, now), g: this._sum(G, day0, now + 1, now), w: this._sum(Wt, day0, now + 1, now) }
         : { i: sum(I, kw * sc), x: sum(X, kw * sc), g: sum(G, 6 * sc), w: sum(Wt, 2 * sc) };
+      { const p0 = per === 'nu' ? now - HOUR : R.x0, p1 = Math.min(R.x1, now); out.parts = [{ t: (p0 + p1) / 2, days: Math.max(0, p1 - p0) / DAY, i: out.tot.i, x: out.tot.x, g: G ? out.tot.g : null, w: Wt ? out.tot.w : null }]; }
       const x0 = per === 'nu' ? now - HOUR : R.x0, x1 = per === 'nu' ? now : R.x1;
       const ticks = per === 'nu' ? Array.from({ length: 4 }, (_, k) => { const t = Math.ceil(x0 / 900000) * 900000 + k * 900000; return { t, lab: fmtTime(t) }; }).filter((q) => q.t < x1)
         : [4, 8, 12, 16, 20].map((h) => { const t = new Date(R.x0); t.setHours(h); return { t: t.getTime(), lab: `${String(h).padStart(2, '0')}:00` }; });
@@ -2806,6 +2816,8 @@ class VerbruikCard extends HTMLElement {
     };
     const im = col(I, kw), ex = col(X, kw), gs = col(G, 6), wt = col(Wt, 2), s0 = (a) => a.reduce((s, v) => s + (v || 0), 0);
     out.tot = { i: s0(im), x: s0(ex), g: s0(gs), w: s0(wt) };
+    // v455: per dag of maand, zodat elk deel met zijn eigen tarief wordt berekend
+    out.parts = slots.map((t, k) => { if (t > now) return null; const e = Math.min(end(t), now); return { t: (t + e) / 2, days: (e - t) / DAY, i: im[k] || 0, x: ex[k] || 0, g: gs[k], w: wt[k] }; }).filter(Boolean);
     const lab = (t) => (yr ? new Date(t).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '') : per === 'week' ? new Date(t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : String(new Date(t).getDate()));
     const full = (t) => (yr ? new Date(t).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : new Date(t).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }));
     const todayI = slots.findIndex((t) => t <= now && end(t) > now);
@@ -2850,7 +2862,7 @@ class VerbruikCard extends HTMLElement {
     // v447: afname en teruglevering benoemd
     this.$('eVs').innerHTML = `<span class="ev2"><b style="color:${EG.s}">${fmt(i, dg(i))}<small>kWh</small></b><em>↓ van het net</em></span><span class="ev2"><b style="color:${EG.e}">${fmt(x, dg(x))}<small>kWh</small></b><em>↑ teruggeleverd</em></span>`;
     this.$('eLs').textContent = '';
-    this.$('eEs').textContent = pi != null ? eur(i * pi - (pe != null ? x * pe : 0)) : '';
+    this.$('eEs').textContent = pi != null ? eur((d.parts || []).reduce((s, p) => s + p.i * (this._price('import', p.t) ?? 0) - p.x * (this._price('export', p.t) ?? 0), 0)) : '';
     this.$('eVg').innerHTML = `<span style="color:${EG.g}">${fmt(g, g >= 100 ? 0 : 2)}</span><small>m³</small>`;
     this.$('eLg').textContent = `Gas ${nm}`;
     this.$('eEg').textContent = pg != null ? eur(g * pg) : '';
@@ -2988,10 +3000,10 @@ class VerbruikCard extends HTMLElement {
     let c, exp = null, ly = null;
     if (per === 'maand' && !d.off && this._egCur) {
       const k = this._egCur; c = { e: Math.max(0, k.e), g: Math.max(0, k.g), w: Math.max(0, k.w), tot: k.tot }; exp = k.exp;
-      const l = this._egLy; ly = l ? this._egCost(l.i, l.x, l.g, l.w, l.days) : null;
+      const l = this._egLy; ly = l ? this._egCost(l.i, l.x, l.g, l.w, l.days, l.t) : null;
     } else {
-      const t = d.tot; c = this._egCost(t.i, t.x, t.g, t.w, days);
-      if (d.ly) ly = this._egCost(d.ly.i, d.ly.x, d.ly.g, d.ly.w, days);
+      const t = d.tot; c = d.parts ? this._egCostP(d.parts) : this._egCost(t.i, t.x, t.g, t.w, days);
+      if (d.ly) ly = d.ly.parts ? this._egCostP(d.ly.parts) : this._egCost(d.ly.i, d.ly.x, d.ly.g, d.ly.w, days, d.ly.t);
     }
     this.$('eMn').textContent = `Kosten ${R.name}`;
     this.$('eMt').textContent = eur(c.tot);
@@ -3014,8 +3026,18 @@ class VerbruikCard extends HTMLElement {
     const a = sh(R.x0), b = a + (end - R.x0), period = per === 'jaar' ? 'day' : 'hour', n = period === 'day' ? 24 : 1, kw = (c.fuse * c.voltage * c.phases) / 1000;
     const r = await this._egStat(ids, period, a, b);
     if (!ids.some((id) => (r[id] || []).length)) return null;
-    const sum = (id, cap) => (id ? (r[id] || []).reduce((s, x) => s + (x.change == null || x.change < 0 || x.change > cap * n ? 0 : x.change), 0) : 0);
-    return { i: sum(c.import, kw), x: sum(c.export, kw), g: c.gas ? sum(c.gas, 6) : null, w: c.water ? sum(c.water, 2) : null };
+    const sum = (id, cap, rows = r[id] || []) => (id ? rows.reduce((s, x) => s + (x.change == null || x.change < 0 || x.change > cap * n ? 0 : x.change), 0) : 0);
+    const out = { t: (a + b) / 2, i: sum(c.import, kw), x: sum(c.export, kw), g: c.gas ? sum(c.gas, 6) : null, w: c.water ? sum(c.water, 2) : null };
+    // v455: jaar per maand, elk met het tarief van toen
+    if (per === 'jaar') {
+      const y = new Date(a).getFullYear(); out.parts = [];
+      for (let m = 0; m < 12; m++) {
+        const m0 = Math.max(a, new Date(y, m, 1).getTime()), m1 = Math.min(b, new Date(y, m + 1, 1).getTime()); if (m1 <= m0) continue;
+        const f = (id) => (r[id] || []).filter((x) => { const q = ts(x.start); return q >= m0 && q < m1; });
+        out.parts.push({ t: (m0 + m1) / 2, days: (m1 - m0) / DAY, i: sum(c.import, kw, f(c.import)), x: sum(c.export, kw, f(c.export)), g: c.gas ? sum(c.gas, 6, f(c.gas)) : null, w: c.water ? sum(c.water, 2, f(c.water)) : null });
+      }
+    }
+    return out;
   }
 
   // maandstatistiek van de afgelopen jaren, voor het venster Kosten en verbruik
@@ -3048,12 +3070,22 @@ class VerbruikCard extends HTMLElement {
     } catch (e) { this._egLyK = null; }
   }
 
-  // kosten met de huidige prijzen, incl. vaste kosten over `days` dagen
-  _egCost(im, ex, g, w, days) {
-    const c = this._config, fx = c.fixed, pi = this._price('import') ?? 0, pe = this._price('export') ?? 0, pg = this._price('gas'), pw = this._price('water');
+  // kosten met de prijzen van moment t (v455: tariffs; zonder t de huidige), incl. vaste kosten over `days` dagen
+  _egCost(im, ex, g, w, days, t) {
+    const fx = this._fx(t), pi = this._price('import', t) ?? 0, pe = this._price('export', t) ?? 0, pg = this._price('gas', t), pw = this._price('water', t);
     const e = (im || 0) * pi - (ex || 0) * pe + days * (fx.electricity_day || 0) + (days * (fx.export_year || 0)) / 365;
     const gg = pg != null ? (g || 0) * pg + (g != null ? days * (fx.gas_day || 0) : 0) : 0, ww = pw != null ? (w || 0) * pw : 0;
-    return { e: Math.max(0, e), g: Math.max(0, gg), w: Math.max(0, ww), tot: Math.max(0, e) + Math.max(0, gg) + Math.max(0, ww), ui: im, ux: ex, ug: g, uw: w };
+    return { e: Math.max(0, e), g: Math.max(0, gg), w: Math.max(0, ww), tot: Math.max(0, e) + Math.max(0, gg) + Math.max(0, ww), ui: im, ux: ex, ug: g, uw: w, re: e, rg: gg, rw: ww };
+  }
+
+  // v455: som van delen ({t, days, i, x, g, w}), elk met zijn eigen tarief
+  _egCostP(parts) {
+    let e = 0, g = 0, w = 0, ui = 0, ux = 0, ug = null, uw = null;
+    for (const p of parts) {
+      const k = this._egCost(p.i, p.x, p.g, p.w, p.days, p.t); e += k.re; g += k.rg; w += k.rw; ui += p.i || 0; ux += p.x || 0;
+      if (p.g != null) ug = (ug || 0) + p.g; if (p.w != null) uw = (uw || 0) + p.w;
+    }
+    return { e: Math.max(0, e), g: Math.max(0, g), w: Math.max(0, w), tot: Math.max(0, e) + Math.max(0, g) + Math.max(0, w), ui, ux, ug, uw, re: e, rg: g, rw: w };
   }
 
   // kosten en verbruik van een afgelopen maand; null zonder gegevens
@@ -3061,7 +3093,7 @@ class VerbruikCard extends HTMLElement {
     const c = this._config, kh = this._egKh; if (!kh) return null;
     const v = (id) => (id && kh[id]?.has(t) ? kh[id].get(t) : null), im = v(c.import), ex = v(c.export), g = v(c.gas), w = v(c.water);
     if (im == null && g == null && w == null) return null;
-    return { t, ...this._egCost(im, ex, g, w, new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate()) };
+    return { t, ...this._egCost(im, ex, g, w, new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate(), t + 14 * DAY) };
   }
 
   _egOpen(title, icon, html) {
@@ -3099,7 +3131,7 @@ class VerbruikCard extends HTMLElement {
       if (L.length) years.push({ y, t: new Date(y, 0, 1).getTime(), ...sumL(L), now: y === Y });
     }
     // dezelfde periode vorig jaar: maand t/m nu, en jaar t/m nu
-    const ly = this._egLy, lyM = ly ? { ...this._egCost(ly.i, ly.x, ly.g, ly.w, ly.days) } : null;
+    const ly = this._egLy, lyM = ly ? { ...this._egCost(ly.i, ly.x, ly.g, ly.w, ly.days, ly.t) } : null;
     const lyYparts = Array.from({ length: M }, (_, m) => this._egMonthCost(new Date(Y - 1, m, 1).getTime())).filter(Boolean);
     const lyY = lyM && years.some((q) => q.y === Y - 1) ? sumL([...lyYparts, lyM]) : null;
     const dayTxt = today.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
