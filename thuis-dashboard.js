@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '444';
+const CARD_VERSION = '445';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2852,7 +2852,7 @@ class VerbruikCard extends HTMLElement {
     // v444: schaal past strak om de gegevens (ca. 4 vakken, stappen 1-2-5), zoals de oude app: 360 en −380 W → 400 … −400
     const e = 10 ** Math.floor(Math.log10((mx - mn) / 4));
     let step = 10 * e, best = Infinity;
-    for (const m of [0.5, 1, 2, 5, 10, 20]) { const st = m * e, r = Math.ceil(mx / st) * st - Math.floor(mn / st) * st; if (r / st <= 5.001 && r < best - 1e-9) { best = r; step = st; } }
+    for (const m of [0.5, 1, 2, 5, 10, 20]) { const st = m * e, r = Math.ceil(mx / st) * st - Math.floor(mn / st) * st; if (r / st <= 6.001 && r < best - 1e-9) { best = r; step = st; } }
     const top = Math.ceil(mx / step) * step || step, bot = Math.floor(mn / step) * step, Y = (v) => pt + ((top - v) / (top - bot)) * ih, y0 = Y(0);
     let dec = 0; while (dec < 4 && Math.abs(step * 10 ** dec - Math.round(step * 10 ** dec)) > 1e-6) dec++;
     const fy = (v) => (Math.abs(v) >= 1000 ? fmt(v) : fmt(Math.abs(v) < step / 2 ? 0 : v, dec));

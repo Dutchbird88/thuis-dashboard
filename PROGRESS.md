@@ -315,6 +315,7 @@
 | v442 | Kosten en verbruik: staven niet meer afgerond op de overgangen (gestapeld en bij de nullijn). |
 | v443 | Energie (telefoon): grafieken bijna over de hele kaartbreedte en scherpe lijnen bij 5-minutengegevens. |
 | v444 | Energie (telefoon): schaal van de grafieken past strak om de gegevens (zoals de oude app). |
+| v445 | Energie: schaal nog strakker (tot 6 vakken), bijv. 520/−500 W → 600 … −600 in plaats van 1.000 … −500. |
 
 ## Volgende stappen
 
