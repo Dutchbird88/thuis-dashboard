@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '468';
+const CARD_VERSION = '469';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5178,7 +5178,7 @@ const CXSTYLE = `
   .cxcams { display: flex; gap: 8px; margin: 0 0 12px; } .cxcams:empty { display: none; } .cxcams button { flex: 1; min-width: 0; padding: 8px 6px; border-radius: 12px; background: #121b2c; color: #a3b0c5; font: inherit; font-size: 13px; font-weight: 600; border: 1px solid rgba(115,155,215,.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxcams button.on { background: #1b2a44; color: #f5f7fc; border-color: rgba(124,182,255,.45); }
   .cxv { display: block; position: relative; border-radius: 20px 20px 0 0; overflow: hidden; border: 1px solid rgba(115,155,215,.28); border-bottom: 0; background: #000; }
   #cFull .cfbig { width: 100%; aspect-ratio: var(--ar, 16 / 9); max-height: 52vh; border-radius: 0; margin: 0; }
-  .cxtag { display: flex; position: absolute; left: 10px; top: 10px; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; background: rgba(8,12,20,.6); font-size: 13px; font-weight: 600; pointer-events: none; }
+  .cxtag { display: none !important; } /* v469: geen Live-label in het beeld (staat al bovenaan en in de balk) */
   .cxfs { display: grid; position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 10px; border: 0; background: rgba(8,12,20,.6); color: #fff; place-items: center; padding: 0; } .cxfs svg { width: 18px; height: 18px; }
   .cxctl { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 1px solid rgba(115,155,215,.28); border-top: 0; border-radius: 0 0 20px 20px; background: #0f1828; color: #dde4ee; font-size: 14px; font-variant-numeric: tabular-nums; }
   .cxlp { padding: 2px 9px; border-radius: 99px; background: rgba(124,182,255,.16); color: #7cb6ff; font-size: 12.5px; font-weight: 600; } .cxsp { flex: 1; }
