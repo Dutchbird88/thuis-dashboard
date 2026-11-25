@@ -193,6 +193,21 @@ function stat(id, period, t0, t1) {
   return out;
 }
 async function callWS(m) {
+  // v464: media-browser van UniFi Protect (console → camera → alle → 7 dagen → gebeurtenissen met plaatje), voor cam-gebeurtenissen van vandaag
+  if (m.type === 'media_source/browse_media') {
+    const id = m.media_content_id, ch = (t, c, x) => ({ title: t, media_content_id: c, can_expand: !x, thumbnail: x || null });
+    if (id === 'media-source://unifiprotect') return { children: [ch('Test NVR', 'media-source://unifiprotect/nvr1:browse')] };
+    if (id.endsWith(':browse')) return { children: [ch('All Cameras', id + ':all'), ch('Voordeur', 'media-source://unifiprotect/nvr1:browse:cam1')] };
+    if (id.endsWith(':cam1')) return { children: [ch('All Events', id + ':all'), ch('Ring Events', id + ':ring')] };
+    if (id.endsWith(':cam1:all')) return { children: [ch('Last 24 Hours', id + ':recent:1'), ch('Last 7 Days', id + ':recent:7')] };
+    if (id.endsWith(':recent:7')) {
+      const d0 = new Date(Date.now()), pad = (n) => String(n).padStart(2, '0'); d0.setHours(0, 0, 0, 0);
+      const ev = [[8.6, 'Person', '#5a7ea8'], [14.28, 'Person', '#7a6a9a'], [11.68, 'Package', '#a3865a'], [11.66, 'Ring', '#8a7a5a'], [7.1, 'Vehicle', '#6a8a8a']].map(([h, w, c]) => { const t = new Date(+d0 + h * H); return [t, w, c]; }).filter(([t]) => +t < Date.now());
+      const img = (c, w) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><rect width="160" height="100" fill="#3c4a5c"/><rect y="64" width="160" height="36" fill="#56524c"/><rect x="104" width="56" height="100" fill="#6e4636"/><circle cx="70" cy="40" r="9" fill="#d8b79a"/><rect x="60" y="50" width="20" height="34" rx="4" fill="${c}"/><text x="6" y="94" font-size="9" fill="#fff" font-family="monospace">${w}</text></svg>`);
+      return { children: ev.map(([t, w, c]) => ch(`${pad(t.getMonth() + 1)}/${pad(t.getDate())}/${String(t.getFullYear()).slice(2)} ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())} 0:00:30 ${w}`, 'media-source://unifiprotect/nvr1:event:' + +t, img(c, w))) };
+    }
+    return { children: [] };
+  }
   // v463: camera-detecties: een paar gebeurtenissen per dag (aan/uit), de laatste vandaag
   if (m.type === 'history/history_during_period' && (m.entity_ids || []).some((id) => /^binary_sensor\.(voordeur|oprit)_/.test(id))) {
     const res = {}, d0 = new Date(Date.now()); d0.setHours(0, 0, 0, 0);

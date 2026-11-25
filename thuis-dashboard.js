@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '463';
+const CARD_VERSION = '464';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6230,6 +6230,56 @@ class ThuisCard extends HTMLElement {
       this._cxC[id] = { at: Date.now(), sig, ev: out.filter((e, i) => !out.slice(0, i).some((o) => o.kind === e.kind && Math.abs(o.t - e.t) < 20000)) };
     } catch (e) { this._cxC[id] = { at: Date.now(), sig, ev: [], err: true }; }
     if (this._cxId === id) this._cxDraw();
+    this._cxUfp(id, this._cxC[id].ev).catch(() => {}); // v464: plaatjes uit UniFi Protect
+  }
+  // v464: plaatjes per gebeurtenis uit de media-browser van UniFi Protect (console → camera → alle gebeurtenissen → afgelopen 7 dagen);
+  // koppelen op tijdstip (± 90 s) en dag; ophalen met inloggegevens (blob), anders blijft het icoon staan
+  async _cxUfp(id, evs) {
+    if (!evs?.length || !this._hass?.callWS || !this._hass.fetchWithAuth) return;
+    const dv = this._hass.devices?.[this._hass.entities?.[id]?.device_id] || {}, want = String(dv.name_by_user || dv.name || '').toLowerCase().trim();
+    if (!want) return;
+    const C = (this._ufpC ||= {});
+    let list = C[id] && Date.now() - C[id].at < 120000 ? C[id].list : null;
+    if (!list) {
+      if (C[id]?.busy) return;
+      C[id] = { ...(C[id] || {}), busy: true };
+      const br = (cid) => this._hass.callWS({ type: 'media_source/browse_media', media_content_id: cid });
+      const kids = (n) => n?.children || [];
+      const findCam = (arr) => arr.find((c) => String(c.title || '').toLowerCase().trim() === want) || arr.find((c) => String(c.title || '').toLowerCase().includes(want));
+      try {
+        const root = await br('media-source://unifiprotect');
+        let cam = findCam(kids(root));
+        if (!cam) for (const n of kids(root).slice(0, 3)) { if (!n.can_expand) continue; cam = findCam(kids(await br(n.media_content_id))); if (cam) break; }
+        let leaf = [];
+        if (cam) {
+          const r1 = await br(cam.media_content_id), all = kids(r1).find((c) => /:all$/.test(c.media_content_id) || /^(all|alle)/i.test(c.title || '')) || kids(r1)[0];
+          const r2 = all ? await br(all.media_content_id) : null, rng = kids(r2).find((c) => /recent:7$/.test(c.media_content_id) || /\b7\b/.test(c.title || '')) || kids(r2)[0];
+          leaf = rng ? kids(await br(rng.media_content_id)) : [];
+        }
+        list = leaf.filter((c) => c.thumbnail).map((c) => {
+          const t = String(c.title || ''), m = t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i), dm = t.match(/(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})/);
+          if (!m) return null;
+          let h = +m[1]; if (m[4] && /pm/i.test(m[4]) && h < 12) h += 12; if (m[4] && /am/i.test(m[4]) && h === 12) h = 0;
+          return { sec: h * 3600 + +m[2] * 60 + +(m[3] || 0), days: dm ? [+dm[1], +dm[2], +dm[3]] : [], thumb: c.thumbnail };
+        }).filter(Boolean);
+      } catch (e) { list = []; }
+      C[id] = { at: Date.now(), list };
+    }
+    if (!list.length) return;
+    const I = (this._ufpImg ||= {}), load = (u) => (I[u] ||= this._hass.fetchWithAuth(u).then((r) => (r.ok && /^image\//.test(r.headers.get('content-type') || '') ? r.blob() : null)).then((b) => (b && b.size > 100 ? URL.createObjectURL(b) : null)).catch(() => null));
+    const todo = [];
+    for (const e of evs.slice(0, 80)) {
+      if (e.src) continue;
+      const d = new Date(e.t), sec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+      const hit = list.filter((x) => (!x.days.length || x.days.includes(d.getDate()))).sort((a, b) => Math.abs(a.sec - sec) - Math.abs(b.sec - sec))[0];
+      if (hit && Math.abs(hit.sec - sec) <= 90) todo.push([e, hit.thumb]);
+    }
+    for (let i = 0; i < todo.length; i += 6) {
+      const part = todo.slice(i, i + 6);
+      const res = await Promise.all(part.map(([, u]) => load(u)));
+      part.forEach(([e], k) => { if (res[k]) e.src = res[k]; });
+      if (this._cxId === id) this._cxDraw();
+    }
   }
   _cxDraw() {
     const body = this.$('cxBody'); if (!body || !this._cxId) return;
@@ -6251,7 +6301,7 @@ class ThuisCard extends HTMLElement {
       return;
     }
     const sub = (e) => [e.kind === 'bell' ? `Bij de ${(this.$('cxName').textContent || 'deur').toLowerCase()}` : area, dur(e)].filter(Boolean).join(' · ');
-    const img = (e) => (e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : '') + CXI[e.kind];
+    const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXI[e.kind]);
     const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `<div class="cxev${now - e.t < 3600000 && e === ev[0] ? ' n' : ''}"><div class="cxth">${img(e)}</div><span class="cxic ${cls(e.kind)}">${CXI[e.kind]}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
     body.innerHTML = list || `<div class="cxnone">${fil === 'all' ? 'Geen gebeurtenissen in de afgelopen 7 dagen.' : 'Geen gebeurtenissen van deze soort.'}</div>`;
   }
