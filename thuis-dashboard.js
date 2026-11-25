@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '458';
+const CARD_VERSION = '459';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2630,7 +2630,7 @@ class VerbruikCard extends HTMLElement {
     if (this.$('eBase')) {
       this.$('eBase').textContent = base == null ? '—' : `${fmt(base)} W`;
       this.$('ePk').textContent = pkPct == null ? '—' : `${fmt(pkPct * 100)}%`;
-      const al = [leak && 'Mogelijk waterlek vannacht', pkPct >= 0.8 && 'Hoge piek op je aansluiting vandaag'].filter(Boolean);
+      const al = [leak && 'Mogelijk waterlek vannacht'].filter(Boolean); // v459: hoge piek niet meer als melding (staat al onderaan bij Aansluiting)
       this.$('eAl').style.display = al.length ? '' : 'none'; this.$('eAlT').textContent = al.join(' · ');
     }
     set('watchNote', issues ? `<span style="color:var(--sun)">${issues} aandachtspunt${issues > 1 ? 'en' : ''}</span>` : 'alles in orde');
