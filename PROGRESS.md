@@ -341,6 +341,7 @@
 | v468 | Camerascherm: iconen in de app-stijl (persoon blauw, beweging, auto, nieuw: pakket, bel, pootje) in de lijst, de tijdlijn en bij de camera bovenaan. |
 | v469 | Camerascherm: geen "Live"-label meer in het beeld. |
 | v470 | Camerascherm: kop met icoon, naam en Live weg; camerakeuze als ronde kiezer (stijl Energie); camera-icoon uit de balk weg. |
+| v471 | Camera als venster (zoals lamp/rolluik): live beeld, Recent van alle camera's, geschiedenis zoals bij beweging (klokje), Alles in Protect. |
 
 ## Volgende stappen
 

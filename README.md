@@ -195,6 +195,15 @@ Met de integratie [Flightradar24](https://github.com/AlexandrErohin/home-assista
 
 Het logo wordt van internet geladen (standaard de vierkante logo's van Google Flights). Lukt dat niet, dan staat er een vliegtuig.
 
+### Camera's (telefoon)
+
+Tik op de camera op Thuis: er opent een venster met het live beeld, een kiezer voor de camera's en **Recent** (de laatste 5 gebeurtenissen van alle camera's samen). Het klokje linksboven toont de geschiedenis van de gekozen camera (7 dagen). Bij UniFi Protect staat onderaan "Alles in Protect"; die opent standaard `https://unifi.ui.com`. Een eigen adres kan ook:
+
+```yaml
+type: custom:thuis-card
+protect_url: https://unifi.ui.com
+```
+
 ### Kamers
 
 De kamers komen vanzelf uit de ruimtes en verdiepingen van Home Assistant (**Instellingen → Ruimtes, labels en zones**). Per ruimte toont de kaart de lampen, rolluiken, temperatuur, apparaten en sensoren van de apparaten in die ruimte. Ruimtes zonder lampen, rolluiken, thermostaat of sensoren worden overgeslagen.

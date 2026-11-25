@@ -71,10 +71,13 @@ dev('d_ds', 'Raamsensor', 'slaap'); ent('binary_sensor.raamsensor_raam', 'off', 
 dev('d_ws', 'Lekdetector', 'bad'); ent('binary_sensor.lekdetector_water', q.get('alarm') === 'water' ? 'on' : 'off', { device_class: 'moisture' }, { dev: 'd_ws', hen: true, name: 'Water' });
 ent('sensor.lekdetector_batterij', '3', { device_class: 'battery', unit_of_measurement: '%' }, { dev: 'd_ws', hen: true, name: 'Batterij' });
 dev('d_sm', 'Rookmelder', 'slaap'); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
-dev('d_cam', 'Voordeur', 'woon'); ent('camera.voordeur', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam', hen: true, name: 'Camera' });
+dev('d_cam', 'Voordeur', 'woon'); ent('camera.voordeur', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam', hen: true, name: 'Camera', pl: 'unifiprotect' });
 // v463: detecties van de camera (zoals UniFi Protect) met een historie van gebeurtenissen; cam=2 voegt een tweede camera toe
 ['persoon_gedetecteerd', 'voertuig_gedetecteerd', 'pakket_gedetecteerd', 'deurbel', 'beweging'].forEach((k) => ent(`binary_sensor.voordeur_${k}`, 'off', { device_class: k === 'beweging' ? 'motion' : 'occupancy' }, { dev: 'd_cam', hen: true, name: k }));
 if (q.get('cam') === '2') { dev('d_cam2', 'Oprit', 'woon'); ent('camera.oprit', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam2', hen: true, name: 'Camera' }); ent('binary_sensor.oprit_voertuig_gedetecteerd', 'off', {}, { dev: 'd_cam2', hen: true, name: 'Voertuig' }); }
+// v471: camera=2|3 (3 = ook een tuincamera zonder detecties); het grote beeld zonder echte HA-speler
+if (q.get('cam') === '3') { dev('d_cam2', 'Oprit', 'woon'); ent('camera.oprit', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam2', hen: true, name: 'Camera', pl: 'unifiprotect' }); ent('binary_sensor.oprit_voertuig_gedetecteerd', 'off', {}, { dev: 'd_cam2', hen: true, name: 'Voertuig' }); dev('d_cam3', 'Tuin', 'woon'); ent('camera.tuin', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam3', hen: true, name: 'Camera', pl: 'unifiprotect' }); }
+window.loadCardHelpers ||= async () => ({ createCardElement: () => { const d = document.createElement('div'); d.style.cssText = 'height:100%;background:linear-gradient(160deg,#2a3340,#151a22)'; d.hass = null; return d; } });
 ent('scene.woonkamer_avond', '2026-11-01T18:00:00Z', {}, { name: 'Woonkamer Avond', area: 'woon' });
 ent('person.bewoner', 'home', { user_id: 'u1' }, { name: 'Bewoner', reg: false, fn: 'Bewoner' });
 ent('person.bewoner2', 'werk', {}, { name: 'Bewoner 2', reg: false, fn: 'Bewoner 2' });

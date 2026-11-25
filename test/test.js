@@ -40,6 +40,8 @@ const VIEWS = [
   ['venster-beweging-historie', 'card=kamers', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills .mp[data-mo][data-id^="binary_sensor.beweging"]').click(); c.shadowRoot.querySelector('#cvHb').click(); }],
   ['venster-raam', 'card=kamers', 390, (c) => c._openSheet('mo', 'binary_sensor.raamsensor_raam')],
   ['venster-licht', 'card=kamers', 390, (c) => c._openSheet('mo', 'sensor.bewegingssensor_verlichtingssterkte')],
+  ['venster-camera', 'card=thuis&cam=3', 390, (c) => c._openCam('camera.voordeur')],
+  ['venster-camera-historie', 'card=thuis&cam=3', 390, (c) => { c._openCam('camera.voordeur'); setTimeout(() => c.shadowRoot.querySelector('#cxHist')?.click(), 600); }],
   ['venster-kamer-wol', 'card=kamers&wol=1', 390, (c) => c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer'))],
   ['venster-kamer-wol-pc', 'card=kamers&wol=1', 390, (c) => { c._openSheet('room', c._rooms().findIndex((r) => r.name === 'Slaapkamer')); c.shadowRoot.querySelector('.kspills [data-wol]').click(); }],
 ].filter((v) => !ALLEEN || v[0].includes(ALLEEN));

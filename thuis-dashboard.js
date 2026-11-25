@@ -281,7 +281,7 @@ const toTop = (root) => {
 const bindSwipe = (root) => {
   if (root._swipeBound) return; root._swipeBound = true;
   const mq = window.matchMedia('(max-width: 600px)'); let st = null;
-  const skip = (e) => e.composedPath().some((el) => el instanceof Element && (el.matches('.sheet, .shv, #camHit, .mpills, .kspills, .kpills, .thumbs, input, [role="slider"]')
+  const skip = (e) => e.composedPath().some((el) => el instanceof Element && (el.matches('.sheet, .shv, .cfull, #camHit, .mpills, .kspills, .kpills, .thumbs, input, [role="slider"]')
     || /^(none|pan-y)$/.test(getComputedStyle(el).touchAction) || (el.scrollWidth > el.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(el).overflowX))));
   root.addEventListener('touchstart', (e) => {
     st = null; const t = e.touches[0];
@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '470';
+const CARD_VERSION = '471';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5164,19 +5164,17 @@ const CXR = (k) => RIC.svg(...({ person: ['person', 'blue'], move: ['motionS', '
 const CXK = [[/_deurbel$|doorbell|_ring$|aangebeld/, 'bell', 'Aangebeld'], [/pakket|package/, 'box', 'Pakket'], [/persoon|person/, 'person', 'Persoon'], [/voertuig|vehicle/, 'car', 'Auto'], [/animal|dier/, 'paw', 'Dier'], [/beweging|motion/, 'move', 'Beweging']];
 const cxEsc = (t) => String(t ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 const CXSTYLE = `
-.cxtop, .cxhd, .cxcams, .cxctl, .cxseg, .cxf, .cxbody, .cxtag, .cxfs { display: none; } .cxv { display: contents; }
+#cFull .cxgrab, #cFull .cxhb, #cFull .cxx, #cFull .cxti, .cxcams, .cxctl, .cxbody, .cxtag, .cxfs { display: none; } .cxv, .cxsh { display: contents; }
 @media (max-width: 600px) {
-  #cFull.cfull { display: block; overflow-y: auto; -webkit-overflow-scrolling: auto; scrollbar-width: none; background: linear-gradient(180deg, #0e1626, #0a111d 40%); backdrop-filter: none; -webkit-backdrop-filter: none; padding: calc(env(safe-area-inset-top, 0px) + 6px) 16px calc(env(safe-area-inset-bottom, 0px) + 28px); color: #f5f7fc; }
+  #cFull.cfull { display: block; z-index: 60; padding: 0; overflow: hidden; background: rgba(3,6,12,.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: #f5f7fc; } /* v471: venster zoals lamp/rolluik */
+  .cxsh { display: block; position: absolute; left: 0; right: 0; bottom: 0; max-height: calc(100vh - env(safe-area-inset-top, 0px) - 30px); overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 10px 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: #111827; border-top: 1px solid rgba(130,170,255,.18); box-shadow: 0 -20px 40px rgba(0,0,0,.5); color: var(--text, #f5f7fc); transition: transform .2s; animation: shup .28s cubic-bezier(.3,.7,.2,1); scrollbar-width: none; } .cxsh::-webkit-scrollbar { display: none; }
+  #cFull .cxgrab { display: block; width: 40px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.25); margin: 0 auto 10px; }
+  #cFull .cxhb { display: grid; } #cFull .cxx { display: grid; position: absolute; right: 16px; top: 14px; background: none; color: rgba(255,255,255,.7); font-size: 19px; }
+  #cFull .cxti { display: block; } #cFull .cxti b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 34px; }
   #cFull.cfull[hidden] { display: none; } #cFull::-webkit-scrollbar { display: none; }
   #cFull .cft, #cFull .cfrow { display: none; }
-  .cxtop { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 44px; } .cxtop b { font-size: 17px; font-weight: 600; }
-  .cxbk { display: flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: #7cb6ff; font: inherit; font-size: 16px; justify-self: start; } .cxbk svg { width: 22px; height: 22px; }
-  .cxhd { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; } .cxav { flex: none; width: 48px; height: 48px; border-radius: 14px; background: #141e30; border: 1px solid rgba(115,155,215,.25); display: grid; place-items: center; } .cxav svg { width: 34px; height: 34px; }
-  .cxnm { min-width: 0; } .cxnm b { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxnm small { display: block; color: #8b97ab; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cxlv { margin-left: auto; flex: none; display: flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 99px; background: rgba(79,208,127,.12); border: 1px solid rgba(79,208,127,.35); font-size: 14px; font-weight: 600; }
-  .cxlv i, .cxtag i { width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; box-shadow: 0 0 6px #4fd07f; }
-  .cxhd { display: none; } /* v470: kop met icoon, naam en Live weg */
-  .cxcams { display: flex; gap: 2px; padding: 3px; margin: 8px 0 12px; border-radius: 99px; background: rgba(0,0,0,.28); } .cxcams:empty { display: none; } /* v470: zelfde kiezer als Energie (.eseg) */
+  .cxtag i { width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; }
+  .cxcams { display: flex; gap: 2px; padding: 3px; margin: 16px 0 12px; border-radius: 99px; background: rgba(0,0,0,.28); } .cxcams:empty { display: none; } /* v470: zelfde kiezer als Energie (.eseg) */
   .cxcams button { all: unset; flex: 1; min-width: 0; text-align: center; padding: 8px 4px; border-radius: 99px; color: #8b97ab; font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; } .cxcams button.on { background: rgba(255,255,255,.11); color: #fff; }
   .cxv { display: block; position: relative; border-radius: 20px 20px 0 0; overflow: hidden; border: 1px solid rgba(115,155,215,.28); border-bottom: 0; background: #000; }
   #cFull .cfbig { width: 100%; aspect-ratio: var(--ar, 16 / 9); max-height: 52vh; border-radius: 0; margin: 0; }
@@ -5185,10 +5183,16 @@ const CXSTYLE = `
   .cxctl { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 1px solid rgba(115,155,215,.28); border-top: 0; border-radius: 0 0 20px 20px; background: #0f1828; color: #dde4ee; font-size: 14px; font-variant-numeric: tabular-nums; }
   .cxlp { padding: 2px 9px; border-radius: 99px; background: rgba(124,182,255,.16); color: #7cb6ff; font-size: 12.5px; font-weight: 600; } .cxsp { flex: 1; }
   .cxctl button { border: 0; background: none; color: #dde4ee; padding: 0; width: 26px; height: 26px; display: grid; place-items: center; } .cxctl button svg { width: 22px; height: 22px; } .cxctl button.on { color: #7cb6ff; }
-  .cxseg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 4px; }
-  .cxseg button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 0; border-radius: 14px; background: #121b2c; border: 1px solid rgba(115,155,215,.18); color: #c9d3e3; font: inherit; font-size: 13.5px; font-weight: 600; } .cxseg button svg { width: 22px; height: 22px; } .cxseg button.on { background: rgba(52,136,244,.16); border-color: rgba(124,182,255,.6); color: #7cb6ff; }
-  .cxf { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; } .cxf[hidden] { display: none; } .cxf button { padding: 6px 12px; border-radius: 99px; border: 0; background: rgba(255,255,255,.07); color: #c9d3e3; font: inherit; font-size: 12.5px; font-weight: 500; } .cxf button.on { background: #f5f7fc; color: #111827; font-weight: 600; }
   .cxbody { display: block; }
+  .cxrc { margin-top: 14px; border-radius: 20px; background: #0f1828; border: 1px solid rgba(115,155,215,.16); overflow: hidden; } /* v471: Recent van alle camera's in één kaart */
+  .cxhh { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 16px 4px; } .cxhh b { font-size: 16px; font-weight: 700; } .cxhh span { color: #8b97ab; font-size: 13px; }
+  .cxrc .cxev { margin: 0; border: 0; border-radius: 0; background: none; padding: 9px 14px 9px 10px; } .cxrc .cxev + .cxev { border-top: 1px solid rgba(115,155,215,.12); } .cxrc .cxth { height: 50px; } .cxrc .cxev.n { background: linear-gradient(90deg, rgba(52,136,244,.14), transparent); } .cxrc .cxev.on { box-shadow: inset 3px 0 0 #ffcf7a; }
+  .cxrc .cxnone { margin: 10px 16px 16px; text-align: left; }
+  .cxpro { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 16px; border-top: 1px solid rgba(115,155,215,.12); color: #7cb6ff; font-size: 15px; font-weight: 600; } .cxpro svg { width: 18px; height: 18px; }
+  #cFull.cxh .cxti, #cFull.cxh .cxcams, #cFull.cxh .cxv, #cFull.cxh .cxctl, #cFull.cxh .cxhb { display: none; } /* v471: geschiedenis zoals bij beweging */
+  .cxhist .hh { margin-top: 2px; } .cxhist .mostrip { height: 24px; border-radius: 7px; } .cxhist .molog { margin-top: 10px; } .cxhist .mostrip i { width: 3px; margin-left: -1px; border-radius: 1px; }
+  .cxhist .molog div[data-i] { cursor: pointer; } .cxhist .molog span svg { width: 12px; height: 12px; margin-left: 6px; vertical-align: -1px; color: #7cb6ff; }
+  .cxhist .k-person { background: #7cb6ff !important; } .cxhist .k-car { background: #c9d3e3 !important; } .cxhist .k-move { background: #ffb547 !important; } .cxhist .k-box { background: #d9a066 !important; } .cxhist .k-bell { background: #ffcf7a !important; } .cxhist .k-paw { background: #8fd6a0 !important; }
   .cxdh { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 8px; } .cxdh b { font-size: 18px; font-weight: 700; } .cxdh span { color: #8b97ab; font-size: 13px; }
   .cxev { display: grid; grid-template-columns: 86px 24px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px 8px 8px; border-radius: 16px; background: #111a2b; border: 1px solid rgba(115,155,215,.16); margin-bottom: 8px; }
   .cxev.n { background: linear-gradient(90deg, rgba(52,136,244,.16), rgba(52,136,244,.04)); border-color: rgba(124,182,255,.45); }
@@ -5202,11 +5206,6 @@ const CXSTYLE = `
   .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxpi svg { width: 12px; height: 12px; margin-left: 1px; }
   .cxev.pl { cursor: pointer; } .cxev.pl:active { transform: scale(.985); } .cxev.on { border-color: rgba(255,207,122,.6); }
   .cxnone { margin: 22px 4px; color: #8b97ab; font-size: 14px; text-align: center; }
-  .cxtl { padding: 12px 14px 10px; border-radius: 18px; background: #111a2b; border: 1px solid rgba(115,155,215,.16); }
-  .cxbar { position: relative; height: 40px; margin: 0 13px; } .cxbar::before { content: ""; position: absolute; left: -13px; right: -13px; top: 19px; height: 2px; background: rgba(150,175,215,.18); }
-  .cxbar i { position: absolute; top: 6px; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%; display: grid; place-items: center; background: #1a2538; border: 2px solid #111a2b; color: #c9d3e3; } .cxbar i svg { width: 17px; height: 17px; } .cxbar i.p { color: #7cb6ff; } .cxbar i.b { color: #ffcf7a; }
-  .cxbar .nw { position: absolute; top: 4px; width: 2px; height: 32px; margin-left: -1px; background: #f5f7fc; opacity: .7; border-radius: 1px; }
-  .cxax { display: flex; justify-content: space-between; color: #6f7d92; font-size: 11px; margin-top: 2px; font-variant-numeric: tabular-nums; }
 }
 `;
 const HPSTYLE = `
@@ -5610,15 +5609,13 @@ class ThuisCard extends HTMLElement {
               <div class="cam" id="cam"><div class="live" id="camLive"></div><div class="hit" id="camHit"></div><div class="tag" id="camTag"><i class="dotl"></i></div></div>
               <div class="thumbs" id="thumbs"></div>
               <div class="cfull" id="cFull" hidden><div class="cft"><b id="cfName"></b><span class="cfl"><i></i>live</span><button class="cfs" id="cfS" aria-label="Geluid"></button><button id="cfX" aria-label="Sluiten">✕</button></div>
-                <div class="cxtop"><button class="cxbk" id="cxBack">${CXI.back}Thuis</button><b>Camera's</b><span></span></div>
-                <div class="cxhd"><div class="cxav">${RIC.svg('camera', 'on')}</div><div class="cxnm"><b id="cxName"></b><small id="cxSub"></small></div><span class="cxlv"><i></i>Live</span></div>
+                <div class="cxsh" id="cxSh"><div class="cxgrab"></div><button class="cvhb cxhb" id="cxHist" aria-label="Geschiedenis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></button><button class="shx cxx" id="cxX" aria-label="Sluiten">✕</button>
+                <div class="cvh cxti"><b id="cxName"></b><span id="cxSub"></span></div>
                 <div class="cxcams" id="cxCams"></div>
                 <div class="cxv"><div class="cfbig" id="cfLive"></div><div class="cxpb" id="cxPb" hidden></div><span class="cxtag" id="cxTag"><i></i>Live</span><button class="cxfs" id="cxFs" aria-label="Volledig scherm">${CXI.full}</button></div>
                 <div class="cxctl"><span id="cxTime"></span><span class="cxlp">Live</span><button class="cxlb" id="cxLiveBack" hidden><i></i>Terug naar live</button><span class="cxsp"></span><button id="cxS" aria-label="Geluid"></button></div>
                 <div class="cfrow" id="cfRow"></div>
-                <div class="cxseg" id="cxSeg"><button data-v="ev" class="on">${CXI.play}Gebeurtenissen</button><button data-v="tl">${CXI.cal}Tijdlijn</button><button data-v="f">${CXI.filt}Filter</button></div>
-                <div class="cxf" id="cxF" hidden></div>
-                <div class="cxbody" id="cxBody"></div></div>
+                <div class="cxbody" id="cxBody"></div></div></div>
             </div>
           </div>
 
@@ -5770,13 +5767,30 @@ class ThuisCard extends HTMLElement {
     this.$('was').addEventListener('click', () => this._appOpen('was'));
     this.$('dish').addEventListener('click', () => this._appOpen('dish'));
     this.$('oven').addEventListener('click', () => this._appOpen('oven'));
-    this.$('cFull').addEventListener('click', (e) => { if (e.target === this.$('cFull') && !this._mq?.matches) this._closeCam(); }); // v463: op de telefoon is het een scherm (sluiten met ‹ Thuis)
-    this.$('cxBack').addEventListener('click', () => this._closeCam());
+    this.$('cFull').addEventListener('click', (e) => { if (e.target === this.$('cFull')) this._closeCam(); }); // v471: op de telefoon een venster (tik ernaast sluit)
+    this.$('cxX').addEventListener('click', () => this._closeCam());
+    this.$('cxHist').addEventListener('click', () => { this._cxStop(false); this._cxHistOn = true; this.$('cFull').classList.add('cxh'); this.$('cxSh').scrollTop = 0; this._cxDraw(); });
     this.$('cxS').addEventListener('click', (e) => { e.stopPropagation(); this.$('cfS').click(); });
     this.$('cxFs').addEventListener('click', () => { const v = this._videos()[0], b = this.$('cfLive'); try { if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen(); else (v || b).requestFullscreen?.(); } catch (e) { /* niet ondersteund */ } });
-    this.$('cxSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v === 'f') { this.$('cxF').hidden = !this.$('cxF').hidden; b.classList.toggle('on', !this.$('cxF').hidden); return; } this._cxView = b.dataset.v; this.$('cxSeg').querySelectorAll('button[data-v="ev"],button[data-v="tl"]').forEach((x) => x.classList.toggle('on', x === b)); this._cxDraw(); });
-    this.$('cxF').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this._cxFil = b.dataset.k; this._cxDraw(); });
-    this.$('cxBody').addEventListener('click', (e) => { const r = e.target.closest('.cxev'); if (!r) return; const ev = this._cxRows?.[+r.dataset.i]; if (ev?.cid) this._cxPlay(ev); });
+    this.$('cxBody').addEventListener('click', async (e) => {
+      if (e.target.closest('#cxHBack')) { this._cxHistOn = false; this.$('cFull').classList.remove('cxh'); this._cxDraw(); return; }
+      if (e.target.closest('.cxpro')) { window.open(this._config.protect_url || 'https://unifi.ui.com', '_blank', 'noopener'); return; }
+      const r = e.target.closest('[data-i]'); if (!r) return; const ev = this._cxRows?.[+r.dataset.i]; if (!ev) return;
+      if (this._cxHistOn) { this._cxHistOn = false; this.$('cFull').classList.remove('cxh'); }
+      if (ev.cam && ev.cam !== this._cxId) await this._openCam(ev.cam); // gebeurtenis van een andere camera: eerst naar die camera
+      if (ev.cid) this._cxPlay(ev); else { this._cxDraw(); this.$('cxSh').scrollTo?.({ top: 0, behavior: 'smooth' }); }
+    });
+    // v471: omlaag vegen sluit het venster (zoals bij lamp en rolluik)
+    { const sh = this.$('cxSh'); let y0 = null, x0 = 0, dy = 0, t0 = 0, drag = false;
+      sh.addEventListener('touchstart', (e) => { y0 = null; if (!this._mq?.matches || e.touches.length > 1 || e.composedPath().some((el) => el instanceof Element && el.matches('.cxcams, .cxpb'))) return; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; dy = 0; drag = false; t0 = Date.now(); }, { passive: true });
+      sh.addEventListener('touchmove', (e) => {
+        if (y0 == null) return; const t = e.touches[0], d = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+        if (!drag) { if (dx > 6 && dx > d * 0.8) { y0 = null; return; } if (d > 10 && d > dx * 1.5 && sh.scrollTop <= 0) { drag = true; sh.style.transition = 'none'; t0 = Date.now(); } else return; }
+        e.preventDefault(); dy = Math.max(0, d); sh.style.transform = `translateY(${dy}px)`;
+      }, { passive: false });
+      const end = () => { if (!drag) { y0 = null; return; } const v = dy / Math.max(1, Date.now() - t0); drag = false; y0 = null; sh.style.transition = '';
+        if (dy > 110 || (dy > 24 && v > 0.45)) { sh.style.transform = 'translateY(100%)'; setTimeout(() => { sh.style.transform = ''; this._closeCam(); }, 200); } else sh.style.transform = ''; };
+      sh.addEventListener('touchend', end); sh.addEventListener('touchcancel', end); }
     this.$('cxLiveBack').addEventListener('click', () => this._cxStop(true));
     if (!this._rootClick) { this._rootClick = true; this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open')); }
     this._camEl = null; this._camId = null; this._lightKey = null; this._pplKey = null; this._binKey = null; this._thumbKey = null;
@@ -6206,15 +6220,16 @@ class ThuisCard extends HTMLElement {
     const dvOf = (c) => this._hass?.devices?.[this._hass?.entities?.[c]?.device_id] || {}, dv = dvOf(id), area = this._hass?.areas?.[dv.area_id || this._hass?.entities?.[id]?.area_id]?.name;
     const cn = (c) => { const d = dvOf(c); return d.name_by_user || d.name || nm(c).replace(/\s+camera$/i, ''); }; // naam van het apparaat ("Voordeur"), niet van de stream
     this.$('cxName').textContent = cn(id);
-    this.$('cxSub').textContent = [dv.model, area].filter(Boolean).join(' · ');
+    this.$('cxSub').textContent = ['Live', area].filter(Boolean).join(' · '); // v471
+    this._cxCn = cn; this._cxIds = ids;
     const cams = this.$('cxCams');
     cams.innerHTML = ids.length > 1 ? ids.map((c) => `<button class="${c === id ? 'on' : ''}" data-id="${c}">${cxEsc(cn(c))}</button>`).join('') : '';
     cams.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => this._openCam(b.dataset.id)));
     const clk = () => { const t = this.$('cxTime'); if (t && !this._cxPlaying) t.textContent = fmtTime(Date.now()); };
     clk(); clearInterval(this._cxClock); this._cxClock = setInterval(clk, 10000);
-    this._cxId = id; this._cxView ||= 'ev'; this._cxFil ||= 'all';
+    this._cxId = id;
     this._cxDraw();
-    this._cxLoad(id);
+    ids.forEach((c) => this._cxLoad(c)); // v471: Recent toont alle camera's
   }
   // detecties van een camera: de binaire sensoren van hetzelfde apparaat (persoon, auto, dier, pakket, aanbellen, beweging)
   _cxSensors(id) {
@@ -6226,7 +6241,7 @@ class ThuisCard extends HTMLElement {
     const sens = this._cxSensors(id), S = this._hass?.states || {};
     const sig = sens.map((x) => S[x.k]?.last_changed).join('|'), c = (this._cxC ||= {})[id];
     if (c && c.sig === sig && Date.now() - c.at < 60000) return;
-    if (!sens.length) { this._cxC[id] = { at: Date.now(), sig, ev: [] }; this._cxDraw(); return; }
+    if (!sens.length) { this._cxC[id] = { at: Date.now(), sig, ev: [], none: true }; this._cxDraw(); return; }
     try {
       const from = dayAdd(startOfDay(Date.now()), -6);
       const h = await this._hass.callWS({ type: 'history/history_during_period', start_time: new Date(from).toISOString(), end_time: new Date().toISOString(), entity_ids: sens.map((x) => x.k), minimal_response: false, no_attributes: false, significant_changes_only: false });
@@ -6235,7 +6250,7 @@ class ThuisCard extends HTMLElement {
         let on = null, attrs = {};
         for (const r of h[x.k] || []) {
           const st = r.s ?? r.state, t = r.lc != null ? r.lc * 1000 : r.lu != null ? r.lu * 1000 : Date.parse(r.last_changed || r.last_updated); if (r.a) attrs = { ...attrs, ...r.a };
-          if (st === 'on' && on == null) on = { t, kind: x.kind, lb: x.lb, pr: x.pr, img: attrs.event_thumbnail || null };
+          if (st === 'on' && on == null) on = { t, kind: x.kind, lb: x.lb, pr: x.pr, img: attrs.event_thumbnail || null, cam: id };
           else if (st !== 'on' && on) { on.end = t; ev.push(on); on = null; }
         }
         if (on) { on.end = null; ev.push(on); }
@@ -6245,7 +6260,7 @@ class ThuisCard extends HTMLElement {
       out.sort((a, b) => b.t - a.t);
       this._cxC[id] = { at: Date.now(), sig, ev: out.filter((e, i) => !out.slice(0, i).some((o) => o.kind === e.kind && Math.abs(o.t - e.t) < 20000)) };
     } catch (e) { this._cxC[id] = { at: Date.now(), sig, ev: [], err: true }; }
-    if (this._cxId === id) this._cxDraw();
+    if (this._cxId) this._cxDraw();
     this._cxUfp(id, this._cxC[id].ev).catch(() => {}); // v464: plaatjes uit UniFi Protect
   }
   // v464: plaatjes per gebeurtenis uit de media-browser van UniFi Protect (console → camera → alle gebeurtenissen → afgelopen 7 dagen);
@@ -6294,34 +6309,38 @@ class ThuisCard extends HTMLElement {
       const part = todo.slice(i, i + 6);
       const res = await Promise.all(part.map(([, u]) => load(u)));
       part.forEach(([e], k) => { if (res[k]) e.src = res[k]; });
-      if (this._cxId === id) this._cxDraw();
+      if (this._cxId) this._cxDraw();
     }
   }
+  // v471: venster = Recent (laatste 5 van alle camera's); klokje = geschiedenis van deze camera zoals bij beweging (7 dagen, balk per dag + lijst)
   _cxDraw() {
     const body = this.$('cxBody'); if (!body || !this._cxId) return;
-    const c = this._cxC?.[this._cxId], fil = this._cxFil || 'all', now = Date.now();
-    const dv = this._hass?.devices?.[this._hass?.entities?.[this._cxId]?.device_id] || {}, area = this._hass?.areas?.[dv.area_id]?.name;
-    const all = c?.ev || [], kinds = [...new Set(all.map((e) => e.kind))];
-    const F = [['all', 'Alles'], ['person', 'Personen'], ['car', "Auto's"], ['box', 'Pakketten'], ['bell', 'Aanbellen'], ['paw', 'Dieren'], ['move', 'Beweging']].filter(([k]) => k === 'all' || kinds.includes(k));
-    this.$('cxF').innerHTML = F.map(([k, t]) => `<button data-k="${k}" class="${k === fil ? 'on' : ''}">${t}</button>`).join('');
-    const ev = fil === 'all' ? all : all.filter((e) => e.kind === fil);
-    if (!c) { body.innerHTML = '<div class="cxnone">Gebeurtenissen laden…</div>'; return; }
-    if (!this._cxSensors(this._cxId).length) { body.innerHTML = '<div class="cxnone">Deze camera geeft geen detecties door aan Home Assistant.</div>'; return; }
-    const days = []; for (let k = 0; k < 7; k++) { const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1); days.push({ d0, d1, ev: ev.filter((e) => e.t >= d0 && e.t < d1) }); }
-    const dn = (k, d0) => (k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : cap(new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })));
-    const cls = (k) => (k === 'bell' ? 'b' : k === 'person' || k === 'box' ? 'p' : '');
-    const dur = (e) => { const s = Math.round(((e.end ?? now) - e.t) / 1000); return e.end == null ? 'nu' : s < 60 ? `${s} s` : `${Math.round(s / 60)} min`; };
-    const cnt = (n) => `${n} ${n === 1 ? 'gebeurtenis' : 'gebeurtenissen'}`;
-    if (this._cxView === 'tl') {
-      body.innerHTML = days.filter((d, k) => k === 0 || d.ev.length).map((d, k) => `<div class="cxdh"><b>${dn(k, d.d0)}</b><span>${cnt(d.ev.length)}</span></div><div class="cxtl"><div class="cxbar">${d.ev.map((e) => `<i class="${cls(e.kind)}" style="left:${(((e.t - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%" title="${e.lb} ${fmtTime(e.t)}">${CXR(e.kind)}</i>`).join('')}${k === 0 ? `<span class="nw" style="left:${(((now - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%"></span>` : ''}</div><div class="cxax"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div></div>`).join('');
+    const now = Date.now(), C = this._cxC || {}, ids = this._cxIds?.length ? this._cxIds : [this._cxId], cn = this._cxCn || ((c) => this._nm(c));
+    const dur = (e) => { const s = Math.round(((e.end ?? now) - e.t) / 1000); return e.end == null ? 'nu' : s < 60 ? `${Math.max(1, s)} s` : `${Math.round(s / 60)} min`; };
+    const PL = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+    this._cxRows = [];
+    if (this._cxHistOn) {
+      const c = C[this._cxId], ev = c?.ev || [], ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
+      let h = '';
+      if (!c) h = '<div class="hnone">Laden…</div>';
+      else if (c.none) h = '<div class="cxnone">Deze camera geeft geen detecties door aan Home Assistant.</div>';
+      else for (let k = 0; k < 7; k++) {
+        const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1), len = d1 - d0, ds = ev.filter((e) => e.t >= d0 && e.t < d1);
+        const dn = k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : cap(new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }));
+        h += `<div class="modh">${dn}<span>${ds.length ? `${ds.length} ${ds.length === 1 ? 'gebeurtenis' : 'gebeurtenissen'}` : 'geen gebeurtenissen'}</span></div><div class="pcard" style="margin-top:0"><div class="pstrip mostrip mostatic">${ds.map((e) => `<i class="k-${e.kind}" style="left:${((e.t - d0) / len * 100).toFixed(2)}%"></i>`).join('')}</div>${ticks}`
+          + (ds.length ? `<div class="molog">${ds.slice(0, 40).map((e) => `<div data-i="${this._cxRows.push(e) - 1}"><i class="k-${e.kind}"></i>${e.lb}<span>${fmtTime(e.t)} <em>· ${dur(e)}</em>${e.cid ? PL : ''}</span></div>`).join('')}</div>` : '') + '</div>';
+      }
+      body.innerHTML = `<div class="cxhist mos"><div class="hh"><button id="cxHBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${cxEsc(cn(this._cxId))}</button></div><div class="hti"><b>Geschiedenis</b><span>Afgelopen 7 dagen</span></div>${h}</div>`;
       return;
     }
-    const sub = (e) => [e.kind === 'bell' ? `Bij de ${(this.$('cxName').textContent || 'deur').toLowerCase()}` : area, dur(e)].filter(Boolean).join(' · ');
+    const all = ids.flatMap((id) => C[id]?.ev || []).sort((a, b) => b.t - a.t), ev = all.slice(0, 5), loading = ids.some((id) => !C[id]);
+    const when = (t) => { const k = Math.round((startOfDay(now) - startOfDay(t)) / DAY); return k === 0 ? fmtTime(t) : k === 1 ? `gist. ${fmtTime(t)}` : `${new Date(t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')} ${fmtTime(t)}`; };
     const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXR(e.kind));
-    this._cxRows = [];
-    const row = (e) => { const i = this._cxRows.push(e) - 1; return `<div class="cxev${now - e.t < 3600000 && e === ev[0] ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${i}"><div class="cxth">${img(e)}${e.cid ? '<b class="cxpi"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></b>' : ''}</div>`; };
-    const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `${row(e)}<span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
-    body.innerHTML = list || `<div class="cxnone">${fil === 'all' ? 'Geen gebeurtenissen in de afgelopen 7 dagen.' : 'Geen gebeurtenissen van deze soort.'}</div>`;
+    const cls = (k) => (k === 'bell' ? 'b' : k === 'person' || k === 'box' ? 'p' : '');
+    const rows = ev.map((e, i) => `<div class="cxev${i === 0 && now - e.t < 3600000 ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${this._cxRows.push(e) - 1}"><div class="cxth">${img(e)}${e.cid ? `<b class="cxpi">${PL}</b>` : ''}</div><span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc([ids.length > 1 ? cn(e.cam) : this._hass?.areas?.[(this._hass?.devices?.[this._hass?.entities?.[e.cam]?.device_id] || {}).area_id]?.name, dur(e)].filter(Boolean).join(' · '))}</small></div><em>${when(e.t)}</em></div>`).join('');
+    const none = ids.every((id) => C[id]?.none) ? (ids.length > 1 ? "Deze camera's geven geen detecties door aan Home Assistant." : 'Deze camera geeft geen detecties door aan Home Assistant.') : loading ? 'Gebeurtenissen laden…' : 'Geen gebeurtenissen in de afgelopen 7 dagen.';
+    const ufp = this._config.protect_url || ids.some((id) => this._hass?.entities?.[id]?.platform === 'unifiprotect');
+    body.innerHTML = `<div class="cxrc"><div class="cxhh"><b>Recent</b><span>${ids.length > 1 ? "Alle camera's" : 'Laatste 5'}</span></div>${rows || `<div class="cxnone">${none}</div>`}${ufp ? `<button class="cxpro">Alles in Protect<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></svg></button>` : ''}</div>`;
   }
 
   // v465: opname van een gebeurtenis afspelen in het grote beeld (UniFi Protect via media_source/resolve_media); het live beeld pauzeert
@@ -6348,7 +6367,7 @@ class ThuisCard extends HTMLElement {
     this._cxPlaying = e.cid;
     this.$('cxTime').textContent = fmtTime(e.t); // v467: tijd van de opname in de balk; geen label in het beeld
     this.$('cxLiveBack').hidden = false; this.$('cFull').classList.add('cxrec');
-    this.$('cFull').scrollTo?.({ top: 0, behavior: 'smooth' });
+    this.$('cxSh').scrollTo?.({ top: 0, behavior: 'smooth' });
     this._cxDraw();
   }
   _cxStop(resume) {
@@ -6385,7 +6404,7 @@ class ThuisCard extends HTMLElement {
     this._cxStop(false);
     clearTimeout(this._cfTimer); clearInterval(this._cfPoll); clearInterval(this._cxClock); this._cfSound = false;
     setTimeout(() => this._liveCam(), 50); // klein live-beeld weer starten
-    this.$('cFull').hidden = true;
+    this.$('cFull').hidden = true; this._cxHistOn = false; this.$('cFull').classList.remove('cxh');
     this.$('cfLive').innerHTML = '';
     this._cfEl = null;
   }
