@@ -333,6 +333,7 @@
 | v460 | Energie (telefoon): gas tegenover buitentemperatuur: Dag/Week "buiten gem. 6°" (Week ook per dag), Maand/Jaar "8% zuiniger bij zelfde weer" (graaddagen, zonder basisverbruik); bij schuiven de temperatuur van die dag. |
 | v461 | Energie: buitentemperatuur ook zonder langetermijnstatistiek (historie) en anders uit het weer van HA; bij Week en Jaar alle dagen/maanden onder de staven. |
 | v462 | Energie: gas weer rustig (geen temperatuur of vergelijking in de kop; bij Dag geen tekst onder het getal), temperatuur alleen onder de dagen bij Week en bij het schuiven; waterlekmelding weg. |
+| v463 | Camerascherm op de telefoon: live beeld met wisselen tussen camera's, en de gebeurtenissen van 7 dagen (persoon, auto, pakket, aanbellen, dier, beweging) als lijst of tijdlijn, met filter. |
 
 ## Volgende stappen
 

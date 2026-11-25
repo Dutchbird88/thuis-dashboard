@@ -72,6 +72,9 @@ dev('d_ws', 'Lekdetector', 'bad'); ent('binary_sensor.lekdetector_water', q.get(
 ent('sensor.lekdetector_batterij', '3', { device_class: 'battery', unit_of_measurement: '%' }, { dev: 'd_ws', hen: true, name: 'Batterij' });
 dev('d_sm', 'Rookmelder', 'slaap'); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
 dev('d_cam', 'Voordeur', 'woon'); ent('camera.voordeur', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam', hen: true, name: 'Camera' });
+// v463: detecties van de camera (zoals UniFi Protect) met een historie van gebeurtenissen; cam=2 voegt een tweede camera toe
+['persoon_gedetecteerd', 'voertuig_gedetecteerd', 'pakket_gedetecteerd', 'deurbel', 'beweging'].forEach((k) => ent(`binary_sensor.voordeur_${k}`, 'off', { device_class: k === 'beweging' ? 'motion' : 'occupancy' }, { dev: 'd_cam', hen: true, name: k }));
+if (q.get('cam') === '2') { dev('d_cam2', 'Oprit', 'woon'); ent('camera.oprit', 'idle', { entity_picture: 'data:,' }, { dev: 'd_cam2', hen: true, name: 'Camera' }); ent('binary_sensor.oprit_voertuig_gedetecteerd', 'off', {}, { dev: 'd_cam2', hen: true, name: 'Voertuig' }); }
 ent('scene.woonkamer_avond', '2026-11-01T18:00:00Z', {}, { name: 'Woonkamer Avond', area: 'woon' });
 ent('person.bewoner', 'home', { user_id: 'u1' }, { name: 'Bewoner', reg: false, fn: 'Bewoner' });
 ent('person.bewoner2', 'werk', {}, { name: 'Bewoner 2', reg: false, fn: 'Bewoner 2' });
@@ -190,6 +193,15 @@ function stat(id, period, t0, t1) {
   return out;
 }
 async function callWS(m) {
+  // v463: camera-detecties: een paar gebeurtenissen per dag (aan/uit), de laatste vandaag
+  if (m.type === 'history/history_during_period' && (m.entity_ids || []).some((id) => /^binary_sensor\.(voordeur|oprit)_/.test(id))) {
+    const res = {}, d0 = new Date(Date.now()); d0.setHours(0, 0, 0, 0);
+    const plan = { persoon_gedetecteerd: [[0, 8.6, 60], [0, 14.28, 42], [1, 9.2, 30], [1, 18.1, 80], [2, 10.5, 20]], voertuig_gedetecteerd: [[1, 7.9, 40], [1, 18.15, 25], [0, 7.1, 30]], pakket_gedetecteerd: [[0, 11.68, 25], [1, 13.4, 30]], deurbel: [[0, 11.66, 18], [3, 16.2, 10]], beweging: [[0, 12.05, 50], [0, 14.27, 60], [1, 21.5, 30], [2, 6.8, 40]] };
+    (m.entity_ids || []).forEach((id) => { const k = id.replace(/^binary_sensor\.(voordeur|oprit)_/, ''); const o = [{ s: 'off', a: {}, lu: (Date.now() - 7 * DAY) / 1000 }];
+      (plan[k] || []).map(([dd, h, sec]) => +d0 - dd * DAY + h * H).filter((t) => t < Date.now()).sort((x, y) => x - y).forEach((t, i) => { const dur = ((plan[k].find(([dd, h]) => Math.abs(+d0 - dd * DAY + h * H - t) < 1000) || [0, 0, 30])[2]) * 1000; o.push({ s: 'on', a: {}, lu: t / 1000 }, { s: 'off', a: {}, lu: (t + dur) / 1000 }); });
+      res[id] = o; });
+    return res;
+  }
   // v461: historie van het weer (temperatuur in de attributen) en van temperatuursensoren, per uur
   if (m.type === 'history/history_during_period') {
     const t0 = new Date(m.start_time).getTime(), t1 = m.end_time ? new Date(m.end_time).getTime() : Date.now(), res = {};
