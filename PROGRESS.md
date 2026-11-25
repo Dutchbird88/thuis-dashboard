@@ -340,6 +340,7 @@
 | v467 | Camerascherm: geen label "Opname …" meer in het beeld; "Terug naar live" staat in de balk naast de tijd (die tijdens het afspelen de tijd van de opname toont). |
 | v468 | Camerascherm: iconen in de app-stijl (persoon blauw, beweging, auto, nieuw: pakket, bel, pootje) in de lijst, de tijdlijn en bij de camera bovenaan. |
 | v469 | Camerascherm: geen "Live"-label meer in het beeld. |
+| v470 | Camerascherm: kop met icoon, naam en Live weg; camerakeuze als ronde kiezer (stijl Energie); camera-icoon uit de balk weg. |
 
 ## Volgende stappen
 

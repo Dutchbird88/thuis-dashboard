@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '469';
+const CARD_VERSION = '470';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5175,7 +5175,9 @@ const CXSTYLE = `
   .cxnm { min-width: 0; } .cxnm b { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxnm small { display: block; color: #8b97ab; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cxlv { margin-left: auto; flex: none; display: flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 99px; background: rgba(79,208,127,.12); border: 1px solid rgba(79,208,127,.35); font-size: 14px; font-weight: 600; }
   .cxlv i, .cxtag i { width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; box-shadow: 0 0 6px #4fd07f; }
-  .cxcams { display: flex; gap: 8px; margin: 0 0 12px; } .cxcams:empty { display: none; } .cxcams button { flex: 1; min-width: 0; padding: 8px 6px; border-radius: 12px; background: #121b2c; color: #a3b0c5; font: inherit; font-size: 13px; font-weight: 600; border: 1px solid rgba(115,155,215,.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxcams button.on { background: #1b2a44; color: #f5f7fc; border-color: rgba(124,182,255,.45); }
+  .cxhd { display: none; } /* v470: kop met icoon, naam en Live weg */
+  .cxcams { display: flex; gap: 2px; padding: 3px; margin: 8px 0 12px; border-radius: 99px; background: rgba(0,0,0,.28); } .cxcams:empty { display: none; } /* v470: zelfde kiezer als Energie (.eseg) */
+  .cxcams button { all: unset; flex: 1; min-width: 0; text-align: center; padding: 8px 4px; border-radius: 99px; color: #8b97ab; font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; } .cxcams button.on { background: rgba(255,255,255,.11); color: #fff; }
   .cxv { display: block; position: relative; border-radius: 20px 20px 0 0; overflow: hidden; border: 1px solid rgba(115,155,215,.28); border-bottom: 0; background: #000; }
   #cFull .cfbig { width: 100%; aspect-ratio: var(--ar, 16 / 9); max-height: 52vh; border-radius: 0; margin: 0; }
   .cxtag { display: none !important; } /* v469: geen Live-label in het beeld (staat al bovenaan en in de balk) */
@@ -5612,7 +5614,7 @@ class ThuisCard extends HTMLElement {
                 <div class="cxhd"><div class="cxav">${RIC.svg('camera', 'on')}</div><div class="cxnm"><b id="cxName"></b><small id="cxSub"></small></div><span class="cxlv"><i></i>Live</span></div>
                 <div class="cxcams" id="cxCams"></div>
                 <div class="cxv"><div class="cfbig" id="cfLive"></div><div class="cxpb" id="cxPb" hidden></div><span class="cxtag" id="cxTag"><i></i>Live</span><button class="cxfs" id="cxFs" aria-label="Volledig scherm">${CXI.full}</button></div>
-                <div class="cxctl"><span id="cxTime"></span><span class="cxlp">Live</span><button class="cxlb" id="cxLiveBack" hidden><i></i>Terug naar live</button><span class="cxsp"></span><button id="cxS" aria-label="Geluid"></button><button id="cxInfo" aria-label="Camera">${CXI.snap}</button></div>
+                <div class="cxctl"><span id="cxTime"></span><span class="cxlp">Live</span><button class="cxlb" id="cxLiveBack" hidden><i></i>Terug naar live</button><span class="cxsp"></span><button id="cxS" aria-label="Geluid"></button></div>
                 <div class="cfrow" id="cfRow"></div>
                 <div class="cxseg" id="cxSeg"><button data-v="ev" class="on">${CXI.play}Gebeurtenissen</button><button data-v="tl">${CXI.cal}Tijdlijn</button><button data-v="f">${CXI.filt}Filter</button></div>
                 <div class="cxf" id="cxF" hidden></div>
@@ -5771,7 +5773,6 @@ class ThuisCard extends HTMLElement {
     this.$('cFull').addEventListener('click', (e) => { if (e.target === this.$('cFull') && !this._mq?.matches) this._closeCam(); }); // v463: op de telefoon is het een scherm (sluiten met ‹ Thuis)
     this.$('cxBack').addEventListener('click', () => this._closeCam());
     this.$('cxS').addEventListener('click', (e) => { e.stopPropagation(); this.$('cfS').click(); });
-    this.$('cxInfo').addEventListener('click', () => { if (this._cfEl?._entity) this._moreInfo(this._cfEl._entity); });
     this.$('cxFs').addEventListener('click', () => { const v = this._videos()[0], b = this.$('cfLive'); try { if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen(); else (v || b).requestFullscreen?.(); } catch (e) { /* niet ondersteund */ } });
     this.$('cxSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v === 'f') { this.$('cxF').hidden = !this.$('cxF').hidden; b.classList.toggle('on', !this.$('cxF').hidden); return; } this._cxView = b.dataset.v; this.$('cxSeg').querySelectorAll('button[data-v="ev"],button[data-v="tl"]').forEach((x) => x.classList.toggle('on', x === b)); this._cxDraw(); });
     this.$('cxF').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this._cxFil = b.dataset.k; this._cxDraw(); });
