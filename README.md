@@ -150,6 +150,15 @@ De Energie-kaart rekent met `prices` (per kWh en m³) en `fixed` (vaste kosten p
 
 Wat in een periode ontbreekt, komt uit `prices` en `fixed`.
 
+### Gas en buitentemperatuur (telefoon)
+
+Bij Dag en Week staat naast het gasverbruik de gemiddelde buitentemperatuur, bij Week ook per dag onder de staven. Bij Maand en Jaar vergelijkt de kaart je gas met dezelfde periode vorig jaar bij hetzelfde weer (graaddagen, zonder het basisverbruik voor douchen en koken), bijvoorbeeld "8% zuiniger bij zelfde weer". De buitentemperatuur zoekt de kaart zelf (Buienradar of een sensor met buiten/outdoor in de naam); geef anders zelf een temperatuursensor op:
+
+```yaml
+- type: custom:verbruik-card
+  outdoor_temp: sensor.buiten_temperatuur
+```
+
 ### Oven (telefoon)
 
 Tijdens het voorverwarmen staat op de ovenkaart "Voorverwarmen" met de huidige en de ingestelde temperatuur (bijvoorbeeld 145° → 200°). Zodra de oven op temperatuur is, staat er "Bakken". De ingestelde temperatuur zoekt de kaart zelf (een instelling in °C van de oven, Home Connect). Lukt dat niet, geef hem dan op:

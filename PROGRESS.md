@@ -330,6 +330,7 @@
 | v457 | Vaatwasser klaar: "Sinds …" toont het echte tijdstip waarop hij klaar was (niet meer de eindtijd-sensor, die na afloop een tijd in de toekomst kon geven). |
 | v458 | Ovenkaart (telefoon): warme oranje gloed, "Voorverwarmen" met 145° → 200° en daarna "Bakken", volledige naam "Boven-/onderwarmte". |
 | v459 | Energie (telefoon): de oranje melding "Hoge piek op je aansluiting" is weg (staat al onderaan); de waterlekmelding blijft. |
+| v460 | Energie (telefoon): gas tegenover buitentemperatuur: Dag/Week "buiten gem. 6°" (Week ook per dag), Maand/Jaar "8% zuiniger bij zelfde weer" (graaddagen, zonder basisverbruik); bij schuiven de temperatuur van die dag. |
 
 ## Volgende stappen
 
