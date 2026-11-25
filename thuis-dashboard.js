@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '465';
+const CARD_VERSION = '466';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5188,7 +5188,7 @@ const CXSTYLE = `
   .cxic { display: grid; place-items: center; color: #c9d3e3; } .cxic svg { width: 22px; height: 22px; } .cxic.p { color: #7cb6ff; } .cxic.b { color: #ffcf7a; }
   .cxev b { display: block; font-size: 15px; font-weight: 600; } .cxev small { display: block; color: #8b97ab; font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxev em { font-style: normal; color: #dde4ee; font-size: 14px; font-variant-numeric: tabular-nums; }
   .cxpb { position: absolute; inset: 0; background: #000; z-index: 2; } .cxpb[hidden] { display: none; } .cxpb video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
-  .cxpe { position: absolute; inset: 0; display: grid; place-items: center; color: #a3b0c5; font-size: 14px; padding: 20px; text-align: center; }
+  .cxpe { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; color: #c9d3e3; font-size: 14px; padding: 20px; text-align: center; line-height: 1.5; } .cxpe small { color: #8b97ab; font-size: 12px; }
   .cxrec .cxlp { display: none; } .cxtag { z-index: 3; } .cxtag.rec i { background: #ffcf7a; box-shadow: none; }
   .cxlb { position: absolute; right: 10px; top: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 99px; border: 0; background: rgba(245,247,252,.92); color: #111827; font: inherit; font-size: 13px; font-weight: 600; } .cxlb[hidden] { display: none; } .cxlb i { width: 8px; height: 8px; border-radius: 50%; background: #2fb36a; }
   .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxpi svg { width: 12px; height: 12px; margin-left: 1px; }
@@ -5769,7 +5769,7 @@ class ThuisCard extends HTMLElement {
     this.$('cxFs').addEventListener('click', () => { const v = this._videos()[0], b = this.$('cfLive'); try { if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen(); else (v || b).requestFullscreen?.(); } catch (e) { /* niet ondersteund */ } });
     this.$('cxSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v === 'f') { this.$('cxF').hidden = !this.$('cxF').hidden; b.classList.toggle('on', !this.$('cxF').hidden); return; } this._cxView = b.dataset.v; this.$('cxSeg').querySelectorAll('button[data-v="ev"],button[data-v="tl"]').forEach((x) => x.classList.toggle('on', x === b)); this._cxDraw(); });
     this.$('cxF').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this._cxFil = b.dataset.k; this._cxDraw(); });
-    this.$('cxBody').addEventListener('click', (e) => { const r = e.target.closest('.cxev.pl'); if (r) this._cxPlay(this._cxRows?.[+r.dataset.i]); });
+    this.$('cxBody').addEventListener('click', (e) => { const r = e.target.closest('.cxev'); if (!r) return; const ev = this._cxRows?.[+r.dataset.i]; if (ev?.cid) this._cxPlay(ev); });
     this.$('cxLiveBack').addEventListener('click', () => this._cxStop(true));
     if (!this._rootClick) { this._rootClick = true; this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open')); }
     this._camEl = null; this._camId = null; this._lightKey = null; this._pplKey = null; this._binKey = null; this._thumbKey = null;
@@ -6320,14 +6320,22 @@ class ThuisCard extends HTMLElement {
   // v465: opname van een gebeurtenis afspelen in het grote beeld (UniFi Protect via media_source/resolve_media); het live beeld pauzeert
   async _cxPlay(e) {
     if (!e?.cid) return;
-    let url;
-    try { const r = await this._hass.callWS({ type: 'media_source/resolve_media', media_content_id: e.cid }); url = r?.url; } catch (x) { url = null; }
     const pb = this.$('cxPb'); if (!pb) return;
-    if (!url) { pb.hidden = false; pb.innerHTML = '<div class="cxpe">Deze opname kan niet worden afgespeeld.</div>'; }
+    pb.hidden = false; pb.innerHTML = '<div class="cxpe">Opname laden…</div>';
+    // v466: eerst het adres opvragen (UniFi geeft een ondertekend adres terug), dan afspelen; lukt iets niet, dan de reden tonen in plaats van niets
+    let url, why = '';
+    try { const r = await this._hass.callWS({ type: 'media_source/resolve_media', media_content_id: e.cid, expires: 3600 }); url = r?.url; if (!url) why = 'geen adres ontvangen'; }
+    catch (x) { why = String(x?.message || x?.code || x || 'onbekende fout').slice(0, 120); }
+    if (this._cxPlaying && this._cxPlaying !== e.cid && pb.hidden) return;
+    if (!url) { pb.innerHTML = `<div class="cxpe">Deze opname kan niet worden afgespeeld<br><small>${cxEsc(why)}</small></div>`; console.warn('thuis-card: opname niet op te vragen', why); }
     else {
-      pb.hidden = false;
-      pb.innerHTML = `<video src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(url) : url)}" controls autoplay playsinline></video>`;
-      const v = pb.querySelector('video'); v.muted = !this._cfSound; v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
+      const src = /^https?:/.test(url) ? url : this._hass.hassUrl ? this._hass.hassUrl(url) : url;
+      pb.innerHTML = '<video controls autoplay playsinline webkit-playsinline preload="auto"></video>';
+      const v = pb.querySelector('video');
+      v.muted = !this._cfSound; v.setAttribute('muted', ''); if (this._cfSound) v.removeAttribute('muted');
+      v.addEventListener('error', () => { const c = v.error?.code; pb.innerHTML = `<div class="cxpe">De opname laadt niet${c ? ` (code ${c})` : ''}<br><small>Probeer het nog eens of open de UniFi-app</small></div>`; console.warn('thuis-card: opname laadt niet', c); });
+      v.src = src; v.load?.();
+      v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
     }
     this._videos().forEach((v) => { try { v.pause(); } catch (x) { /* */ } }); // live beeld pauzeren
     this._cxPlaying = e.cid;

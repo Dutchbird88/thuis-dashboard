@@ -336,6 +336,7 @@
 | v463 | Camerascherm op de telefoon: live beeld met wisselen tussen camera's, en de gebeurtenissen van 7 dagen (persoon, auto, pakket, aanbellen, dier, beweging) als lijst of tijdlijn, met filter. |
 | v464 | Camerascherm: plaatjes per gebeurtenis uit UniFi Protect (via de media-browser van HA); zonder plaatje één icoon. |
 | v465 | Camerascherm: tik op een gebeurtenis speelt de opname van UniFi af in het grote beeld, met "Terug naar live". |
+| v466 | Camerascherm: afspelen robuuster (adres met geldigheid, video pas daarna laden) en een melding met de reden als een opname niet afspeelt. |
 
 ## Volgende stappen
 
