@@ -197,12 +197,7 @@ Het logo wordt van internet geladen (standaard de vierkante logo's van Google Fl
 
 ### Camera's (telefoon)
 
-Tik op de camera op Thuis: er opent een venster met het live beeld, een kiezer voor de camera's en **Recent** (de laatste 5 gebeurtenissen van alle camera's samen). Het klokje linksboven toont de geschiedenis van de gekozen camera (7 dagen). Bij UniFi Protect staat onderaan "Alles in Protect"; die opent de website van UniFi. De Protect-app zelf openen (`unifi-protect://`) lukt niet vanuit de Home Assistant-app op de iPhone: die houdt zulke links tegen. Een ander adres kan wel:
-
-```yaml
-type: custom:thuis-card
-protect_url: https://unifi.ui.com
-```
+Tik op de camera op Thuis: er opent een venster met het live beeld, een kiezer voor de camera's en **Recent** (de laatste 5 gebeurtenissen van alle camera's samen). Het klokje linksboven toont de geschiedenis van de gekozen camera (7 dagen). Bij UniFi Protect staat onderaan de hint "Bekijk de volledige historie in de Protect-app".
 
 ### Kamers
 

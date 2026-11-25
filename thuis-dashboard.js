@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '475';
+const CARD_VERSION = '476';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5188,7 +5188,7 @@ const CXSTYLE = `
   .cxhh { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 16px 4px; } .cxhh b { font-size: 16px; font-weight: 700; } .cxhh span { color: #8b97ab; font-size: 13px; }
   .cxrc .cxev { margin: 0; border: 0; border-radius: 0; background: none; padding: 9px 14px 9px 10px; } .cxrc .cxev + .cxev { border-top: 1px solid rgba(115,155,215,.12); } .cxrc .cxth { height: 50px; } .cxrc .cxev.n { background: linear-gradient(90deg, rgba(52,136,244,.14), transparent); } .cxrc .cxev.on { box-shadow: inset 3px 0 0 #ffcf7a; }
   .cxrc .cxnone { margin: 10px 16px 16px; text-align: left; }
-  .cxpro { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 16px; border-top: 1px solid rgba(115,155,215,.12); color: #7cb6ff; font-size: 15px; font-weight: 600; } .cxpro svg { width: 18px; height: 18px; }
+  .cxpro { padding: 12px 16px 13px; border-top: 1px solid rgba(115,155,215,.12); color: #8b97ab; font-size: 13px; text-align: center; } /* v476: alleen een hint, geen link (de HA-app opent geen andere apps) */
   #cFull.cxh .cxti, #cFull.cxh .cxcams, #cFull.cxh .cxv, #cFull.cxh .cxctl, #cFull.cxh .cxhb { display: none; } /* v471: geschiedenis zoals bij beweging */
   .cxhist .hh { margin-top: 2px; } .cxhist .mostrip { height: 24px; border-radius: 7px; } .cxhist .molog { margin-top: 10px; } .cxhist .mostrip i { width: 3px; margin-left: -1px; border-radius: 1px; }
   .cxhist .molog div[data-i] { cursor: pointer; } .cxhist .molog span svg { width: 12px; height: 12px; margin-left: 6px; vertical-align: -1px; color: #7cb6ff; }
@@ -5774,7 +5774,6 @@ class ThuisCard extends HTMLElement {
     this.$('cxFs').addEventListener('click', () => { const v = this._videos()[0], b = this.$('cfLive'); try { if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen(); else (v || b).requestFullscreen?.(); } catch (e) { /* niet ondersteund */ } });
     this.$('cxBody').addEventListener('click', async (e) => {
       if (e.target.closest('#cxHBack')) { this._cxHistOn = false; this.$('cFull').classList.remove('cxh'); this._cxDraw(); return; }
-      if (e.target.closest('.cxpro')) return; // v475: gewone link (target=_blank); de iOS-app van HA vangt eigen schema's als unifi-protect:// zelf af, dus standaard de website
       const r = e.target.closest('[data-i]'); if (!r) return; const ev = this._cxRows?.[+r.dataset.i]; if (!ev) return;
       if (this._cxHistOn) { this._cxHistOn = false; this.$('cFull').classList.remove('cxh'); }
       if (ev.cam && ev.cam !== this._cxId) await this._openCam(ev.cam); // gebeurtenis van een andere camera: eerst naar die camera
@@ -6339,8 +6338,8 @@ class ThuisCard extends HTMLElement {
     const cls = (k) => (k === 'bell' ? 'b' : k === 'person' || k === 'box' ? 'p' : '');
     const rows = ev.map((e, i) => `<div class="cxev${i === 0 && now - e.t < 3600000 ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${this._cxRows.push(e) - 1}"><div class="cxth">${img(e)}${e.cid ? `<b class="cxpi">${PL}</b>` : ''}</div><span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc([ids.length > 1 ? cn(e.cam) : this._hass?.areas?.[(this._hass?.devices?.[this._hass?.entities?.[e.cam]?.device_id] || {}).area_id]?.name, dur(e)].filter(Boolean).join(' · '))}</small></div><em>${when(e.t)}</em></div>`).join('');
     const none = ids.every((id) => C[id]?.none) ? (ids.length > 1 ? "Deze camera's geven geen detecties door aan Home Assistant." : 'Deze camera geeft geen detecties door aan Home Assistant.') : loading ? 'Gebeurtenissen laden…' : 'Geen gebeurtenissen in de afgelopen 7 dagen.';
-    const ufp = this._config.protect_url || ids.some((id) => this._hass?.entities?.[id]?.platform === 'unifiprotect');
-    body.innerHTML = `<div class="cxrc"><div class="cxhh"><b>Recent</b><span>${ids.length > 1 ? "Alle camera's" : 'Laatste 5'}</span></div>${rows || `<div class="cxnone">${none}</div>`}${ufp ? `<a class="cxpro" href="${cxEsc(this._config.protect_url || 'https://unifi.ui.com')}" target="_blank" rel="noopener">Alles in Protect<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></svg></a>` : ''}</div>`;
+    const ufp = ids.some((id) => this._hass?.entities?.[id]?.platform === 'unifiprotect');
+    body.innerHTML = `<div class="cxrc"><div class="cxhh"><b>Recent</b><span>${ids.length > 1 ? "Alle camera's" : 'Laatste 5'}</span></div>${rows || `<div class="cxnone">${none}</div>`}${ufp ? '<div class="cxpro">Bekijk de volledige historie in de Protect-app</div>' : ''}</div>`;
   }
 
   // v465: opname van een gebeurtenis afspelen in het grote beeld (UniFi Protect via media_source/resolve_media); het live beeld pauzeert
