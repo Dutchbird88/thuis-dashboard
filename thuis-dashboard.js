@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '461';
+const CARD_VERSION = '462';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2646,7 +2646,7 @@ class VerbruikCard extends HTMLElement {
     if (this.$('eBase')) {
       this.$('eBase').textContent = base == null ? '—' : `${fmt(base)} W`;
       this.$('ePk').textContent = pkPct == null ? '—' : `${fmt(pkPct * 100)}%`;
-      const al = [leak && 'Mogelijk waterlek vannacht'].filter(Boolean); // v459: hoge piek niet meer als melding (staat al onderaan bij Aansluiting)
+      const al = []; // v462: geen oranje meldingen meer op Energie (v459 piek, v462 waterlek; gebruiker)
       this.$('eAl').style.display = al.length ? '' : 'none'; this.$('eAlT').textContent = al.join(' · ');
     }
     set('watchNote', issues ? `<span style="color:var(--sun)">${issues} aandachtspunt${issues > 1 ? 'en' : ''}</span>` : 'alles in orde');
@@ -2775,7 +2775,7 @@ class VerbruikCard extends HTMLElement {
     const ok = (v, cap) => (v == null || v < 0 || v > cap ? 0 : v);
     const out = { per, off, R, tot: {} };
     // v460: buitentemperatuur (gemiddelde per uur bij Dag, per dag anders)
-    const TID = per === 'nu' ? null : this._tempId(), tday = new Map(), thour = new Map();
+    const TID = per === 'nu' || per === 'dag' ? null : this._tempId() /* v462: bij Dag geen temperatuur meer */, tday = new Map(), thour = new Map();
     if (TID) try {
       const isWx = TID.startsWith('weather.'), tr = isWx ? {} : await this._egStat([TID], per === 'dag' ? 'hour' : 'day', R.x0, Math.min(R.x1, now));
       for (const x of tr[TID] || []) if (x.mean != null) (per === 'dag' ? thour : tday).set(per === 'dag' ? ts(x.start) : startOfDay(ts(x.start)), x.mean);
@@ -2902,9 +2902,8 @@ class VerbruikCard extends HTMLElement {
     this.$('eLs').textContent = '';
     this.$('eEs').textContent = pi != null ? eur((d.parts || []).reduce((s, p) => s + p.i * (this._price('import', p.t) ?? 0) - p.x * (this._price('export', p.t) ?? 0), 0)) : '';
     this.$('eVg').innerHTML = `<span style="color:${EG.g}">${fmt(g, g >= 100 ? 0 : 2)}</span><small>m³</small>`;
-    // v460: Dag/Week de gemiddelde buitentemperatuur; Maand/Jaar het verschil met vorig jaar bij hetzelfde weer (graaddagen)
-    const gc = d.gcmp, per = d.per;
-    this.$('eLg').innerHTML = (per === 'maand' || per === 'jaar') && gc != null ? `${Math.abs(gc) < 0.05 ? 'Gas gelijk aan vorig jaar bij zelfde weer' : `<b style="color:${gc < 0 ? '#6EE7A0' : '#fbbf6a'};font-weight:600">${Math.round(Math.abs(gc) * 100)}% ${gc < 0 ? 'zuiniger' : 'meer'}</b> bij zelfde weer`}` : `Gas ${nm}${d.tavg != null && per !== 'nu' ? ` · buiten gem. ${fmt(Math.round(d.tavg))}°` : ''}`; // past op één regel: zonder "Gas" (het icoon zegt het al)
+    // v462: kop zonder temperatuur en zonder vergelijking (gebruiker: te veel informatie); bij Dag geen tekst onder het getal
+    this.$('eLg').textContent = d.per === 'dag' ? '' : `Gas ${nm}`;
     this.$('eEg').textContent = pg != null ? eur(g * pg) : '';
     const m3 = d.unitW === 'm³';
     this.$('eVw').innerHTML = `<span style="color:${EG.w}">${m3 ? fmt(w, 1) : fmt(w * 1000)}</span><small>${m3 ? 'm³' : 'L'}</small>`;
@@ -3001,7 +3000,7 @@ class VerbruikCard extends HTMLElement {
       x = g.X(p.t); y = g.Y(p.v);
       const tm = p.live ? 'nu' : fmtTime(p.t0 ?? p.t);
       if (u === 's') head = blk(p.v < 0 ? EG.e : EG.s, fmt(Math.abs(p.v)), 'W', `${p.v < 0 ? '↑ teruggeleverd' : '↓ van het net'} · ${tm}`);
-      else { head = `<span style="color:${colr}">${fmt(p.v, 2)}</span><small>m³</small>`; lab = `${tm} · per ${spec.slot >= HOUR ? 'uur' : '5 minuten'}${p.tmp != null ? ` · ${fmt(Math.round(p.tmp))}° buiten` : ''}`; }
+      else { head = `<span style="color:${colr}">${fmt(p.v, 2)}</span><small>m³</small>`; lab = `${tm} · per ${spec.slot >= HOUR ? 'uur' : '5 minuten'}`; }
       cur.querySelector('circle').setAttribute('fill', u === 's' && p.v < 0 ? EG.e : colr);
     } else {
       const n = spec.items.length, k = clamp(Math.floor(xs / ((g.W - 46) / n)), 0, n - 1), it = spec.items[k];
@@ -3036,7 +3035,6 @@ class VerbruikCard extends HTMLElement {
   // v452: het kostenblok onderaan volgt de periodekiezer (vandaag, deze week, november, 2026 …), met vergelijking t.o.v. dezelfde periode vorig jaar
   _egCostBlock() {
     const d = this._egD; if (!this.$('eMt') || !d) return;
-    this._egGasCmp();
     const now = Date.now(), R = d.R, per = d.per, cur = R.x1 > now;
     const eur = (v) => `€ ${fmt(v, v < 100 ? 2 : 0)}`;
     const days = Math.max(0, Math.min(R.x1, now) - (per === 'nu' ? now - HOUR : R.x0)) / DAY;
@@ -3059,28 +3057,6 @@ class VerbruikCard extends HTMLElement {
     const parts = [[c.e, EG.s, 'Stroom'], ...(pg != null ? [[c.g, EG.g, 'Gas']] : []), ...(pw != null ? [[c.w, EG.w, 'Water']] : [])];
     this.$('eMb').innerHTML = c.tot > 0 ? parts.map(([v, col]) => (v > 0 ? `<i style="width:${(v / c.tot) * 100}%;background:${col}"></i>` : '')).join('') : '';
     this.$('eMl').innerHTML = parts.map(([v, col, n]) => `<span><i style="background:${col}"></i>${n} ${eur(v)}</span>`).join('') + '<span class="ch"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>';
-  }
-
-  // v460: gas per graaddag (18°) tegenover dezelfde periode vorig jaar, zonder het basisverbruik (douchen, koken: zomergemiddelde per dag)
-  async _egGasCmp() {
-    const d = this._egD, per = d?.per; if (!d || (per !== 'maand' && per !== 'jaar') || !d.tday?.size) return;
-    const gNow = d.tot.g, gLy = per === 'maand' && !d.off ? this._egLy?.g : d.ly?.g; if (gNow == null || gLy == null) return;
-    const TID = this._tempId(), key = d.key, now = Date.now(), end = Math.min(d.R.x1, now), sh = (t) => { const x = new Date(t); x.setFullYear(x.getFullYear() - 1); return x.getTime(); };
-    const c = (this._egTlyC ||= {}); let tly = c[key];
-    if (!tly || now - tly.at > 3600000) {
-      if (c[key]?.busy) return; c[key] = { busy: true };
-      try { const r = await this._egStat([TID], 'day', sh(d.R.x0), sh(end)); tly = c[key] = { at: Date.now(), v: (r[TID] || []).map((x) => x.mean).filter((v) => v != null) }; } catch (e) { delete c[key]; return; }
-    }
-    const hdd = (arr) => arr.reduce((a, m) => a + Math.max(0, 18 - m), 0), hNow = hdd([...d.tday.values()]), hLy = hdd(tly.v);
-    const kh = this._egKh?.[this._config.gas], days = (end - d.R.x0) / DAY;
-    const sum = kh ? [...kh].filter(([t]) => [5, 6, 7].includes(new Date(t).getMonth()) && t < startOfDay(now) - 31 * DAY) : [];
-    const base = sum.length ? sum.reduce((a, [t, v]) => a + v / new Date(new Date(t).getFullYear(), new Date(t).getMonth() + 1, 0).getDate(), 0) / sum.length : 0;
-    const heatNow = gNow - base * days, heatLy = gLy - base * days;
-    let v = hNow >= 15 && hLy >= 15 && heatLy > 0 && heatNow >= 0 ? (heatNow / hNow) / (heatLy / hLy) - 1 : null;
-    if (v != null && Math.abs(v) > 0.6) v = null; // onwaarschijnlijk groot verschil (vakantie, ontbrekende gegevens): niets tonen
-    if (this._egD?.key !== key || this._egD.gcmp === v) return;
-    this._egD.gcmp = v;
-    if (!this.shadowRoot.querySelector('.ecw.scrub')) this._egHead();
   }
 
   // verbruik in dezelfde periode vorig jaar (dag/week: 52 weken terug, zelfde weekdag; maand/jaar: zelfde datum); null zonder gegevens
