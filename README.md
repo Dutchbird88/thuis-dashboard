@@ -152,7 +152,7 @@ Wat in een periode ontbreekt, komt uit `prices` en `fixed`.
 
 ### Gas en buitentemperatuur (telefoon)
 
-Bij Dag en Week staat naast het gasverbruik de gemiddelde buitentemperatuur, bij Week ook per dag onder de staven. Bij Maand en Jaar vergelijkt de kaart je gas met dezelfde periode vorig jaar bij hetzelfde weer (graaddagen, zonder het basisverbruik voor douchen en koken), bijvoorbeeld "8% zuiniger bij zelfde weer". De buitentemperatuur zoekt de kaart zelf (Buienradar of een sensor met buiten/outdoor in de naam); geef anders zelf een temperatuursensor op:
+Bij Dag en Week staat naast het gasverbruik de gemiddelde buitentemperatuur, bij Week ook per dag onder de staven. Bij Maand en Jaar vergelijkt de kaart je gas met dezelfde periode vorig jaar bij hetzelfde weer (graaddagen, zonder het basisverbruik voor douchen en koken), bijvoorbeeld "8% zuiniger bij zelfde weer". De buitentemperatuur zoekt de kaart zelf: een temperatuursensor van Buienradar of met buiten/outdoor in de naam, en anders het weer van Home Assistant (dan alleen voor de laatste 10 dagen, dus zonder vergelijking met vorig jaar). Een eigen sensor (of weer-entiteit) kan ook:
 
 ```yaml
 - type: custom:verbruik-card

@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '460';
+const CARD_VERSION = '461';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2292,9 +2292,16 @@ class VerbruikCard extends HTMLElement {
   // v460: buitentemperatuur (met langetermijnstatistiek): outdoor_temp, anders Buienradar of een sensor met buiten/outdoor in de naam
   _tempId() {
     if (this._config.outdoor_temp) return this._config.outdoor_temp;
-    const S = this._hass?.states || {}, ok = (k) => k.startsWith('sensor.') && S[k].attributes?.device_class === 'temperature' && S[k].attributes?.state_class === 'measurement';
-    const ks = Object.keys(S).filter(ok);
-    return ks.find((k) => /buienradar/i.test(k)) || ks.find((k) => /outdoor|outside|buiten/i.test(k)) || null;
+    // v461: ook zonder state_class (Buienradar zet die niet altijd); nooit gevoels-, grond- of dauwpunttemperatuur of een verwachting
+    const S = this._hass?.states || {}, E = this._hass?.entities || {};
+    const ok = (k) => k.startsWith('sensor.') && (S[k].attributes?.device_class === 'temperature' || /°C|°F/.test(S[k].attributes?.unit_of_measurement || '')) && !isNaN(parseFloat(S[k].state))
+      && !/feel|gevoel|ground|grond|dauw|dew|wind|chill|heat_?index|min|max|forecast|verwacht|_\d+d\b|apparent|water|binnen|indoor|cpu|oven|koelkast|vriezer/i.test(k);
+    const ks = Object.keys(S).filter(ok), br = ks.filter((k) => E[k]?.platform === 'buienradar' || /buienradar/i.test(k));
+    const sen = br.find((k) => /_(temperature|temperatuur)$/i.test(k)) || br[0] || ks.find((k) => /outdoor|outside|buiten/i.test(k));
+    if (sen) return sen;
+    // v461: anders het weer van HA zelf (temperatuur uit de attributen van de weer-entiteit, Buienradar eerst)
+    const wx = Object.keys(S).filter((k) => k.startsWith('weather.') && S[k].attributes?.temperature != null);
+    return wx.find((k) => /buienradar/i.test(k) || E[k]?.platform === 'buienradar') || wx[0] || null;
   }
   _tar(t = Date.now()) { const L = this._tarL; if (!L?.length) return null; let r = L[0]; for (const x of L) if (x.t <= t) r = x; return r; }
   _price(k, t) { return this._tar(t)?.[k] ?? this._config.prices[k] ?? this._prefPrices[k] ?? null; }
@@ -2770,10 +2777,23 @@ class VerbruikCard extends HTMLElement {
     // v460: buitentemperatuur (gemiddelde per uur bij Dag, per dag anders)
     const TID = per === 'nu' ? null : this._tempId(), tday = new Map(), thour = new Map();
     if (TID) try {
-      const tr = await this._egStat([TID], per === 'dag' ? 'hour' : 'day', R.x0, Math.min(R.x1, now));
+      const isWx = TID.startsWith('weather.'), tr = isWx ? {} : await this._egStat([TID], per === 'dag' ? 'hour' : 'day', R.x0, Math.min(R.x1, now));
       for (const x of tr[TID] || []) if (x.mean != null) (per === 'dag' ? thour : tday).set(per === 'dag' ? ts(x.start) : startOfDay(ts(x.start)), x.mean);
+      // v461: geen langetermijnstatistiek (sensor zonder state_class)? Dan uit de gewone historie (HA bewaart die standaard 10 dagen)
+      if (!thour.size && !tday.size && Math.min(R.x1, now) - R.x0 <= 40 * DAY) {
+        const h = await this._ws({ type: 'history/history_during_period', start_time: new Date(R.x0).toISOString(), end_time: new Date(Math.min(R.x1, now)).toISOString(), entity_ids: [TID], minimal_response: !isWx, no_attributes: !isWx, significant_changes_only: false }, 20000);
+        const bk = new Map(), key = (t) => (per === 'dag' ? Math.floor(t / HOUR) * HOUR : startOfDay(t));
+        let la = null; // weer: de temperatuur staat in de attributen (bij een korte rij alleen bij de eerste regel)
+        for (const x of h[TID] || []) { const at = x.a ?? x.attributes; if (at?.temperature != null) la = at.temperature; const v = parseFloat(isWx ? la : x.s ?? x.state), t = x.lu != null ? x.lu * 1000 : ts(x.last_updated || x.last_changed); if (isNaN(v) || t == null) continue; const k = key(Math.max(t, R.x0)), e = bk.get(k) || [0, 0]; e[0] += v; e[1]++; bk.set(k, e); }
+        for (const [k, [sm, n]] of bk) (per === 'dag' ? thour : tday).set(k, sm / n);
+      }
     } catch (e) { /* geen temperatuur */ }
-    const tv = [...(per === 'dag' ? thour : tday).values()]; out.tavg = tv.length ? tv.reduce((a, b) => a + b, 0) / tv.length : null; out.tday = tday;
+    if (TID && (R.x1 > now) && !(per === 'dag' ? thour : tday).has(per === 'dag' ? Math.floor(now / HOUR) * HOUR : startOfDay(now))) {
+      const cs = this._hass.states[TID], cv = parseFloat(TID.startsWith('weather.') ? cs?.attributes?.temperature : cs?.state);
+      if (!isNaN(cv)) (per === 'dag' ? thour : tday).set(per === 'dag' ? Math.floor(now / HOUR) * HOUR : startOfDay(now), cv);
+    }
+    const tv = [...(per === 'dag' ? thour : tday).values()], span = (Math.min(R.x1, now) - R.x0) / (per === 'dag' ? HOUR : DAY);
+    out.tavg = tv.length && tv.length >= Math.min(span, 7) * 0.5 ? tv.reduce((a, b) => a + b, 0) / tv.length : null; out.tday = tday; // v461: gemiddelde alleen als er genoeg dagen (of uren) zijn
     if (per === 'nu' || per === 'dag') {
       const a = per === 'nu' ? now - HOUR - 5 * 60000 : R.x0, b = Math.min(R.x1, now);
       let slot = 5 * 60000, r = await this._egStat([I, X, G, Wt, P], '5minute', a, b);
@@ -2952,7 +2972,7 @@ class VerbruikCard extends HTMLElement {
       s += `<defs><linearGradient id="a${q}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colr}"/><stop offset="1" stop-color="${colr}" stop-opacity=".55"/></linearGradient><linearGradient id="b${q}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${EG.e}"/><stop offset="1" stop-color="${EG.e}" stop-opacity=".55"/></linearGradient></defs>`;
       spec.items.forEach((it, k) => {
         const x = k * bw + g / 2, a = spec.mode === 'bars2' ? it.a : it.v;
-        const fi = spec.first || 0, near = !sub && spec.todayI >= 0 && k !== spec.todayI && Math.abs(k - spec.todayI) < Math.max(2, spec.every - 2);
+        const fi = spec.first || 0, near = spec.every > 1 && spec.todayI >= 0 && k !== spec.todayI && Math.abs(k - spec.todayI) < Math.max(2, spec.every - 2); // v461: bij Week (elke dag een label) alle dagen tonen
         if ((k >= fi && (k - fi) % spec.every === 0 && !near) || k === spec.todayI) s += `<text x="${X(k).toFixed(1)}" y="${H - 5 - (sub ? 14 : 0)}" text-anchor="middle"${k === spec.todayI ? ' style="fill:#fff;font-weight:700"' : ''}>${it.lab}</text>`;
         if (sub && it.tmp != null) s += `<text x="${X(k).toFixed(1)}" y="${H - 5}" text-anchor="middle" style="fill:#8fb8e0">${fmt(Math.round(it.tmp))}°</text>`;
         if (a == null) { s += `<rect x="${x.toFixed(1)}" y="${(y0 - 1.5).toFixed(1)}" width="${w.toFixed(1)}" height="3" rx="1.5" fill="rgba(255,255,255,.08)"/>`; return; }

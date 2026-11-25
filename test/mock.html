@@ -190,6 +190,12 @@ function stat(id, period, t0, t1) {
   return out;
 }
 async function callWS(m) {
+  // v461: historie van het weer (temperatuur in de attributen) en van temperatuursensoren, per uur
+  if (m.type === 'history/history_during_period') {
+    const t0 = new Date(m.start_time).getTime(), t1 = m.end_time ? new Date(m.end_time).getTime() : Date.now(), res = {};
+    (m.entity_ids || []).filter((id) => /^weather\.|temperat/.test(id)).forEach((id) => { const o = []; for (let t = t0; t < t1; t += H) { const v = +(7 + 5 * Math.sin(t / 4e8) + 2 * Math.sin(t / 7e7)).toFixed(1); o.push(id.startsWith('weather.') ? { s: 'cloudy', a: { temperature: v }, lu: t / 1000 } : { s: String(v), lu: t / 1000 }); } res[id] = o; });
+    return res;
+  }
   if (m.type === 'recorder/statistics_during_period') {
     const t0 = new Date(m.start_time).getTime(), t1 = m.end_time ? new Date(m.end_time).getTime() : Date.now(), res = {};
     (m.statistic_ids || []).forEach((id) => { res[id] = stat(id, m.period, t0, t1); }); return res;
