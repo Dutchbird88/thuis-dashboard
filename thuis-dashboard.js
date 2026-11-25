@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '478';
+const CARD_VERSION = '479';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5501,7 +5501,8 @@ class ThuisCard extends HTMLElement {
   connectedCallback() {
     THEME_CARDS.add(this); chromeApply?.(); // bovenbalk direct in de kleur van de app (v265)
     setTimeout(() => hideScrollbars(this), 300); setTimeout(() => hideScrollbars(this), 2000);
-    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); this._updBday(); this._updFlight(); }, 10000);
+    this._tick = setInterval(() => { this._clock(); this._thumbs(); this._updAppliances(); this._updPicnic(); this._updMedia(); this._carRefresh(); this._camWatch(); this._updBday(); this._updFlight(); this._cxPrefetch(); }, 10000);
+    setTimeout(() => this._cxPrefetch(), 3000); // v479: camera-gebeurtenissen en plaatjes alvast laden
     if (!this._carVis) { this._carVis = () => { if (document.visibilityState === 'visible') { setTimeout(() => this._carRefresh(true), 800); clearTimeout(this._camVt); this._camVt = setTimeout(() => { if (this._camEl && !this._camEl._snap && !this._camPlaying(this._camEl)) this._camRestart(0); }, 3000); } }; document.addEventListener('visibilitychange', this._carVis); }
     setTimeout(() => this._carRefresh(true), 1500);
     this._htimer = setInterval(() => this._fetchAgenda(), 5 * 60000);
@@ -6213,6 +6214,12 @@ class ThuisCard extends HTMLElement {
       if (v?.videoWidth) clearInterval(this._cfPoll);
     }, 1000);
   }
+  // v479: gebeurtenissen en plaatjes op de achtergrond laden (bij het starten en elke 5 min), zodat het cameravenster meteen vol staat
+  _cxPrefetch() {
+    if (!this._mq?.matches || !this._hass || document.hidden || Date.now() - (this._cxPre || 0) < 300000) return;
+    this._cxPre = Date.now();
+    this._cameraIds().forEach((c) => this._cxLoad(c).catch(() => {}));
+  }
   // v463: camerascherm (telefoon): kop, camera's, klok en gebeurtenissen
   _cxOpen(id, ids, nm) {
     if (this._cxId !== id) this._cxStop(false);
@@ -6258,6 +6265,8 @@ class ThuisCard extends HTMLElement {
       const smart = ev.filter((e) => e.kind !== 'move'), out = ev.filter((e) => e.kind !== 'move' || !smart.some((m) => m.t - 30000 <= (e.end ?? Date.now()) && (m.end ?? Date.now()) + 30000 >= e.t)); // overlappen (met 30 s marge)
       out.sort((a, b) => b.t - a.t);
       this._cxC[id] = { at: Date.now(), sig, ev: out.filter((e, i) => !out.slice(0, i).some((o) => o.kind === e.kind && Math.abs(o.t - e.t) < 20000)) };
+      const old = new Map((c?.ev || []).filter((e) => e.src || e.cid).map((e) => [e.kind + e.t, e])); // v479: al geladen plaatjes meteen houden (geen knipperen bij verversen)
+      this._cxC[id].ev.forEach((e) => { const o = old.get(e.kind + e.t); if (o) { e.src ||= o.src; e.cid ||= o.cid; } });
     } catch (e) { this._cxC[id] = { at: Date.now(), sig, ev: [], err: true }; }
     if (this._cxId) this._cxDraw();
     this._cxUfp(id, this._cxC[id].ev).catch(() => {}); // v464: plaatjes uit UniFi Protect
@@ -6276,15 +6285,21 @@ class ThuisCard extends HTMLElement {
       const br = (cid) => this._hass.callWS({ type: 'media_source/browse_media', media_content_id: cid });
       const kids = (n) => n?.children || [];
       const findCam = (arr) => arr.find((c) => String(c.title || '').toLowerCase().trim() === want) || arr.find((c) => String(c.title || '').toLowerCase().includes(want));
+      // v479: de map "Last 7 Days" per camera onthouden (localStorage thuis-ufp-pad): daarna 1 opvraging in plaats van 5
+      let P = {}; try { P = JSON.parse(localStorage.getItem('thuis-ufp-pad') || '{}'); } catch (e) { /* */ }
       try {
-        const root = await br('media-source://unifiprotect');
-        let cam = findCam(kids(root));
-        if (!cam) for (const n of kids(root).slice(0, 3)) { if (!n.can_expand) continue; cam = findCam(kids(await br(n.media_content_id))); if (cam) break; }
         let leaf = [];
-        if (cam) {
-          const r1 = await br(cam.media_content_id), all = kids(r1).find((c) => /:all$/.test(c.media_content_id) || /^(all|alle)/i.test(c.title || '')) || kids(r1)[0];
-          const r2 = all ? await br(all.media_content_id) : null, rng = kids(r2).find((c) => /recent:7$/.test(c.media_content_id) || /\b7\b/.test(c.title || '')) || kids(r2)[0];
-          leaf = rng ? kids(await br(rng.media_content_id)) : [];
+        if (P[id]) leaf = kids(await br(P[id]).catch(() => null));
+        if (!leaf.length) {
+          const root = await br('media-source://unifiprotect');
+          let cam = findCam(kids(root));
+          if (!cam) for (const n of kids(root).slice(0, 3)) { if (!n.can_expand) continue; cam = findCam(kids(await br(n.media_content_id))); if (cam) break; }
+          if (cam) {
+            const r1 = await br(cam.media_content_id), all = kids(r1).find((c) => /:all$/.test(c.media_content_id) || /^(all|alle)/i.test(c.title || '')) || kids(r1)[0];
+            const r2 = all ? await br(all.media_content_id) : null, rng = kids(r2).find((c) => /recent:7$/.test(c.media_content_id) || /\b7\b/.test(c.title || '')) || kids(r2)[0];
+            leaf = rng ? kids(await br(rng.media_content_id)) : [];
+            if (rng && leaf.length) { P[id] = rng.media_content_id; try { localStorage.setItem('thuis-ufp-pad', JSON.stringify(P)); } catch (e) { /* */ } }
+          }
         }
         list = leaf.filter((c) => c.thumbnail).map((c) => {
           const t = String(c.title || ''), m = t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i), dm = t.match(/(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})/);
@@ -6304,8 +6319,8 @@ class ThuisCard extends HTMLElement {
       const hit = list.filter((x) => (!x.days.length || x.days.includes(d.getDate()))).sort((a, b) => Math.abs(a.sec - sec) - Math.abs(b.sec - sec))[0];
       if (hit && Math.abs(hit.sec - sec) <= 90) { e.cid = hit.cid; todo.push([e, hit.thumb]); }
     }
-    for (let i = 0; i < todo.length; i += 6) {
-      const part = todo.slice(i, i + 6);
+    for (let i = 0; i < todo.length;) {
+      const n = i === 0 ? 5 : 8, part = todo.slice(i, i + n); i += n; // v479: eerst de 5 nieuwste (die staan in Recent), dan de rest
       const res = await Promise.all(part.map(([, u]) => load(u)));
       part.forEach(([e], k) => { if (res[k]) e.src = res[k]; });
       if (this._cxId) this._cxDraw();
