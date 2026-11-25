@@ -141,7 +141,7 @@ const DRAW={
  bath:()=>`<path d="M24 46V24a10 10 0 0 1 18-6" fill="none" stroke="${f('metal')}" stroke-width="7" stroke-linecap="round"/><path d="M6 48h88v8a26 26 0 0 1-26 26H32A26 26 0 0 1 6 56z" fill="${f('sky')}"/><rect x="24" y="78" width="9" height="12" rx="4" fill="${f('metal')}"/><rect x="67" y="78" width="9" height="12" rx="4" fill="${f('metal')}"/>${HL('M18 60a12 12 0 0 0 8 8',4.5)}`,
  door:()=>`<rect x="22" y="8" width="56" height="80" rx="9" fill="${f('amber')}"/><rect x="12" y="84" width="76" height="8" rx="4" fill="${f('metal')}"/><circle cx="66" cy="50" r="5" fill="${f('white')}"/>${HL('M32 18v22',5)}`,
  tree:()=>`<rect x="44" y="58" width="12" height="34" rx="5" fill="${f('brown')}"/><path d="M50 6c17 0 30 13 30 30 0 15-11 27-26 29.6h-8C31 63 20 51 20 36 20 19 33 6 50 6z" fill="${f('green')}"/>${HL('M32 30a18 18 0 0 1 12-12',5)}`,
- person:()=>`<circle cx="50" cy="32" r="18" fill="${f('green')}"/><path d="M14 86c0-17 16-28 36-28s36 11 36 28a5 5 0 0 1-5 5H19a5 5 0 0 1-5-5z" fill="${f('green')}" opacity=".75"/>${HL('M40 24a10 10 0 0 1 7-5',4)}`,
+ person:(t)=>`<circle cx="50" cy="32" r="18" fill="${f(t==='blue'?'blue':'green')}"/><path d="M14 86c0-17 16-28 36-28s36 11 36 28a5 5 0 0 1-5 5H19a5 5 0 0 1-5-5z" fill="${f(t==='blue'?'blue':'green')}" opacity=".75"/>${HL('M40 24a10 10 0 0 1 7-5',4)}`,
  battery:(t,p=78)=>`<rect x="8" y="26" width="76" height="48" rx="13" fill="${f('white')}"/><rect x="86" y="40" width="8" height="20" rx="4" fill="${f('metal')}"/><rect x="15" y="33" width="${(62*p/100).toFixed(1)}" height="34" rx="8" fill="${f(p<25?'orange':'green')}"/>`,
 };
 Object.assign(DRAW, {
@@ -165,6 +165,10 @@ Object.assign(DRAW, {
 });
 Object.assign(DRAW, {
  leak:(t)=>`<path d="M50 6S22 38 22 60a28 28 0 0 0 56 0C78 38 50 6 50 6z" fill="${f(t==='red'?'red':'sky')}"/>${HL('M35 62a15 15 0 0 0 9 13',5)}`,
+// v468: camera-detecties: pakket (doos), aanbellen (bel), dier (pootje)
+ box:()=>`<path d="M50 12 88 28 50 44 12 28z" fill="${f('amber')}"/><path d="M12 28 50 44v44L12 72z" fill="${f('brown')}"/><path d="M88 28 50 44v44l38-16z" fill="${f('brown')}" opacity=".78"/><path d="M31 20 69 36v14l-7 3V39L24 23z" fill="${f('white')}" opacity=".9"/>${HL('M24 28 46 37',3.5)}`,
+ bell:()=>`<path d="M50 10a6 6 0 0 1 6 6v3.4C69 22.6 78 34 78 48v16l8 11a3 3 0 0 1-2.4 4.8H16.4A3 3 0 0 1 14 75l8-11V48c0-14 9-25.4 22-28.6V16a6 6 0 0 1 6-6z" fill="${f('yellow')}"/><path d="M40 84a10 10 0 0 0 20 0z" fill="${f('amber')}"/>${HL('M32 40a18 18 0 0 1 10-12',4.5)}`,
+ paw:()=>`<ellipse cx="22" cy="46" rx="9" ry="12" fill="${f('brown')}"/><ellipse cx="39" cy="28" rx="9.5" ry="13" fill="${f('brown')}"/><ellipse cx="61" cy="28" rx="9.5" ry="13" fill="${f('brown')}"/><ellipse cx="78" cy="46" rx="9" ry="12" fill="${f('brown')}"/><path d="M50 50c12 0 26 16 26 27 0 8-6 12-13 12-5 0-8-3-13-3s-8 3-13 3c-7 0-13-4-13-12 0-11 14-27 26-27z" fill="${f('brown')}"/>${HL('M36 22a6 6 0 0 1 4-4',3.5)}`,
  motionS:(t)=>{const c=t==='yellow'?'yellow':'white';return `<circle cx="57" cy="14" r="10.5" fill="${f(c)}"/><g fill="none" stroke="${f(c)}" stroke-linecap="round" stroke-linejoin="round"><path d="M53 32 45 58" stroke-width="17"/><path d="M50 36 37 47l-10-4M55 35l9 13 13 3" stroke-width="9"/><path d="M45 58l12 15-2 19M44 58l-8 17-14 9" stroke-width="11"/></g>${HL('M53 9a6 6 0 0 1 5-2',3.5)}`},
  smoke:(t)=>`<circle cx="50" cy="50" r="42" fill="${f('white')}"/><circle cx="50" cy="50" r="29" fill="${f('metal')}"/><g fill="#000" fill-opacity=".12">${[0,45,90,135,180,225,270,315].map(a=>`<rect x="47.5" y="25" width="5" height="11" rx="2.5" transform="rotate(${a} 50 50)"/>`).join('')}</g><circle cx="50" cy="50" r="9" fill="${f(t==='red'?'red':t==='orange'?'orange':'green')}"/>${HL('M20 40a32 32 0 0 1 14-18',4.5)}`,
  contact:(t)=>t==='orange'?`<rect x="22" y="8" width="56" height="80" rx="9" fill="${f('dark')}"/><path d="M22 14a6 6 0 0 1 7.4-5.8L62 15.6a6 6 0 0 1 4.6 5.8v57.2a6 6 0 0 1-4.6 5.8L29.4 91.8A6 6 0 0 1 22 86z" fill="${f('orange')}"/><circle cx="56" cy="52" r="4.5" fill="${f('white')}"/><rect x="12" y="84" width="76" height="8" rx="4" fill="${f('metal')}"/>`:DRAW.door(),
@@ -1942,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '467';
+const CARD_VERSION = '468';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5155,6 +5159,8 @@ const CXI = (() => {
   };
 })();
 // soorten detecties (UniFi Protect en andere): volgorde = voorrang; beweging valt weg als er tegelijk iets slimmers is gezien
+// v468: iconen van de gebeurtenissen in de app-stijl (Rounded)
+const CXR = (k) => RIC.svg(...({ person: ['person', 'blue'], move: ['motionS', 'on'], car: ['car', 'on'], box: ['box', 'on'], bell: ['bell', 'on'], paw: ['paw', 'on'] }[k] || ['motionS', 'on']));
 const CXK = [[/_deurbel$|doorbell|_ring$|aangebeld/, 'bell', 'Aangebeld'], [/pakket|package/, 'box', 'Pakket'], [/persoon|person/, 'person', 'Persoon'], [/voertuig|vehicle/, 'car', 'Auto'], [/animal|dier/, 'paw', 'Dier'], [/beweging|motion/, 'move', 'Beweging']];
 const cxEsc = (t) => String(t ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 const CXSTYLE = `
@@ -5165,7 +5171,7 @@ const CXSTYLE = `
   #cFull .cft, #cFull .cfrow { display: none; }
   .cxtop { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 44px; } .cxtop b { font-size: 17px; font-weight: 600; }
   .cxbk { display: flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: #7cb6ff; font: inherit; font-size: 16px; justify-self: start; } .cxbk svg { width: 22px; height: 22px; }
-  .cxhd { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; } .cxav { flex: none; width: 48px; height: 48px; border-radius: 14px; background: #141e30; border: 1px solid rgba(115,155,215,.25); display: grid; place-items: center; } .cxav svg { width: 30px; height: 30px; }
+  .cxhd { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; } .cxav { flex: none; width: 48px; height: 48px; border-radius: 14px; background: #141e30; border: 1px solid rgba(115,155,215,.25); display: grid; place-items: center; } .cxav svg { width: 34px; height: 34px; }
   .cxnm { min-width: 0; } .cxnm b { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxnm small { display: block; color: #8b97ab; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cxlv { margin-left: auto; flex: none; display: flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 99px; background: rgba(79,208,127,.12); border: 1px solid rgba(79,208,127,.35); font-size: 14px; font-weight: 600; }
   .cxlv i, .cxtag i { width: 8px; height: 8px; border-radius: 50%; background: #4fd07f; box-shadow: 0 0 6px #4fd07f; }
@@ -5184,8 +5190,8 @@ const CXSTYLE = `
   .cxdh { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 8px; } .cxdh b { font-size: 18px; font-weight: 700; } .cxdh span { color: #8b97ab; font-size: 13px; }
   .cxev { display: grid; grid-template-columns: 86px 24px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px 8px 8px; border-radius: 16px; background: #111a2b; border: 1px solid rgba(115,155,215,.16); margin-bottom: 8px; }
   .cxev.n { background: linear-gradient(90deg, rgba(52,136,244,.16), rgba(52,136,244,.04)); border-color: rgba(124,182,255,.45); }
-  .cxth { height: 56px; border-radius: 10px; overflow: hidden; background: #172338; display: grid; place-items: center; } .cxth img { width: 100%; height: 100%; object-fit: cover; display: block; } .cxth svg { width: 26px; height: 26px; opacity: .55; }
-  .cxic { display: grid; place-items: center; color: #c9d3e3; } .cxic svg { width: 22px; height: 22px; } .cxic.p { color: #7cb6ff; } .cxic.b { color: #ffcf7a; }
+  .cxth { height: 56px; border-radius: 10px; overflow: hidden; background: #172338; display: grid; place-items: center; } .cxth img { width: 100%; height: 100%; object-fit: cover; display: block; } .cxth svg { width: 34px; height: 34px; }
+  .cxic { display: grid; place-items: center; color: #c9d3e3; } .cxic svg { width: 26px; height: 26px; } .cxic.p { color: #7cb6ff; } .cxic.b { color: #ffcf7a; }
   .cxev b { display: block; font-size: 15px; font-weight: 600; } .cxev small { display: block; color: #8b97ab; font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxev em { font-style: normal; color: #dde4ee; font-size: 14px; font-variant-numeric: tabular-nums; }
   .cxpb { position: absolute; inset: 0; background: #000; z-index: 2; } .cxpb[hidden] { display: none; } .cxpb video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
   .cxpe { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; color: #c9d3e3; font-size: 14px; padding: 20px; text-align: center; line-height: 1.5; } .cxpe small { color: #8b97ab; font-size: 12px; }
@@ -5196,7 +5202,7 @@ const CXSTYLE = `
   .cxnone { margin: 22px 4px; color: #8b97ab; font-size: 14px; text-align: center; }
   .cxtl { padding: 12px 14px 10px; border-radius: 18px; background: #111a2b; border: 1px solid rgba(115,155,215,.16); }
   .cxbar { position: relative; height: 40px; margin: 0 13px; } .cxbar::before { content: ""; position: absolute; left: -13px; right: -13px; top: 19px; height: 2px; background: rgba(150,175,215,.18); }
-  .cxbar i { position: absolute; top: 6px; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%; display: grid; place-items: center; background: #1a2538; border: 2px solid #111a2b; color: #c9d3e3; } .cxbar i svg { width: 14px; height: 14px; } .cxbar i.p { color: #7cb6ff; } .cxbar i.b { color: #ffcf7a; }
+  .cxbar i { position: absolute; top: 6px; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%; display: grid; place-items: center; background: #1a2538; border: 2px solid #111a2b; color: #c9d3e3; } .cxbar i svg { width: 17px; height: 17px; } .cxbar i.p { color: #7cb6ff; } .cxbar i.b { color: #ffcf7a; }
   .cxbar .nw { position: absolute; top: 4px; width: 2px; height: 32px; margin-left: -1px; background: #f5f7fc; opacity: .7; border-radius: 1px; }
   .cxax { display: flex; justify-content: space-between; color: #6f7d92; font-size: 11px; margin-top: 2px; font-variant-numeric: tabular-nums; }
 }
@@ -5603,7 +5609,7 @@ class ThuisCard extends HTMLElement {
               <div class="thumbs" id="thumbs"></div>
               <div class="cfull" id="cFull" hidden><div class="cft"><b id="cfName"></b><span class="cfl"><i></i>live</span><button class="cfs" id="cfS" aria-label="Geluid"></button><button id="cfX" aria-label="Sluiten">✕</button></div>
                 <div class="cxtop"><button class="cxbk" id="cxBack">${CXI.back}Thuis</button><b>Camera's</b><span></span></div>
-                <div class="cxhd"><div class="cxav">${CXI.cam}</div><div class="cxnm"><b id="cxName"></b><small id="cxSub"></small></div><span class="cxlv"><i></i>Live</span></div>
+                <div class="cxhd"><div class="cxav">${RIC.svg('camera', 'on')}</div><div class="cxnm"><b id="cxName"></b><small id="cxSub"></small></div><span class="cxlv"><i></i>Live</span></div>
                 <div class="cxcams" id="cxCams"></div>
                 <div class="cxv"><div class="cfbig" id="cfLive"></div><div class="cxpb" id="cxPb" hidden></div><span class="cxtag" id="cxTag"><i></i>Live</span><button class="cxfs" id="cxFs" aria-label="Volledig scherm">${CXI.full}</button></div>
                 <div class="cxctl"><span id="cxTime"></span><span class="cxlp">Live</span><button class="cxlb" id="cxLiveBack" hidden><i></i>Terug naar live</button><span class="cxsp"></span><button id="cxS" aria-label="Geluid"></button><button id="cxInfo" aria-label="Camera">${CXI.snap}</button></div>
@@ -6306,14 +6312,14 @@ class ThuisCard extends HTMLElement {
     const dur = (e) => { const s = Math.round(((e.end ?? now) - e.t) / 1000); return e.end == null ? 'nu' : s < 60 ? `${s} s` : `${Math.round(s / 60)} min`; };
     const cnt = (n) => `${n} ${n === 1 ? 'gebeurtenis' : 'gebeurtenissen'}`;
     if (this._cxView === 'tl') {
-      body.innerHTML = days.filter((d, k) => k === 0 || d.ev.length).map((d, k) => `<div class="cxdh"><b>${dn(k, d.d0)}</b><span>${cnt(d.ev.length)}</span></div><div class="cxtl"><div class="cxbar">${d.ev.map((e) => `<i class="${cls(e.kind)}" style="left:${(((e.t - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%" title="${e.lb} ${fmtTime(e.t)}">${CXI[e.kind]}</i>`).join('')}${k === 0 ? `<span class="nw" style="left:${(((now - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%"></span>` : ''}</div><div class="cxax"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div></div>`).join('');
+      body.innerHTML = days.filter((d, k) => k === 0 || d.ev.length).map((d, k) => `<div class="cxdh"><b>${dn(k, d.d0)}</b><span>${cnt(d.ev.length)}</span></div><div class="cxtl"><div class="cxbar">${d.ev.map((e) => `<i class="${cls(e.kind)}" style="left:${(((e.t - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%" title="${e.lb} ${fmtTime(e.t)}">${CXR(e.kind)}</i>`).join('')}${k === 0 ? `<span class="nw" style="left:${(((now - d.d0) / (d.d1 - d.d0)) * 100).toFixed(2)}%"></span>` : ''}</div><div class="cxax"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div></div>`).join('');
       return;
     }
     const sub = (e) => [e.kind === 'bell' ? `Bij de ${(this.$('cxName').textContent || 'deur').toLowerCase()}` : area, dur(e)].filter(Boolean).join(' · ');
-    const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXI[e.kind]);
+    const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXR(e.kind));
     this._cxRows = [];
     const row = (e) => { const i = this._cxRows.push(e) - 1; return `<div class="cxev${now - e.t < 3600000 && e === ev[0] ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${i}"><div class="cxth">${img(e)}${e.cid ? '<b class="cxpi"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></b>' : ''}</div>`; };
-    const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `${row(e)}<span class="cxic ${cls(e.kind)}">${CXI[e.kind]}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
+    const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `${row(e)}<span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
     body.innerHTML = list || `<div class="cxnone">${fil === 'all' ? 'Geen gebeurtenissen in de afgelopen 7 dagen.' : 'Geen gebeurtenissen van deze soort.'}</div>`;
   }
 
