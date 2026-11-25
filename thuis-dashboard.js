@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '476';
+const CARD_VERSION = '477';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5186,7 +5186,7 @@ const CXSTYLE = `
   .cxbody { display: block; }
   .cxrc { margin-top: 14px; border-radius: 20px; background: #0f1828; border: 1px solid rgba(115,155,215,.16); overflow: hidden; } /* v471: Recent van alle camera's in één kaart */
   .cxhh { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 16px 4px; } .cxhh b { font-size: 16px; font-weight: 700; } .cxhh span { color: #8b97ab; font-size: 13px; }
-  .cxrc .cxev { margin: 0; border: 0; border-radius: 0; background: none; padding: 9px 14px 9px 10px; } .cxrc .cxev + .cxev { border-top: 1px solid rgba(115,155,215,.12); } .cxrc .cxth { height: 50px; } .cxrc .cxev.n { background: linear-gradient(90deg, rgba(52,136,244,.14), transparent); } .cxrc .cxev.on { box-shadow: inset 3px 0 0 #ffcf7a; }
+  .cxrc .cxev { margin: 0; border: 0; border-radius: 0; background: none; padding: 9px 14px 9px 10px; } .cxrc .cxev + .cxev { border-top: 1px solid rgba(115,155,215,.12); } .cxrc .cxth { height: 50px; } .cxrc .cxev.on { background: linear-gradient(90deg, rgba(52,136,244,.16), rgba(52,136,244,.05)); } /* v477: blauw alleen bij de opname die speelt */ #cFull .cxti span:empty { display: none; }
   .cxrc .cxnone { margin: 10px 16px 16px; text-align: left; }
   .cxpro { padding: 12px 16px 13px; border-top: 1px solid rgba(115,155,215,.12); color: #8b97ab; font-size: 13px; text-align: center; } /* v476: alleen een hint, geen link (de HA-app opent geen andere apps) */
   #cFull.cxh .cxti, #cFull.cxh .cxcams, #cFull.cxh .cxv, #cFull.cxh .cxctl, #cFull.cxh .cxhb { display: none; } /* v471: geschiedenis zoals bij beweging */
@@ -5204,7 +5204,7 @@ const CXSTYLE = `
   .cxrec .cxlp, .cxrec .cxtag { display: none; } .cxtag { z-index: 3; }
   .cxctl .cxlb { width: auto; height: auto; display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; background: rgba(124,182,255,.16); color: #7cb6ff; font: inherit; font-size: 12.5px; font-weight: 600; } .cxctl .cxlb[hidden] { display: none; } .cxlb i { width: 7px; height: 7px; border-radius: 50%; background: #4fd07f; }
   .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxev .cxpi { display: grid; place-items: center; margin: 0; font-size: 0; line-height: 0; } .cxpi svg { width: 12px; height: 12px; display: block; } /* v473: .cxev b gaf het knopje display: block (pijltje stond te hoog) */
-  .cxev.pl { cursor: pointer; } .cxev.pl:active { transform: scale(.985); } .cxev.on { border-color: rgba(255,207,122,.6); }
+  .cxev.pl { cursor: pointer; } .cxev.pl:active { transform: scale(.985); } .cxev.on:not(.cxrc *) { border-color: rgba(255,207,122,.6); }
   .cxnone { margin: 22px 4px; color: #8b97ab; font-size: 14px; text-align: center; }
 }
 `;
@@ -6218,8 +6218,8 @@ class ThuisCard extends HTMLElement {
     if (this._cxId !== id) this._cxStop(false);
     const dvOf = (c) => this._hass?.devices?.[this._hass?.entities?.[c]?.device_id] || {}, dv = dvOf(id), area = this._hass?.areas?.[dv.area_id || this._hass?.entities?.[id]?.area_id]?.name;
     const cn = (c) => { const d = dvOf(c); return d.name_by_user || d.name || nm(c).replace(/\s+camera$/i, ''); }; // naam van het apparaat ("Voordeur"), niet van de stream
-    this.$('cxName').textContent = cn(id);
-    this.$('cxSub').textContent = ['Live', area].filter(Boolean).join(' · '); // v471
+    this.$('cxName').textContent = this._mq?.matches ? "Camera's" : cn(id); // v477: de gekozen camera staat al in de kiezer
+    this.$('cxSub').textContent = ''; // v477: geen ondertitel (Live en de camera staan elders al)
     this._cxCn = cn; this._cxIds = ids;
     const cams = this.$('cxCams');
     cams.innerHTML = ids.length > 1 ? ids.map((c) => `<button class="${c === id ? 'on' : ''}" data-id="${c}">${cxEsc(cn(c))}</button>`).join('') : '';
@@ -6336,7 +6336,7 @@ class ThuisCard extends HTMLElement {
     const when = (t) => { const k = Math.round((startOfDay(now) - startOfDay(t)) / DAY); return k === 0 ? fmtTime(t) : k === 1 ? `gist. ${fmtTime(t)}` : `${new Date(t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')} ${fmtTime(t)}`; };
     const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXR(e.kind));
     const cls = (k) => (k === 'bell' ? 'b' : k === 'person' || k === 'box' ? 'p' : '');
-    const rows = ev.map((e, i) => `<div class="cxev${i === 0 && now - e.t < 3600000 ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${this._cxRows.push(e) - 1}"><div class="cxth">${img(e)}${e.cid ? `<b class="cxpi">${PL}</b>` : ''}</div><span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc([ids.length > 1 ? cn(e.cam) : this._hass?.areas?.[(this._hass?.devices?.[this._hass?.entities?.[e.cam]?.device_id] || {}).area_id]?.name, dur(e)].filter(Boolean).join(' · '))}</small></div><em>${when(e.t)}</em></div>`).join('');
+    const rows = ev.map((e, i) => `<div class="cxev${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${this._cxRows.push(e) - 1}"><div class="cxth">${img(e)}${e.cid ? `<b class="cxpi">${PL}</b>` : ''}</div><span class="cxic ${cls(e.kind)}">${CXR(e.kind)}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc([ids.length > 1 ? cn(e.cam) : this._hass?.areas?.[(this._hass?.devices?.[this._hass?.entities?.[e.cam]?.device_id] || {}).area_id]?.name, dur(e)].filter(Boolean).join(' · '))}</small></div><em>${when(e.t)}</em></div>`).join('');
     const none = ids.every((id) => C[id]?.none) ? (ids.length > 1 ? "Deze camera's geven geen detecties door aan Home Assistant." : 'Deze camera geeft geen detecties door aan Home Assistant.') : loading ? 'Gebeurtenissen laden…' : 'Geen gebeurtenissen in de afgelopen 7 dagen.';
     const ufp = ids.some((id) => this._hass?.entities?.[id]?.platform === 'unifiprotect');
     body.innerHTML = `<div class="cxrc"><div class="cxhh"><b>Recent</b><span>${ids.length > 1 ? "Alle camera's" : 'Laatste 5'}</span></div>${rows || `<div class="cxnone">${none}</div>`}${ufp ? '<div class="cxpro">Bekijk de volledige historie in de Protect-app</div>' : ''}</div>`;
