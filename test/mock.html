@@ -194,6 +194,7 @@ function stat(id, period, t0, t1) {
 }
 async function callWS(m) {
   // v464: media-browser van UniFi Protect (console → camera → alle → 7 dagen → gebeurtenissen met plaatje), voor cam-gebeurtenissen van vandaag
+  if (m.type === 'media_source/resolve_media') return { url: '/test/out/voorbeeld.mp4?authSig=test', mime_type: 'video/mp4' }; // v465: opname van een gebeurtenis (bestaat niet: de speler blijft zwart)
   if (m.type === 'media_source/browse_media') {
     const id = m.media_content_id, ch = (t, c, x) => ({ title: t, media_content_id: c, can_expand: !x, thumbnail: x || null });
     if (id === 'media-source://unifiprotect') return { children: [ch('Test NVR', 'media-source://unifiprotect/nvr1:browse')] };

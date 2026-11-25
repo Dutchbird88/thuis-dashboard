@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '464';
+const CARD_VERSION = '465';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5187,6 +5187,12 @@ const CXSTYLE = `
   .cxth { height: 56px; border-radius: 10px; overflow: hidden; background: #172338; display: grid; place-items: center; } .cxth img { width: 100%; height: 100%; object-fit: cover; display: block; } .cxth svg { width: 26px; height: 26px; opacity: .55; }
   .cxic { display: grid; place-items: center; color: #c9d3e3; } .cxic svg { width: 22px; height: 22px; } .cxic.p { color: #7cb6ff; } .cxic.b { color: #ffcf7a; }
   .cxev b { display: block; font-size: 15px; font-weight: 600; } .cxev small { display: block; color: #8b97ab; font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cxev em { font-style: normal; color: #dde4ee; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .cxpb { position: absolute; inset: 0; background: #000; z-index: 2; } .cxpb[hidden] { display: none; } .cxpb video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+  .cxpe { position: absolute; inset: 0; display: grid; place-items: center; color: #a3b0c5; font-size: 14px; padding: 20px; text-align: center; }
+  .cxrec .cxlp { display: none; } .cxtag { z-index: 3; } .cxtag.rec i { background: #ffcf7a; box-shadow: none; }
+  .cxlb { position: absolute; right: 10px; top: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 99px; border: 0; background: rgba(245,247,252,.92); color: #111827; font: inherit; font-size: 13px; font-weight: 600; } .cxlb[hidden] { display: none; } .cxlb i { width: 8px; height: 8px; border-radius: 50%; background: #2fb36a; }
+  .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxpi svg { width: 12px; height: 12px; margin-left: 1px; }
+  .cxev.pl { cursor: pointer; } .cxev.pl:active { transform: scale(.985); } .cxev.on { border-color: rgba(255,207,122,.6); }
   .cxnone { margin: 22px 4px; color: #8b97ab; font-size: 14px; text-align: center; }
   .cxtl { padding: 12px 14px 10px; border-radius: 18px; background: #111a2b; border: 1px solid rgba(115,155,215,.16); }
   .cxbar { position: relative; height: 40px; margin: 0 13px; } .cxbar::before { content: ""; position: absolute; left: -13px; right: -13px; top: 19px; height: 2px; background: rgba(150,175,215,.18); }
@@ -5599,7 +5605,7 @@ class ThuisCard extends HTMLElement {
                 <div class="cxtop"><button class="cxbk" id="cxBack">${CXI.back}Thuis</button><b>Camera's</b><span></span></div>
                 <div class="cxhd"><div class="cxav">${CXI.cam}</div><div class="cxnm"><b id="cxName"></b><small id="cxSub"></small></div><span class="cxlv"><i></i>Live</span></div>
                 <div class="cxcams" id="cxCams"></div>
-                <div class="cxv"><div class="cfbig" id="cfLive"></div><span class="cxtag"><i></i>Live</span><button class="cxfs" id="cxFs" aria-label="Volledig scherm">${CXI.full}</button></div>
+                <div class="cxv"><div class="cfbig" id="cfLive"></div><div class="cxpb" id="cxPb" hidden></div><span class="cxtag" id="cxTag"><i></i>Live</span><button class="cxlb" id="cxLiveBack" hidden><i></i>Terug naar live</button><button class="cxfs" id="cxFs" aria-label="Volledig scherm">${CXI.full}</button></div>
                 <div class="cxctl"><span id="cxTime"></span><span class="cxlp">Live</span><span class="cxsp"></span><button id="cxS" aria-label="Geluid"></button><button id="cxInfo" aria-label="Camera">${CXI.snap}</button></div>
                 <div class="cfrow" id="cfRow"></div>
                 <div class="cxseg" id="cxSeg"><button data-v="ev" class="on">${CXI.play}Gebeurtenissen</button><button data-v="tl">${CXI.cal}Tijdlijn</button><button data-v="f">${CXI.filt}Filter</button></div>
@@ -5763,6 +5769,8 @@ class ThuisCard extends HTMLElement {
     this.$('cxFs').addEventListener('click', () => { const v = this._videos()[0], b = this.$('cfLive'); try { if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen(); else (v || b).requestFullscreen?.(); } catch (e) { /* niet ondersteund */ } });
     this.$('cxSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.v === 'f') { this.$('cxF').hidden = !this.$('cxF').hidden; b.classList.toggle('on', !this.$('cxF').hidden); return; } this._cxView = b.dataset.v; this.$('cxSeg').querySelectorAll('button[data-v="ev"],button[data-v="tl"]').forEach((x) => x.classList.toggle('on', x === b)); this._cxDraw(); });
     this.$('cxF').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; this._cxFil = b.dataset.k; this._cxDraw(); });
+    this.$('cxBody').addEventListener('click', (e) => { const r = e.target.closest('.cxev.pl'); if (r) this._cxPlay(this._cxRows?.[+r.dataset.i]); });
+    this.$('cxLiveBack').addEventListener('click', () => this._cxStop(true));
     if (!this._rootClick) { this._rootClick = true; this.shadowRoot.addEventListener('click', () => this.$('tPre')?.classList.remove('open')); }
     this._camEl = null; this._camId = null; this._lightKey = null; this._pplKey = null; this._binKey = null; this._thumbKey = null;
     this._tDialHtml = null; this._preKey = null; this._cvKey = null; this._wKey = null; this._rmListKey = null; this._rmKey = null; this._picIds = null;
@@ -6187,6 +6195,7 @@ class ThuisCard extends HTMLElement {
   }
   // v463: camerascherm (telefoon): kop, camera's, klok en gebeurtenissen
   _cxOpen(id, ids, nm) {
+    if (this._cxId !== id) this._cxStop(false);
     const dvOf = (c) => this._hass?.devices?.[this._hass?.entities?.[c]?.device_id] || {}, dv = dvOf(id), area = this._hass?.areas?.[dv.area_id || this._hass?.entities?.[id]?.area_id]?.name;
     const cn = (c) => { const d = dvOf(c); return d.name_by_user || d.name || nm(c).replace(/\s+camera$/i, ''); }; // naam van het apparaat ("Voordeur"), niet van de stream
     this.$('cxName').textContent = cn(id);
@@ -6260,7 +6269,7 @@ class ThuisCard extends HTMLElement {
           const t = String(c.title || ''), m = t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i), dm = t.match(/(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})/);
           if (!m) return null;
           let h = +m[1]; if (m[4] && /pm/i.test(m[4]) && h < 12) h += 12; if (m[4] && /am/i.test(m[4]) && h === 12) h = 0;
-          return { sec: h * 3600 + +m[2] * 60 + +(m[3] || 0), days: dm ? [+dm[1], +dm[2], +dm[3]] : [], thumb: c.thumbnail };
+          return { sec: h * 3600 + +m[2] * 60 + +(m[3] || 0), days: dm ? [+dm[1], +dm[2], +dm[3]] : [], thumb: c.thumbnail, cid: c.media_content_id };
         }).filter(Boolean);
       } catch (e) { list = []; }
       C[id] = { at: Date.now(), list };
@@ -6272,7 +6281,7 @@ class ThuisCard extends HTMLElement {
       if (e.src) continue;
       const d = new Date(e.t), sec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
       const hit = list.filter((x) => (!x.days.length || x.days.includes(d.getDate()))).sort((a, b) => Math.abs(a.sec - sec) - Math.abs(b.sec - sec))[0];
-      if (hit && Math.abs(hit.sec - sec) <= 90) todo.push([e, hit.thumb]);
+      if (hit && Math.abs(hit.sec - sec) <= 90) { e.cid = hit.cid; todo.push([e, hit.thumb]); }
     }
     for (let i = 0; i < todo.length; i += 6) {
       const part = todo.slice(i, i + 6);
@@ -6302,8 +6311,38 @@ class ThuisCard extends HTMLElement {
     }
     const sub = (e) => [e.kind === 'bell' ? `Bij de ${(this.$('cxName').textContent || 'deur').toLowerCase()}` : area, dur(e)].filter(Boolean).join(' · ');
     const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXI[e.kind]);
-    const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `<div class="cxev${now - e.t < 3600000 && e === ev[0] ? ' n' : ''}"><div class="cxth">${img(e)}</div><span class="cxic ${cls(e.kind)}">${CXI[e.kind]}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
+    this._cxRows = [];
+    const row = (e) => { const i = this._cxRows.push(e) - 1; return `<div class="cxev${now - e.t < 3600000 && e === ev[0] ? ' n' : ''}${e.cid ? ' pl' : ''}${this._cxPlaying === e.cid && e.cid ? ' on' : ''}" data-i="${i}"><div class="cxth">${img(e)}${e.cid ? '<b class="cxpi"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></b>' : ''}</div>`; };
+    const list = days.filter((d) => d.ev.length).map((d) => `<div class="cxdh"><b>${dn(days.indexOf(d), d.d0)}</b><span>${cnt(d.ev.length)}</span></div>` + d.ev.slice(0, 30).map((e) => `${row(e)}<span class="cxic ${cls(e.kind)}">${CXI[e.kind]}</span><div style="min-width:0"><b>${e.lb}</b><small>${cxEsc(sub(e))}</small></div><em>${fmtTime(e.t)}</em></div>`).join('')).join('');
     body.innerHTML = list || `<div class="cxnone">${fil === 'all' ? 'Geen gebeurtenissen in de afgelopen 7 dagen.' : 'Geen gebeurtenissen van deze soort.'}</div>`;
+  }
+
+  // v465: opname van een gebeurtenis afspelen in het grote beeld (UniFi Protect via media_source/resolve_media); het live beeld pauzeert
+  async _cxPlay(e) {
+    if (!e?.cid) return;
+    let url;
+    try { const r = await this._hass.callWS({ type: 'media_source/resolve_media', media_content_id: e.cid }); url = r?.url; } catch (x) { url = null; }
+    const pb = this.$('cxPb'); if (!pb) return;
+    if (!url) { pb.hidden = false; pb.innerHTML = '<div class="cxpe">Deze opname kan niet worden afgespeeld.</div>'; }
+    else {
+      pb.hidden = false;
+      pb.innerHTML = `<video src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(url) : url)}" controls autoplay playsinline></video>`;
+      const v = pb.querySelector('video'); v.muted = !this._cfSound; v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
+    }
+    this._videos().forEach((v) => { try { v.pause(); } catch (x) { /* */ } }); // live beeld pauzeren
+    this._cxPlaying = e.cid;
+    const tag = this.$('cxTag'); tag.classList.add('rec'); tag.innerHTML = `<i></i>Opname ${fmtTime(e.t)} · ${e.lb.toLowerCase()}`;
+    this.$('cxLiveBack').hidden = false; this.$('cFull').classList.add('cxrec');
+    this.$('cFull').scrollTo?.({ top: 0, behavior: 'smooth' });
+    this._cxDraw();
+  }
+  _cxStop(resume) {
+    const pb = this.$('cxPb'); if (!pb || pb.hidden) return;
+    pb.querySelector('video')?.pause(); pb.innerHTML = ''; pb.hidden = true; this._cxPlaying = null;
+    const tag = this.$('cxTag'); tag.classList.remove('rec'); tag.innerHTML = '<i></i>Live';
+    this.$('cxLiveBack').hidden = true; this.$('cFull').classList.remove('cxrec');
+    if (resume) { const id = this._cfEl?._entity; if (id) { this._cfEl = null; this._openCam(id); } }
+    this._cxDraw();
   }
 
   // alle video's (en HA-spelers) in het volledige camerascherm, ook binnen shadow roots
@@ -6328,6 +6367,7 @@ class ThuisCard extends HTMLElement {
     if (!customElements.get('ha-camera-stream') && !quiet) this._videos().forEach((v) => { v.muted = !on; if (on && v.paused) v.play?.().catch(() => {}); });
   }
   _closeCam() {
+    this._cxStop(false);
     clearTimeout(this._cfTimer); clearInterval(this._cfPoll); clearInterval(this._cxClock); this._cfSound = false;
     setTimeout(() => this._liveCam(), 50); // klein live-beeld weer starten
     this.$('cFull').hidden = true;
