@@ -53,7 +53,7 @@ Verdere regels:
 - Vraag de gebruiker **nooit** om tokens of wachtwoorden in de chat te plakken.
 - Camerastatussen bevatten `access_token` en `entity_picture`. Die zijn privé: niet loggen en niet delen.
 - Deel geen attributen van de laadpaal zoals pincode en adres.
-- Herinner de gebruiker bij screenshots aan kentekens, gevels, GPS, de Nabu Casa-URL en werk- of thuislocaties.
+- Herinner de gebruiker bij screenshots aan gevels, GPS, de Nabu Casa-URL en werk- of thuislocaties. Kentekens niet meer noemen (gebruiker, 25 november 2026).
 - Commits:
   - auteur `Dutchbird88 <Dutchbird88@users.noreply.github.com>`;
   - de commit-trailer die de sessie voorschrijft (Co-Authored-By en Claude-Session);
