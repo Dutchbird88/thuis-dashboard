@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '456';
+const CARD_VERSION = '457';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6711,7 +6711,10 @@ class ThuisCard extends HTMLElement {
       let done = null; try { done = JSON.parse(localStorage.getItem('thuis-vaat-klaar') || 'null'); } catch (e) { /* geen opslag */ }
       const door = this._state(`sensor.${d}_deur`), save = (v) => { try { if (v) localStorage.setItem('thuis-vaat-klaar', JSON.stringify(v)); else localStorage.removeItem('thuis-vaat-klaar'); } catch (e) { /* geen opslag */ } };
       if (ds === 'run' || ds === 'delayedstart') { if (done) save(done = null); }
-      else if (ds === 'finished' && !done) save(done = { at: Date.now(), end: de || fmtTime(Date.now()) });
+      // v457: klaar-tijd = het moment dat de status op "klaar" sprong (de eindtijd-sensor geeft na afloop soms een tijd in de toekomst)
+      const fin = ds === 'finished' ? Date.parse(this._state(`sensor.${d}_status`)?.last_changed) : NaN, finT = fmtTime(isNaN(fin) ? Date.now() : Math.min(fin, Date.now()));
+      if (ds === 'finished' && !done) save(done = { at: Date.now(), end: finT });
+      else if (ds === 'finished' && done && !isNaN(fin) && done.end !== finT) save(done = { ...done, end: finT });
       if (done && (door?.state === 'open' || (door && Date.parse(door.last_changed) > done.at) || Date.now() - done.at > 12 * HOUR)) save(done = null);
       // v336: zachte stoomwolkjes achter de kaart tijdens het afwassen (telefoon, keuze A); vaste posities zodat de kaart niet steeds opnieuw wordt opgebouwd
       const vx = (k, icon, pill, sub, big, line, pc) => wxCardH('Vaatwasser', icon, k, pill, sub, big, line, pc); // v370: telefoonkaart
