@@ -344,6 +344,7 @@
 | v471 | Camera als venster (zoals lamp/rolluik): live beeld, Recent van alle camera's, geschiedenis zoals bij beweging (klokje), Alles in Protect. |
 | v472 | Alles in Protect opent de Protect-app (`unifi-protect://`). |
 | v473 | Camera: afspeelknopje op de plaatjes netjes gecentreerd (pijltje stond te hoog). |
+| v474 | Alles in Protect als gewone link in een nieuw venster (de HA-app hield de vorige manier tegen). |
 
 ## Volgende stappen
 
