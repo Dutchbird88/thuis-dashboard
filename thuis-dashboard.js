@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '477';
+const CARD_VERSION = '478';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6332,7 +6332,8 @@ class ThuisCard extends HTMLElement {
       body.innerHTML = `<div class="cxhist mos"><div class="hh"><button id="cxHBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${cxEsc(cn(this._cxId))}</button></div><div class="hti"><b>Geschiedenis</b><span>Afgelopen 7 dagen</span></div>${h}</div>`;
       return;
     }
-    const all = ids.flatMap((id) => C[id]?.ev || []).sort((a, b) => b.t - a.t), ev = all.slice(0, 5), loading = ids.some((id) => !C[id]);
+    const bell = (id) => this._cxSensors(id).some((x) => x.kind === 'bell'); // v478: van een deurbel alleen het aanbellen in Recent (de geschiedenis toont alles)
+    const all = ids.flatMap((id) => { const l = C[id]?.ev || []; return bell(id) ? l.filter((e) => e.kind === 'bell') : l; }).sort((a, b) => b.t - a.t), ev = all.slice(0, 5), loading = ids.some((id) => !C[id]);
     const when = (t) => { const k = Math.round((startOfDay(now) - startOfDay(t)) / DAY); return k === 0 ? fmtTime(t) : k === 1 ? `gist. ${fmtTime(t)}` : `${new Date(t).toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')} ${fmtTime(t)}`; };
     const img = (e) => (e.src ? `<img alt="" src="${cxEsc(e.src)}">` : e.img ? `<img alt="" loading="lazy" src="${cxEsc(this._hass.hassUrl ? this._hass.hassUrl(e.img) : e.img)}" onerror="this.remove()">` : CXR(e.kind));
     const cls = (k) => (k === 'bell' ? 'b' : k === 'person' || k === 'box' ? 'p' : '');

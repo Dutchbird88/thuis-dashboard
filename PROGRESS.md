@@ -348,6 +348,7 @@
 | v475 | Alles in Protect opent de website van UniFi (de HA-app op iOS houdt `unifi-protect://` tegen). |
 | v476 | Camera: geen link meer naar Protect, alleen de hint "Bekijk de volledige historie in de Protect-app". |
 | v477 | Camera: titel "Camera's", geen ondertitel; blauwe achtergrond alleen bij de opname die speelt. |
+| v478 | Camera: in Recent van een deurbel alleen het aanbellen (geschiedenis toont alles). |
 
 ## Volgende stappen
 

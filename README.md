@@ -197,7 +197,7 @@ Het logo wordt van internet geladen (standaard de vierkante logo's van Google Fl
 
 ### Camera's (telefoon)
 
-Tik op de camera op Thuis: er opent een venster met het live beeld, een kiezer voor de camera's en **Recent** (de laatste 5 gebeurtenissen van alle camera's samen). Het klokje linksboven toont de geschiedenis van de gekozen camera (7 dagen). Bij UniFi Protect staat onderaan de hint "Bekijk de volledige historie in de Protect-app".
+Tik op de camera op Thuis: er opent een venster met het live beeld, een kiezer voor de camera's en **Recent** (de laatste 5 gebeurtenissen van alle camera's samen; van een deurbel alleen het aanbellen). Het klokje linksboven toont de geschiedenis van de gekozen camera (7 dagen). Bij UniFi Protect staat onderaan de hint "Bekijk de volledige historie in de Protect-app".
 
 ### Kamers
 
