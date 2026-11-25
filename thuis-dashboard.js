@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '455';
+const CARD_VERSION = '456';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4875,8 +4875,23 @@ const picImg = (src) => `<img class="pici" src="${src}" alt="" onerror="this.sty
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 // v423: kleine iconen voor de vluchtkaart
 const FLTI = { gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V7l8-3 8 3v13M9 20v-6h6v6"/></svg>', alt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8M15 8h5v5"/></svg>', spd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 17a8 8 0 1 1 14 0M12 13l4-4"/></svg>' };
-const wxCardH = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
+// v366–v455: oude indeling (label rechts, tijd links onder het programma); blijft voor Picnic en de vluchtkaart
+const wxCardOld = (title, icon, k, pill, sub, big, line, pc) => `<div class="wx ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}${big ? `<span class="big">${big}</span>` : ''}</div>`
   + `<div class="wxs"><span class="pill">${pill}</span>${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc >= 100 ? '100%' : `max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))`}"></i></div>`}</div>`;
+// v456: indeling naar het ontwerp van de gebruiker (wasmachine, vaatwasser, oven, laden; klasse .nw): links naam, programma (grijs) en status (gekleurde tekst), rechts groot de tijd met de regel(s) eronder;
+// "resterend" valt weg ("1 u 24 min"), klaar zonder tijd = groot "Klaar", storing = volle oranje balk
+const wxCardH = (title, icon, k, pill, sub, big, line, pc) => {
+  const has = (c) => (' ' + k + ' ').includes(` ${c} `), plain = (h) => String(h || '').replace(/<[^>]*>/g, '').trim();
+  let b = String(big || '').replace(/<small>[^<]*<\/small>/g, '').replace(/(\d+ u \d\d)(?=(<\/span>)?$)/, '$1 min');
+  if (!plain(b) && has('ok')) b = 'Klaar';
+  // gepland: rechts groot de start- of eindtijd, eronder alleen "Start" of "Klaar"
+  const pt = has('plan') && !plain(b) && String(line || '').match(/(Start|Klaar) (\d{1,2}:\d\d)/);
+  if (pt) { b = pt[2]; line = line.replace(` ${pt[2]}`, ''); }
+  if (plain(pill) === 'Gepauzeerd') k += ' pz';
+  if (has('warn')) { if (pc == null) pc = 100; icon = String(icon).replace('fill="#3cc96b"', 'fill="#F59E0B"'); } // storing: lampje oranje
+  return `<div class="wx nw ${k}"><div class="wxi">${icon}</div><div class="wxm"><b>${title}</b>${sub ? `<em>${sub}</em>` : ''}<span class="st">${pill}</span></div>`
+    + `<div class="wxs">${plain(b) ? `<span class="big">${b}</span>` : ''}${line ? `<span>${line}</span>` : ''}</div>${pc == null ? '' : `<div class="wxb"><i style="width:${pc >= 100 ? '100%' : `max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))`}"></i></div>`}</div>`;
+};
 // v418: laadkaart-icoon (telefoon): groene Seal van voren met wallbox, naar het ontwerp van de gebruiker; eigen verlopen evs*
 // v420: lakkleur van de getekende Seal: car_color groen | mint (standaard) | wit
 const EVPAINT = { mint: { pa: '<stop offset="0" stop-color="#cfe3dc"/><stop offset=".4" stop-color="#a9c6bd"/><stop offset=".75" stop-color="#7f9e95"/><stop offset="1" stop-color="#53706a"/>', hood: '<stop offset="0" stop-color="#e6f3ee"/><stop offset=".5" stop-color="#b9d3cb"/><stop offset="1" stop-color="#a9c6bd" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#d7e9e3"/><stop offset="1" stop-color="#8fb0a7"/>', bum: '<stop offset="0" stop-color="#94b2a9"/><stop offset="1" stop-color="#53706a"/>', mir: '#8fb0a7' }, wit: { pa: '<stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#e9edf2"/><stop offset=".75" stop-color="#c3cad4"/><stop offset="1" stop-color="#8f98a6"/>', hood: '<stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#f1f4f8"/><stop offset="1" stop-color="#dfe4eb" stop-opacity="0"/>', roof: '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d0da"/>', bum: '<stop offset="0" stop-color="#cfd5de"/><stop offset="1" stop-color="#7d8796"/>', mir: '#c9d0da' } };
@@ -5126,6 +5141,22 @@ const HPSTYLE = `
   .wx.flx .frtm { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 11px; color: #8b95a8; margin-top: 2px; } .wx.flx .frtm s { opacity: .6; }
   .wx.flx .frlv { grid-column: 1 / -1; display: flex; gap: 14px; margin-top: 8px; font-size: 11.5px; color: #A3B0C5; white-space: nowrap; overflow: hidden; } .wx.flx .frlv span { display: inline-flex; align-items: center; gap: 5px; } .wx.flx .frlv svg { width: 13px; height: 13px; flex: none; }
   .wx.pk .wxm .big { font-size: 22px; } /* v375: tijdvak en "Bezorgd" 22 px (twee tijden ogen bij 27 px te zwaar) */
+}
+@media (max-width: 600px) {
+  /* v456: nieuwe indeling: status als gekleurde tekst onder het programma, rechts groot de tijd (24 px), titel niet cursief */
+  .wx.nw .wxm b { font-style: normal; font-weight: 650; letter-spacing: -.005em; } .wx.nw .wxm em { color: #A3B0C5; }
+  .wx.nw .wxm .st { display: flex; align-items: center; gap: 6px; margin-top: 4px; min-width: 0; font-size: 12.5px; font-weight: 600; color: #4BA8FF; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .wx.nw .wxm .st svg { width: 14px; height: 14px; flex: none; }
+  .wx.nw .wxs { align-items: flex-end; gap: 6px; text-align: right; }
+  .wx.nw .wxs > span.big { display: flex; align-items: baseline; gap: 5px; font-size: 24px; font-weight: 600; color: #F5F7FC; letter-spacing: -.02em; line-height: 1; white-space: nowrap; } .wx.nw .wxs > span.big .n { font-size: inherit; font-weight: 600; color: #F5F7FC !important; letter-spacing: inherit; opacity: 1; margin: 0; } .wx.nw .wxs > span.big small { font-size: 12px; font-weight: 400; color: #A3B0C5; letter-spacing: 0; }
+  .wx.nw .wxs > span:not(.big) { font-size: 12px; color: #C3CDDB; } .wx.nw .wxs > span:not(.big) b { color: #fbbf6a; }
+  .wx.nw.ok .wxm .st { color: #5BD98A; } .wx.nw.warn .wxm .st { color: #fbbf6a; } .wx.nw.off .wxm .st, .wx.nw.plan .wxm .st { color: #C9D3E3; }
+  .wx.nw.ov .wxm .st { color: #F59A55; } .wx.nw.evx .wxm .st { color: #2FD4BD; } .wx.nw.evx.off .wxm .st { color: #C9D3E3; }
+  .wx.nw.warn .wxb i { background: linear-gradient(90deg, #FFC48A, #F59E0B); }
+  .wx.nw .wxb { height: 7px; border-radius: 4px; } .wx.nw .wxb i { border-radius: 4px; } /* 25% dunner */
+  .wx.nw.pz .wxm .st { color: #C9D3E3; } .wx.nw.pz .wxb i { background: linear-gradient(90deg, #9fb0c8, #6b7c96); } /* gepauzeerd: grijs */
+  /* klaar: de blauwe lichtinval rechtsboven wordt zacht groen */
+  #was#was.was:has(> .wx.nw.ok), #dish#dish.was:has(> .wx.nw.ok), #oven#oven.was:has(> .wx.nw.ok), #evc#evc.was:has(> .wx.nw.ok), .mstack > .was[data-k].was.was:has(> .wx.nw.ok) { background: linear-gradient(118deg, rgba(90,190,130,0) 68%, rgba(90,190,130,.08) 78%, rgba(90,190,130,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(38,96,72,.45), rgba(38,96,72,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; }
+  .wx.nw.evx .wxs > span.big { font-size: 26px; }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
 
@@ -6693,9 +6724,9 @@ class ThuisCard extends HTMLElement {
       else if (ds === 'pause') put(dBox, 'dish run', block(dishSvg(false), 'Vaatwasser', dl != null ? dur(dl) : '—', 'Gepauzeerd', `${dp}<br>${de ? `klaar ${de}` : ''}`, dpct ?? 0)
         + vx('run', VXN(false, disp), 'Gepauzeerd', dp, dl != null ? `${wxDur(dl)}<small>resterend</small>` : '', de ? `${WXI.clock}Klaar ${de}` : '', dpct ?? 0));
       else if (done) put(dBox, 'done', block(dishSvg(false), 'Vaat is klaar', done.end, 'Klaar', 'deur nog dicht —<br>laat de stoom eruit', 100)
-        + vx('ok', VXN(false), `${WXI.check}Vaat klaar`, 'Deur nog dicht', '', `${WXI.clock}Sinds ${done.end}`, 100));
+        + vx('ok', VXN(false), `${WXI.check}Deur nog dicht`, dp || prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || 'Vaat is klaar', 'Klaar', `${WXI.clock}Sinds ${done.end}`, 100));
       else if (['actionrequired', 'error'].includes(ds)) put(dBox, 'bad', block(dishSvg(false), 'Vaatwasser', '', ds === 'error' ? 'Storing' : 'Actie nodig', 'controleer de machine', null)
-        + vx('warn', VXN(false, '', false), `${WXI.warn}${ds === 'error' ? 'Storing' : 'Actie nodig'}`, 'Controleer de vaatwasser', '', '<b>Bekijk details →</b>', null));
+        + vx('warn', VXN(false, '', true), `${WXI.warn}${ds === 'error' ? 'Storing' : 'Actie nodig'}`, 'Controleer de vaatwasser', '', '<b>Bekijk details →</b>', null));
       else if (st(`switch.${d}_inschakelen`) === 'on') put(dBox, 'ready', block(dishSvg(false), 'Vaatwasser', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || '—', 'Aan', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) ? 'klaar om te starten' : 'geen programma gekozen', null)
         + vx('off', VXN(false), 'Aan', prog(`select.${d}_geselecteerd_programma`, DISH_PROG) || 'Geen programma gekozen', '', '', null));
       else put(dBox, '', '');
@@ -6705,13 +6736,13 @@ class ThuisCard extends HTMLElement {
     const o = this._config.oven, os = st(`sensor.${o}_status`), oBox = this.$('oven'), temp = num(`sensor.${o}_huidige_temperatuur_in_de_oven`);
     if (oBox && os) {
       const op = prog(`select.${o}_actieve_programma`, OVEN_PROG), ol = left(`sensor.${o}_programma_eindtijd`), oe = end(`sensor.${o}_programma_eindtijd`), opct = num(`sensor.${o}_programma_voortgang`);
-      const lamp = '', ovx = (k, icon, pill, sub, big, line, pc, title = 'Oven') => wxCardH(title, icon, k, pill, sub, big, line, pc); // v382: telefoonkaart in wasmachine-stijl
+      const lamp = '', ovx = (k, icon, pill, sub, big, line, pc, title = 'Oven') => wxCardH(title, icon, k, pill, String(sub || '').replace('Boven- en onderwarmte', 'Boven/onder'), big, line, pc); // v382: telefoonkaart in wasmachine-stijl
       const tt = temp != null ? `${fmt(temp)}°` : '—', time = ol != null ? `nog ${dur(ol)}${oe ? ` · klaar ${oe}` : ''}` : '';
       // magnetron: eigen naam, icoon en vermogen in plaats van temperatuur
       const ap = (/microwave|cooking/.test(st(`select.${o}_actieve_programma`) || '') ? st(`select.${o}_actieve_programma`) : st(`select.${o}_geselecteerd_programma`)) || '', mw = /microwave/.test(ap) ? (ap.match(/microwave_(\d+)_watt/)?.[1] ? `${ap.match(/microwave_(\d+)_watt/)[1]} W` : 'Max') : null;
       if (mw && ['run', 'pause', 'finished', 'delayedstart'].includes(os)) {
         const ph = os === 'run' ? 'Bezig' : os === 'pause' ? 'Gepauzeerd' : os === 'finished' ? 'Klaar' : 'Uitgesteld';
-        put(oBox, os === 'finished' ? 'done' : 'oven run', ovx(os === 'finished' ? 'ok' : os === 'run' ? 'run ov' : 'plan', microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : ''), os === 'finished' ? `${WXI.check}Klaar` : ph, mw, os === 'finished' ? '' : ol != null ? `${wxDur(ol)}<small>resterend</small>` : '', os === 'finished' ? '' : oe ? `${WXI.clock}Klaar ${oe}` : '', os === 'finished' ? 100 : ol != null ? opct ?? 0 : null, 'Magnetron') + block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
+        put(oBox, os === 'finished' ? 'done' : 'oven run', ovx(os === 'finished' ? 'ok' : os === 'run' ? 'run ov' : 'plan', microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : ''), os === 'finished' ? `${WXI.check}Gereed` : ph, mw, os === 'finished' ? '' : ol != null ? `${wxDur(ol)}<small>resterend</small>` : '', os === 'finished' ? '' : oe ? `${WXI.clock}Klaar ${oe}` : '', os === 'finished' ? 100 : ol != null ? opct ?? 0 : null, 'Magnetron') + block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
       } else
       if (os === 'run') put(oBox, 'oven run', block(ovenSvg('run', temp), 'Oven', tt, 'Bezig', `${op}<br>${time}`, ol != null ? opct ?? 0 : null, lamp)
         + ovx('run ov', OXN(1, true, temp != null ? tt : ''), 'Bezig', ol != null ? [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · ') : op, ol != null ? `${wxDur(ol)}<small>resterend</small>` : `${tt}`, oe ? `${WXI.clock}Klaar ${oe}` : '', ol != null ? opct ?? 0 : null));
@@ -6720,7 +6751,7 @@ class ThuisCard extends HTMLElement {
       else if (os === 'delayedstart') put(oBox, 'oven run', block(ovenSvg('', temp), 'Oven', 'Gepland', 'Uitgesteld', `${op}<br>${oe ? `klaar ${oe}` : ''}`, null)
         + ovx('plan', OXN(0, false), 'Gepland', op || 'Programma gekozen', '', oe ? `${WXI.clock}Klaar ${oe}` : '', null));
       else if (os === 'finished') put(oBox, 'done', block(ovenSvg('hot', temp), 'Oven is klaar', tt, 'Klaar', `${op}<br>baktijd voorbij`, 100)
-        + ovx('ok', OXN(.45, false), `${WXI.check}Klaar`, op || 'Baktijd voorbij', '', `${WXI.clock}Sinds ${fmtTime(Date.parse(this._state(`sensor.${o}_status`)?.last_changed) || Date.now())}`, 100));
+        + ovx('ok', OXN(.45, false), `${WXI.check}Baktijd voorbij`, op || '', '', `${WXI.clock}Sinds ${fmtTime(Date.parse(this._state(`sensor.${o}_status`)?.last_changed) || Date.now())}`, 100));
       else if (['actionrequired', 'error'].includes(os)) put(oBox, 'bad', block(ovenSvg('', temp), 'Oven', tt, os === 'error' ? 'Storing' : 'Actie nodig', 'controleer de oven', null)
         + ovx('warn', OXN(0, false), `${WXI.warn}${os === 'error' ? 'Storing' : 'Actie nodig'}`, 'Controleer de oven', '', '<b>Bekijk details →</b>', null));
       else if (st(`switch.${o}_inschakelen`) === 'on' && /microwave/.test(st(`select.${o}_geselecteerd_programma`) || '')) {
@@ -6988,7 +7019,7 @@ class ThuisCard extends HTMLElement {
     const plug = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>';
     const lines = [live && kw != null ? `${plug}${fmt(kw, 1)} kW` : '', live && rem != null ? `${WXI.clock}Klaar ${fmtTime(Date.now() + rem * 3600000)}` : !on && start ? `${WXI.clock}Start ${start}` : ''].filter(Boolean);
     const big = pct != null ? `<span class="n">${pct}%</span>` : '';
-    const sub = live && rem != null ? `${wxDur(rem * 60)} resterend` : ttl; // v421: zoals de wasmachine // v414: resterende tijd i.p.v. "Laden · Thuis"
+    const sub = live && rem != null ? `${wxDur(rem * 60)} resterend` : live ? 'Aan de laadpaal' : start ? `Start ${start}` : 'Aan de laadpaal'; // v456: niet dubbel met de status // v421: zoals de wasmachine // v414: resterende tijd i.p.v. "Laden · Thuis"
     return wxCardH(name, icon, `evx ${on ? 'run' : 'off'}`, ttl, sub, big, lines.join('</span><span>'), pct);
   }
 
@@ -7047,7 +7078,7 @@ class ThuisCard extends HTMLElement {
     } else if (status === 'program_ended') {
       cls = 'done';
       html = `<div class="r">${ic}<div class="t"><b>Was is klaar</b><span>${door === 'off' ? 'deur nog dicht — de was zit er nog in' : sub}</span></div><div class="rt"><b>Klaar</b>${end || ''}</div></div><div class="bar"><i style="width:100%"></i></div>`
-        + wxCard('ok', 0, `${WXI.check}Was klaar`, sub, '', door === 'off' ? 'Deur nog dicht' : `${WXI.clock}Sinds ${fmtTime(Date.parse(st.last_changed) || Date.now())}`, 100);
+        + wxCard('ok', 0, `${WXI.check}${door === 'off' ? 'Deur nog dicht' : 'Gereed'}`, sub, 'Klaar', `${WXI.clock}Sinds ${fmtTime(Date.parse(st.last_changed) || Date.now())}`, 100);
     } else if (['failure', 'program_interrupted', 'service'].includes(status) || this._state(base.replace(/^sensor\./, 'binary_sensor.') + '_probleem')?.state === 'on') {
       cls = 'bad';
       html = `<div class="r">${ic}<div class="t"><b>Wasmachine</b><span>${status === 'program_interrupted' ? 'programma onderbroken' : 'controleer de machine'}</span></div><div class="rt"><b>Storing</b></div></div>`
@@ -7075,12 +7106,21 @@ class ThuisCard extends HTMLElement {
     const fit = (el, f, min) => { while (el && el.clientWidth && tw(el) > el.clientWidth - 1 && f > min) { f -= 0.5; el.style.fontSize = `${f}px`; } };
     if (box?.querySelector('.wx')) requestAnimationFrame(() => {
       const wx = box.querySelector('.wx'); if (!wx) return;
-      const big = wx.querySelector('.big'), num = big?.firstChild;
       fit(wx.querySelector('em'), 12, 10.5);
-      if (!big || !num || num.nodeType !== 3) return;
-      const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);
-      let f = parseFloat(getComputedStyle(big).fontSize) || 27; const fMin = f - 4; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > fMin) { f -= 0.5; sp.style.fontSize = `${f}px`; }
-      if (big.clientWidth && tw(big) > big.clientWidth - 1) wx.classList.add('tight');
+      if (!wx.classList.contains('nw')) { // oude indeling (Picnic, vlucht): de tijd onder het programma
+        const big = wx.querySelector('.big'), num = big?.firstChild;
+        if (!big || !num || num.nodeType !== 3) return;
+        const sp = document.createElement('span'); sp.className = 'n'; sp.textContent = num.textContent; big.replaceChild(sp, num);
+        let f = parseFloat(getComputedStyle(big).fontSize) || 27; const fMin = f - 4; while (tw(big) > big.clientWidth - 1 && big.clientWidth && f > fMin) { f -= 0.5; sp.style.fontSize = `${f}px`; }
+        if (big.clientWidth && tw(big) > big.clientWidth - 1) wx.classList.add('tight');
+        return;
+      }
+      const big = wx.querySelector('.wxs > .big'), m = wx.querySelector('.wxm');
+      if (!big || !m) return;
+      // v456: de tijd staat rechts; is links de naam, het programma of de status afgekapt, dan de tijd kleiner (hooguit 5 px)
+      const cut = () => [...m.children].some((el) => el.clientWidth && tw(el) > el.clientWidth + 0.5);
+      let f = parseFloat(getComputedStyle(big).fontSize) || 24; const fMin = f - 5; while (cut() && f > fMin) { f -= 0.5; big.style.fontSize = `${f}px`; }
+      if (cut()) wx.classList.add('tight');
     });
   }
 
@@ -7353,7 +7393,7 @@ class ThuisCard extends HTMLElement {
     if (show && done) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`
-        + wxCardH('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, `Bezorgd om ${fmtTime(dt)}`, 'Bezorgd', `${WXI.clock}${cap(relTime(dt))}`, null);
+        + wxCardOld('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, `Bezorgd om ${fmtTime(dt)}`, 'Bezorgd', `${WXI.clock}${cap(relTime(dt))}`, null);
     } else if (show) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`), pm = (m) => (m >= 90 ? `${Math.round(m / 60)} u` : `${Math.max(1, Math.round(m))} min`);
@@ -7366,7 +7406,7 @@ class ThuisCard extends HTMLElement {
             const liveOn = arr && startOfDay(arr) === day0 && arr > now - 15 * 60000; // v380: met live aankomsttijd alleen een balk in de laatste 5 min (5 min = leeg, aankomst = vol)
       const livePct = liveOn && arr - now < 5 * 60000 ? Math.max(3, Math.min(100, Math.round((1 - Math.max(0, arr - now) / (5 * 60000)) * 100))) : null;
       const ln = arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'Elk moment' : `Nog ${pm((arr - now) / 60000)}`) : busy ? 'Elk moment' : `Over ${pm((s - now) / 60000)}`;
-      html += wxCardH('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, liveOn ? livePct : busy ? pct : null);
+      html += wxCardOld('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, liveOn ? livePct : busy ? pct : null);
     }
     box.hidden = !show;
     box.dataset.sig = show ? String(s) : '';
@@ -7443,7 +7483,7 @@ class ThuisCard extends HTMLElement {
       const planeAt = `left:clamp(14px, ${pc}%, calc(100% - 14px))`;
       const route = `<div class="frt${landed ? ' ok' : ''}"><b>${oc || '·'}</b><div class="frl"><i style="width:max(0px, calc(clamp(14px, ${pc}%, calc(100% - 14px)) - 12px))"></i><svg style="${planeAt}" viewBox="0 -0.5 24 24"><path transform="rotate(90 12 12)" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div><b>${dc || '·'}</b></div>`
         + `<div class="frtm"><span>${ot(dep)}</span><span>${Math.abs(arr - sArr) >= 5 * 60000 && !landed ? `<s>${dt(sArr)}</s> ` : ''}${dt(rArr ?? arr)}</span></div>`; // v428: geen regel met hoogte, snelheid en toestel meer (gebruiker)
-      html = wxCardH(nice, ic, `flx ${st}${dl && !landed && delay > 0 ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
+      html = wxCardOld(nice, ic, `flx ${st}${dl && !landed && delay > 0 ? ' late' : ''}`, pill, sub.replace(/[<>&]/g, ''), big, line, null).replace(/<\/div>$/, `${route}</div>`);
       show = true; this._fltUrl = `https://www.flightradar24.com/${encodeURIComponent(String(f?.callsign || fno).replace(/\s/g, ''))}`; sig = `${fno}|${startOfDay(x.s)}|${st}`; break; // v425: weggeveegd komt terug bij een nieuwe stand (gepland → onderweg → geland)
     }
     box.hidden = !show;
