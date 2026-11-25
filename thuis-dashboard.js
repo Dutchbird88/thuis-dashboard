@@ -1942,7 +1942,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '457';
+const CARD_VERSION = '458';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5157,6 +5157,8 @@ const HPSTYLE = `
   /* klaar: de blauwe lichtinval rechtsboven wordt zacht groen */
   #was#was.was:has(> .wx.nw.ok), #dish#dish.was:has(> .wx.nw.ok), #oven#oven.was:has(> .wx.nw.ok), #evc#evc.was:has(> .wx.nw.ok), .mstack > .was[data-k].was.was:has(> .wx.nw.ok) { background: linear-gradient(118deg, rgba(90,190,130,0) 68%, rgba(90,190,130,.08) 78%, rgba(90,190,130,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(38,96,72,.45), rgba(38,96,72,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; }
   .wx.nw.evx .wxs > span.big { font-size: 26px; }
+  #oven#oven.was:has(> .wx.nw.ov) { background: linear-gradient(118deg, rgba(240,150,80,0) 68%, rgba(240,150,80,.07) 78%, rgba(240,150,80,0) 88%), radial-gradient(70% 110% at 100% 0%, rgba(120,62,28,.42), rgba(120,62,28,0) 65%), linear-gradient(180deg, #101B2D 0%, #0f1a2b 45%, #0C1525 100%) !important; } /* v458: oven warm oranje lichtinval */
+  .wx.nw .wxs > span:not(.big) svg { width: 13px; height: 13px; flex: none; }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) { .wx .wxb i { transition: none; } }
 
@@ -6739,16 +6741,22 @@ class ThuisCard extends HTMLElement {
     const o = this._config.oven, os = st(`sensor.${o}_status`), oBox = this.$('oven'), temp = num(`sensor.${o}_huidige_temperatuur_in_de_oven`);
     if (oBox && os) {
       const op = prog(`select.${o}_actieve_programma`, OVEN_PROG), ol = left(`sensor.${o}_programma_eindtijd`), oe = end(`sensor.${o}_programma_eindtijd`), opct = num(`sensor.${o}_programma_voortgang`);
-      const lamp = '', ovx = (k, icon, pill, sub, big, line, pc, title = 'Oven') => wxCardH(title, icon, k, pill, String(sub || '').replace('Boven- en onderwarmte', 'Boven/onder'), big, line, pc); // v382: telefoonkaart in wasmachine-stijl
+      const lamp = '', ovx = (k, icon, pill, sub, big, line, pc, title = 'Oven') => wxCardH(title, icon, k, pill, String(sub || '').replace('Boven- en onderwarmte', 'Boven-/onderwarmte'), big, line, pc); // v382: telefoonkaart in wasmachine-stijl
       const tt = temp != null ? `${fmt(temp)}°` : '—', time = ol != null ? `nog ${dur(ol)}${oe ? ` · klaar ${oe}` : ''}` : '';
       // magnetron: eigen naam, icoon en vermogen in plaats van temperatuur
       const ap = (/microwave|cooking/.test(st(`select.${o}_actieve_programma`) || '') ? st(`select.${o}_actieve_programma`) : st(`select.${o}_geselecteerd_programma`)) || '', mw = /microwave/.test(ap) ? (ap.match(/microwave_(\d+)_watt/)?.[1] ? `${ap.match(/microwave_(\d+)_watt/)[1]} W` : 'Max') : null;
+      // v458 (telefoon): Voorverwarmen tot de ingestelde temperatuur (op 5° na) bereikt is, daarna Bakken; tijdens voorverwarmen rechts "185° → 230°"
+      const sp = os === 'run' ? this._ovSet(o) : null;
+      if (os !== 'run') this._ovHot = false; else if (sp == null || (temp != null && temp >= sp - 5)) this._ovHot = true;
+      const pre = os === 'run' && sp != null && temp != null && !this._ovHot;
+      const therm = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/></svg>';
       if (mw && ['run', 'pause', 'finished', 'delayedstart'].includes(os)) {
         const ph = os === 'run' ? 'Bezig' : os === 'pause' ? 'Gepauzeerd' : os === 'finished' ? 'Klaar' : 'Uitgesteld';
         put(oBox, os === 'finished' ? 'done' : 'oven run', ovx(os === 'finished' ? 'ok' : os === 'run' ? 'run ov' : 'plan', microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : ''), os === 'finished' ? `${WXI.check}Gereed` : ph, mw, os === 'finished' ? '' : ol != null ? `${wxDur(ol)}<small>resterend</small>` : '', os === 'finished' ? '' : oe ? `${WXI.clock}Klaar ${oe}` : '', os === 'finished' ? 100 : ol != null ? opct ?? 0 : null, 'Magnetron') + block(microSvg(os === 'run' ? 'run' : os === 'finished' ? 'hot' : '', os === 'finished' ? 'End' : ol != null ? (() => { const sec = Math.max(0, Math.round(ol * 60)); return sec >= 3600 ? `${Math.floor(sec / 3600)}u${String(Math.floor(sec / 60) % 60).padStart(2, '0')}` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; })() : ''), os === 'finished' ? 'Magnetron is klaar' : 'Magnetron', mw, ph, os === 'finished' ? 'klaar' : time || (oe ? `klaar ${oe}` : ''), os === 'finished' ? 100 : ol != null ? opct ?? 0 : null));
       } else
       if (os === 'run') put(oBox, 'oven run', block(ovenSvg('run', temp), 'Oven', tt, 'Bezig', `${op}<br>${time}`, ol != null ? opct ?? 0 : null, lamp)
-        + ovx('run ov', OXN(1, true, temp != null ? tt : ''), 'Bezig', ol != null ? [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · ') : op, ol != null ? `${wxDur(ol)}<small>resterend</small>` : `${tt}`, oe ? `${WXI.clock}Klaar ${oe}` : '', ol != null ? opct ?? 0 : null));
+        + ovx('run ov', OXN(1, true, temp != null ? tt : ''), pre ? 'Voorverwarmen' : 'Bakken', ol != null && !pre ? [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · ') : op, ol != null ? `${wxDur(ol)}<small>resterend</small>` : `${tt}`,
+          [pre ? `${therm}${fmt(temp)}° → ${fmt(sp)}°` : '', oe ? `${WXI.clock}Klaar ${oe}` : ''].filter(Boolean).join('</span><span>'), ol != null ? opct ?? 0 : null));
       else if (os === 'pause') put(oBox, 'oven run', block(ovenSvg('hot', temp), 'Oven', tt, 'Gepauzeerd', `${op}<br>${time}`, opct)
         + ovx('run ov', OXN(.55, false, temp != null ? tt : ''), 'Gepauzeerd', [op, tt !== '—' ? tt : ''].filter(Boolean).join(' · '), ol != null ? `${wxDur(ol)}<small>resterend</small>` : tt, oe ? `${WXI.clock}Klaar ${oe}` : '', opct));
       else if (os === 'delayedstart') put(oBox, 'oven run', block(ovenSvg('', temp), 'Oven', 'Gepland', 'Uitgesteld', `${op}<br>${oe ? `klaar ${oe}` : ''}`, null)
@@ -7102,6 +7110,16 @@ class ThuisCard extends HTMLElement {
   }
 
   // v366/v370: kaart in wasmachine-stijl (telefoon): lange programmanaam en tijd passend maken
+  // v458: ingestelde oventemperatuur (Home Connect: een number-instelling van de oven in °C, of oven_setpoint in de YAML)
+  _ovSet(o) {
+    const S = this._hass?.states || {}, num = (id) => { const v = parseFloat(S[id]?.state); return isNaN(v) ? null : v; };
+    if (this._config.oven_setpoint) return num(this._config.oven_setpoint);
+    const isT = (k) => /^number\./.test(k) && /°C|°F/.test(S[k]?.attributes?.unit_of_measurement || '') && !/alarm|wekker|timer|duur|duration/i.test(k);
+    let id = Object.keys(S).find((k) => k.startsWith(`number.${o}_`) && isT(k));
+    if (!id) { const dv = this._hass?.entities?.[`sensor.${o}_status`]?.device_id; id = dv ? this._devEnts(dv).find(isT) : null; }
+    return id ? num(id) : null;
+  }
+
   _wxFit(box) {
     // v366: lange programmanaam: letter kleiner tot hij past (min. 11 px),
     // en de resterende tijd kleiner (27→23 px) als een lange status de ruimte inneemt; past het dan nog niet, dan valt het icoon in het label weg (.tight)

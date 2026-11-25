@@ -328,6 +328,7 @@
 | v455 | Energie: tarieven per datum (`tariffs`), zodat vorig jaar met de prijzen van toen en 2027 zonder salderen wordt berekend. |
 | v456 | Apparaatkaarten (wasmachine, vaatwasser, oven, laden) in de nieuwe indeling: status onder het programma, tijd groot rechts, dunnere balk, klaar groen, storing oranje. Picnic en vlucht ongewijzigd. |
 | v457 | Vaatwasser klaar: "Sinds …" toont het echte tijdstip waarop hij klaar was (niet meer de eindtijd-sensor, die na afloop een tijd in de toekomst kon geven). |
+| v458 | Ovenkaart (telefoon): warme oranje gloed, "Voorverwarmen" met 145° → 200° en daarna "Bakken", volledige naam "Boven-/onderwarmte". |
 
 ## Volgende stappen
 

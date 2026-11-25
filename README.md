@@ -150,6 +150,15 @@ De Energie-kaart rekent met `prices` (per kWh en m³) en `fixed` (vaste kosten p
 
 Wat in een periode ontbreekt, komt uit `prices` en `fixed`.
 
+### Oven (telefoon)
+
+Tijdens het voorverwarmen staat op de ovenkaart "Voorverwarmen" met de huidige en de ingestelde temperatuur (bijvoorbeeld 145° → 200°). Zodra de oven op temperatuur is, staat er "Bakken". De ingestelde temperatuur zoekt de kaart zelf (een instelling in °C van de oven, Home Connect). Lukt dat niet, geef hem dan op:
+
+```yaml
+- type: custom:thuis-card
+  oven_setpoint: number.oven_temperatuur
+```
+
 ### Laadkaart (telefoon)
 
 Tijdens het laden staat op Thuis een kaart met de auto, het accupercentage, het vermogen en wanneer de accu vol is. Als naam gebruikt de kaart de naam van het apparaat van de accusensor. Een eigen naam kan ook:
