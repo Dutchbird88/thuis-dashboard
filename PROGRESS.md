@@ -337,6 +337,7 @@
 | v464 | Camerascherm: plaatjes per gebeurtenis uit UniFi Protect (via de media-browser van HA); zonder plaatje één icoon. |
 | v465 | Camerascherm: tik op een gebeurtenis speelt de opname van UniFi af in het grote beeld, met "Terug naar live". |
 | v466 | Camerascherm: afspelen robuuster (adres met geldigheid, video pas daarna laden) en een melding met de reden als een opname niet afspeelt. |
+| v467 | Camerascherm: geen label "Opname …" meer in het beeld; "Terug naar live" staat in de balk naast de tijd (die tijdens het afspelen de tijd van de opname toont). |
 
 ## Volgende stappen
 
