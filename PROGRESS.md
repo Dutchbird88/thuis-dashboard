@@ -343,6 +343,7 @@
 | v470 | Camerascherm: kop met icoon, naam en Live weg; camerakeuze als ronde kiezer (stijl Energie); camera-icoon uit de balk weg. |
 | v471 | Camera als venster (zoals lamp/rolluik): live beeld, Recent van alle camera's, geschiedenis zoals bij beweging (klokje), Alles in Protect. |
 | v472 | Alles in Protect opent de Protect-app (`unifi-protect://`). |
+| v473 | Camera: afspeelknopje op de plaatjes netjes gecentreerd (pijltje stond te hoog). |
 
 ## Volgende stappen
 

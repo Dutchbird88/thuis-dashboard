@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '472';
+const CARD_VERSION = '473';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5203,7 +5203,7 @@ const CXSTYLE = `
   .cxpe { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; color: #c9d3e3; font-size: 14px; padding: 20px; text-align: center; line-height: 1.5; } .cxpe small { color: #8b97ab; font-size: 12px; }
   .cxrec .cxlp, .cxrec .cxtag { display: none; } .cxtag { z-index: 3; }
   .cxctl .cxlb { width: auto; height: auto; display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; background: rgba(124,182,255,.16); color: #7cb6ff; font: inherit; font-size: 12.5px; font-weight: 600; } .cxctl .cxlb[hidden] { display: none; } .cxlb i { width: 7px; height: 7px; border-radius: 50%; background: #4fd07f; }
-  .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxpi svg { width: 12px; height: 12px; margin-left: 1px; }
+  .cxth { position: relative; } .cxpi { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(8,12,20,.65); display: grid; place-items: center; color: #fff; } .cxev .cxpi { display: grid; place-items: center; margin: 0; font-size: 0; line-height: 0; } .cxpi svg { width: 12px; height: 12px; display: block; } /* v473: .cxev b gaf het knopje display: block (pijltje stond te hoog) */
   .cxev.pl { cursor: pointer; } .cxev.pl:active { transform: scale(.985); } .cxev.on { border-color: rgba(255,207,122,.6); }
   .cxnone { margin: 22px 4px; color: #8b97ab; font-size: 14px; text-align: center; }
 }
@@ -6317,7 +6317,7 @@ class ThuisCard extends HTMLElement {
     const body = this.$('cxBody'); if (!body || !this._cxId) return;
     const now = Date.now(), C = this._cxC || {}, ids = this._cxIds?.length ? this._cxIds : [this._cxId], cn = this._cxCn || ((c) => this._nm(c));
     const dur = (e) => { const s = Math.round(((e.end ?? now) - e.t) / 1000); return e.end == null ? 'nu' : s < 60 ? `${Math.max(1, s)} s` : `${Math.round(s / 60)} min`; };
-    const PL = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+    const PL = '<svg viewBox="0 0 24 24"><path d="M7.75 5.5v13l11-6.5z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>'; // v473: driehoek optisch in het midden (zwaartepunt iets rechts van het midden)
     this._cxRows = [];
     if (this._cxHistOn) {
       const c = C[this._cxId], ev = c?.ev || [], ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
