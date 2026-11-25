@@ -345,6 +345,7 @@
 | v472 | Alles in Protect opent de Protect-app (`unifi-protect://`). |
 | v473 | Camera: afspeelknopje op de plaatjes netjes gecentreerd (pijltje stond te hoog). |
 | v474 | Alles in Protect als gewone link in een nieuw venster (de HA-app hield de vorige manier tegen). |
+| v475 | Alles in Protect opent de website van UniFi (de HA-app op iOS houdt `unifi-protect://` tegen). |
 
 ## Volgende stappen
 
