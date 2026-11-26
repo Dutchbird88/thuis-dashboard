@@ -372,6 +372,8 @@
 | v499 | Picnic-kaart in de indeling van de andere apparaatkaarten; rode balk blijft. |
 | v500 | Rolluik (open): dun randje om het icoonrondje. |
 | v501 | Licht aan in effen donkergeel (`#4a3c17`, rand `#7a6226`, wit/`#FFD54F`, schakelaar `#F4B92E`) op Kamers, Thuis en in het kamervenster (keuze Y2). |
+| v502 | Pil Lampen bovenaan (Thuis, Kamers) in hetzelfde donkergeel (`#4a3c17`, rand `#7a6226`, tekst `#FFD54F`). |
+| v503 | Groen en blauw in dezelfde stijl als het geel (keuze B): server/PC aan `#21462f`/`#3f7d57`/`#8BE6AC`, rolluik dicht `#203a66`/`#4469a8`/`#A9CAFF`, witte naam; ook de pillen Rolluiken/Regen en de server-/opstartpillen in het kamervenster. |
 
 ## Volgende stappen
 
