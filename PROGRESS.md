@@ -352,6 +352,7 @@
 | v479 | Camera: plaatjes sneller (alvast op de achtergrond laden, weg naar UniFi-map onthouden, eerst de 5 nieuwste). |
 | v480 | Energie (telefoon): kostenblok weer onderaan, met "incl. vaste kosten". |
 | v481 | Tabblad Kamers: icoon met vier vakjes in plaats van de bank. |
+| v482 | Lamp- en rolluiktegels in volle kleuren (lamp aan goudgeel, rolluik dicht blauw). |
 
 ## Volgende stappen
 

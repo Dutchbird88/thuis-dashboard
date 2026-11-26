@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '481';
+const CARD_VERSION = '482';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2068,6 +2068,15 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lb { padding-left: 70px; }
   :host(:not([data-th])) .lt.lt.lb, :host(:not([data-th])) .cv.cv { transition: transform .12s ease; } :host(:not([data-th])) .lt.lt.lb:active, :host(:not([data-th])) .cv.cv:active { transform: scale(.97); }
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
+  /* v482: volle kleuren (keuze A, zoals Apple Woning): lamp aan = goudgeel vlak met donkere tekst, rolluik (deels) dicht = blauw vlak */
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #e3bd6f !important; border-color: transparent !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) > svg:first-child, :host(:not([data-th])) .cv.cv.cv.on > svg:first-child { display: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .n { color: #2a1f08 !important; } :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .ms { color: #3d2e10 !important; font-weight: 600; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(120,80,10,.22) !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2 svg { filter: brightness(0) !important; opacity: .62 !important; }
+  :host(:not([data-th])) .cv.cv.cv.cv.on { background: #4a74c9 !important; border-color: transparent !important; box-shadow: none !important; }
+  :host(:not([data-th])) .cv.cv.cv.on b, :host(:not([data-th])) .cv.cv.cv.on span { color: #fff !important; }
+  :host(:not([data-th])) .cv.cv.cv.on .mi2.mi2 { background: rgba(10,25,70,.35) !important; border-color: transparent !important; box-shadow: none !important; }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
