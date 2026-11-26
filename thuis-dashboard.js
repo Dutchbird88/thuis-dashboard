@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '486';
+const CARD_VERSION = '487';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2077,6 +2077,11 @@ const TIDY = `
   :host(:not([data-th])) .cv.cv.cv.cv.on { background: #4a74c9 !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .cv.cv.cv.on b, :host(:not([data-th])) .cv.cv.cv.on span { color: #fff !important; }
   :host(:not([data-th])) .cv.cv.cv.on .mi2.mi2 { background: rgba(10,25,70,.35) !important; border-color: transparent !important; box-shadow: none !important; }
+  /* v487: subtiele rand van 1 px in een iets lichtere tint van de eigen kaartkleur (geen gloed of schaduw); uit en aan even dik, dus geen verspringing */
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb:not(.on), :host(:not([data-th])) .cv.cv.cv.cv.cv.cv:not(.on), :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr:not(.lit) { border: 1px solid #2E3E55 !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { border: 1px solid #EDCF92 !important; }
+  :host(:not([data-th])) .cv.cv.cv.cv.cv.cv.on { border: 1px solid #6E90D6 !important; }
+  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.lit { border: 1px solid rgba(255,196,110,.32) !important; }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak

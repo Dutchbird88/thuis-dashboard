@@ -357,6 +357,7 @@
 | v484 | Matte stijl op de telefoon: centraal kleurenpalet, effen vlakken zonder verloop/gloed/randen, volle kleuren voor lampen en rolluiken, lijn-iconen op kamers/lampen/rolluiken, nieuwe schakelaars, rustige navigatiebalk. |
 | v485 | Teruggezet naar v482 (v483 en v484 ongedaan gemaakt). |
 | v486 | Lamptegel aan: originele gele lamp in een goud rondje, zoals het rolluik. |
+| v487 | Bedieningskaarten: subtiele rand van 1 px in een lichtere tint van de eigen kleur, ook bij aan. |
 
 ## Volgende stappen
 
