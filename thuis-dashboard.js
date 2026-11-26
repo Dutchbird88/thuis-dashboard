@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '498';
+const CARD_VERSION = '499';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2143,6 +2143,9 @@ const TIDY = `
   :host(:not([data-th])) #pic#pic#pic#pic.was.was { background: linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(130,170,255,.11) !important; box-shadow: none !important; }
   :host(:not([data-th])) #pic#pic#pic#pic.was.was::before, :host(:not([data-th])) #pic#pic#pic#pic.was.was::after { display: none !important; }
   :host(:not([data-th])) #pic#pic#pic .wx.pk .pill { background: rgba(229,139,139,.14) !important; color: #E58B8B !important; border: none !important; box-shadow: none !important; }
+  /* v499: Picnic in de indeling van de andere apparaatkaarten: status als tekst (onderweg blauw, verwacht grijs, bezorgd groen), de rode balk blijft (gebruiker) */
+  :host(:not([data-th])) #pic#pic#pic .wx.nw.pk .wxm .st { color: #85ADE3 !important; } :host(:not([data-th])) #pic#pic#pic .wx.nw.pk.plan .wxm .st { color: #9AA8BA !important; } :host(:not([data-th])) #pic#pic#pic .wx.nw.pk.ok .wxm .st { color: #83C8A3 !important; }
+  :host(:not([data-th])) #pic#pic#pic .wx.nw.pk .wxb { background: rgba(255,255,255,.08) !important; }
   /* v492: laden, storing en oven zonder tint (alleen tekst en balk in kleur); klaar houdt groen (iets is gereed en vraagt om actie). Bediening uit (lampen, pc/server, rolluiken) = ondergrond en rand van thermostaat/afval */
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(130,170,255,.11) !important; box-shadow: none !important; }
   /* v493: computer/server aan = volle kleur zoals lamp (goud) en rolluik (blauw): effen groen met donkere tekst (keuze B) */
@@ -7930,7 +7933,7 @@ class ThuisCard extends HTMLElement {
     if (show && done) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       html = `<div class="r"><img class="pici" src="${icon}" alt=""><div class="t"><b>Picnic is bezorgd</b><span class="tm" style="color:#fff">${fmtTime(dt)}</span></div><div class="rt"><b>Bezorgd</b>${relTime(dt)}</div></div>`
-        + wxCardOld('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, `Bezorgd om ${fmtTime(dt)}`, 'Bezorgd', `${WXI.clock}${cap(relTime(dt))}`, null);
+        + wxCardH('Picnic', picImg(icon), 'pk ok', `${WXI.check}Bezorgd`, 'Boodschappen', fmtTime(dt), cap(relTime(dt)), null); // v499: zelfde indeling als de andere apparaatkaarten
     } else if (show) {
       const icon = ([].concat(this._config.agenda_icons || []).find((x) => [].concat(x.match).some((w) => /picnic/i.test(w))) || {}).image || '/local/picnic.png';
       const mins = (m) => (m >= 90 ? `${Math.round(m / 60)} uur` : `${Math.max(1, Math.round(m))} min`), pm = (m) => (m >= 90 ? `${Math.round(m / 60)} u` : `${Math.max(1, Math.round(m))} min`);
@@ -7943,7 +7946,7 @@ class ThuisCard extends HTMLElement {
             const liveOn = arr && startOfDay(arr) === day0 && arr > now - 15 * 60000; // v380: met live aankomsttijd alleen een balk in de laatste 5 min (5 min = leeg, aankomst = vol)
       const livePct = liveOn && arr - now < 5 * 60000 ? Math.max(3, Math.min(100, Math.round((1 - Math.max(0, arr - now) / (5 * 60000)) * 100))) : null;
       const ln = arr && arr > now - 60000 && startOfDay(arr) === day0 ? (arr - now < 90000 ? 'Elk moment' : `Nog ${pm((arr - now) / 60000)}`) : busy ? 'Elk moment' : `Over ${pm((s - now) / 60000)}`;
-      html += wxCardOld('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk vw', lab, 'Bezorging vandaag', `${fmtTime(s)} – ${fmtTime(e)}`, `${WXI.clock}${ln}`, liveOn ? livePct : busy ? pct : null);
+      html += wxCardH('Picnic', picImg(icon), lab === 'Onderweg' ? 'pk' : 'pk plan', lab, 'Boodschappen', `${fmtTime(s)}–${fmtTime(e)}`, `${WXI.clock}${ln}`, liveOn ? livePct : busy ? pct : null); // v499: zelfde indeling als de andere apparaatkaarten (geen cursief, geen pil, 'vandaag' niet dubbel)
     }
     box.hidden = !show;
     box.dataset.sig = show ? String(s) : '';
