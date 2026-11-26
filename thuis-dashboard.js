@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '497';
+const CARD_VERSION = '498';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2107,6 +2107,14 @@ const TIDY = `
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5ee1d0']{background:#173431!important;border-color:#28504B!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5ee1d0'] span{color:#83CFC3!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ff9a4d']{background:#352D24!important;border-color:#504031!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ff9a4d'] span{color:#EBA879!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8']{background:#23334A!important;border-color:#354B67!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8'] span{color:#85ADE3!important}
+  /* v498: pillen in het kamervenster (.kspills) in dezelfde stijl als de statuspillen (v488): effen, rand 1 px, geen verloop/glans/gloed; alarm en waarschuwing ongewijzigd */
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) { background: #192536 !important; border: 1px solid #304057 !important; box-shadow: none !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn)::before, :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn)::after { display: none !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) b { color: #fff !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) span { color: #9AA8BA !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) { background: #1b2d27 !important; border-color: #30473c !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) span { color: #83C8A3 !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) { background: #23334A !important; border-color: #354B67 !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) span { color: #85ADE3 !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hpp.hot:not(.alarm):not(.warn) { background: #28263d !important; border-color: #413c5e !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hpp.hot:not(.alarm):not(.warn) span { color: #ABA0DE !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hot:not(.wolp):not(.hpp):not(.alarm):not(.warn) { background: #353127 !important; border-color: #51472F !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hot:not(.wolp):not(.hpp):not(.alarm):not(.warn) span { color: #EBD16F !important; }
   /* v489: kamerkaart met licht aan in de stijl van de lamptegels op Thuis: effen goudgeel, donkere tekst, icoon in goud rondje, donkergouden schakelaar */
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit { background: #e3bd6f !important; border: 1px solid #EDCF92 !important; box-shadow: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::before, :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::after { display: none !important; }
