@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '485';
+const CARD_VERSION = '486';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2072,8 +2072,8 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #e3bd6f !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) > svg:first-child, :host(:not([data-th])) .cv.cv.cv.on > svg:first-child { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .n { color: #2a1f08 !important; } :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .ms { color: #3d2e10 !important; font-weight: 600; }
-  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(120,80,10,.22) !important; box-shadow: none !important; }
-  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2 svg { filter: brightness(0) !important; opacity: .62 !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(120,80,10,.30) !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2 svg { filter: drop-shadow(0 0 5px rgba(255,220,120,.55)) !important; opacity: 1 !important; } /* v486: originele gele lamp in een goud rondje (keuze A), zoals het rolluik */
   :host(:not([data-th])) .cv.cv.cv.cv.on { background: #4a74c9 !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .cv.cv.cv.on b, :host(:not([data-th])) .cv.cv.cv.on span { color: #fff !important; }
   :host(:not([data-th])) .cv.cv.cv.on .mi2.mi2 { background: rgba(10,25,70,.35) !important; border-color: transparent !important; box-shadow: none !important; }
