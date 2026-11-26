@@ -359,6 +359,19 @@
 | v486 | Lamptegel aan: originele gele lamp in een goud rondje, zoals het rolluik. |
 | v487 | Bedieningskaarten: subtiele rand van 1 px in een lichtere tint van de eigen kleur, ook bij aan. |
 | v488 | Statuspillen (Thuis, Kamers): effen getinte vlakken met rand van 1 px, statustekst in de accentkleur; geen verloop, glans of gloed. |
+| v489 | Kamers: kamerkaart met licht aan in de stijl van de lamptegels op Thuis (vol goud). |
+| v490 | Apparaatkaarten effen getint per status met rand van 1 px, statustekst en balk in de accentkleur; meldingen effen; alarm blijft rood. |
+| v491 | Neutrale kaarten (bezig/aan/gepland, meldingen, Picnic) in de ondergrond en rand van thermostaat/afval. |
+| v492 | Laden, storing en oven zonder tint; klaar houdt groen. Bediening uit in de kleur van thermostaat/afval. |
+| v493 | Computer/server aan: volle groene kleur (`#5aa882`, donkere tekst). |
+| v494 | Rookmelder: detailvenster (ring in statuskleur, batterij/wifi/vervangen, Laatste controle, geschiedenis 7 dagen). |
+| v495 | Nest Protect-icoon in het rookmeldervenster en de pillen (alleen Nest/Google). |
+| v496 | Nest Protect-icoon: witte streep over de lichtring weg. |
+| v497 | Wake on LAN: "Opstarten…" in plaats van "Wordt opgestart…". |
+| v498 | Pillen in het kamervenster in de stijl van de statuspillen. |
+| v499 | Picnic-kaart in de indeling van de andere apparaatkaarten; rode balk blijft. |
+| v500 | Rolluik (open): dun randje om het icoonrondje. |
+| v501 | Licht aan in effen donkergeel (`#4a3c17`, rand `#7a6226`, wit/`#FFD54F`, schakelaar `#F4B92E`) op Kamers, Thuis en in het kamervenster (keuze Y2). |
 
 ## Volgende stappen
 
