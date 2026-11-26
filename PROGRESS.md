@@ -380,6 +380,7 @@
 | v507 | Rondje achter de actieve lamp nog iets donkerder (`rgba(255,214,100,.24)`). |
 | v508 | Rondje achter de actieve lamp nog donkerder (`rgba(255,214,100,.12)`): bijna de kaartkleur, de lamp valt er nu duidelijk uit. |
 | v509 | Rondje achter de server/PC (aan) even donker als bij de lampen (`rgba(95,215,140,.12)`). |
+| v510 | Rondje achter een dicht rolluik even donker als bij lampen en server (`rgba(110,160,255,.12)`). |
 
 ## Volgende stappen
 
