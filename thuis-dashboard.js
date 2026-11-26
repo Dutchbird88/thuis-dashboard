@@ -228,7 +228,7 @@ ${RIC.grads}${RIC.sym('gCar', 'car')}</defs></svg>`;
 // dichte iconen (in de stijl van Apple SF Symbols) voor tabbladen en thermostaatstanden
 const FI = {
 leaf:'<path fill-rule="evenodd" d="M20.6 3.2c-9 0-15.6 4.7-15.6 11.8 0 1.6.4 3.1 1.2 4.3L3.9 21.6l1.5 1.5 2.3-2.3c1.2.8 2.8 1.3 4.5 1.3 7.2 0 9.8-7.5 8.4-18.9zM8.4 18.8c2.6-4.6 5.9-7.7 10-10-4.9 1.4-8.6 4.4-11.3 8.7z"/>',
-rooms:'<path d="M6 5h12a3 3 0 0 1 3 3v2.6a3 3 0 0 0-3.4 2.9V14H6.4v-.5A3 3 0 0 0 3 10.6V8a3 3 0 0 1 3-3z"/><path d="M.8 13.4a2.4 2.4 0 0 1 4.8 0V15h12.8v-1.6a2.4 2.4 0 0 1 4.8 0V18a1.6 1.6 0 0 1-1.6 1.6H2.4A1.6 1.6 0 0 1 .8 18z"/><rect x="3.6" y="19" width="2.4" height="2.6" rx="1"/><rect x="18" y="19" width="2.4" height="2.6" rx="1"/>',
+rooms:'<rect x="3" y="3" width="8" height="8" rx="2.4"/><rect x="13" y="3" width="8" height="8" rx="2.4"/><rect x="3" y="13" width="8" height="8" rx="2.4"/><rect x="13" y="13" width="8" height="8" rx="2.4"/>', // v481: vier vakjes (was een bank)
 therm:'<path d="M10 4a2 2 0 1 1 4 0v9.3a4 4 0 1 1-4 0z"/>',
 house:'<path d="M12 3.2 2.8 11.1a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.2l.9.8a1 1 0 0 0 1.3-1.5z"/>',
 sun:'<circle cx="12" cy="12" r="4.6"/><g stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.2v2M12 19.8v2M2.2 12h2M19.8 12h2M5.1 5.1l1.4 1.4M17.5 17.5l1.4 1.4M5.1 18.9l1.4-1.4M17.5 6.5l1.4-1.4"/></g>',
@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '480';
+const CARD_VERSION = '481';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
