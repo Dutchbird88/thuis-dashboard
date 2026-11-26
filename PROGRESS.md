@@ -358,6 +358,7 @@
 | v485 | Teruggezet naar v482 (v483 en v484 ongedaan gemaakt). |
 | v486 | Lamptegel aan: originele gele lamp in een goud rondje, zoals het rolluik. |
 | v487 | Bedieningskaarten: subtiele rand van 1 px in een lichtere tint van de eigen kleur, ook bij aan. |
+| v488 | Statuspillen (Thuis, Kamers): effen getinte vlakken met rand van 1 px, statustekst in de accentkleur; geen verloop, glans of gloed. |
 
 ## Volgende stappen
 
