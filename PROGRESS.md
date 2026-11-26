@@ -378,6 +378,7 @@
 | v505 | Advies ChatGPT (keuze A): geel warmer en minder verzadigd (`#57461f`), server/PC aan gedempter groen (`#1e3b2b`), randen van actieve kaarten ~25% minder zichtbaar (geel `#806637`, groen `#33604a`, blauw `#3a5d96`); ook in de pillen. |
 | v506 | Rondje achter de lamp (licht aan) ~10% donkerder (`rgba(255,222,110,.34)`). Kleurstelling hiermee vastgesteld (gebruiker). |
 | v507 | Rondje achter de actieve lamp nog iets donkerder (`rgba(255,214,100,.24)`). |
+| v508 | Rondje achter de actieve lamp nog donkerder (`rgba(255,214,100,.12)`): bijna de kaartkleur, de lamp valt er nu duidelijk uit. |
 
 ## Volgende stappen
 
