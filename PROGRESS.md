@@ -376,6 +376,7 @@
 | v503 | Groen en blauw in dezelfde stijl als het geel (keuze B): server/PC aan `#21462f`/`#3f7d57`/`#8BE6AC`, rolluik dicht `#203a66`/`#4469a8`/`#A9CAFF`, witte naam; ook de pillen Rolluiken/Regen en de server-/opstartpillen in het kamervenster. |
 | v504 | Geel van licht aan iets lichter en frisser (`#56491a`, rand `#8f7430`, rondje `rgba(255,222,110,.42)`), in balans met groen en blauw (keuze B). |
 | v505 | Advies ChatGPT (keuze A): geel warmer en minder verzadigd (`#57461f`), server/PC aan gedempter groen (`#1e3b2b`), randen van actieve kaarten ~25% minder zichtbaar (geel `#806637`, groen `#33604a`, blauw `#3a5d96`); ook in de pillen. |
+| v506 | Rondje achter de lamp (licht aan) ~10% donkerder (`rgba(255,222,110,.34)`). Kleurstelling hiermee vastgesteld (gebruiker). |
 
 ## Volgende stappen
 
