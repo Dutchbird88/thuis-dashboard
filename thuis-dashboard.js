@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '496';
+const CARD_VERSION = '497';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -6581,7 +6581,7 @@ class ThuisCard extends HTMLElement {
       const on = ping && S[ping]?.state === 'on', busy = !on && Date.now() - (this._wolBusy?.[id] || 0) < 3 * 60000;
       const st = on ? 'on' : busy ? 'busy' : 'off';
       const icon = x.icon || (/server|nas|synology|qnap|unraid/i.test(`${id} ${name}`) ? 'server' : 'pc');
-      return { id, ping, name, icon, st, txt: on ? 'Aan' : busy ? 'Wordt opgestart…' : ping ? 'Uit' : 'Aanzetten' };
+      return { id, ping, name, icon, st, txt: on ? 'Aan' : busy ? 'Opstarten…' : ping ? 'Uit' : 'Aanzetten' };
     });
   }
   // Wake on LAN: aanzetten (alleen als hij uit is); 3 minuten "Wordt opgestart…" tot de Ping-sensor aan meldt
@@ -7020,7 +7020,7 @@ class ThuisCard extends HTMLElement {
       return { parts, tot: parts.reduce((n, [a, b]) => n + b - a, 0), bar: `<div class="pstrip">${parts.map(([a, b, live]) => `<i class="${live ? 'now' : ''}" style="left:${((a - d0) / len * 100).toFixed(2)}%;width:${Math.max(0.6, (b - a) / len * 100).toFixed(2)}%"></i>`).join('')}</div>` }; };
     const ticks = '<div class="pticks"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>';
     const last = (segs || []).filter((x) => !x[2]).slice(-1)[0], live = (segs || []).find((x) => x[2]), since = w.st === 'on' && w.ping ? (live ? live[0] : Date.parse(this._state(w.ping)?.last_changed)) : null;
-    const sub = w.st === 'on' ? `Aan${since ? ` · sinds ${fmtTime(since)}` : ''}` : w.st === 'busy' ? 'Wordt opgestart…' : `Uit${last ? ` · laatst aan ${dname(last[1]).toLowerCase()} tot ${fmtTime(last[1])}` : ''}`;
+    const sub = w.st === 'on' ? `Aan${since ? ` · sinds ${fmtTime(since)}` : ''}` : w.st === 'busy' ? 'Opstarten…' : `Uit${last ? ` · laatst aan ${dname(last[1]).toLowerCase()} tot ${fmtTime(last[1])}` : ''}`;
     const set = (id, h) => { const el = this.$(id); if (el && el.innerHTML !== h) el.innerHTML = h; };
     set('pcN', w.name); set('pcS', sub);
     let hist = '';
