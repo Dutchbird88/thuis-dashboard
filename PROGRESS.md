@@ -379,6 +379,7 @@
 | v506 | Rondje achter de lamp (licht aan) ~10% donkerder (`rgba(255,222,110,.34)`). Kleurstelling hiermee vastgesteld (gebruiker). |
 | v507 | Rondje achter de actieve lamp nog iets donkerder (`rgba(255,214,100,.24)`). |
 | v508 | Rondje achter de actieve lamp nog donkerder (`rgba(255,214,100,.12)`): bijna de kaartkleur, de lamp valt er nu duidelijk uit. |
+| v509 | Rondje achter de server/PC (aan) even donker als bij de lampen (`rgba(95,215,140,.12)`). |
 
 ## Volgende stappen
 
