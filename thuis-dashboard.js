@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '504';
+const CARD_VERSION = '505';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2085,7 +2085,7 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lb, :host(:not([data-th])) .cv.cv { transition: transform .12s ease; } :host(:not([data-th])) .lt.lt.lb:active, :host(:not([data-th])) .cv.cv:active { transform: scale(.97); }
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
   /* v482: volle kleuren (keuze A, zoals Apple Woning): lamp aan = goudgeel vlak met donkere tekst, rolluik (deels) dicht = blauw vlak */
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #56491a !important; border-color: transparent !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #57461f !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) > svg:first-child, :host(:not([data-th])) .cv.cv.cv.on > svg:first-child { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .n { color: #fff !important; } :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .ms { color: #FFD54F !important; font-weight: 600; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(255,222,110,.42) !important; box-shadow: none !important; }
@@ -2095,33 +2095,33 @@ const TIDY = `
   :host(:not([data-th])) .cv.cv.cv.on .mi2.mi2 { background: rgba(110,160,255,.32) !important; border-color: transparent !important; box-shadow: none !important; }
   /* v487: subtiele rand van 1 px in een iets lichtere tint van de eigen kaartkleur (geen gloed of schaduw); uit en aan even dik, dus geen verspringing */
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb:not(.on), :host(:not([data-th])) .cv.cv.cv.cv.cv.cv:not(.on), :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr:not(.lit) { border: 1px solid #2E3E55 !important; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { border: 1px solid #8f7430 !important; }
-  :host(:not([data-th])) .cv.cv.cv.cv.cv.cv.on { border: 1px solid #4469a8 !important; } :host(:not([data-th])) .cv.cv.cv.cv.on span { color: #A9CAFF !important; font-weight: 600; } /* v503: rolluik dicht effen donkerblauw (keuze B) */
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.lit { border: 1px solid #8f7430 !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { border: 1px solid #806637 !important; }
+  :host(:not([data-th])) .cv.cv.cv.cv.cv.cv.on { border: 1px solid #3a5d96 !important; } :host(:not([data-th])) .cv.cv.cv.cv.on span { color: #A9CAFF !important; font-weight: 600; } /* v503: rolluik dicht effen donkerblauw (keuze B) */
+  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.lit { border: 1px solid #806637 !important; }
   /* v488: statuspillen effen getint met rand van 1 px, zonder verloop, glans of gloed */
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp:not(.alarm):not(.warn){background:#192536!important;border:1px solid #304057!important;box-shadow:none!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp:not(.alarm):not(.warn)::before,:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp:not(.alarm):not(.warn)::after{display:none!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp:not(.alarm):not(.warn) b{color:#fff!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp:not(.alarm):not(.warn) span{color:#9AA8BA!important}
-  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ffc83d']{background:#56491a!important;border-color:#8f7430!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ffc83d'] span{color:#FFD54F!important}
-  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5aa2ff']{background:#203a66!important;border-color:#4469a8!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5aa2ff'] span{color:#A9CAFF!important}
+  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ffc83d']{background:#57461f!important;border-color:#806637!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ffc83d'] span{color:#FFD54F!important}
+  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5aa2ff']{background:#203a66!important;border-color:#3a5d96!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5aa2ff'] span{color:#A9CAFF!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='--sun']{background:#352D24!important;border-color:#504031!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='--sun'] span{color:#EBA879!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5ee1d0']{background:#173431!important;border-color:#28504B!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#5ee1d0'] span{color:#83CFC3!important}
   :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ff9a4d']{background:#352D24!important;border-color:#504031!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#ff9a4d'] span{color:#EBA879!important}
-  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8']{background:#203a66!important;border-color:#4469a8!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8'] span{color:#A9CAFF!important}
+  :host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8']{background:#203a66!important;border-color:#3a5d96!important}:host(:not([data-th])) :is(#mPills,#kview) .mp.mp.mp.mp.hot[style*='#38bdf8'] span{color:#A9CAFF!important}
   /* v498: pillen in het kamervenster (.kspills) in dezelfde stijl als de statuspillen (v488): effen, rand 1 px, geen verloop/glans/gloed; alarm en waarschuwing ongewijzigd */
   :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) { background: #192536 !important; border: 1px solid #304057 !important; box-shadow: none !important; }
   :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn)::before, :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn)::after { display: none !important; }
   :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) b { color: #fff !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp:not(.alarm):not(.warn) span { color: #9AA8BA !important; }
-  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) { background: #21462f !important; border-color: #3f7d57 !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) span { color: #8BE6AC !important; }
-  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) { background: #203a66 !important; border-color: #4469a8 !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) span { color: #A9CAFF !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) { background: #1e3b2b !important; border-color: #33604a !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#4fd07f']:not(.alarm):not(.warn) span { color: #8BE6AC !important; }
+  :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) { background: #203a66 !important; border-color: #3a5d96 !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.wolp.hot[style*='#62bdf5']:not(.alarm):not(.warn) span { color: #A9CAFF !important; }
   :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hpp.hot:not(.alarm):not(.warn) { background: #28263d !important; border-color: #413c5e !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hpp.hot:not(.alarm):not(.warn) span { color: #ABA0DE !important; }
   :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hot:not(.wolp):not(.hpp):not(.alarm):not(.warn) { background: #353127 !important; border-color: #51472F !important; } :host(:not([data-th])) .kspills.kspills .mp.mp.mp.mp.mp.hot:not(.wolp):not(.hpp):not(.alarm):not(.warn) span { color: #EBD16F !important; }
   /* v489: kamerkaart met licht aan in de stijl van de lamptegels op Thuis: effen goudgeel, donkere tekst, icoon in goud rondje, donkergouden schakelaar */
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit { background: #56491a !important; border: 1px solid #8f7430 !important; box-shadow: none !important; }
+  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit { background: #57461f !important; border: 1px solid #806637 !important; box-shadow: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::before, :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::after { display: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .nm { color: #fff !important; } :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ln span.y { color: #FFD54F !important; font-weight: 600; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ri.ri.ri { background: rgba(255,222,110,.42) !important; box-shadow: none !important; }
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ksw.ksw.on { background: #F4B92E !important; } /* v501: licht aan = effen donkergeel #56491a (keuze Y2), witte naam, geel accent; geldt ook voor de lamptegels op Thuis en in het kamervenster */
+  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ksw.ksw.on { background: #F4B92E !important; } /* v501: licht aan = effen donkergeel #57461f (keuze Y2), witte naam, geel accent; geldt ook voor de lamptegels op Thuis en in het kamervenster */
   /* v490: apparaatkaarten (telefoon) effen getint per status met rand van 1 px, zonder lichtinval, verloop of gloed; statustekst en balk in de accentkleur; meldingen effen */
   :host(:not([data-th])) :is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc).was.was:has(> .wx.nw), :host(:not([data-th])) .mstack.mstack > .was[data-k].was.was.was.was:has(> .wx.nw) { box-shadow: none !important; }
   :host(:not([data-th])) :is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc).was.was:has(> .wx.nw)::before, :host(:not([data-th])) .mstack.mstack > .was[data-k].was.was.was.was:has(> .wx.nw)::before, :host(:not([data-th])) :is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc).was.was:has(> .wx.nw)::after, :host(:not([data-th])) .mstack.mstack > .was[data-k].was.was.was.was:has(> .wx.nw)::after { display: none !important; }
@@ -2150,7 +2150,7 @@ const TIDY = `
   /* v492: laden, storing en oven zonder tint (alleen tekst en balk in kleur); klaar houdt groen (iets is gereed en vraagt om actie). Bediening uit (lampen, pc/server, rolluiken) = ondergrond en rand van thermostaat/afval */
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt:not(.on), :host(:not([data-th])) .cv.cv.cv.cv.cv.cv.cv:not(.on) { background: linear-gradient(180deg, #132036, #0f1828) !important; border: 1px solid rgba(130,170,255,.11) !important; box-shadow: none !important; }
   /* v493: computer/server aan = volle kleur zoals lamp (goud) en rolluik (blauw): effen groen met donkere tekst (keuze B) */
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on { background: #21462f !important; border: 1px solid #3f7d57 !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on { background: #1e3b2b !important; border: 1px solid #33604a !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::before, :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::after { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .n.n.n, :host(:not([data-th])) #lights#lights#lights .lt.wol.on .n { color: #fff !important; } :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .ms.ms.ms { color: #8BE6AC !important; font-weight: 600; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .mi2.mi2.mi2 { background: rgba(95,215,140,.30) !important; box-shadow: none !important; border-color: transparent !important; }
