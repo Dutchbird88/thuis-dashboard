@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '499';
+const CARD_VERSION = '500';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2079,6 +2079,7 @@ const TIDY = `
   /* v383: icoon in een ronde knop (optie B), zodat de tegel als bedienbare knop leest; aan = warm geel rondje. Plus tik-reactie op lampen en rolluiken */
   :host(:not([data-th])) .lt.lt.lb .mi2.mi2 { left: 12px; top: calc(50% - 23px); width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.06) !important; box-shadow: inset 0 0 0 1px rgba(150,175,215,.16) !important; }
   :host(:not([data-th])) .lt.lt.lb .mi2 svg { width: 32px !important; height: 32px !important; margin: 0 !important; }
+  :host(:not([data-th])) .cv.cv.cv:not(.on) .mi2.mi2 { box-shadow: inset 0 0 0 1px rgba(150,175,215,.16) !important; } /* v500: rolluik (open) krijgt hetzelfde dunne randje om het icoonrondje als lamp en server */
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .mi2.mi2 { background: rgba(255,200,80,.20) !important; box-shadow: inset 0 0 0 1px rgba(255,200,80,.28) !important; }
   :host(:not([data-th])) .lt.lt.lb { padding-left: 70px; }
   :host(:not([data-th])) .lt.lt.lb, :host(:not([data-th])) .cv.cv { transition: transform .12s ease; } :host(:not([data-th])) .lt.lt.lb:active, :host(:not([data-th])) .cv.cv:active { transform: scale(.97); }
