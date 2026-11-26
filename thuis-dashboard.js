@@ -191,103 +191,6 @@ return {
   room: (k, lit) => `<svg class="ri2" viewBox="0 0 100 100">${draw(ROOMICON[k] || 'door', lit ? 'lit' : 'off')}</svg>`,
 };
 })();
-// v484: lijn-iconen (telefoon, matte stijl) voor kamers, lampen en rolluiken; elders blijven de 3D-iconen
-const LNI = {
-  sofa: '<path d="M6 11V8.5A2.5 2.5 0 0 1 8.5 6h7A2.5 2.5 0 0 1 18 8.5V11"/><path d="M4.5 11A1.5 1.5 0 0 0 3 12.5V17a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4.5a1.5 1.5 0 0 0-3 0V15H6v-2.5A1.5 1.5 0 0 0 4.5 11z"/><path d="M6 18v2M18 18v2"/>',
-  pot: '<path d="M5 10h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M3 12h2M19 12h2M4.5 7.5h15M12 5v2.5"/>',
-  bed: '<path d="M3 6v13M3 14h18v5M21 14v-2a3 3 0 0 0-3-3h-6v5"/><circle cx="7.2" cy="11.3" r="1.7"/>',
-  bath: '<path d="M3 12h18v2a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5z"/><path d="M6 12V6.5a2 2 0 0 1 3.7-1.1M7 19l-1 2M17 19l1 2"/>',
-  door: '<path d="M6 21V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21M4 21h16M14.5 11.5v2"/>',
-  toilet: '<path d="M7 3h6v7H7z"/><path d="M5 10h14a7 7 0 0 1-14 0z"/><path d="M9 16.5 8 21h8l-1-4.5"/>',
-  desk: '<path d="M3 10h18M5 10v10M19 10v10M13 10v5h6"/><rect x="7" y="4" width="6" height="4" rx="1"/>',
-  stairs: '<path d="M3 20h5v-4h4v-4h4V8h5"/>',
-  tree: '<path d="M12 3l6 8h-3l4 6H5l4-6H6z"/><path d="M12 17v4"/>',
-  drive: '<path d="M4 15v-3l2.2-4.6A2 2 0 0 1 8 6h8a2 2 0 0 1 1.8 1.4L20 12v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 12h16M6.5 16v2M17.5 16v2"/>',
-  shed: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
-  wash: '<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6.5h1M11 6.5h1"/>',
-  attic: '<path d="M3 20 12 5l9 15z"/><path d="M9 20v-5h6v5"/>',
-  bulb: '<path d="M9.2 18h5.6M10.2 21h3.6M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z"/>',
-  blind: '<path d="M4 4h16M8 4v13h11V4M8 8h11M8 12h11M8 16h11M5 4v13"/><circle cx="5" cy="19" r="1.6"/>',
-};
-const lni = (k) => `<svg class="ln" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${LNI[k] || LNI.door}</svg>`;
-// v484: matte stijl (telefoon, donker): één centraal palet (--m-*), effen vlakken zonder verloop, gloed, schaduw of randen; achteraan in elke <style>
-const MATTE = `
-.ri svg.ln, .mi2 svg.ln { display: none; }
-@media (max-width: 600px) {
-  :host(:not([data-th])) {
-    --m-bg: #0C1420; --m-card: #192536; --m-card2: #22314a; --m-t1: #F1F4FA; --m-t2: #9AA8BA; --m-ink: #18202c; --m-ink2: #3a4352;
-    --m-light: #EBD16F; --m-cover: #85ADE3; --m-blind: #4A74C9; --m-heat: #EBA879; --m-ok: #83C8A3; --m-err: #E58B8B; --m-night: #ABA0DE; --m-blue: #7cb6ff;
-    --m-run: #1B2B40; --m-bake: #302820; --m-done: #1C302A; --m-fault: #352629;
-    --text: var(--m-t1); --muted: var(--m-t2);
-  }
-  /* achtergrond: effen, geen lichtvlekken */
-  :host(:not([data-th])) .wrap.wrap { background: var(--m-bg) !important; }
-  :host(:not([data-th])) .wrap.wrap::before, :host(:not([data-th])) .wrap.wrap::after { display: none !important; }
-  /* kaarten: effen, zonder rand, gloed of schaduw */
-  :host(:not([data-th])) .tile.tile.tile, :host(:not([data-th])) .mstack > .was.was, :host(:not([data-th])) .was.was.was, :host(:not([data-th])) .ec.ec, :host(:not([data-th])) .emon.emon, :host(:not([data-th])) .ebw.ebw, :host(:not([data-th])) .enav.enav, :host(:not([data-th])) .mob.mob, :host(:not([data-th])) .cxrc, :host(:not([data-th])) .pcard, :host(:not([data-th])) .shcard {
-    background: var(--m-card) !important; border-color: transparent !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  :host(:not([data-th])) .tile.tile.tile::before, :host(:not([data-th])) .tile.tile.tile::after, :host(:not([data-th])) .was.was.was::before, :host(:not([data-th])) .was.was.was::after { display: none !important; }
-  :host(:not([data-th])) .enavw.enavw { background: var(--m-bg) !important; }
-  /* camera-tegel: het beeld vult de tegel */
-  :host(:not([data-th])) #camTile#camTile.tile, :host(:not([data-th])) #bedTile#bedTile.tile, :host(:not([data-th])) #agTile#agTile.tile { background: none !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt), :host(:not([data-th])) :is(#notTile#notTile#notTile, #mTh#mTh#mTh, #mAf#mAf#mAf, #hpc#hpc#hpc, #bdc#bdc#bdc) { background: var(--m-card) !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
-  /* apparaatkaarten: effen tint per status, accent in de balk */
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.run), :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.plan) { background: var(--m-run) !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.ov.run), :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.ov.run) { background: var(--m-bake) !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.ok), :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt).done { background: var(--m-done) !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.warn) { background: var(--m-fault) !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt):has(> .wx.nw.evx:not(.off)) { background: #17302f !important; }
-  :host(:not([data-th])) .wx.nw::before, :host(:not([data-th])) .wx.nw::after { display: none !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw .wxb { background: rgba(255,255,255,.08) !important; box-shadow: none !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw .wxb i { background: var(--m-cover) !important; background-image: none !important; box-shadow: none !important; }
-  :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw.ov .wxb i { background: var(--m-heat) !important; } :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw.ok .wxb i { background: var(--m-ok) !important; } :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw.warn .wxb i { background: var(--m-err) !important; } :host(:not([data-th])) :is(#was#was#was, #dish#dish#dish, #oven#oven#oven, #evc#evc#evc, #pic#pic#pic, #flt#flt#flt) .wx.nw.evx .wxb i { background: #6fd3c4 !important; }
-  :host(:not([data-th])) .wx.nw.run:not(.evx):not(.ov) .st { color: var(--m-cover) !important; } :host(:not([data-th])) .wx.nw.evx .st { color: #6fd3c4 !important; } :host(:not([data-th])) .wx.nw.ov .st { color: var(--m-heat) !important; } :host(:not([data-th])) .wx.nw.ok .st { color: var(--m-ok) !important; } :host(:not([data-th])) .wx.nw.warn .st { color: var(--m-err) !important; }
-  /* lampen: aan = effen zachtgeel, donkere tekst */
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb { background: var(--m-card) !important; border-color: transparent !important; box-shadow: none !important; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: var(--m-light) !important; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lb.on:not(.wol) .n { color: var(--m-ink) !important; } :host(:not([data-th])) .lt.lt.lt.lt.lb.on:not(.wol) .ms { color: var(--m-ink2) !important; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lb .mi2.mi2.mi2 { box-shadow: none !important; background: rgba(255,255,255,.06) !important; }
-  :host(:not([data-th])) .lt.lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(80,60,0,.14) !important; }
-  /* rolluiken: dicht = effen blauw (keuze 2, volle kleur), witte tekst */
-  :host(:not([data-th])) .cv.cv.cv.cv.cv { background: var(--m-card) !important; border-color: transparent !important; box-shadow: none !important; }
-  :host(:not([data-th])) .cv.cv.cv.cv.cv.on { background: var(--m-blind) !important; }
-  :host(:not([data-th])) .cv.cv.cv.cv.on b { color: #fff !important; } :host(:not([data-th])) .cv.cv.cv.cv.on span { color: rgba(255,255,255,.86) !important; }
-  :host(:not([data-th])) .cv.cv.cv.cv .mi2.mi2 { box-shadow: none !important; background: rgba(255,255,255,.06) !important; border-color: transparent !important; }
-  :host(:not([data-th])) .cv.cv.cv.cv.on .mi2.mi2 { background: rgba(10,25,70,.32) !important; }
-  /* kamers: licht aan = effen zachtgeel; schakelaar donker op geel */
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr { background: var(--m-card) !important; border-color: transparent !important; box-shadow: none !important; }
-  :host(:not([data-th])) .kr.kr.kr.kr::before, :host(:not([data-th])) .kr.kr.kr.kr::after { display: none !important; }
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit { background: var(--m-light) !important; }
-  :host(:not([data-th])) .kr.kr.lit .nm { color: var(--m-ink) !important; }
-  :host(:not([data-th])) .kr.kr.lit .ln span { color: var(--m-ink2) !important; } :host(:not([data-th])) .kr.kr.lit .ln svg { filter: brightness(0) opacity(.55); }
-  :host(:not([data-th])) .kr.kr.kr .ri { box-shadow: none !important; } :host(:not([data-th])) .kr.kr.kr.lit .ri { background: rgba(80,60,0,.14) !important; }
-  :host(:not([data-th])) .kr.kr.kr .ksw.ksw { width: 51px; height: 31px; border-radius: 99px; margin: 0 0 0 auto; align-self: center; background: #354254 !important; border: 0 !important; box-shadow: none !important; transition: background .25s; }
-  :host(:not([data-th])) .kr.kr.kr .ksw.ksw.on { background: #99833C !important; }
-  :host(:not([data-th])) .kr.kr.kr .ksw.ksw::after { top: 2px; left: 2px; width: 27px; height: 27px; background: #FFFFFF !important; box-shadow: none !important; transition: left .25s; }
-  :host(:not([data-th])) .kr.kr.kr .ksw.ksw.on::after { left: 22px; }
-  :host(:not([data-th])) .kr.kr.kr .kpad { width: 51px; flex: none; margin-left: auto; }
-  /* v484: lijn-iconen in een rond vlak (kamers, lampen, rolluiken); de 3D-iconen blijven elders */
-  :host(:not([data-th])) .kr .ri > :not(svg.ln), :host(:not([data-th])) .lt.lb:not(.wol) .mi2 > :not(svg.ln), :host(:not([data-th])) .cv .mi2 > :not(svg.ln) { display: none !important; }
-  :host(:not([data-th])) .kr .ri svg.ln.ln, :host(:not([data-th])) .lt.lb:not(.wol) .mi2 svg.ln.ln, :host(:not([data-th])) .cv .mi2 svg.ln.ln { display: block !important; width: 24px !important; height: 24px !important; margin: 0 !important; color: #9AA8BA; filter: none !important; opacity: 1 !important; }
-  :host(:not([data-th])) svg.ln.ln * { fill: none !important; stroke: currentColor !important; }
-  :host(:not([data-th])) .kr.kr.kr.kr .ri.ri.ri, :host(:not([data-th])) .lt.lt.lt.lt.lb:not(.wol) .mi2.mi2.mi2.mi2, :host(:not([data-th])) .cv.cv.cv.cv .mi2.mi2.mi2 { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #26344a !important; border: 0 !important; box-shadow: none !important; }
-  :host(:not([data-th])) .kr.kr.kr.kr.lit .ri.ri.ri, :host(:not([data-th])) .lt.lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2.mi2 { background: rgba(70,55,10,.13) !important; }
-  :host(:not([data-th])) .kr.lit .ri svg.ln.ln, :host(:not([data-th])) .lt.lb.on:not(.wol) .mi2 svg.ln.ln { color: #4d4016; }
-  :host(:not([data-th])) .cv.cv.cv.cv.on .mi2.mi2.mi2 { background: rgba(10,25,70,.32) !important; } :host(:not([data-th])) .cv.on .mi2 svg.ln.ln { color: #fff; }
-  /* pillen bovenaan: neutraal, alleen actief licht getint */
-  :host(:not([data-th])) :is(#mPills, #kview, .kspills) .mp.mp.mp.mp:not(.alarm):not(.warn) { background: var(--m-card) !important; border-color: transparent !important; box-shadow: none !important; }
-  :host(:not([data-th])) :is(#mPills, #kview, .kspills) .mp:not(.alarm):not(.warn)::before, :host(:not([data-th])) :is(#mPills, #kview, .kspills) .mp:not(.alarm):not(.warn)::after { display: none !important; }
-  :host(:not([data-th])) :is(#mPills, #kview, .kspills) .mp.mp.mp.mp.hot:not(.alarm):not(.warn) { background: color-mix(in srgb, var(--pc, var(--c, #EBD16F)) 14%, var(--m-card)) !important; border: 0 !important; }
-  :host(:not([data-th])) :is(#mPills, #kview, .kspills) .mp.mp.mp.mp.hot:not(.alarm):not(.warn) span { color: var(--pt, var(--pc, var(--c))) !important; }
-  :host(:not([data-th])) .mp[style*='#ffc83d'] { --pc: #EBD16F; --pt: #EBD16F; } :host(:not([data-th])) .mp[style*='#5aa2ff'] { --pc: #85ADE3; --pt: #a9c6ec; } :host(:not([data-th])) .mp[style*='--sun'] { --pc: #EBA879; --pt: #EBA879; } :host(:not([data-th])) .mp[style*='#5ee1d0'] { --pc: #83C8A3; --pt: #83C8A3; }
-  /* navigatiebalk: rustig vlak, geen kader */
-  :host(:not([data-th])) .xtabs.xtabs { background: rgba(25,37,54,.82) !important; border-color: transparent !important; box-shadow: 0 8px 24px rgba(0,0,0,.28) !important; }
-  :host(:not([data-th])) .xtabs .tk.on, :host(:not([data-th])) .xtabs .on { box-shadow: none !important; background: rgba(255,255,255,.08) !important; }
-  /* vensters: effen */
-  :host(:not([data-th])) .sheet.sheet, :host(:not([data-th])) .sheet.full, :host(:not([data-th])) .cxsh, :host(:not([data-th])) .egsh { background: #131d2b !important; box-shadow: none !important; border-top-color: transparent !important; }
-  :host(:not([data-th])) .sheet.full.lamp { background: #221e15 !important; } :host(:not([data-th])) .sheet.full.therm { background: #142238 !important; } :host(:not([data-th])) .sheet.full.therm.hot { background: #2b1e16 !important; }
-}
-`;
 const RIC_SYMS = RIC.grads + [
   ['gDrop', 'drop'], ['gFlame', 'flame'], ['gBolt', 'bolt'], ['gSun', 'sun'], ['gPlug', 'plug'], ['gGauge', 'gauge'], ['gHouse', 'house'], ['gPylon', 'pylon'], ['gPylonX', 'pylon', 'green'],
   ['gWash', 'washer', 'on', 0], ['gCal', 'cal'], ['gRooms', 'sofaP'], ['gLeaf', 'leaf'], ['gClock', 'clock'], ['gMoon', 'moon'], ['gBulbOn', 'bulb'], ['gBulbOff', 'bulb', 'off'], ['gTherm', 'therm', 'green'], ['gSolarP', 'solar'],
@@ -1052,7 +955,7 @@ class ZonnepanelenCard extends HTMLElement {
     const arc = 'M30.72 140 A80 80 0 1 1 169.28 140';
 
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${LIGHT}${GLASS2}${TIDY}${MATTE}</style>
+      <style>${STYLE}${LIGHT}${GLASS2}${TIDY}</style>
       ${GLOSSY}
       <div class="wrap znu${c.photo.scene && (c.photo.night || c.photo.dusk) ? ' scn' : ''}">
         <!-- telefoon (v276): scène zoals HomeWizard, met tekeningen voor dag, schemer en nacht -->
@@ -2043,19 +1946,19 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '484';
+const CARD_VERSION = '485';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
   const mq = window.matchMedia('(max-width: 600px)'), root = document.documentElement;
-  let BG = '#0C1420';
+  let BG = '#0a111d';
   const VARS = ['--app-header-background-color', '--primary-background-color', '--lovelace-background'];
   let busy = false;
   const apply = () => {
     if (busy) return; busy = true;
     try {
       const cards = [...THEME_CARDS].filter((c) => c.isConnected);
-      if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0C1420';
+      if (cards.length) BG = cards.some((c) => c.hasAttribute('data-th')) ? '#f6f7fb' : '#0a111d';
       // v279: tabblad Nu met scène in beeld: de balk in de kleur van de lucht
       const gl = cards.find((c) => c.hasAttribute('data-gl') && c.getBoundingClientRect().height > 0); if (gl) BG = gl.localName === 'thuis-card' ? '#23466b' : '#c6d9ee'; // v309: glas: lucht bovenin
       const sky = cards.find((c) => c._skyColor && c.shadowRoot?.querySelector('.scn') && c.getClientRects().length && c.getBoundingClientRect().height > 0); // v306: alleen als Nu echt in beeld is (HA houdt soms een verborgen tabblad aan)
@@ -2166,7 +2069,7 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lb, :host(:not([data-th])) .cv.cv { transition: transform .12s ease; } :host(:not([data-th])) .lt.lt.lb:active, :host(:not([data-th])) .cv.cv:active { transform: scale(.97); }
   :host(:not([data-th])) .lt.lt.lb.on:not(.wol) .ms { color: #ffd77a; font-weight: 600; } :host(:not([data-th])) .lt.lt.lb.on .n { color: var(--text); }
   /* v482: volle kleuren (keuze A, zoals Apple Woning): lamp aan = goudgeel vlak met donkere tekst, rolluik (deels) dicht = blauw vlak */
-  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #F5CE55 !important; border-color: transparent !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #e3bd6f !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) > svg:first-child, :host(:not([data-th])) .cv.cv.cv.on > svg:first-child { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .n { color: #2a1f08 !important; } :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .ms { color: #3d2e10 !important; font-weight: 600; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(120,80,10,.22) !important; box-shadow: none !important; }
@@ -2174,11 +2077,6 @@ const TIDY = `
   :host(:not([data-th])) .cv.cv.cv.cv.on { background: #4a74c9 !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .cv.cv.cv.on b, :host(:not([data-th])) .cv.cv.cv.on span { color: #fff !important; }
   :host(:not([data-th])) .cv.cv.cv.on .mi2.mi2 { background: rgba(10,25,70,.35) !important; border-color: transparent !important; box-shadow: none !important; }
-  /* v483: pillen op Thuis (keuze B): zachte tint met rand in de kleur van de tegels, tweede regel in die kleur; geen glanslaag */
-  :host(:not([data-th])) #mPills .mp.mp.mp.hot:not(.alarm):not(.warn) { background: color-mix(in srgb, var(--pc, var(--c, #ffb547)) 20%, rgba(15,20,30,.6)) !important; border: 1px solid color-mix(in srgb, var(--pc, var(--c, #ffb547)) 52%, transparent) !important; box-shadow: none !important; }
-  :host(:not([data-th])) #mPills .mp.mp.mp.hot:not(.alarm):not(.warn) span { color: var(--pt, var(--pc, var(--c, #ffb547))) !important; }
-  :host(:not([data-th])) #mPills .mp.hot:not(.alarm):not(.warn)::before, :host(:not([data-th])) #mPills .mp.hot:not(.alarm):not(.warn)::after { display: none !important; }
-  #mPills .mp[style*='#ffc83d'] { --pc: #F5CE55; } #mPills .mp[style*='#5aa2ff'] { --pc: #6f97e3; --pt: #a9c4f5; } #mPills .mp[style*='--sun'] { --pc: #f2a73b; --pt: #f7c070; } #mPills .mp[style*='#5ee1d0'] { --pc: #12B5A2; --pt: #6fe0d2; }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
@@ -2434,7 +2332,7 @@ class VerbruikCard extends HTMLElement {
                 <div class="fc" id="fc${k}"></div>
               </div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}${TIDY}${EGSTYLE}${MATTE}</style>
+      <style>${STYLE}${VSTYLE}${LIGHT}${GLASS2}${TIDY}${EGSTYLE}</style>
       ${GLOSSY}
       <div class="wrap vwrap"><div class="inner">
         ${headerHtml('verbruik')}
@@ -3757,7 +3655,7 @@ class AutoCard extends HTMLElement {
     const c = this._config, e = (d, k) => this._e(d, k);
     const tyre = (k, label) => `<div class="tyre" id="t_${k}" data-e="${e('sensor', 'bandenspanning_' + k)}"><b>—</b><div>${label}</div></div>`;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${ASTYLE}${LIGHT}${GLASS2}${TIDY}${MATTE}</style>
+      <style>${STYLE}${ASTYLE}${LIGHT}${GLASS2}${TIDY}</style>
       <div class="wrap awrap"><div class="inner">
         ${headerHtml('auto')}
         <div class="grid">
@@ -5680,7 +5578,7 @@ class ThuisCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     const c = this._config;
     this.shadowRoot.innerHTML = `
-      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}${CXSTYLE}${TIDY}${MATTE}</style>
+      <style>${STYLE}${TSTYLE}${KSTYLE}${CALM}${LIGHT}${HPSTYLE}${CXSTYLE}${TIDY}</style>
       ${GLOSSY}${TGLOSSY}${GCAR}
       <div class="wrap twrap${this._kmode ? ' kmode' : ''}"><div class="inner">
         <div class="thead">
@@ -6183,7 +6081,7 @@ class ThuisCard extends HTMLElement {
     if (key === this._cvKey) return;
     this._cvKey = key;
     const txt = (x) => (x.moving ? (this._state(x.id).state === 'opening' ? 'gaat open' : 'gaat dicht') : x.pos >= 99 ? 'open' : x.pos <= 1 ? 'dicht' : `${100 - x.pos}% dicht`);
-    box.innerHTML = list.length ? list.map((x) => `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}">${shutterSvg(x.pos, x.id)}<i class="mi2">${gBlind(x.pos)}${lni('blind')}</i><b>${x.name}</b><span>${txt(x)}</span></div>`).join('')
+    box.innerHTML = list.length ? list.map((x) => `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}">${shutterSvg(x.pos, x.id)}<i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${txt(x)}</span></div>`).join('')
       : '<div class="wempty">Geen rolluiken gevonden. Zet ze in de kaartinstellingen bij <b>covers</b>.</div>';
     // tikken = open/dicht (of stoppen als hij beweegt), lang indrukken = venster met de exacte stand
     box.querySelectorAll('.cv').forEach((el) => {
@@ -6987,7 +6885,7 @@ class ThuisCard extends HTMLElement {
       const name = (this._nm(s) || s.entity_id).replace(/^Hue /, '');
       return `<div class="lt lb${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
-        <i class="mi2">${gBulb(isOn)}${lni('bulb')}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
+        <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
     }).join('') + wol.map((w) => `<div class="lt lb wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
         <i class="mi2">${RIC.svg(w.icon, w.st)}</i><div class="n">${w.name}</div><div class="ms">${w.txt}</div></div>`).join('');
     // Wake on LAN (telefoon): tik = wekken (als hij uit is), lang indrukken = venster van HA
@@ -8847,7 +8745,7 @@ class ThuisCard extends HTMLElement {
       const onL = rm.lights.filter((x) => x.state === 'on'), bo = this._kBri?.[rm.i];
       const bri = bo && Date.now() - bo.t < 8000 ? bo.v : onL.length ? Math.round(onL.reduce((a, x) => a + (x.attributes.brightness ?? 255), 0) / onL.length / 2.55) : 100;
       const sl = lit && !ph ? `<div class="ksl" data-i="${rm.i}" role="slider" aria-label="Helderheid ${rm.name}" aria-valuenow="${bri}"><i style="width:${bri}%"></i><b style="left:${Math.max(bri, 2)}%"></b></div>` : '';
-      return `<div class="kr${lit ? (ph ? ' lit' : ' lit sl') : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}${lni(rm.icon)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}${sl}</div>`;
+      return `<div class="kr${lit ? (ph ? ' lit' : ' lit sl') : ''}" data-i="${rm.i}"><i class="ri">${RIC.room(rm.icon, lit)}</i><div class="mid"><div class="nm">${rm.name}</div>${l1 || l2.length ? `<div class="ln">${l1}${l2.join('')}</div>` : ''}</div>${rm.lights.length ? `<button class="ksw${lit ? ' on' : ''}" data-i="${rm.i}" aria-label="Alle lampen ${rm.name}"></button>` : '<i class="kpad"></i>'}${sl}</div>`;
     };
     const floors = [...new Set(rooms.map((x) => x.floor))];
     const html = floors.map((f) => { const rs = rooms.filter((x) => x.floor === f);
@@ -8873,9 +8771,9 @@ class ThuisCard extends HTMLElement {
   // lamp- en rolluiktegels zoals bij Bediening (telefoon): tik = eigen paneel, tik op het rondje = aan/uit of open/dicht, lang = HA-venster
   _ltTile(s) {
     const a = s.attributes, isOn = this._ltIsOn(s), col = this._lightColor(a), name = this._shortName(this._nm(s) || s.entity_id);
-    return `<div class="lt lb${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}"><i class="mi2">${gBulb(isOn)}${lni('bulb')}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : 'Uit'}</div></div>`;
+    return `<div class="lt lb${isOn ? ' on' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}"><i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : 'Uit'}</div></div>`;
   }
-  _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}${lni('blind')}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
+  _cvTile(x) { return `<div class="cv${x.pos < 99 ? ' on' : ''}" data-id="${x.id}" style="--a:${(0.24 + 0.36 * (100 - x.pos) / 100).toFixed(3)}"><i class="mi2">${gBlind(x.pos)}</i><b>${x.name}</b><span>${this._coverTxt(x)}</span></div>`; }
   _shortName(n) { const rm = ((this._config.rooms || []).length ? this._config.rooms : this._areaRooms())[this._roomIdx]; let t = String(n).replace(/^Hue /, ''); if (rm) { const re = new RegExp(`^(${reEsc(rm.name)}|zolder)\\s+`, 'i'); if (re.test(t) && t.replace(re, '')) t = t.replace(re, ''); } return t.charAt(0).toUpperCase() + t.slice(1); }
   _bindTiles(box, ri) {
     box.querySelectorAll('.lt, .cv').forEach((el) => {

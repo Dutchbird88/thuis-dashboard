@@ -355,6 +355,7 @@
 | v482 | Lamp- en rolluiktegels in volle kleuren (lamp aan goudgeel, rolluik dicht blauw). |
 | v483 | Lampgeel #F5CE55; pillen op Thuis met zachte tint in de kleur van de tegels. |
 | v484 | Matte stijl op de telefoon: centraal kleurenpalet, effen vlakken zonder verloop/gloed/randen, volle kleuren voor lampen en rolluiken, lijn-iconen op kamers/lampen/rolluiken, nieuwe schakelaars, rustige navigatiebalk. |
+| v485 | Teruggezet naar v482 (v483 en v484 ongedaan gemaakt). |
 
 ## Volgende stappen
 
