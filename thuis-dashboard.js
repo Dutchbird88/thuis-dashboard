@@ -74,7 +74,22 @@ const SENS_TXT = {
   door: { label: 'Deur', on: 'Open', off: 'Dicht', since: true },
   window: { label: 'Raam', on: 'Open', off: 'Dicht', since: true },
 };
-const SENS_ICON = (x) => x.off ? RIC.svg({ leak: 'leak', smoke: 'smoke', motion: 'motionS', door: 'contact', window: 'windowS' }[x.kind], 'off')
+// v495: Nest Protect als icoon (keuze A): witte afgeronde melder met gaatjes in een spiraal en een lichtring in de statuskleur (ok/wr/al/off); dicht = groot (venster), anders grof (pil)
+const NP_DOTS = {};
+const NESTP = (ring, dense) => {
+  const k = dense ? 'd' : 's';
+  if (!NP_DOTS[k]) { let d = ''; const N = dense ? 900 : 420, c = dense ? 1.45 : 2.1;
+    for (let i = 1; i < N; i++) { const r = c * Math.sqrt(i), a = i * 2.39996; if (r < 21) continue; const x = 50 + r * Math.cos(a), y = 50 + r * Math.sin(a);
+      const dx = Math.max(0, Math.abs(x - 50) - 21), dy = Math.max(0, Math.abs(y - 50) - 21); if (Math.hypot(dx, dy) > 17.5 || Math.abs(x - 50) > 38.5 || Math.abs(y - 50) > 38.5) continue;
+      d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${((dense ? 0.62 : 0.85) + r * 0.006).toFixed(2)}"/>`; }
+    NP_DOTS[k] = d; }
+  const C = { ok: '#5fd46a', wr: '#f5a13c', al: '#ef4b43', off: '#9aa6b6' }[ring] || '#5fd46a';
+  // zonder verlopen of filters (geen ids): vaste html per stand, dus geen onnodig opnieuw opbouwen
+  return `<svg viewBox="0 0 100 100"><rect x="9" y="9" width="82" height="82" rx="24" fill="#eef1f5" stroke="#c3cad5" stroke-width=".8"/><path d="M33 9.4h34c13 0 23.6 10.6 23.6 23.6v6C80 24 60 18 9.4 30v3C9.4 20 20 9.4 33 9.4z" fill="#fff" opacity=".7"/><g fill="#aeb7c4">${NP_DOTS[k]}</g>`
+    + (ring !== 'off' ? `<circle cx="50" cy="50" r="16.5" fill="none" stroke="${C}" stroke-width="7.5" opacity=".22"/>` : '')
+    + `<circle cx="50" cy="50" r="16.5" fill="none" stroke="${C}" stroke-width="3.2"/><circle cx="50" cy="50" r="14.6" fill="#f8f9fb" stroke="#d3d9e2" stroke-width=".5"/><path d="M38 46a13 13 0 0 1 20-8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/></svg>`;
+};
+const SENS_ICON = (x) => x.kind === 'smoke' && x.np ? NESTP(x.off ? 'off' : x.on ? 'al' : x.warn || (x.bat != null && x.bat <= 20) ? 'wr' : 'ok') : x.off ? RIC.svg({ leak: 'leak', smoke: 'smoke', motion: 'motionS', door: 'contact', window: 'windowS' }[x.kind], 'off')
   : x.kind === 'leak' ? RIC.svg('leak', x.on ? 'red' : 'on') : x.kind === 'smoke' ? RIC.svg('smoke', x.on ? 'red' : x.warn ? 'orange' : 'on') : x.kind === 'motion' ? RIC.svg('motionS', x.on ? 'yellow' : 'on')
   : RIC.svg(x.kind === 'door' ? 'contact' : 'windowS', x.on ? 'orange' : 'on');
 const reEsc = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1946,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '494';
+const CARD_VERSION = '495';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5357,6 +5372,7 @@ const HPSTYLE = `
 .mos .smring { width: 112px; height: 112px; margin: 22px auto 6px; border-radius: 50%; display: grid; place-items: center; background: #16233a; box-shadow: inset 0 0 0 4px var(--rc, #83C8A3), 0 0 0 7px rgba(255,255,255,.03); }
 .mos .smring.wr { --rc: #F0A35C; } .mos .smring.al { --rc: #E5534B; } .mos .smring.off { --rc: #4a5568; }
 .mos .smring svg { width: 56px; height: 56px; }
+.mos .smring.np { width: 128px; height: 128px; margin: 14px auto 2px; background: none; box-shadow: none; } .mos .smring.np svg { width: 128px; height: 128px; } /* v495: Nest Protect zonder ring eromheen */
 .mos .smcard { padding-top: 12px; } .mos .smh { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: #8b95a8; font-weight: 600; margin: 0 0 2px; }
 .mos .smrow { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 11px 2px; border-top: 1px solid rgba(255,255,255,.06); font-size: 14.5px; color: #E8EDF5; }
 .mos .smh + .smrow { border-top: 0; } .mos .smrow svg { width: 18px; height: 18px; display: block; } .mos .smrow span { color: #9AA8BA; font-size: 13.5px; text-align: right; }
@@ -6753,6 +6769,11 @@ class ThuisCard extends HTMLElement {
     return { ids, smoke, co, heat, batL, batH, online, repl, audio, num, lvl, dev,
       tSens: grp(/smoke|rook|_co_|co_test|heat|hitte|temp|hum|vocht|als|light|licht|pir|_us_|ultra/i), tAlarm: grp(/buzzer|siren|sirene|horn|alarm/i), tVoice: grp(/speaker|voice|stem|luidspreker|audio/i), tWifi: grp(/wifi|wi_fi|wlan/i) };
   }
+  // v495: is dit apparaat een Nest Protect (fabrikant/model Nest of Google, of integratie nest_protect)?
+  _isNest(dev) {
+    if (!dev) return false; const d = this._hass?.devices?.[dev] || {}, E = this._hass?.entities || {};
+    return /nest|google/i.test(`${d.manufacturer || ''} ${d.model || ''}`) || this._devEnts(dev).some((k) => /nest/i.test(E[k]?.platform || ''));
+  }
   _updSmokeSheet() {
     const id = this._cvId, S = this._hass.states, box = this.$('moB'); if (!S[id] || !box) return;
     const I = this._smInfo(id), now = Date.now(), M = 6e4;
@@ -6788,7 +6809,8 @@ class ThuisCard extends HTMLElement {
       !I.tAlarm.length && !I.tVoice.length && at ? row(OK, 'Alarm en stem', `${ago(at)} getest`) : '',
       I.batL || I.batH ? (batLow ? row(WR, 'Batterij', `Bijna leeg${bat != null ? ` · ${Math.round(bat)}%` : ''}`, 'wr') : row(OK, 'Batterij', 'In orde')) : '',
       I.online ? (offline ? row(WR, 'Wifi', 'Geen verbinding', 'wr') : bad(I.tWifi).length ? row(WR, 'Wifi', 'Test niet gelukt', 'wr') : row(OK, 'Wifi', 'Verbonden')) : tst(I.tWifi, 'Wifi')].join('');
-    const html = `<div class="smring ${ring}">${RIC.svg('smoke', ring === 'al' ? 'red' : ring === 'off' ? 'off' : 'on')}</div><div class="most">${head}<span>${sub}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}<div class="pcard smcard"><div class="smh">Laatste controle</div>${rows}</div>`;
+    const nest = this._isNest(I.dev);
+    const html = `<div class="smring ${ring}${nest ? ' np' : ''}">${nest ? NESTP(ring, true) : RIC.svg('smoke', ring === 'al' ? 'red' : ring === 'off' ? 'off' : 'on')}</div><div class="most">${head}<span>${sub}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}<div class="pcard smcard"><div class="smh">Laatste controle</div>${rows}</div>`;
     if (box.innerHTML !== html) box.innerHTML = html;
   }
   // v494: geschiedenis van de rookmelder (7 dagen): alarmen, waarschuwingen, tests, batterij en verbinding
@@ -8787,7 +8809,8 @@ class ThuisCard extends HTMLElement {
           on = lv === 2; warn = lv === 1;
           txt = off ? 'Niet bereikbaar' : lv === 2 ? `${ls === 2 ? 'Rook' : 'Koolmonoxide'} gedetecteerd · sinds ${fmtTime(t)}` : lv === 1 ? `Waarschuwing ${ls === 1 ? 'rook' : 'koolmonoxide'}` : test ? 'Test bezig' : co ? 'Geen rook of koolmonoxide' : 'Geen rook';
         } else txt = off ? 'Niet bereikbaar' : on ? `${K.on}${K.since ? ` · sinds ${Date.now() - t < 12 * HOUR ? fmtTime(t) : relTime(t)}` : ''}` : `${K.last && t ? `Laatst ${relTime(t)}` : K.off}`;
-        return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, luxId, tmp, label: K.label, txt };
+        const np = kind === 'smoke' && this._isNest(dev);
+        return { id: pid, kind, on, off, warn, t, alarm: on && K.alarm, bat, lux, luxId, tmp, label: K.label, txt, np };
       }).filter(Boolean).sort((p, q) => (q.alarm - p.alarm) || (q.warn - p.warn) || (SENS_ORDER.indexOf(p.kind) - SENS_ORDER.indexOf(q.kind)));
       // apparaten die uit staan: rustig in een lijst in het kamerpaneel
       const cf = this._config;

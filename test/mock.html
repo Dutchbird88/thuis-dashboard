@@ -70,7 +70,7 @@ ent('sensor.bewegingssensor_temperatuur', '18.6', { device_class: 'temperature',
 dev('d_ds', 'Raamsensor', 'slaap'); ent('binary_sensor.raamsensor_raam', 'off', { device_class: 'window' }, { dev: 'd_ds', hen: true, name: 'Raam' });
 dev('d_ws', 'Lekdetector', 'bad'); ent('binary_sensor.lekdetector_water', q.get('alarm') === 'water' ? 'on' : 'off', { device_class: 'moisture' }, { dev: 'd_ws', hen: true, name: 'Water' });
 ent('sensor.lekdetector_batterij', '3', { device_class: 'battery', unit_of_measurement: '%' }, { dev: 'd_ws', hen: true, name: 'Batterij' });
-dev('d_sm', 'Rookmelder', 'slaap'); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
+dev('d_sm', 'Rookmelder', 'slaap', { manufacturer: 'Google', model: 'Nest Protect' }); ent('binary_sensor.rookmelder_rook', q.get('alarm') === 'rook' ? 'on' : 'off', { device_class: 'smoke' }, { dev: 'd_sm', hen: true, name: 'Rook' });
 // v494: rookmelder zoals Nest Protect (rm=bat: batterij bijna leeg, rm=offline: geen verbinding)
 { const R = q.get('rm') || '', o = { dev: 'd_sm', hen: true };
   ent('binary_sensor.rookmelder_co_status', 'off', { device_class: 'carbon_monoxide' }, Object.assign({ name: 'CO-status' }, o));
