@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '493';
+const CARD_VERSION = '494';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -5352,7 +5352,16 @@ const HPSTYLE = `
 .mos .modh { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 2px 6px; text-align: left; } .mos .modh span { font-weight: 500; }
 .mos .mostrip:not(.mostatic) { touch-action: none; cursor: pointer; } .mos .momk { display: none; position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: #fff; border-radius: 1px; box-shadow: 0 0 6px rgba(255,255,255,.6); }
 /* v385: deur/raam (oranje = open) en licht */
-.mos .dstrip i, .mos .dlog i { background: #ff9f43 !important; } .mos .mobig.dopen { background: rgba(255,159,67,.14); }
+.mos .dstrip i, .mos .dlog i { background: #ff9f43 !important; }
+/* v494: rookmelder (venster mo, soort smoke): ring in statuskleur, lijst Laatste controle, geschiedenis */
+.mos .smring { width: 112px; height: 112px; margin: 22px auto 6px; border-radius: 50%; display: grid; place-items: center; background: #16233a; box-shadow: inset 0 0 0 4px var(--rc, #83C8A3), 0 0 0 7px rgba(255,255,255,.03); }
+.mos .smring.wr { --rc: #F0A35C; } .mos .smring.al { --rc: #E5534B; } .mos .smring.off { --rc: #4a5568; }
+.mos .smring svg { width: 56px; height: 56px; }
+.mos .smcard { padding-top: 12px; } .mos .smh { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: #8b95a8; font-weight: 600; margin: 0 0 2px; }
+.mos .smrow { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 11px 2px; border-top: 1px solid rgba(255,255,255,.06); font-size: 14.5px; color: #E8EDF5; }
+.mos .smh + .smrow { border-top: 0; } .mos .smrow svg { width: 18px; height: 18px; display: block; } .mos .smrow span { color: #9AA8BA; font-size: 13.5px; text-align: right; }
+.mos .smrow.wr span { color: #F0A35C; } .mos .smrow.al span { color: #ff8a80; }
+.mos .smlog .ok i { background: #83C8A3 !important; } .mos .smlog .wr i { background: #F0A35C !important; } .mos .smlog .al i { background: #E5534B !important; } .mos .smlog .na i { background: #7d8798 !important; } .mos .mobig.dopen { background: rgba(255,159,67,.14); }
 .mos .lxwrap { position: relative; margin: 6px 0 2px; touch-action: none; cursor: pointer; } .mos .lxsv { width: 100%; height: auto; display: block; } .mos .lxmk { top: 0; bottom: 0; }
 .mos .llog i.donker { background: #7f8aa0 !important; } .mos .llog i.schemerig { background: #c9a24a !important; } .mos .llog i.helder, .mos .llog i.zonnig { background: #ffc83d !important; }
 .mos .mostrip { overflow: visible; } .mos .mohint { font-size: 11.5px; color: #6b7385; margin-top: 6px; text-align: center; }
@@ -6598,6 +6607,7 @@ class ThuisCard extends HTMLElement {
   }
   // v385: soort venster bij de pil: beweging, deur/raam of licht (lux)
   _moKind(id) {
+    if ((this._rooms() || []).some((rm) => (rm.sensors || []).some((y) => y.id === id && y.kind === 'smoke'))) return 'smoke'; // v494: rookmelder
     if (/^sensor\./.test(id)) { const a = this._state(id)?.attributes || {}; return a.device_class === 'temperature' || /°/.test(a.unit_of_measurement || '') ? 'temp' : 'lux'; } // v436: temperatuursensor
     let k = 'motion'; (this._rooms() || []).some((rm) => { const x = (rm.sensors || []).find((y) => y.id === id); if (x) k = x.kind === 'door' || x.kind === 'window' ? x.kind : 'motion'; return !!x; });
     return k;
@@ -6724,9 +6734,104 @@ class ThuisCard extends HTMLElement {
     wrap.addEventListener('pointerup', () => setTimeout(end, 1800)); wrap.addEventListener('pointercancel', end);
     wrap.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
   }
+  // v494: rookmelder (zoals Nest Protect): alle entiteiten van hetzelfde apparaat, ingedeeld op device_class en naam
+  _smInfo(id) {
+    const S = this._hass.states, E = this._hass.entities || {}, dev = E[id]?.device_id, ids = dev ? this._devEnts(dev).filter((k) => S[k]) : [id];
+    const dc = (k) => S[k]?.attributes.device_class, num = (k) => { const v = k ? parseFloat(S[k].state) : NaN; return isNaN(v) ? null : v; };
+    const find = (f) => ids.find(f), bin = (k) => k.startsWith('binary_sensor.'), sen = (k) => k.startsWith('sensor.');
+    const isTest = (k) => /test/i.test(k);
+    const smoke = find((k) => SMOKE_RE.test(k) || (bin(k) && dc(k) === 'smoke' && !isTest(k))) || id;
+    const co = find((k) => !isTest(k) && (CO_RE.test(k) || dc(k) === 'carbon_monoxide'));
+    const heat = find((k) => !isTest(k) && (dc(k) === 'heat' || /heat_status|hitte_status|_hitte$|_heat$/i.test(k)));
+    const batL = find((k) => sen(k) && dc(k) === 'battery'), batH = find((k) => bin(k) && dc(k) === 'battery');
+    const online = find((k) => bin(k) && !isTest(k) && (dc(k) === 'connectivity' || /_online$|_verbonden$|_verbinding$/i.test(k)));
+    const repl = find((k) => sen(k) && /replace|vervang/i.test(k));
+    const audio = find((k) => sen(k) && /(audio|self|zelf).*test|test.*(audio|self|zelf)/i.test(k) && !isNaN(Date.parse(S[k].state)));
+    const tests = ids.filter((k) => bin(k) && isTest(k) && dc(k) === 'problem');
+    const grp = (re) => tests.filter((k) => re.test(k));
+    const lvl = (k) => { const e = k && S[k]; if (!e) return 0; if (bin(k)) return e.state === 'on' ? 2 : 0; return /warn|heads|waarschuw/i.test(e.state) ? 1 : /emerg|alarm|detect|gevaar|nood|^on$/i.test(e.state) ? 2 : 0; };
+    return { ids, smoke, co, heat, batL, batH, online, repl, audio, num, lvl, dev,
+      tSens: grp(/smoke|rook|_co_|co_test|heat|hitte|temp|hum|vocht|als|light|licht|pir|_us_|ultra/i), tAlarm: grp(/buzzer|siren|sirene|horn|alarm/i), tVoice: grp(/speaker|voice|stem|luidspreker|audio/i), tWifi: grp(/wifi|wi_fi|wlan/i) };
+  }
+  _updSmokeSheet() {
+    const id = this._cvId, S = this._hass.states, box = this.$('moB'); if (!S[id] || !box) return;
+    const I = this._smInfo(id), now = Date.now(), M = 6e4;
+    const ago = (t) => { const m = (now - t) / M; return m < 1 ? 'zojuist' : m < 60 ? `${Math.round(m)} min geleden` : m < 1440 ? `${Math.round(m / 60)} u geleden` : m < 2880 ? '1 dag geleden' : m < 44640 ? `${Math.round(m / 1440)} dagen geleden` : m < 89280 ? '1 maand geleden' : m < 525600 ? `${Math.round(m / 43800)} maanden geleden` : `${Math.round(m / 525600)} jaar geleden`; };
+    const na = (k) => !k || ['unavailable', 'unknown'].includes(S[k]?.state);
+    const off = na(I.smoke), ls = I.lvl(I.smoke), lc = I.lvl(I.co), lh = I.lvl(I.heat), lv = Math.max(ls, lc, lh);
+    const test = [I.smoke, I.co].some((k) => k && S[k]?.state === 'testing');
+    const bat = I.num(I.batL), batLow = (I.batH && S[I.batH].state === 'on') || (bat != null && bat <= 20);
+    const offline = I.online && S[I.online].state === 'off';
+    const bad = (L) => L.filter((k) => S[k]?.state === 'on');
+    const tBad = [...bad(I.tSens), ...bad(I.tAlarm), ...bad(I.tVoice), ...bad(I.tWifi)];
+    const at = I.audio ? Date.parse(S[I.audio].state) : null;
+    const ring = off ? 'off' : lv === 2 ? 'al' : lv === 1 || batLow || offline || tBad.length ? 'wr' : 'ok';
+    const what = ls >= lc && ls >= lh ? 'Rook' : lc >= lh ? 'Koolmonoxide' : 'Hitte', since = Date.parse(S[[I.smoke, I.co, I.heat][[ls, lc, lh].indexOf(lv)]]?.last_changed);
+    const head = off ? 'Niet bereikbaar' : lv === 2 ? `${what} gedetecteerd` : lv === 1 ? `Waarschuwing ${what.toLowerCase()}` : test ? 'Test bezig' : batLow ? 'Batterij bijna leeg' : offline ? 'Geen verbinding' : tBad.length ? 'Controle nodig' : 'Alles is in orde';
+    const sub = off ? '' : lv ? `sinds ${fmtTime(since)}` : test ? 'de melder test zichzelf' : batLow ? 'Vervang de batterijen binnenkort' : offline ? 'De melder is offline' : tBad.length ? 'Een zelftest is niet gelukt' : at ? `Laatste zelftest ${ago(at)}` : '';
+    const room = this._moRoom(id), dv = this._hass.devices?.[I.dev] || {}, dn = dv.name_by_user || dv.name || '';
+    const set = (k, h) => { const el = this.$(k); if (el && el.innerHTML !== h) el.innerHTML = h; };
+    set('moN', 'Rookmelder'); set('moS', room || dn);
+    const rd = I.repl ? new Date(Date.parse(S[I.repl].state)) : null;
+    const chips = [bat != null ? `<div><b>${Math.round(bat)}%</b>batterij</div>` : I.batH ? `<div><b>${batLow ? 'Laag' : 'Goed'}</b>batterij</div>` : '',
+      I.online ? `<div><b>${offline ? 'Offline' : 'Online'}</b>wifi</div>` : '',
+      rd && !isNaN(rd) ? `<div><b>${rd.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' }).replace('.', '')}</b>vervangen</div>` : ''].join('');
+    const OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#83C8A3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
+    const WR = '<svg viewBox="0 0 24 24" fill="none" stroke="#F0A35C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.5v.1"/></svg>';
+    const AL = '<svg viewBox="0 0 24 24" fill="none" stroke="#E5534B" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5M12 16.3v.1"/></svg>';
+    const NA = '<svg viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2.4" stroke-linecap="round"><path d="M7 12h10"/></svg>';
+    const row = (ic, a, b, cls) => `<div class="smrow${cls ? ` ${cls}` : ''}">${ic}<div>${a}</div><span>${b}</span></div>`;
+    const det = (k, l, nm, none) => na(k) ? row(NA, nm, 'Onbekend', 'na') : l === 2 ? row(AL, nm, `${nm === 'Koolmonoxide' ? 'CO' : nm} gedetecteerd`, 'al') : l === 1 ? row(WR, nm, 'Waarschuwing', 'wr') : row(OK, nm, none);
+    const tst = (L, nm) => !L.length ? '' : bad(L).length ? row(WR, nm, 'Test niet gelukt', 'wr') : L.every(na) ? '' : row(OK, nm, at && /Alarm|Stem/.test(nm) ? `${ago(at)} getest` : 'In orde');
+    const rows = [det(I.smoke, ls, 'Rook', 'Geen rook'), I.co ? det(I.co, lc, 'Koolmonoxide', 'Geen CO') : '', I.heat ? det(I.heat, lh, 'Hitte', 'Normaal') : '',
+      tst(I.tSens, 'Sensoren'), tst(I.tAlarm, 'Alarm'), tst(I.tVoice, 'Stem'),
+      !I.tAlarm.length && !I.tVoice.length && at ? row(OK, 'Alarm en stem', `${ago(at)} getest`) : '',
+      I.batL || I.batH ? (batLow ? row(WR, 'Batterij', `Bijna leeg${bat != null ? ` · ${Math.round(bat)}%` : ''}`, 'wr') : row(OK, 'Batterij', 'In orde')) : '',
+      I.online ? (offline ? row(WR, 'Wifi', 'Geen verbinding', 'wr') : bad(I.tWifi).length ? row(WR, 'Wifi', 'Test niet gelukt', 'wr') : row(OK, 'Wifi', 'Verbonden')) : tst(I.tWifi, 'Wifi')].join('');
+    const html = `<div class="smring ${ring}">${RIC.svg('smoke', ring === 'al' ? 'red' : ring === 'off' ? 'off' : 'on')}</div><div class="most">${head}<span>${sub}</span></div>${chips ? `<div class="mochips">${chips}</div>` : ''}<div class="pcard smcard"><div class="smh">Laatste controle</div>${rows}</div>`;
+    if (box.innerHTML !== html) box.innerHTML = html;
+  }
+  // v494: geschiedenis van de rookmelder (7 dagen): alarmen, waarschuwingen, tests, batterij en verbinding
+  async _smokeLog() {
+    const id = this._cvId, body = this.$('shBody'); if (!id) return;
+    this._cvHist = true;
+    const I = this._smInfo(id), room = this.$('moS')?.textContent || 'Rookmelder';
+    body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Rookmelder</button></div>
+      <div class="hti"><b>Geschiedenis</b><span>${room} · afgelopen 7 dagen</span></div><div id="hBody" class="mos"><div class="hnone">Laden…</div></div>`;
+    this.$('hBack').addEventListener('click', () => this._openSheet('mo', id));
+    const W = [[I.smoke, 'Rook'], [I.co, 'Koolmonoxide'], [I.heat, 'Hitte'], [I.batH, 'bat'], [I.online, 'net'], [I.audio, 'audio'], ...[...I.tSens, ...I.tAlarm, ...I.tVoice, ...I.tWifi].map((k) => [k, 'test'])].filter(([k]) => k);
+    const now = Date.now(), from = dayAdd(startOfDay(now), -6);
+    const hist = await this._hass.callApi('GET', `history/period/${new Date(from).toISOString()}?filter_entity_id=${W.map(([k]) => k).join(',')}&minimal_response&no_attributes&end_time=${encodeURIComponent(new Date(now).toISOString())}`).catch(() => []);
+    if (this._sheet !== 'mo' || !this._cvHist || this._cvId !== id) return;
+    const ev = [];
+    (Array.isArray(hist) ? hist : []).forEach((L) => {
+      if (!Array.isArray(L) || !L.length) return; const k = L[0].entity_id, w = W.find(([x]) => x === k); if (!w) return;
+      L.forEach((x, i) => {
+        const t = Date.parse(x.last_changed); if (isNaN(t) || t < from || (i === 0 && t <= from + 1000)) return;
+        const st = x.state, prev = i ? L[i - 1].state : null, typ = w[1];
+        if (typ === 'audio') { if (prev != null && st !== prev && !isNaN(Date.parse(st))) ev.push({ t: Date.parse(st) || t, c: 'ok', txt: 'Zelftest alarm en stem' }); return; }
+        if (st === 'testing') ev.push({ t, c: 'ok', txt: 'Test' });
+        else if (typ === 'bat') { if (st === 'on') ev.push({ t, c: 'wr', txt: 'Batterij bijna leeg' }); }
+        else if (typ === 'net') { if (st === 'off') ev.push({ t, c: 'wr', txt: 'Geen verbinding' }); else if (st === 'on' && prev === 'off') ev.push({ t, c: 'ok', txt: 'Weer verbonden' }); }
+        else if (typ === 'test') { if (st === 'on') ev.push({ t, c: 'wr', txt: 'Zelftest niet gelukt' }); }
+        else if (['unavailable', 'unknown'].includes(st)) { if (typ === 'Rook') ev.push({ t, c: 'na', txt: 'Niet bereikbaar' }); }
+        else { const lv = k.startsWith('binary_sensor.') ? (st === 'on' ? 2 : 0) : /warn|heads|waarschuw/i.test(st) ? 1 : /emerg|alarm|detect|gevaar|nood|^on$/i.test(st) ? 2 : 0;
+          if (lv === 2) ev.push({ t, c: 'al', txt: `${typ} gedetecteerd` }); else if (lv === 1) ev.push({ t, c: 'wr', txt: `Waarschuwing ${typ.toLowerCase()}` }); }
+      });
+    });
+    ev.sort((a, b) => b.t - a.t);
+    let html = '';
+    for (let k = 0; k < 7; k++) {
+      const d0 = dayAdd(startOfDay(now), -k), d1 = dayAdd(d0, 1), de = ev.filter((e) => e.t >= d0 && e.t < d1);
+      if (!de.length) continue;
+      const dn = k === 0 ? 'Vandaag' : k === 1 ? 'Gisteren' : new Date(d0).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
+      html += `<div class="modh">${dn}</div><div class="pcard molog smlog">${de.map((e) => `<div class="${e.c}"><i></i>${e.txt}<span>${fmtTime(e.t)}</span></div>`).join('')}</div>`;
+    }
+    this.$('hBody').innerHTML = html || '<div class="hnone">Geen meldingen in de afgelopen 7 dagen. Alles was in orde.</div>';
+  }
   _updMoSheet() {
     const id = this._cvId, st = this._state(id), box = this.$('moB'); if (!st || !box) return;
-    const mkd = this._moKind(id); if (mkd === 'temp') return this._updTempSheet(); if (mkd === 'lux') return this._updLuxSheet(); if (mkd !== 'motion') return this._updDoorSheet(mkd); // v385: deur/raam en licht
+    const mkd = this._moKind(id); if (mkd === 'smoke') return this._updSmokeSheet(); if (mkd === 'temp') return this._updTempSheet(); if (mkd === 'lux') return this._updLuxSheet(); if (mkd !== 'motion') return this._updDoorSheet(mkd); // v385: deur/raam en licht
     let sen = null, room = null; (this._rooms() || []).some((rm) => { const x = (rm.sensors || []).find((y) => y.id === id); if (x) { sen = x; room = rm.name; } return !!x; });
     const on = st.state === 'on', segs = this._moHistory(id), now = Date.now(), d0 = startOfDay(now), len = DAY;
     const du = (ms) => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? `${s} s` : `${Math.round(s / 60)} min`; };
@@ -6861,7 +6966,7 @@ class ThuisCard extends HTMLElement {
   }
   async _moLog() {
     const id = this._cvId, body = this.$('shBody'); if (!id) return;
-    const kd = this._moKind(id); if (kd === 'temp') return this._tempLog(); if (kd === 'lux') return this._luxLog(); const isD = kd !== 'motion', W1 = isD ? 'open' : 'beweging'; // v385
+    const kd = this._moKind(id); if (kd === 'smoke') return this._smokeLog(); if (kd === 'temp') return this._tempLog(); if (kd === 'lux') return this._luxLog(); const isD = kd !== 'motion', W1 = isD ? 'open' : 'beweging'; // v385
     this._cvHist = true;
     const room = this.$('moN')?.textContent || 'Beweging';
     body.innerHTML = `<div class="hh"><button id="hBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>${room}</button></div>
@@ -8869,7 +8974,7 @@ class ThuisCard extends HTMLElement {
         ? `<div class="mp ksp" data-id="${x.luxId}" data-mo="1"><i class="g">${RIC.svg(x.lux < 10 ? 'moon' : 'sun', 'on')}</i><div><b>${fmt(x.lux)} lux</b><span>${x.lux < 10 ? 'Donker' : x.lux < 100 ? 'Schemerig' : x.lux < 1000 ? 'Helder' : 'Zonnig'}</span></div></div>` : '';
       const extra = x.kind === 'motion' && !x.off ? [x.lux != null && !luxP ? `${fmt(x.lux)} lux` : '', x.tmp != null && rm.r.climate ? `${fmt(x.tmp, 1)}°` : ''].filter(Boolean).join(' · ') : '';
       const v2 = extra ? `${v} · ${extra}` : v;
-      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${(x.kind === 'motion' || x.kind === 'door' || x.kind === 'window') && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
+      return `<div class="mp ksp${x.alarm ? ' alarm' : x.warn || (x.on && x.kind !== 'motion') ? ' warn' : x.on ? ' hot' : ''}" data-id="${x.id}"${(x.kind === 'motion' || x.kind === 'door' || x.kind === 'window' || x.kind === 'smoke') && phone ? ' data-mo="1"' : ''}><i class="g">${SENS_ICON(x)}</i><div><b>${lb}</b><span>${v2}</span></div></div>${luxP}`; }).join('');
     const plugPills = (rm.plugs || []).map((x) => { const p = x.w != null && x.w >= 1 ? fmtPower(x.w) : null; return `<div class="mp ksp" data-plug="${x.id}"><i class="g">${RIC.svg('plug', x.on ? 'on' : 'off')}</i><div><b>${x.nm}</b><span>${x.on ? (p ? `${p.v} ${p.u}` : 'Aan') : 'Uit'}</span></div></div>`; }).join('');
     const camPills = (rm.cams || []).map((x) => `<div class="mp ksp${x.on ? ' hot' : ''}" data-id="${x.id}"><i class="g">${RIC.svg('camera', 'on')}</i><div><b>${rm.cams.length > 1 || !new RegExp(`^${reEsc(rm.name)}$`, 'i').test(x.nm) ? x.nm : 'Camera'}</b><span>${x.txt}</span></div></div>`).join('');
     const hpPills = (rm.speakers || []).map((id) => { const m = this._hpInfo(id); return `<div class="mp ksp hpp${m.play ? ' hot' : ''}" data-hp="${id}" style="--c:#b98bff"><i class="g">${HPICON(m.play)}</i><div><b>${m.dev}</b><span class="mqw"><span>${m.txt}</span></span></div></div>`; }).join('');
