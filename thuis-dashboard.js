@@ -1946,7 +1946,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '479';
+const CARD_VERSION = '480';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2696,10 +2696,10 @@ class VerbruikCard extends HTMLElement {
         <button class="epb" id="eNow" aria-label="Naar nu"><svg viewBox="0 0 24 24"><path d="m6 5 7 7-7 7M18 5v14"/></svg></button></div>
         <div class="eseg" id="eSeg">${['nu', 'dag', 'week', 'maand', 'jaar'].map((p) => `<button data-p="${p}">${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}</div></div></div>
       <button class="eal" id="eAl" style="display:none"><i></i><span id="eAlT"></span>${ch}</button>
-      <div class="esec"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Kosten</span><span>tik voor historie</span></div>
+      ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
+      <div class="esec" style="margin-top:18px"><span style="font-size:15px;font-weight:700;color:var(--text)" id="eMn">Kosten</span><span>tik voor historie</span></div>
       <button class="emon" id="eMon"><div class="emr"><div><div class="emt num" id="eMt">—</div><div class="ems" id="eMs"></div></div><div class="emp" id="eMp"></div></div>
         <div class="ebar" id="eMb"></div><div class="eleg" id="eMl"></div></button>
-      ${card('s', 'gBolt')}${card('g', 'gFlame')}${card('w', 'gDrop')}
       <button class="ebw" id="eBw"><span class="ebc">${gl('gPlug', 'sm')}<span><b class="num" id="eBase">—</b><small>Sluipverbruik</small></span></span><i class="ebs"></i><span class="ebc">${gl('gGauge', 'sm')}<span><b class="num" id="ePk">—</b><small>Aansluiting</small></span></span>${ch}</button>
     </div>
     <div class="egbg" id="egBg"></div><div class="egsh" id="egSh"></div>`;
@@ -3052,7 +3052,7 @@ class VerbruikCard extends HTMLElement {
     }
     this.$('eMn').textContent = `Kosten ${R.name}`;
     this.$('eMt').textContent = eur(c.tot);
-    this.$('eMs').innerHTML = cur ? `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}` : { dag: 'hele dag', week: 'hele week', maand: 'hele maand', jaar: 'heel jaar' }[per] || '';
+    this.$('eMs').innerHTML = (cur ? `tot nu${exp != null ? ` · verwacht <b>${eur(exp)}</b>` : ''}` : { dag: 'hele dag', week: 'hele week', maand: 'hele maand', jaar: 'heel jaar' }[per] || '') + ' · incl. vaste kosten'; // v480: verklaart het verschil met de kaarten erboven
     if (per !== 'nu' && ly && ly.tot > 0) {
       const dd = Math.round(((c.tot - ly.tot) / ly.tot) * 100), col = dd === 0 ? 'var(--muted)' : dd < 0 ? EG.e : '#ffb547';
       this.$('eMp').innerHTML = `<b style="color:${col};font-size:15px">${dd > 0 ? '+' : dd < 0 ? '−' : ''}${Math.abs(dd)}%</b><br>t.o.v. vorig jaar<br>dezelfde periode`;

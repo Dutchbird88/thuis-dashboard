@@ -350,6 +350,7 @@
 | v477 | Camera: titel "Camera's", geen ondertitel; blauwe achtergrond alleen bij de opname die speelt. |
 | v478 | Camera: in Recent van een deurbel alleen het aanbellen (geschiedenis toont alles). |
 | v479 | Camera: plaatjes sneller (alvast op de achtergrond laden, weg naar UniFi-map onthouden, eerst de 5 nieuwste). |
+| v480 | Energie (telefoon): kostenblok weer onderaan, met "incl. vaste kosten". |
 
 ## Volgende stappen
 
