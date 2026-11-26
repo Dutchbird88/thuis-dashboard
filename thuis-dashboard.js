@@ -87,7 +87,7 @@ const NESTP = (ring, dense) => {
   // zonder verlopen of filters (geen ids): vaste html per stand, dus geen onnodig opnieuw opbouwen
   return `<svg viewBox="0 0 100 100"><rect x="9" y="9" width="82" height="82" rx="24" fill="#eef1f5" stroke="#c3cad5" stroke-width=".8"/><path d="M33 9.4h34c13 0 23.6 10.6 23.6 23.6v6C80 24 60 18 9.4 30v3C9.4 20 20 9.4 33 9.4z" fill="#fff" opacity=".7"/><g fill="#aeb7c4">${NP_DOTS[k]}</g>`
     + (ring !== 'off' ? `<circle cx="50" cy="50" r="16.5" fill="none" stroke="${C}" stroke-width="7.5" opacity=".22"/>` : '')
-    + `<circle cx="50" cy="50" r="16.5" fill="none" stroke="${C}" stroke-width="3.2"/><circle cx="50" cy="50" r="14.6" fill="#f8f9fb" stroke="#d3d9e2" stroke-width=".5"/><path d="M38 46a13 13 0 0 1 20-8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/></svg>`;
+    + `<circle cx="50" cy="50" r="16.5" fill="none" stroke="${C}" stroke-width="3.2"/><circle cx="50" cy="50" r="14.6" fill="#f8f9fb" stroke="#d3d9e2" stroke-width=".5"/></svg>`;
 };
 const SENS_ICON = (x) => x.kind === 'smoke' && x.np ? NESTP(x.off ? 'off' : x.on ? 'al' : x.warn || (x.bat != null && x.bat <= 20) ? 'wr' : 'ok') : x.off ? RIC.svg({ leak: 'leak', smoke: 'smoke', motion: 'motionS', door: 'contact', window: 'windowS' }[x.kind], 'off')
   : x.kind === 'leak' ? RIC.svg('leak', x.on ? 'red' : 'on') : x.kind === 'smoke' ? RIC.svg('smoke', x.on ? 'red' : x.warn ? 'orange' : 'on') : x.kind === 'motion' ? RIC.svg('motionS', x.on ? 'yellow' : 'on')
@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '495';
+const CARD_VERSION = '496';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
