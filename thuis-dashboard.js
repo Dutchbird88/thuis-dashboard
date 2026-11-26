@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '506';
+const CARD_VERSION = '507';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2088,7 +2088,7 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lb.on:not(.wol) { background: #57461f !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) > svg:first-child, :host(:not([data-th])) .cv.cv.cv.on > svg:first-child { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .n { color: #fff !important; } :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .ms { color: #FFD54F !important; font-weight: 600; }
-  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(255,222,110,.34) !important; box-shadow: none !important; }
+  :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2.mi2.mi2 { background: rgba(255,214,100,.24) !important; box-shadow: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lb.on:not(.wol) .mi2 svg { filter: drop-shadow(0 0 5px rgba(255,220,120,.55)) !important; opacity: 1 !important; } /* v486: originele gele lamp in een goud rondje (keuze A), zoals het rolluik */
   :host(:not([data-th])) .cv.cv.cv.cv.on { background: #203a66 !important; border-color: transparent !important; box-shadow: none !important; }
   :host(:not([data-th])) .cv.cv.cv.on b, :host(:not([data-th])) .cv.cv.cv.on span { color: #fff !important; }
@@ -2120,7 +2120,7 @@ const TIDY = `
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit { background: #57461f !important; border: 1px solid #806637 !important; box-shadow: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::before, :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit::after { display: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .nm { color: #fff !important; } :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ln span.y { color: #FFD54F !important; font-weight: 600; }
-  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ri.ri.ri { background: rgba(255,222,110,.34) !important; box-shadow: none !important; }
+  :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ri.ri.ri { background: rgba(255,214,100,.24) !important; box-shadow: none !important; }
   :host(:not([data-th])) .kr.kr.kr.kr.kr.kr.kr.kr.lit .ksw.ksw.on { background: #F4B92E !important; } /* v501: licht aan = effen donkergeel #57461f (keuze Y2), witte naam, geel accent; geldt ook voor de lamptegels op Thuis en in het kamervenster */
   /* v490: apparaatkaarten (telefoon) effen getint per status met rand van 1 px, zonder lichtinval, verloop of gloed; statustekst en balk in de accentkleur; meldingen effen */
   :host(:not([data-th])) :is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc):is(#was,#dish,#oven,#evc).was.was:has(> .wx.nw), :host(:not([data-th])) .mstack.mstack > .was[data-k].was.was.was.was:has(> .wx.nw) { box-shadow: none !important; }
