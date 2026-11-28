@@ -381,6 +381,7 @@
 | v508 | Rondje achter de actieve lamp nog donkerder (`rgba(255,214,100,.12)`): bijna de kaartkleur, de lamp valt er nu duidelijk uit. |
 | v509 | Rondje achter de server/PC (aan) even donker als bij de lampen (`rgba(95,215,140,.12)`). |
 | v510 | Rondje achter een dicht rolluik even donker als bij lampen en server (`rgba(110,160,255,.12)`). |
+| v511 | Gereedmelding (apparaat klaar) in hetzelfde groen als server aan (`#1e3b2b`, rand `#33604a`, tekst en balk `#8BE6AC`). |
 
 ## Volgende stappen
 
