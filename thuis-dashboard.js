@@ -1961,7 +1961,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '511';
+const CARD_VERSION = '512';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2154,6 +2154,9 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::before, :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::after { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .n.n.n, :host(:not([data-th])) #lights#lights#lights .lt.wol.on .n { color: #fff !important; } :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .ms.ms.ms { color: #8BE6AC !important; font-weight: 600; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .mi2.mi2.mi2 { background: rgba(95,215,140,.12) !important; box-shadow: none !important; border-color: transparent !important; }
+  /* v512: opstarten (wacht) = blauw zoals rolluik dicht, niet groen */
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy { background: #203a66 !important; border: 1px solid #3a5d96 !important; }
+  :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy .ms.ms.ms.ms { color: #A9CAFF !important; } :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy .mi2.mi2.mi2.mi2 { background: rgba(110,160,255,.12) !important; }
 }
 `;
 // v322: thema 'glas' voor Nu, Energie en Auto (telefoon): lichte lucht, witte glastegels, groepen zonder eigen vlak
@@ -7075,7 +7078,7 @@ class ThuisCard extends HTMLElement {
       return `<div class="lt lb${isOn ? ' on' : ''}${s.state === 'unavailable' ? ' off2' : ''}" data-id="${s.entity_id}" style="--lc:${col};--a:${isOn ? (0.12 + 0.28 * (a.brightness ?? 255) / 255).toFixed(3) : 0};--k:${((a.brightness ?? 255) / 255).toFixed(2)}">
         ${isOn ? bulbSvg(col) : '<svg class="bulb" viewBox="0 0 100 100"><use href="#gBulbOff"/></svg>'}
         <i class="mi2">${gBulb(isOn)}</i><div class="n">${name}</div><div class="ms">${isOn ? (a.brightness != null ? `${Math.round(a.brightness / 2.55)}%` : 'Aan') : s.state === 'unavailable' ? 'Niet bereikbaar' : 'Uit'}</div>${isOn ? '' : s.entity_id.startsWith('missing:') ? '<div class="s">niet gevonden</div>' : s.state === 'unavailable' ? '<div class="s">niet bereikbaar</div>' : ''}</div>`;
-    }).join('') + wol.map((w) => `<div class="lt lb wol${w.st !== 'off' ? ' on' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
+    }).join('') + wol.map((w) => `<div class="lt lb wol${w.st !== 'off' ? ' on' : ''}${w.st === 'busy' ? ' busy' : ''}" data-wol="${w.id}" style="--lc:${w.st === 'on' ? '#4fd07f' : '#62bdf5'};--a:${w.st === 'on' ? 0.3 : w.st === 'busy' ? 0.18 : 0}">
         <i class="mi2">${RIC.svg(w.icon, w.st)}</i><div class="n">${w.name}</div><div class="ms">${w.txt}</div></div>`).join('');
     // Wake on LAN (telefoon): tik = wekken (als hij uit is), lang indrukken = venster van HA
     box.querySelectorAll('.lt.wol').forEach((el) => {

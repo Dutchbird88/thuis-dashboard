@@ -382,6 +382,7 @@
 | v509 | Rondje achter de server/PC (aan) even donker als bij de lampen (`rgba(95,215,140,.12)`). |
 | v510 | Rondje achter een dicht rolluik even donker als bij lampen en server (`rgba(110,160,255,.12)`). |
 | v511 | Gereedmelding (apparaat klaar) in hetzelfde groen als server aan (`#1e3b2b`, rand `#33604a`, tekst en balk `#8BE6AC`). |
+| v512 | Computer/server tijdens opstarten blauw (zoals rolluik dicht) in plaats van groen. |
 
 ## Volgende stappen
 
