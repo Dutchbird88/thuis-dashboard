@@ -56,6 +56,8 @@ const HOUR = 36e5;
 const DAY = 864e5;
 
 // verwarmt de CV de woning? (Toon: burner_info 1 = verwarmen, 2 = warm water)
+// v513: rode warmwaterkraan met blauwe druppel (statusicoon op de thermostaattegel)
+const WWTAP = '<svg class="tap" viewBox="0 0 24 24"><defs><linearGradient id="wwt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a7a"/><stop offset="1" stop-color="#d9362e"/></linearGradient></defs><rect x="8" y="2.6" width="7" height="2.6" rx="1.3" fill="url(#wwt)"/><rect x="10.7" y="4.6" width="1.6" height="3.4" fill="url(#wwt)"/><path d="M3.6 8h10.4a4.8 4.8 0 0 1 4.8 4.8v1.6h-3.6v-1.4a1.6 1.6 0 0 0-1.6-1.6H3.6z" fill="url(#wwt)"/><rect x="2" y="6.8" width="2.6" height="5.6" rx="1.1" fill="url(#wwt)"/><path d="M4.2 8.6h9.4" stroke="#fff" stroke-opacity=".45" stroke-width=".9" stroke-linecap="round"/><path d="M17 16.6c1 1.3 1.7 2.3 1.7 3.2a1.7 1.7 0 0 1-3.4 0c0-.9.7-1.9 1.7-3.2z" fill="#4fb3ff"/></svg>';
 const isHeating = (a) => (a?.burner_info != null && a.burner_info !== '' ? String(a.burner_info) === '1' : a?.hvac_action === 'heating');
 const fmt = (v, d = 0) =>
   v == null || isNaN(v) ? '—' : v.toLocaleString('nl-NL', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -1961,7 +1963,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '512';
+const CARD_VERSION = '513';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -4893,6 +4895,7 @@ const TSTYLE = `
   .mth .mbig { font-size: 40px; font-weight: 700; } .mth .mbig small { color: var(--text); font-size: 26px; font-weight: 600; margin-left: 1px; line-height: 1; } /* v349: groter gradenteken */
   .mth .mst { margin: 12px 0 0; padding: 0; line-height: 1.2; font-size: 14px; color: var(--text); } .mth.ok .mst, #rmTh.ok .mst { color: var(--text); } .mth.hot .mst { color: var(--heat); } .mth:not(.hot):not(.ok) .mst { color: var(--muted); }
   .mth .mdl { font-size: 13px; line-height: 1.2; color: var(--muted); margin-top: 1px; white-space: nowrap; } .mth .mdl b { color: #cfd5e0; font-weight: 600; } .mth .mdl:empty { display: none; } .mth.hot .mdl, .mth.ok .mdl { padding-left: 21px; } .mth.ok .mdl { padding-left: 20px; } /* v350: Doel lijnt uit met de tekst achter het icoon */
+  .mic .tap { width: 21px; height: 21px; display: block; } .mth.ww .mdl { padding-left: 25px; } .mth.ww .mst > span:not(.mic) { color: #FF8A7A; } /* v513: warm water */
   .mrow .mth.ok { background: linear-gradient(180deg, var(--tile2), var(--tile)); }
   .maf { justify-content: center; } .maf .mbin { top: 50% !important; transform: translateY(-50%); } /* v349: inhoud verticaal in het midden */
   .maf.quiet .mbin { top: 10px !important; transform: none; width: 44px; height: 44px; } /* v351: bij Geen afval de bak rechtsboven, anders valt hij over de tekst */
@@ -6008,14 +6011,19 @@ class ThuisCard extends HTMLElement {
     set('tS', this._tDragging ? 'loslaten om in te stellen' : this._tBusy ? 'naar de thermostaat…' : cur != null ? `nu <b>${fmt(cur, 1)}°</b>` : '');
     set('mCur', cur != null ? `${fmt(cur, 1)}<small>°</small>` : '—');
     const tt = `${fmt(target, target % 1 ? 1 : 0)}°`;
-    set('mSt', cl.state === 'off' ? 'Uit' : heating ? 'Verwarmt' : 'Op temperatuur'); // v348: ontwerp gebruiker — status, daaronder "Doel"
+    // v513: warm water (Toon: burner_info 2) vervangt status en doel: rode kraan, "Warm water", daaronder hoelang al
+    const ww = cl.state !== 'off' && String(a.burner_info ?? '') === '2';
+    if (!ww) this._wwSince = null; else if (!this._wwSince) this._wwSince = Math.min(Date.now(), Date.parse(cl.last_updated) || Date.now());
+    const wwMin = ww ? Math.floor((Date.now() - this._wwSince) / 60000) : 0;
+    set('mSt', ww ? 'Warm water' : cl.state === 'off' ? 'Uit' : heating ? 'Verwarmt' : 'Op temperatuur'); // v348: ontwerp gebruiker — status, daaronder "Doel"
     const pm = PRESETS[a.preset_mode]?.[0];
-    set('mDl', cl.state === 'off' ? (pm || '') : `Doel <b>${tt}</b>`);
+    set('mDl', ww ? (wwMin < 1 ? 'zojuist' : `al ${wwMin} min`) : cl.state === 'off' ? (pm || '') : `Doel <b>${tt}</b>`);
     const thK = heating ? 'h' : cl.state === 'off' ? 'u' : 'o';
     if (this._thmK !== thK) { this._thmK = thK; this.$('mThm').innerHTML = `<svg viewBox="0 0 100 100">${thK === 'h' ? RIC.draw('therm', 'orange') : thK === 'u' ? RIC.draw('therm', 'off') : RIC.draw('therm', 'green').replace(/url\(#g-green\)/g, 'url(#g-sky)')}</svg>`; }
-    set('mIc', heating ? '<svg class="gf" viewBox="0 0 100 100"><use href="#gFlame"/></svg>' : cl.state === 'off' ? '' : '<i class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg></i>');
+    set('mIc', ww ? WWTAP : heating ? '<svg class="gf" viewBox="0 0 100 100"><use href="#gFlame"/></svg>' : cl.state === 'off' ? '' : '<i class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg></i>');
     this.$('mTh').classList.toggle('hot', heating);
-    this.$('mTh').classList.toggle('ok', !heating && cl.state !== 'off');
+    this.$('mTh').classList.toggle('ok', !ww && !heating && cl.state !== 'off');
+    this.$('mTh').classList.toggle('ww', ww);
     // ring
     const { cx, cy, r, a0, a1 } = KD;
     const ang = (v) => a0 + (clamp(v, min, max) - min) / (max - min || 1) * (a1 - a0);
