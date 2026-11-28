@@ -386,6 +386,7 @@
 | v513 | Thermostaattegel: warm water (Toon `burner_info` 2) toont een rode kraan, "Warm water" en daaronder "al X min" (uitgelijnd), in plaats van status en doel. |
 | v514 | Zachtere gloed om de avatars (aanwezigheid), keuze A: `0 0 7px -2px` in plaats van `0 0 16px -2px`. |
 | v515 | Advies ChatGPT: tabbalk donker en bijna dicht (geen bruine gloed meer van gele tegels), temperatuur 5% kleiner, voortgangsbalk iets meer contrast. Vluchtkaart in de opbouw van de andere kaarten (ontwerp G): bestemming, groot de landingstijd, routelijn; geland = groen. |
+| v516 | Tabbalk in Liquid Glass-stijl (keuze E, naar een voorbeeld van de gebruiker): blauwgrijs glas met glansrand, gekozen tabblad donker verzonken in lichtblauw, de andere wit. |
 
 ## Volgende stappen
 

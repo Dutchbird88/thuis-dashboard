@@ -551,13 +551,13 @@ h1 svg:not(.hi) { width: 30px; height: 30px; stroke: var(--sun); fill: none; str
     -webkit-mask-image: linear-gradient(180deg, transparent, #000 45%); mask-image: linear-gradient(180deg, transparent, #000 45%); }
   /* telefoon: tabbalk onderin, binnen bereik van de duim */
   .xtabs { position: fixed !important; left: 14px; right: 14px; width: auto !important; justify-self: stretch !important; align-self: auto !important; bottom: calc(6px + env(safe-area-inset-bottom, 0px) / 3); z-index: 30; margin: 0 !important; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 5px; border-radius: 32px;
-    background: rgba(13,19,31,.94); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(130,170,255,.10); box-shadow: 0 10px 28px rgba(0,0,0,.55); } /* v515: donkerder en bijna dicht, geen kleurversterking (gele tegels gaven een bruine gloed), zachte rand zoals de tegels */
+    background: linear-gradient(180deg, rgba(64,78,102,.62), rgba(44,56,76,.62)); -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2); border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.25), 0 10px 28px rgba(0,0,0,.45); } /* v516 (keuze E, voorbeeld van de gebruiker): Liquid Glass in blauwgrijs met glansrand; v515 was donker en dicht */
   .xtabs button.tk { display: inline-flex; } .xtabs button.ta { display: none; }
   /* telefoon: tabkleuren — Thuis hemelsblauw, Kamers paars (Zon is al geel) */
   .xtabs button { flex-direction: column; justify-content: center; gap: 3px; padding: 7px 2px 6px; font-size: 11px; font-weight: 600; border-radius: 26px; }
   .xtabs button svg { width: 23px; height: 23px; }
   /* v244: actief tabblad wit, de rest grijzer; sinds v295 het actieve tabblad lichtblauw (de kleur van Thuis) */
-  .xtabs button.on { color: #7cb6ff; } .xtabs button:not(.on) { color: rgba(235,240,248,.55); }
+  .xtabs button.on { color: #7cb6ff; background: rgba(8,12,20,.62); box-shadow: inset 0 1px 2px rgba(0,0,0,.45), inset 0 -1px 0 rgba(255,255,255,.06); } .xtabs button:not(.on) { color: #F2F5FA; } /* v516: gekozen tabblad donker verzonken, de andere wit */
   .wrap { padding: 20px 12px calc(92px + env(safe-area-inset-bottom, 0px) / 3); background: radial-gradient(520px 360px at 12% 240px, rgba(255,150,40,.10), transparent 70%), var(--bg); }
   .tile { padding: 16px; border-radius: 18px; }
   h1 { font-size: 26px; }
@@ -1963,7 +1963,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '515';
+const CARD_VERSION = '516';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
