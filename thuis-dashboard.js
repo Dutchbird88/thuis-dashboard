@@ -1963,7 +1963,7 @@ window.customCards.push({ type: 'zonnepanelen-card', name: 'Zonnepanelen', descr
  * Verbruik card — stroom, gas en water van de P1- en watermeter
  * ===================================================================== */
 
-const CARD_VERSION = '513';
+const CARD_VERSION = '514';
 // telefoon: de balk boven (achter klok en batterij) in dezelfde kleur als het dashboard, op elk tabblad.
 // HA zet de themakleuren terug bij laden, wisselen van tabblad of thema; daarom houden we het in de gaten en zetten we het direct opnieuw.
 (() => {
@@ -2156,6 +2156,8 @@ const TIDY = `
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::before, :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on::after { display: none !important; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .n.n.n, :host(:not([data-th])) #lights#lights#lights .lt.wol.on .n { color: #fff !important; } :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .ms.ms.ms { color: #8BE6AC !important; font-weight: 600; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on .mi2.mi2.mi2 { background: rgba(95,215,140,.12) !important; box-shadow: none !important; border-color: transparent !important; }
+  /* v514: zachtere gloed om de avatars (aanwezigheid), keuze A */
+  :host(:not([data-th])) .av.av:not(.away) .ring.ring.ring { box-shadow: 0 0 7px -2px var(--pc) !important; }
   /* v512: opstarten (wacht) = blauw zoals rolluik dicht, niet groen */
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy { background: #203a66 !important; border: 1px solid #3a5d96 !important; }
   :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy .ms.ms.ms.ms { color: #A9CAFF !important; } :host(:not([data-th])) .lt.lt.lt.lt.lt.lt.lt.lt.lt.lt.wol.on.busy .mi2.mi2.mi2.mi2 { background: rgba(110,160,255,.12) !important; }

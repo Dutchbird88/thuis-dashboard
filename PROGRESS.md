@@ -384,6 +384,7 @@
 | v511 | Gereedmelding (apparaat klaar) in hetzelfde groen als server aan (`#1e3b2b`, rand `#33604a`, tekst en balk `#8BE6AC`). |
 | v512 | Computer/server tijdens opstarten blauw (zoals rolluik dicht) in plaats van groen. |
 | v513 | Thermostaattegel: warm water (Toon `burner_info` 2) toont een rode kraan, "Warm water" en daaronder "al X min" (uitgelijnd), in plaats van status en doel. |
+| v514 | Zachtere gloed om de avatars (aanwezigheid), keuze A: `0 0 7px -2px` in plaats van `0 0 16px -2px`. |
 
 ## Volgende stappen
 
